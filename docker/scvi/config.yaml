@@ -1,0 +1,7 @@
+census_version: "2024-07-01"
+
+homo_sapiens:
+  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/homo_sapiens/model.pt
+
+mus_musculus:
+  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/mus_musculus/model.pt

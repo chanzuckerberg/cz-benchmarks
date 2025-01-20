@@ -1,0 +1,17 @@
+# Core dependencies
+docker>=6.1.0
+pyyaml>=6.0
+boto3>=1.28.0
+
+# Data handling
+anndata>=0.9.0
+h5py>=3.8.0
+
+# Optional but recommended
+typing-extensions>=4.5.0
+
+dill>=0.3.6
+scikit-learn
+scanpy
+igraph>=0.11.8
+leidenalg>=0.10.2

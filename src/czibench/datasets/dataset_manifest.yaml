@@ -1,0 +1,10 @@
+datasets:
+  mouse_brain_atlas:
+    path: s3://example-bucket/datasets/mouse_brain_atlas.h5ad
+    dataset_type: SingleCellDataset
+    organism: mouse
+
+  human_pbmc_10x:
+    path: s3://example-bucket/datasets/human_pbmc_10k.h5ad
+    dataset_type: SingleCellDataset
+    organism: human

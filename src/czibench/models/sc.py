@@ -1,0 +1,31 @@
+from abc import ABC, abstractmethod
+from typing import ClassVar, List
+from .base import BaseModel
+from ..datasets.sc import SingleCellDataset
+from ..datasets.types import Organism
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SingleCellModel(BaseModel, ABC):
+    dataset_type = SingleCellDataset
+    available_organisms: ClassVar[List[Organism]]
+    required_obs_keys: ClassVar[List[str]]
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        if not hasattr(cls, 'available_organisms'):
+            raise TypeError(f"Can't instantiate {cls.__name__} without available_organisms class variable")
+
+    @classmethod
+    @abstractmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
+        pass
+    
+    @classmethod
+    def _validate_dataset(cls, dataset: SingleCellDataset) -> bool:
+        if dataset.organism not in cls.available_organisms:
+            return False
+        
+        return cls._validate_model_requirements(dataset)
+        
