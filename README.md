@@ -2,12 +2,6 @@
 
 ## Installation Instructions
 
-### From PyPI
-
-```bash
-pip install czibench
-```
-
 ### From Source
 
 ```bash
@@ -18,7 +12,22 @@ pip install -e .
 
 ## Requirements
 
-TBD
+Core dependencies:
+- docker>=6.1.0 
+- pyyaml>=6.0
+- boto3>=1.28.0
+
+Data handling:
+- anndata>=0.9.0
+- h5py>=3.8.0
+- dill>=0.3.6
+- scikit-learn
+- scanpy
+
+Clustering:
+- igraph>=0.11.8
+- leidenalg>=0.10.2
+
 
 ## Architecture Overview
 
@@ -30,14 +39,11 @@ This is a benchmarking framework for machine learning models (with a focus on si
 
 - `czibench.datasets.base.BaseDataset`: Abstract base class for all datasets
 - `czibench.models.base.BaseModel`: Abstract base class for all models
-- `czibench.metrics.base.BaseMetric`: Abstract base class for metrics
 - `czibench.tasks.base.BaseTask`: Abstract base class for evaluation tasks
-- `czibench.runner.base.BaseModelRunner`: Handles Docker container I/O and execution
 
 #### Container system
 
 - Uses Docker for model execution
-- Base image (`czibench-base`) provides common infrastructure
 - Models are packaged as Docker containers
 - Standard I/O paths for data exchange:
   - Input: `/app/input/data.dill`
@@ -56,101 +62,114 @@ docker/your_model/
 ├── config.yaml
 └── requirements.txt
 ```
+Refer to the template docker directory as a starting point (`docker/template/`)!
 
-The Dockerfile must be built from `czibench-base` and add `model.py` to the image.
-
-```docker
-FROM ghcr.io/chanzuckerberg/czibench-base:latest
-COPY docker/your_model/model.py .
-```
-
-2. Implement the model container in `model.py` (see template):
+2. Implement the model class in `model.py` (see template):
 
 ```python
 """
-REQUIRED MODEL IMPLEMENTATION FILE: model.py
+REQUIRED MODEL IMPLEMENTATION FILE
 
 This file MUST:
-1. Define a ModelRunner class that inherits from BaseModelRunner
-2. Implement the run_model() method
-3. Specify the model_class class variable
+1. Define a model class that inherits from SingleCellModel (for single-cell data) 
+   or BaseModel (for other modalities)
+2. Implement required class variables and methods
+3. Implement the run_model() method
+4. Create an instance and call run() if used as main
 
-Example:
+Example implementation for a single-cell model:
 """
 
-from czibench.models.base import BaseModelRunner, BaseModel
+from czibench.models.sc import SingleCellModel
+from czibench.datasets.types import Organism
+from czibench.datasets.sc import SingleCellDataset
 
-class ModelRunner(BaseModelRunner):
-    """
-    Required container class for model implementation.
-    This class will be imported and run by the base image's entrypoint.py
-    """
+class ExampleModel(SingleCellModel):
+    # Required: Specify which organisms this model supports
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
     
-    # Required: Specify which model class this container uses
-    model_class = BaseModel  # Replace with your model class
+    # Required: Specify which metadata columns are needed for batching
+    required_obs_keys = ['dataset_id', 'donor_id']  # Add required columns
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
+        """
+        Required: Implement validation logic specific to your model
+        Args:
+            dataset: The input SingleCellDataset to validate
+        Returns:
+            bool: True if dataset meets model requirements, False otherwise
+        """
+        # Check if all required batch keys are present
+        missing_keys = [key for key in cls.required_obs_keys 
+                       if key not in dataset.adata.obs.columns]
+        
+        if missing_keys:
+            return False
+            
+        return True
     
     def run_model(self):
         """
         Required: Implement your model's inference logic here.
-        self.data will contain the input dataset.
+        Access input data via self.data.adata
+        Set output embedding via self.data.output_embedding
         """
+        # Add your model implementation here
         raise NotImplementedError("Model implementation required")
-```
 
-3. Implement the model class:
-
-```python
-class SCVI(SingleCellModel):
-    available_organisms = [Organism.HUMAN, Organism.MOUSE]
-    required_batch_keys = ['dataset_id', 'assay', 'suspension_type', 'donor_id']
-
-    def _validate_model_requirements(self, dataset: SingleCellDataset) -> bool:
-        # Check if all required batch keys are present in obs
-        missing_keys = [key for key in self.required_batch_keys 
-                       if key not in dataset.adata.obs.columns]
-        
-        if missing_keys:
-            logger.error(f"Missing required batch keys: {missing_keys}")
-            return False
-            
-        return True
+if __name__ == "__main__":
+    ExampleModel().run()
 ```
 
 ### Adding new metrics
 
-1. Create a new metric class inheriting from `czibench.metrics.base.BaseMetric`:
+1. Create a new function that outputs a score given some input. Below are a couple example clustering metrics in `metrics/`.
 
 ```python
-from czibench.metrics.base import BaseMetric
+from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 
-class MyNewMetric(BaseMetric):
-    def validate(self, data: BaseDataset) -> bool:
-        # Validate required data components
-        pass
-        
-    def _compute_metric(self, data: BaseDataset) -> float:
-        # Implement metric computation
-        pass
+def adjusted_rand_index(original_labels, predicted_labels):
+    return adjusted_rand_score(
+        original_labels,
+        predicted_labels
+    )
+    
+def normalized_mutual_info(original_labels, predicted_labels):
+    return adjusted_mutual_info_score(
+        original_labels,
+        predicted_labels
+    )
 ```
 
 
 ### Adding New Tasks
 
-1. Create a task class inheriting from `czibench.tasks.base.BaseTask`:
+1. Create a task class inheriting from `czibench.tasks.base.BaseTask`. For example:
 
 ```python
 from czibench.tasks.base import BaseTask
 
-class MyNewTask(BaseTask):
-    available_metrics = [MyMetric1, MyMetric2]
-    
-    def validate(self, data: BaseDataset) -> bool:
-        # Validate task requirements
-        pass
+class ClusteringTask(BaseTask):
         
-    def _run_task(self, data: BaseDataset) -> BaseDataset:
-        # Implement task logic
-        pass
+    def __init__(self, label_key: str):
+        self.label_key = label_key
+        
+    def validate(self, data: SingleCellDataset):
+        return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
+        
+    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        adata = data.adata
+        adata.obsm["emb"] = data.output_embedding
+        self.input_labels = data.sample_metadata[self.label_key]
+        self.predicted_labels = your_label_prediction_function(...)
+        return data
+    
+    def _compute_metrics(self) -> Dict[str, float]:
+        return {
+            "adjusted_rand_index": adjusted_rand_index(self.input_labels, self.predicted_labels),
+            "normalized_mutual_info": normalized_mutual_info(self.input_labels, self.predicted_labels),
+        }
 ```
 
 ## Running Models
@@ -158,7 +177,7 @@ class MyNewTask(BaseTask):
 Using the `ContainerRunner`:
 
 ```python
-from czibench.runner.container import ContainerRunner
+from czibench.runner import ContainerRunner
 from czibench.datasets.load import load_dataset
 
 # Load dataset
@@ -188,4 +207,31 @@ dataset = SingleCellDataset(
     path="path/to/your/data.h5ad",
     organism=Organism.HUMAN
 )
+```
+
+## Example Usage
+
+```python
+from czibench.datasets.sc import SingleCellDataset
+from czibench.datasets.types import Organism
+from czibench.runner import ContainerRunner
+from czibench.tasks.sc import ClusteringTask, EmbeddingTask
+
+dataset = SingleCellDataset(
+    "example.h5ad",
+    organism=Organism.HUMAN,
+)
+
+runner = ContainerRunner(
+    image="czibench-scvi:latest",
+    gpu=True,
+)
+
+dataset = runner.run(dataset)
+
+task = ClusteringTask(label_key="cell_type")
+dataset, clustering_results = task.run(dataset)
+
+task = EmbeddingTask(label_key="cell_type")
+dataset, embedding_results = task.run(dataset)
 ```
