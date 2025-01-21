@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Type, ClassVar
 from ..datasets.base import BaseDataset
+from ..constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER
 
 class BaseModel(ABC):
     dataset_type: ClassVar[Type[BaseDataset]]  # Type annotation for class variable
-    
+    data: BaseDataset
+
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
@@ -18,4 +20,19 @@ class BaseModel(ABC):
     @classmethod
     def validate_dataset(cls, dataset: BaseDataset) -> bool:
         return isinstance(dataset, cls.dataset_type) and cls._validate_dataset(dataset)
+        
+
+    @abstractmethod
+    def run_model(self) -> None:
+        """Implement model-specific inference logic"""
+        pass
+    
+    def run(self):
+        self.data = self.dataset_type.load(INPUT_DATA_PATH_DOCKER)
+        
+        if not self.validate_dataset(self.data):
+            raise ValueError("Dataset validation failed")
+        
+        self.run_model()
+        self.data.save(OUTPUT_DATA_PATH_DOCKER)
         

@@ -8,7 +8,6 @@ RUN apt-get update && \
 COPY docker/scvi/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY docker/scvi/entrypoint.py .
 COPY docker/scvi/model.py .
 COPY docker/scvi/utils.py .
 COPY docker/scvi/config.yaml .
@@ -25,4 +24,4 @@ RUN pip install -e /app/package
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
 
-ENTRYPOINT ["python3", "/app/entrypoint.py"]
+ENTRYPOINT ["python3", "/app/model.py"]

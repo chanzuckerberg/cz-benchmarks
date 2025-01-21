@@ -10,7 +10,6 @@ from utils import filter_adata_by_hvg
 
 # Import required classes from czibench
 from czibench.models.sc import SingleCellModel
-from czibench.runner.base import BaseModelRunner
 from czibench.datasets.sc import SingleCellDataset
 from czibench.datasets.types import Organism
 
@@ -18,32 +17,26 @@ logger = logging.getLogger(__name__)
 
 class SCVI(SingleCellModel):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
-    required_batch_keys = ['dataset_id', 'assay', 'suspension_type', 'donor_id']
+    required_obs_keys = ['dataset_id', 'assay', 'suspension_type', 'donor_id']
 
     @classmethod
     def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
         # Check if all required batch keys are present in obs
-        missing_keys = [key for key in cls.required_batch_keys 
-                       if key not in dataset.adata.obs.columns]
+        missing_keys = [key for key in cls.required_obs_keys if key not in dataset.adata.obs.columns]
         
         if missing_keys:
             logger.error(f"Missing required batch keys: {missing_keys}")
             return False
             
         return True
-
-class ModelRunner(BaseModelRunner):
-    model_class = SCVI
-
+    
     def run_model(self):
         config = OmegaConf.load("config.yaml")
 
-        batch_key = self.model_class.required_batch_keys
-
         adata = self.data.adata
-
+        batch_keys = self.required_obs_keys
         adata = filter_adata_by_hvg(adata, f"hvg_names_{self.data.organism.name}.csv.gz")
-        adata.obs["batch"] = functools.reduce(lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_key])
+        adata.obs["batch"] = functools.reduce(lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys])
         
         s3 = boto3.client('s3')
         model_dir = pathlib.Path("model")
@@ -68,8 +61,7 @@ class ModelRunner(BaseModelRunner):
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 
-        self.data.output_embedding = qz_m
-
-    @classmethod
-    def get_expected_dataset_type_type(cls) -> str:
-        return SingleCellDataset.__name__
+        self.data.output_embedding = qz_m    
+        
+if __name__ == "__main__":
+    SCVI().run()
