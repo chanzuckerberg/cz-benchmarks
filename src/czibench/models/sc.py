@@ -16,6 +16,9 @@ class SingleCellModel(BaseModel, ABC):
         super().__init_subclass__()
         if not hasattr(cls, 'available_organisms'):
             raise TypeError(f"Can't instantiate {cls.__name__} without available_organisms class variable")
+        
+        if not hasattr(cls, 'required_obs_keys'):
+            raise TypeError(f"Can't instantiate {cls.__name__} without required_obs_keys class variable")
 
     @classmethod
     @abstractmethod
@@ -28,4 +31,5 @@ class SingleCellModel(BaseModel, ABC):
             return False
         
         return cls._validate_model_requirements(dataset)
+        
         

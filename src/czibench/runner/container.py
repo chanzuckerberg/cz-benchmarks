@@ -1,9 +1,9 @@
 import os
 import tempfile
 import docker
-import json
-from typing import Optional, Any
-from .constants import INPUT_PATH, OUTPUT_PATH
+import pathlib
+from typing import Any
+from ..constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER
 from ..datasets.base import BaseDataset
 
 # TODO: Need a manifest to document model names and their image names
@@ -30,14 +30,18 @@ class ContainerRunner:
             os.makedirs(input_dir, exist_ok=True)
             os.makedirs(output_dir, exist_ok=True)
             
-            input_path = os.path.join(input_dir, "data.dill")
-            output_path = os.path.join(output_dir, "data.dill")
+            input_dir = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).parent)
+            output_dir = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).parent)
+            input_filename = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).name)
+            output_filename = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name)
+            
+            input_path = os.path.join(input_dir, input_filename)
+            output_path = os.path.join(output_dir, output_filename)
             data.save(input_path)
             
-            # Configure container
             volumes = {
-                input_dir: {"bind": "/app/input", "mode": "ro"},
-                output_dir: {"bind": "/app/output", "mode": "rw"}
+                input_dir: {"bind": input_dir, "mode": "ro"},
+                output_dir: {"bind": output_dir, "mode": "rw"}
             }
             
             command = []
