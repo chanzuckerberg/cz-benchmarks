@@ -1,0 +1,8 @@
+# Base requirements
+anndata==0.10.8
+pandas==2.2.3
+dill>=0.3.6
+
+# Add any model-specific requirements here
+# For example, if using PyTorch:
+# torch>=2.0.0
