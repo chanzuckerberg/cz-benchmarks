@@ -83,9 +83,7 @@ This file MUST:
 Example implementation for a single-cell model:
 """
 
-from czibench.models.sc import BaseSingleCell
-from czibench.datasets.types import Organism
-from czibench.datasets.sc import SingleCellDataset
+from czibench.models.sc import BaseYourModel
 
 class ExampleModel(BaseYourModel):
 
