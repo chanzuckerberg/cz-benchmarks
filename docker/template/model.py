@@ -10,10 +10,10 @@ This file MUST:
 Example implementation for a single-cell model:
 """
 
-from czibench.models.sc import YourModel
+from czibench.models.sc import BaseYourModel
 
 
-class ExampleModel(YourModel):
+class ExampleModel(BaseYourModel):
 
     def run_model(self):
         """

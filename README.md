@@ -67,18 +67,18 @@ docker/your_model/
 
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
-2. Implement the model class in `model.py` (see template):
+2. Implement your base model class in `src/czibench/models/`. This should implement the model-specific validator (`_validate_model_requirements`).
+
+3. Implement the model class in `model.py` (see template):
 
 ```python
 """
 REQUIRED MODEL IMPLEMENTATION FILE
 
 This file MUST:
-1. Define a model class that inherits from BaseSingleCell (for single-cell data)
-   or BaseModel (for other modalities)
-2. Implement required class variables and methods
-3. Implement the run_model() method
-4. Create an instance and call run() if used as main
+1. Define a model class that inherits from your base model class that you implemented in the benchmarking library (e.g. BaseSCVI)
+2. Implement the run_model() method
+3. Create an instance and call run() if used as main
 
 Example implementation for a single-cell model:
 """
@@ -87,30 +87,7 @@ from czibench.models.sc import BaseSingleCell
 from czibench.datasets.types import Organism
 from czibench.datasets.sc import SingleCellDataset
 
-class ExampleModel(BaseSingleCell):
-    # Required: Specify which organisms this model supports
-    available_organisms = [Organism.HUMAN, Organism.MOUSE]
-
-    # Required: Specify which metadata columns are needed for batching
-    required_obs_keys = ['dataset_id', 'donor_id']  # Add required columns
-
-    @classmethod
-    def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
-        """
-        Required: Implement validation logic specific to your model
-        Args:
-            dataset: The input SingleCellDataset to validate
-        Returns:
-            bool: True if dataset meets model requirements, False otherwise
-        """
-        # Check if all required batch keys are present
-        missing_keys = [key for key in cls.required_obs_keys
-                       if key not in dataset.adata.obs.columns]
-
-        if missing_keys:
-            return False
-
-        return True
+class ExampleModel(BaseYourModel):
 
     def run_model(self):
         """
