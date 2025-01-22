@@ -76,7 +76,7 @@ Refer to the template docker directory as a starting point (`docker/template/`)!
 REQUIRED MODEL IMPLEMENTATION FILE
 
 This file MUST:
-1. Define a model class that inherits from your base model class that you implemented in the benchmarking library (e.g. BaseSCVI)
+1. Define a model class that inherits from your base model class that you implemented in the benchmarking library (e.g. ScviValidator)
 2. Implement the run_model() method
 3. Create an instance and call run() if used as main
 
