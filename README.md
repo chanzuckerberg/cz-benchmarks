@@ -13,11 +13,13 @@ pip install -e .
 ## Requirements
 
 Core dependencies:
-- docker>=6.1.0 
+
+- docker>=6.1.0
 - pyyaml>=6.0
 - boto3>=1.28.0
 
 Data handling:
+
 - anndata>=0.9.0
 - h5py>=3.8.0
 - dill>=0.3.6
@@ -25,9 +27,9 @@ Data handling:
 - scanpy
 
 Clustering:
+
 - igraph>=0.11.8
 - leidenalg>=0.10.2
-
 
 ## Architecture Overview
 
@@ -62,6 +64,7 @@ docker/your_model/
 ├── config.yaml
 └── requirements.txt
 ```
+
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
 2. Implement the model class in `model.py` (see template):
@@ -71,7 +74,7 @@ Refer to the template docker directory as a starting point (`docker/template/`)!
 REQUIRED MODEL IMPLEMENTATION FILE
 
 This file MUST:
-1. Define a model class that inherits from SingleCellModel (for single-cell data) 
+1. Define a model class that inherits from BaseSingleCell (for single-cell data)
    or BaseModel (for other modalities)
 2. Implement required class variables and methods
 3. Implement the run_model() method
@@ -80,14 +83,14 @@ This file MUST:
 Example implementation for a single-cell model:
 """
 
-from czibench.models.sc import SingleCellModel
+from czibench.models.sc import BaseSingleCell
 from czibench.datasets.types import Organism
 from czibench.datasets.sc import SingleCellDataset
 
-class ExampleModel(SingleCellModel):
+class ExampleModel(BaseSingleCell):
     # Required: Specify which organisms this model supports
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
-    
+
     # Required: Specify which metadata columns are needed for batching
     required_obs_keys = ['dataset_id', 'donor_id']  # Add required columns
 
@@ -101,14 +104,14 @@ class ExampleModel(SingleCellModel):
             bool: True if dataset meets model requirements, False otherwise
         """
         # Check if all required batch keys are present
-        missing_keys = [key for key in cls.required_obs_keys 
+        missing_keys = [key for key in cls.required_obs_keys
                        if key not in dataset.adata.obs.columns]
-        
+
         if missing_keys:
             return False
-            
+
         return True
-    
+
     def run_model(self):
         """
         Required: Implement your model's inference logic here.
@@ -134,14 +137,13 @@ def adjusted_rand_index(original_labels, predicted_labels):
         original_labels,
         predicted_labels
     )
-    
+
 def normalized_mutual_info(original_labels, predicted_labels):
     return adjusted_mutual_info_score(
         original_labels,
         predicted_labels
     )
 ```
-
 
 ### Adding New Tasks
 
@@ -151,20 +153,20 @@ def normalized_mutual_info(original_labels, predicted_labels):
 from czibench.tasks.base import BaseTask
 
 class ClusteringTask(BaseTask):
-        
+
     def __init__(self, label_key: str):
         self.label_key = label_key
-        
+
     def validate(self, data: SingleCellDataset):
         return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
-        
+
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         adata = data.adata
         adata.obsm["emb"] = data.output_embedding
         self.input_labels = data.sample_metadata[self.label_key]
         self.predicted_labels = your_label_prediction_function(...)
         return data
-    
+
     def _compute_metrics(self) -> Dict[str, float]:
         return {
             "adjusted_rand_index": adjusted_rand_index(self.input_labels, self.predicted_labels),
