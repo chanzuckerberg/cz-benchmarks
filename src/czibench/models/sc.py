@@ -38,7 +38,7 @@ class BaseSingleCell(BaseModel, ABC):
         return cls._validate_model_requirements(dataset)
 
 
-class BaseSCVI(BaseSingleCell, ABC):
+class ScviValidator(BaseSingleCell, ABC):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
 
