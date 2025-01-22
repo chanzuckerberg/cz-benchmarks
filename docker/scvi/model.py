@@ -8,12 +8,12 @@ from omegaconf import OmegaConf
 
 from utils import filter_adata_by_hvg
 
-from czibench.models.sc import SCVI
+from czibench.models.sc import BaseSCVI
 
 logger = logging.getLogger(__name__)
 
 
-class SCVIModel(SCVI):
+class SCVI(BaseSCVI):
 
     def run_model(self):
         config = OmegaConf.load("config.yaml")
@@ -56,4 +56,4 @@ class SCVIModel(SCVI):
 
 
 if __name__ == "__main__":
-    SCVIModel().run()
+    SCVI().run()
