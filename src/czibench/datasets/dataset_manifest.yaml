@@ -8,3 +8,8 @@ datasets:
     path: s3://example-bucket/datasets/human_pbmc_10k.h5ad
     dataset_type: SingleCellDataset
     organism: human
+
+  tsv2_bladder:
+    path: /mnt/efs/fs1/datasets/tabula_sapiens_2/tsp1_33/Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad
+    dataset_type: SingleCellDataset
+    organism: human

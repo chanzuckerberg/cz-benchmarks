@@ -1,0 +1,34 @@
+paths:
+  mnt_path: /mnt/efs/fs1
+  model_dir: ${paths.mnt_path}/models/uce
+  data_dir: ${paths.mnt_path}/datasets/tabula_sapiens_2/tsp1_33/
+  # Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad
+  embedding_dir: .
+  # embedding_dir: ${paths.mnt_path}/embeddings/uce
+  
+model_config:
+  model_name: 33l_8ep_1024t_1280
+  adata_path: null # set in the inference script
+  dir: .
+  species: "human"
+  filter: true
+  skip: true
+  model_loc: ${paths.model_dir}/33l_8ep_1024t_1280.torch
+  batch_size: 40
+  pad_length: 1536
+  pad_token_idx: 0
+  chrom_token_left_idx: 1
+  chrom_token_right_idx: 2
+  cls_token_idx: 3
+  CHROM_TOKEN_OFFSET: 143574
+  sample_size: 1024
+  CXG: true
+  nlayers: 33
+  output_dim: 1280
+  d_hid: 5120
+  token_dim: 5120
+  multi_gpu: false
+  spec_chrom_csv_path: ${paths.model_dir}/species_chrom.csv
+  token_file: ${paths.model_dir}/all_tokens.torch
+  protein_embeddings_dir: ${paths.model_dir}/protein_embeddings/
+  offset_pkl_path: ${paths.model_dir}/species_offsets.pkl

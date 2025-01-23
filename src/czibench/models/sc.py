@@ -54,3 +54,11 @@ class ScviValidator(BaseSingleCell, ABC):
             return False
 
         return True
+
+class UCEValidator(BaseSingleCell, ABC):
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = []
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
+        return True
