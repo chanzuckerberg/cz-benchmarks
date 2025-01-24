@@ -10,14 +10,9 @@ from czibench.models.sc import ScGPTValidator
 class ScGPT(ScGPTValidator):
 
     def run_model(self):
-        """
-        Required: Implement your model's inference logic here.
-        Access input data via self.data.adata
-        Set output embedding via self.data.output_embedding
-        """
         config = OmegaConf.load("config.yaml")
         adata = self.data.adata
-        adata.var["gene_name"] = adata.var["feature_name"] # gene_symbol is for the bladder dataset
+        adata.var["gene_name"] = adata.var["gene_symbol"]  # feature_name is for the example.h5ad dataset
         model_name = config.model.model_name
         ref_embed_adata = scg.tasks.embed_data(
             adata,
