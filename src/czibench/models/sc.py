@@ -56,8 +56,18 @@ class ScviValidator(BaseSingleCell, ABC):
 
 class ScGPTValidator(BaseSingleCell, ABC):
     available_organisms = [Organism.HUMAN]
-    required_obs_keys = ["gene_symbol"]
+    required_obs_keys = []
+    required_var_keys = ["gene_symbol"]
 
     @classmethod
     def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
+        # Check if all required var keys are present in var
+        missing_keys = [
+            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
+        ]
+
+        if missing_keys:
+            logger.error(f"Missing required var keys: {missing_keys}")
+            return False
+
         return True
