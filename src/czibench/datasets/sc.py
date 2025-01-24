@@ -1,4 +1,5 @@
 import anndata as ad
+import pandas as pd
 from typing import Optional, Any
 from .base import BaseDataset
 from .types import Organism
@@ -27,5 +28,11 @@ class SingleCellDataset(BaseDataset):
         if not isinstance(self.organism, Organism):
             raise ValueError("Organism is not a valid Organism enum")
         
-        if not all(self.adata.var_names.str.startswith(self.organism.prefix)):
-            raise ValueError(f"Dataset does not contain valid gene names. Gene names must start with {self.organism.prefix}")
+        var = all(self.adata.var_names.str.startswith(self.organism.prefix))
+        
+        if not var:
+            if 'ensembl_id' in self.adata.var.columns:
+                self.adata.var_names = pd.Index(self.adata.var['ensembl_id'].values)
+                # TODO check if var names satisfies the prefix criteria
+            else:
+                raise ValueError(f"Dataset does not contain valid gene names. Gene names must start with {self.organism.prefix}")
