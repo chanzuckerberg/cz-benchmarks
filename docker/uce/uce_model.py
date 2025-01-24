@@ -8,6 +8,7 @@ from czibench.models.sc import UCEValidator
 import argparse
 from omegaconf import OmegaConf
 import sys
+import tempfile
 import os
 logger = logging.getLogger(__name__)
 
@@ -20,12 +21,16 @@ class UCE(UCEValidator):
         config = OmegaConf.load("config.yaml")
 
         adata = self.data.adata
-        adata.var_names = adata.var["feature_name"].values
-        model_loc = pathlib.Path(config.model_config.model_loc)
+        tmp_dir = pathlib.Path(tempfile.gettempdir()) / "temp_adata"
+        os.makedirs(tmp_dir, exist_ok=True)
+        temp_adata_path = tmp_dir / f"temp_adata.h5ad"
 
-        config.model_config.adata_path = adata.path
-        config.model_config.dir = str(config.paths.data_dir) + f"/{eval_set_name}/"
-        os.makedirs(config.model_config.dir, exist_ok=True)
+        # Save adata to tempdir
+        adata.write_h5ad(temp_adata_path)
+
+        # set features to be gene symbols which is required by required by evaluate.AnndataProcessor
+        adata.var_names = adata.var["feature_name"].values
+        config.model_config.adata_path = str(temp_adata_path)
 
         accelerator = Accelerator(project_dir=".")  # where the embeddings are saved
         config_dict = OmegaConf.to_container(config.model_config, resolve=True)
@@ -34,17 +39,7 @@ class UCE(UCEValidator):
         processor.preprocess_anndata()
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
-        output_adata = ad.AnnData(
-            X=None,
-            obsm={"emb": embedding_adata.X.toarray()},
-            obs=adata.obs,
-            var=adata.var,
-        )
-        logger.info(f"Output embedding shape: {output_adata.obsm['emb'].shape}")
-
-        self.data.output_embedding = output_adata.obsm["emb"]
-
-
+        self.data.output_embedding = embedding_adata.X.toarray()
 
 if __name__ == "__main__":
     UCE().run()

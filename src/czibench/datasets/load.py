@@ -76,10 +76,7 @@ def load_dataset(
     # Download to temp location
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = os.path.join(temp_dir, f"{dataset_name_or_path}.h5ad")
-        if dataset_info["source"] == "s3":
-            download_dataset(dataset_info["path"], temp_path)
-        else:
-            temp_path = dataset_info["path"]
+        download_dataset(dataset_info["path"], temp_path)
         
         return container_class(
             path=temp_path,
