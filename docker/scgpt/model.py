@@ -17,7 +17,7 @@ class ScGPT(ScGPTValidator):
         """
         config = OmegaConf.load("config.yaml")
         adata = self.data.adata
-        adata.var["gene_name"] = adata.var["feature_name"]
+        adata.var["gene_name"] = adata.var["feature_name"] # gene_symbol is for the bladder dataset
         model_name = config.model.model_name
         ref_embed_adata = scg.tasks.embed_data(
             adata,
@@ -26,14 +26,7 @@ class ScGPT(ScGPTValidator):
             batch_size=32,
         )
 
-        output_adata = ad.AnnData(
-            X=None,
-            obsm={"emb": ref_embed_adata.obsm["X_scGPT"]},
-            obs=adata.obs,
-            var=adata.var,
-        )
-
-        self.data.output_embedding = output_adata
+        self.data.output_embedding = ref_embed_adata.obsm["X_scGPT"]
 
 if __name__ == "__main__":
     ScGPT().run()
