@@ -4,7 +4,7 @@ from datetime import datetime
 import anndata as ad
 import scgpt as scg
 from omegaconf import OmegaConf
-from czibench.models.sc import BaseYourModel
+from czibench.models.sc import ScGPTValidator
 
 
 class ScGPT(ScGPTValidator):
