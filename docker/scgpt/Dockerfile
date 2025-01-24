@@ -22,4 +22,4 @@ RUN pip install -e /app/package
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
 
-ENTRYPOINT ["python3", "/app/scgpt_model.py"]
+ENTRYPOINT ["python3", "/app/model.py"]
