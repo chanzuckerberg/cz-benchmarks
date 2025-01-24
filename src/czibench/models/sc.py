@@ -56,7 +56,7 @@ class ScviValidator(BaseSingleCell, ABC):
 
 class ScGPTValidator(BaseSingleCell, ABC):
     available_organisms = [Organism.HUMAN]
-    required_obs_keys = []
+    required_obs_keys = ["gene_symbol"]
 
     @classmethod
     def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
