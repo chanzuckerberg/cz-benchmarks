@@ -12,6 +12,7 @@ class BaseSingleCell(BaseModel, ABC):
     dataset_type = SingleCellDataset
     available_organisms: ClassVar[List[Organism]]
     required_obs_keys: ClassVar[List[str]]
+    required_var_keys: ClassVar[List[str]]
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -23,6 +24,11 @@ class BaseSingleCell(BaseModel, ABC):
         if not hasattr(cls, "required_obs_keys"):
             raise TypeError(
                 f"Can't instantiate {cls.__name__} without required_obs_keys class variable"
+            )
+        
+        if not hasattr(cls, "required_var_keys"):
+            raise TypeError(
+                f"Can't instantiate {cls.__name__} without required_var_keys class variable"
             )
 
     @classmethod
@@ -40,6 +46,7 @@ class BaseSingleCell(BaseModel, ABC):
 class ScviValidator(BaseSingleCell, ABC):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
+    required_var_keys = []
 
     @classmethod
     def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
