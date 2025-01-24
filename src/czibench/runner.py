@@ -3,7 +3,7 @@ import tempfile
 import docker
 import pathlib
 from typing import Any
-from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER
+from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, ARTIFACTS_PATH_DOCKER
 from .datasets.base import BaseDataset
 
 class ContainerRunner:
@@ -13,11 +13,13 @@ class ContainerRunner:
         self,
         image: str,
         gpu: bool = False,
+        artifact_mount_path: str = "/mnt/efs/fs1",
         **kwargs: Any
     ):
         self.image = image
         self.gpu = gpu
         self.cli_args = kwargs
+        self.artifact_mount_path = artifact_mount_path
         self.client = docker.from_env()
 
     def run(self, data: BaseDataset) -> BaseDataset:
@@ -41,7 +43,8 @@ class ContainerRunner:
             
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
-                output_dir: {"bind": output_dir_docker, "mode": "rw"}
+                output_dir: {"bind": output_dir_docker, "mode": "rw"},
+                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"}
             }
             
             command = []
