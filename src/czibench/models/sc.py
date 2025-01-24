@@ -37,7 +37,6 @@ class BaseSingleCell(BaseModel, ABC):
 
         return cls._validate_model_requirements(dataset)
 
-
 class ScviValidator(BaseSingleCell, ABC):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
@@ -53,4 +52,12 @@ class ScviValidator(BaseSingleCell, ABC):
             logger.error(f"Missing required batch keys: {missing_keys}")
             return False
 
+        return True
+
+class ScGPTValidator(BaseSingleCell, ABC):
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset) -> bool:
         return True
