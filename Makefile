@@ -1,7 +1,7 @@
 .PHONY: all scvi uce clean
 
 # Default target
-all: scvi uce
+all: scvi uce scgpt
 
 # Build the scvi image
 scvi: 
@@ -10,10 +10,14 @@ scvi:
 uce:
 	docker build -t czibench-uce:latest -f docker/uce/Dockerfile .
 
+scgpt:
+	docker build -t czibench-scgpt:latest -f docker/scgpt/Dockerfile .
+
 # Clean up images
 clean:
 	docker rmi czibench-scvi:latest || true
 	docker rmi czibench-uce:latest || true
-
+	docker rmi czibench-scgpt:latest || true
+  
 # Helper target to rebuild everything from scratch
 rebuild: clean all
