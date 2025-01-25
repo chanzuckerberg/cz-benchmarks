@@ -3,7 +3,7 @@ from enum import Enum
 class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
     MOUSE = ("mus_musculus", "ENSMUSG")
-
+    # Todo: add other organisms
     def __init__(self, name: str, prefix: str):
         self._value_ = (name, prefix)  # This is handled automatically by Enum
 
