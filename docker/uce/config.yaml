@@ -1,10 +1,7 @@
 paths:
-  mnt_path: /mnt/efs/fs1
+  mnt_path: /app/artifacts
   model_dir: ${paths.mnt_path}/models/uce
-  data_dir: ${paths.mnt_path}/datasets/tabula_sapiens_2/tsp1_33/
-  # Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad
-  embedding_dir: .
-  # embedding_dir: ${paths.mnt_path}/embeddings/uce
+  embedding_dir: ${paths.mnt_path}/models/uce/protein_embeddings
   
 model_config:
   model_name: 33l_8ep_1024t_1280
@@ -30,5 +27,5 @@ model_config:
   multi_gpu: false
   spec_chrom_csv_path: ${paths.model_dir}/species_chrom.csv
   token_file: ${paths.model_dir}/all_tokens.torch
-  protein_embeddings_dir: ${paths.model_dir}/protein_embeddings/
+  protein_embeddings_dir: ${paths.embedding_dir}
   offset_pkl_path: ${paths.model_dir}/species_offsets.pkl

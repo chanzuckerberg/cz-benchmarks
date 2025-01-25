@@ -45,5 +45,6 @@ RUN pip install -e /app/package
 # Set environment variables for data paths
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
+ENV ARTIFACTS_PATH=/app/artifacts
 
-ENTRYPOINT ["python3", "/app/uce_model.py"]
+ENTRYPOINT ["python3", "-u", "/app/uce_model.py"]
