@@ -1,5 +1,5 @@
 paths:
-  mnt_path: /mnt/efs/fs1
+  mnt_path: /app/artifacts
   model_dir: ${paths.mnt_path}/models/scgpt
   # Todo: Migrate from PVC to S3 and EFS
   data_dir: ${paths.mnt_path}/datasets/tabula_sapiens_2/tsp1_33/
