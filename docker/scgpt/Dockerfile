@@ -21,6 +21,6 @@ RUN pip install -e /app/package
 # Set environment variables for data paths
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
-ENV ARTIFACTS_PATH=/mnt/efs/fs1
+ENV ARTIFACTS_PATH=/mnt/efs
 
 ENTRYPOINT ["python3", "/app/model.py"]
