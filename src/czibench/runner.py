@@ -40,7 +40,7 @@ class ContainerRunner:
             input_path = os.path.join(input_dir, input_filename)
             output_path = os.path.join(output_dir, output_filename)
             
-            orig_path = data.path
+            orig_path = os.path.expanduser(data.path)
             data.path = os.path.join(input_dir_docker, pathlib.Path(orig_path).name)
             # FIXME: Can we mount the parent directory instead of the file?
             # (Alec): I ran into permission issues when trying to mount the parent directory hence this workaround
