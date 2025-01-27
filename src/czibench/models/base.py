@@ -31,10 +31,13 @@ class BaseModel(ABC):
         pass
     
     def run(self):
-        self.data = self.dataset_type.load(INPUT_DATA_PATH_DOCKER)
-        
+        self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
+        self.data.load_data()
+        self.data.validate()
+                
         self.validate_dataset(self.data)
         
         self.run_model()
-        self.data.save(OUTPUT_DATA_PATH_DOCKER)
+        self.data.unload_data()
+        self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
         

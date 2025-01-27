@@ -2,6 +2,7 @@ import os
 import tempfile
 import docker
 import pathlib
+import shutil
 from typing import Any
 from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, ARTIFACTS_PATH_DOCKER
 from .datasets.base import BaseDataset
@@ -39,12 +40,17 @@ class ContainerRunner:
             input_path = os.path.join(input_dir, input_filename)
             output_path = os.path.join(output_dir, output_filename)
             
-            data.save(input_path)
-            
+            orig_path = data.path
+            data.path = os.path.join(input_dir_docker, pathlib.Path(orig_path).name)
+            # FIXME: Can we mount the parent directory instead of the file?
+            # (Alec): I ran into permission issues when trying to mount the parent directory hence this workaround
+            shutil.copy2(orig_path, f"{input_dir}/{pathlib.Path(orig_path).name}")            
+            data.serialize(input_path)
+
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
                 output_dir: {"bind": output_dir_docker, "mode": "rw"},
-                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"}
+                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"},
             }
             
             command = []
@@ -58,7 +64,10 @@ class ContainerRunner:
                 command=command,
                 volumes=volumes,
                 runtime="nvidia" if self.gpu else None,
-                remove=True
+                remove=True,
             )
             
-            return BaseDataset.load(output_path)
+            data = BaseDataset.deserialize(output_path)
+            data.path = orig_path
+            data.load_data()
+            return data
