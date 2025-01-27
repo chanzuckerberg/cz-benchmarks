@@ -1,7 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Type, ClassVar
+import logging
 from ..datasets.base import BaseDataset
 from ..constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER
+
+# Configure logging to output to stdout
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    force=True  # This ensures the configuration is applied
+)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class BaseModel(ABC):
     dataset_type: ClassVar[Type[BaseDataset]]  # Type annotation for class variable
@@ -32,12 +43,20 @@ class BaseModel(ABC):
     
     def run(self):        
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
-        self.data.load_data()
-        self.data.validate()
-                
-        self.validate_dataset(self.data)
         
+        logger.info(f"Loading data...")
+        self.data.load_data()
+        logger.info(f"Data loaded successfully")
+        
+        logger.info(f"Validating data...")
+        self.data.validate()        
+        self.validate_dataset(self.data)
+        logger.info(f"Data validated successfully")
+
+        logger.info(f"Running model...")
         self.run_model()
+        logger.info(f"Model ran successfully")
+        
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
         
