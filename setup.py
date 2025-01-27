@@ -31,6 +31,8 @@ setup(
     include_package_data=True,
     package_data={
         "containers": ["model_manifest.yaml"],
-        "datasets": ["dataset_manifest.yaml"],
+        "datasets": [
+            "conf/*.yaml"
+        ],
     }
 )

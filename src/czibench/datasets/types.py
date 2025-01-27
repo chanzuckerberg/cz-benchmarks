@@ -1,4 +1,5 @@
 from enum import Enum
+from omegaconf import OmegaConf
 
 class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
@@ -20,3 +21,9 @@ class Organism(Enum):
     @property
     def prefix(self):
         return self.value[1]
+
+# Register Organism resolver
+OmegaConf.register_new_resolver(
+    "organism",
+    lambda name: getattr(Organism, name)
+)

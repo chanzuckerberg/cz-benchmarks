@@ -2,8 +2,9 @@ import os
 import tempfile
 import docker
 import pathlib
+import shutil
 from typing import Any
-from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, ARTIFACTS_PATH_DOCKER
+from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, ARTIFACTS_PATH_DOCKER, RAW_INPUT_DIR_PATH_DOCKER
 from .datasets.base import BaseDataset
 
 class ContainerRunner:
@@ -39,26 +40,56 @@ class ContainerRunner:
             input_path = os.path.join(input_dir, input_filename)
             output_path = os.path.join(output_dir, output_filename)
             
-            data.save(input_path)
-            
+            orig_path = os.path.expanduser(data.path)
+            data.path = os.path.join(RAW_INPUT_DIR_PATH_DOCKER, pathlib.Path(orig_path).name)
+
+
+            orig_parent_dir = str(pathlib.Path(orig_path).parent)
+
+            data.unload_data()
+            data.serialize(input_path)
+
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
                 output_dir: {"bind": output_dir_docker, "mode": "rw"},
-                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"}
+                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"},
+                orig_parent_dir: {"bind": RAW_INPUT_DIR_PATH_DOCKER , "mode": "ro"},
             }
             
             command = []
             if self.cli_args:
                 for key, value in self.cli_args.items():
                     command.extend([f"--{key}", str(value)])
-            
-            # Run container
-            self.client.containers.run(
+                
+            container = self.client.containers.create(
                 image=self.image,
                 command=command,
                 volumes=volumes,
                 runtime="nvidia" if self.gpu else None,
-                remove=True
             )
+
+            try:
+                container.start()
+                # Stream logs in real-time
+                for log in container.logs(stream=True, follow=True):
+                    print(log.decode().strip())
+                
+                # Wait for container to finish
+                result = container.wait()
+                if result['StatusCode'] != 0:
+                    raise RuntimeError(f"Container exited with status code {result['StatusCode']}")
+                
+                data = BaseDataset.deserialize(output_path)
+                data.path = orig_path
+                data.load_data()
             
-            return BaseDataset.load(output_path)
+            except Exception as e:
+                data.path = orig_path
+                raise e
+            
+            finally:
+                container.remove()
+                
+            return data
+            
+

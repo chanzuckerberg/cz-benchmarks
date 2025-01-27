@@ -155,7 +155,7 @@ Using the `ContainerRunner`:
 
 ```python
 from czibench.runner import ContainerRunner
-from czibench.datasets.load import load_dataset
+from czibench.datasets.utils import load_dataset
 
 # Load dataset
 dataset = load_dataset("mouse_brain_atlas")

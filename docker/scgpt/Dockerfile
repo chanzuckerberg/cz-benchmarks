@@ -23,4 +23,4 @@ ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
 ENV ARTIFACTS_PATH=/mnt/efs
 
-ENTRYPOINT ["python3", "/app/model.py"]
+ENTRYPOINT ["python3", "-u", "/app/model.py"]
