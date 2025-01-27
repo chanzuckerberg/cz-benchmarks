@@ -1,3 +1,5 @@
 INPUT_DATA_PATH_DOCKER = "/app/input/data.dill"
+RAW_INPUT_DIR_PATH_DOCKER = "/app/raw"
 OUTPUT_DATA_PATH_DOCKER = "/app/output/data.dill"
 ARTIFACTS_PATH_DOCKER = "/app/artifacts"
+DATASETS_CACHE_PATH = "~/.cz-benchmarks/datasets"

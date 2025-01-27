@@ -9,21 +9,22 @@ class SingleCellDataset(BaseDataset):
             self,
             path: str,
             organism: Organism,
-            **kwargs: Any
         ):
+        super().__init__(path, organism=organism)
         
-        self.adata = ad.read_h5ad(path)
+    def load_data(self) -> None:
+        self.adata = ad.read_h5ad(self.path)
         self.sample_metadata = self.adata.obs
-        self.organism = organism
         
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    def unload_data(self) -> None:
+        self.adata = None
         
-        super().__init__(path)
-
     def _validate(self) -> None:
         if not hasattr(self, 'adata'):
             raise ValueError("Dataset does not contain anndata object")
+        
+        if not hasattr(self, 'organism'):
+            raise ValueError("Organism is not specified")
         
         if not isinstance(self.organism, Organism):
             raise ValueError("Organism is not a valid Organism enum")
@@ -32,7 +33,8 @@ class SingleCellDataset(BaseDataset):
         
         if not var:
             if 'ensembl_id' in self.adata.var.columns:
-                self.adata.var_names = pd.Index(self.adata.var['ensembl_id'].values)
-                # TODO check if var names satisfies the prefix criteria
-            else:
-                raise ValueError(f"Dataset does not contain valid gene names. Gene names must start with {self.organism.prefix}")
+                self.adata.var_names = pd.Index(list(self.adata.var['ensembl_id']))
+                var = all(self.adata.var_names.str.startswith(self.organism.prefix))
+        
+        if not var:
+            raise ValueError(f"Dataset does not contain valid gene names. Gene names must start with {self.organism.prefix}")
