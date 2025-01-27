@@ -33,7 +33,7 @@ class SingleCellDataset(BaseDataset):
         
         if not var:
             if 'ensembl_id' in self.adata.var.columns:
-                self.adata.var_names = pd.Index(self.adata.var['ensembl_id'].values)
+                self.adata.var_names = pd.Index(list(self.adata.var['ensembl_id']))
                 var = all(self.adata.var_names.str.startswith(self.organism.prefix))
         
         if not var:
