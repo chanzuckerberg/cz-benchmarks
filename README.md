@@ -155,10 +155,10 @@ Using the `ContainerRunner`:
 
 ```python
 from czibench.runner import ContainerRunner
-from czibench.datasets.utils import download_dataset
+from czibench.datasets.utils import load_dataset
 
 # Load dataset
-dataset = download_dataset("mouse_brain_atlas")
+dataset = load_dataset("mouse_brain_atlas")
 
 # Run model
 runner = ContainerRunner(
