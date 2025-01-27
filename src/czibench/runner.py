@@ -57,17 +57,24 @@ class ContainerRunner:
             if self.cli_args:
                 for key, value in self.cli_args.items():
                     command.extend([f"--{key}", str(value)])
+                
+            try:
+                # Run container
+                self.client.containers.run(
+                    image=self.image,
+                    command=command,
+                    volumes=volumes,
+                    runtime="nvidia" if self.gpu else None,
+                    remove=True,
+                )
+                
+                data = BaseDataset.deserialize(output_path)
+                data.path = orig_path
+                data.load_data()
+                return data
             
-            # Run container
-            self.client.containers.run(
-                image=self.image,
-                command=command,
-                volumes=volumes,
-                runtime="nvidia" if self.gpu else None,
-                remove=True,
-            )
+            except Exception as e:
+                data.path = orig_path
+                raise e
             
-            data = BaseDataset.deserialize(output_path)
-            data.path = orig_path
-            data.load_data()
-            return data
+
