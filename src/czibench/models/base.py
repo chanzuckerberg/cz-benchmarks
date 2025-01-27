@@ -26,22 +26,11 @@ class BaseModel(ABC):
         
 
     @abstractmethod
-    def _download_model(self) -> None:
-        pass
-    
-    def download_model(self) -> None:
-        # TODO: check if model is already downloaded in the shared model directory
-        # if not, run below code
-        self._download_model()
-    
-    @abstractmethod
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
         pass
     
-    def run(self):
-        self.download_model()
-        
+    def run(self):        
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
         self.data.load_data()
         self.data.validate()
