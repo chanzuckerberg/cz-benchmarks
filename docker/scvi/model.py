@@ -13,9 +13,24 @@ logger = logging.getLogger(__name__)
 
 
 class SCVI(ScviValidator):
-    def run_model(self):
-        config = OmegaConf.load("config.yaml")
+    def get_model_weights_subdir(self) -> str:
+        return self.data.organism.name
 
+    def _download_model_weights(self):
+        s3 = boto3.client("s3")
+        model_dir = pathlib.Path(self.model_weights_dir)
+        model_dir.mkdir(exist_ok=True)  # Create directory for model
+        model_filename = model_dir / "model.pt"
+
+        # Get S3 path based on organism
+        config = OmegaConf.load("config.yaml")
+        s3_path = config[self.data.organism.name]["model_weights"]
+        bucket = s3_path.split("/")[2]
+        key = "/".join(s3_path.split("/")[3:])
+
+        s3.download_file(bucket, key, str(model_filename))
+
+    def run_model(self):
         adata = self.data.adata
         batch_keys = self.required_obs_keys
         adata = filter_adata_by_hvg(
@@ -25,28 +40,16 @@ class SCVI(ScviValidator):
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
 
-        s3 = boto3.client("s3")
-        model_dir = pathlib.Path("model")
-        model_dir.mkdir(exist_ok=True)  # Create directory for model
-        model_filename = model_dir / "model.pt"
-
-        # Get S3 path based on organism
-        s3_path = config[self.data.organism.name]["model_weights"]
-        bucket = s3_path.split("/")[2]
-        key = "/".join(s3_path.split("/")[3:])
-
-        # Download the model file
-        s3.download_file(bucket, key, str(model_filename))
-
         # Use the full path when loading the model
         scvi.model.SCVI.prepare_query_anndata(
-            adata, str(model_dir), return_reference_var_names=True
+            adata, str(self.model_weights_dir), return_reference_var_names=True
         )
 
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
-            str(model_dir),
+            str(self.model_weights_dir),
         )
+
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 

@@ -1,15 +1,14 @@
 import os
-import pathlib
 import tempfile
-from typing import Any
-
 import docker
-
+import pathlib
+from typing import Any
 from .constants import (
-    ARTIFACTS_PATH_DOCKER,
     INPUT_DATA_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
+    MODEL_WEIGHTS_PATH_DOCKER,
     RAW_INPUT_DIR_PATH_DOCKER,
+    MODEL_WEIGHTS_CACHE_PATH,
 )
 from .datasets.base import BaseDataset
 
@@ -17,17 +16,10 @@ from .datasets.base import BaseDataset
 class ContainerRunner:
     """Handles Docker container execution logic"""
 
-    def __init__(
-        self,
-        image: str,
-        gpu: bool = False,
-        artifact_mount_path: str = "/mnt/efs",
-        **kwargs: Any,
-    ):
+    def __init__(self, image: str, gpu: bool = False, **kwargs: Any):
         self.image = image
         self.gpu = gpu
         self.cli_args = kwargs
-        self.artifact_mount_path = artifact_mount_path
         self.client = docker.from_env()
 
     def run(self, data: BaseDataset) -> BaseDataset:
@@ -56,17 +48,20 @@ class ContainerRunner:
             data.unload_data()
             data.serialize(input_path)
 
+            image_name = self.image.split("/")[-1].split(":")[0]
+            model_weights_cache_path = os.path.expanduser(
+                os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name)
+            )
+            os.makedirs(model_weights_cache_path, exist_ok=True)
+
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
                 output_dir: {"bind": output_dir_docker, "mode": "rw"},
-                self.artifact_mount_path: {
-                    "bind": ARTIFACTS_PATH_DOCKER,
+                model_weights_cache_path: {
+                    "bind": MODEL_WEIGHTS_PATH_DOCKER,
                     "mode": "rw",
                 },
-                orig_parent_dir: {
-                    "bind": RAW_INPUT_DIR_PATH_DOCKER,
-                    "mode": "ro",
-                },
+                orig_parent_dir: {"bind": RAW_INPUT_DIR_PATH_DOCKER, "mode": "ro"},
             }
 
             command = []
@@ -91,7 +86,7 @@ class ContainerRunner:
                 result = container.wait()
                 if result["StatusCode"] != 0:
                     raise RuntimeError(
-                        "Container exited with status code" f" {result['StatusCode']}"
+                        f"Container exited with status code {result['StatusCode']}"
                     )
 
                 data = BaseDataset.deserialize(output_path)
