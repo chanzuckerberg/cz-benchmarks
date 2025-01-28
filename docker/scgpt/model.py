@@ -12,7 +12,7 @@ class ScGPT(ScGPTValidator):
     def run_model(self):
         config = OmegaConf.load("config.yaml")
         adata = self.data.adata
-        adata.var["gene_name"] = adata.var["gene_symbol"] # feature_name is for the example.h5ad dataset
+        adata.var["gene_name"] = adata.var["gene_symbol"]
         model_name = config.model.model_name
         ref_embed_adata = scg.tasks.embed_data(
             adata,
