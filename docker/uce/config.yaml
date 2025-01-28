@@ -1,8 +1,5 @@
-paths:
-  mnt_path: /app/artifacts
-  model_dir: ${paths.mnt_path}/models/uce
-  embedding_dir: ${paths.mnt_path}/models/uce/protein_embeddings
-  
+model_uri: s3://generate-cross-species/models/uce
+
 model_config:
   model_name: 33l_8ep_1024t_1280
   adata_path: null # set in the inference script
@@ -10,7 +7,7 @@ model_config:
   species: "human"
   filter: true
   skip: true
-  model_loc: ${paths.model_dir}/33l_8ep_1024t_1280.torch
+  model_filename: 33l_8ep_1024t_1280.torch
   batch_size: 40
   pad_length: 1536
   pad_token_idx: 0
@@ -25,7 +22,8 @@ model_config:
   d_hid: 5120
   token_dim: 5120
   multi_gpu: false
-  spec_chrom_csv_path: ${paths.model_dir}/species_chrom.csv
-  token_file: ${paths.model_dir}/all_tokens.torch
-  protein_embeddings_dir: ${paths.embedding_dir}
-  offset_pkl_path: ${paths.model_dir}/species_offsets.pkl
+  spec_chrom_csv_path: null #${paths.model_dir}/species_chrom.csv
+  token_file: null #${paths.model_dir}/all_tokens.torch
+  protein_embeddings_dir: null #${paths.embedding_dir}
+  offset_pkl_path: null #${paths.model_dir}/species_offsets.pkl
+  model_loc: null #${paths.model_dir}/${model_filename}
