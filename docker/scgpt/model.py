@@ -4,10 +4,28 @@ import os
 import scgpt as scg
 import boto3
 from omegaconf import OmegaConf
-from czibench.models.sc import ScGPTValidator
+
+from czibench.models.sc import BaseSingleCell
+from czibench.datasets.sc import SingleCellDataset
+from czibench.datasets.types import Organism
 from czibench.utils import sync_s3_to_local
                     
-class ScGPT(ScGPTValidator):
+class ScGPT(BaseSingleCell):
+
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["gene_symbol"]
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset):
+        # Check if all required var keys are present in var
+        missing_keys = [
+            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
+        ]
+
+        if missing_keys:
+            raise ValueError(f"Missing required var keys: {missing_keys}")
+
 
     def get_model_weights_subdir(self) -> str:
         config = OmegaConf.load("config.yaml")
