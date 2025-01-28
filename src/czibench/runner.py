@@ -4,7 +4,7 @@ import docker
 import pathlib
 import shutil
 from typing import Any
-from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, ARTIFACTS_PATH_DOCKER, RAW_INPUT_DIR_PATH_DOCKER
+from .constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER, RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_CACHE_PATH
 from .datasets.base import BaseDataset
 
 class ContainerRunner:
@@ -14,13 +14,11 @@ class ContainerRunner:
         self,
         image: str,
         gpu: bool = False,
-        artifact_mount_path: str = "/mnt/efs",
         **kwargs: Any
     ):
         self.image = image
         self.gpu = gpu
         self.cli_args = kwargs
-        self.artifact_mount_path = artifact_mount_path
         self.client = docker.from_env()
 
     def run(self, data: BaseDataset) -> BaseDataset:
@@ -48,12 +46,16 @@ class ContainerRunner:
 
             data.unload_data()
             data.serialize(input_path)
-
+            
+            image_name = self.image.split("/")[-1].split(":")[0]
+            model_weights_cache_path = os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))
+            os.makedirs(model_weights_cache_path, exist_ok=True)
+            
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
                 output_dir: {"bind": output_dir_docker, "mode": "rw"},
-                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"},
-                orig_parent_dir: {"bind": RAW_INPUT_DIR_PATH_DOCKER , "mode": "ro"},
+                model_weights_cache_path: {"bind": MODEL_WEIGHTS_PATH_DOCKER, "mode": "rw"},
+                orig_parent_dir: {"bind": RAW_INPUT_DIR_PATH_DOCKER , "mode": "ro"},   
             }
             
             command = []

@@ -1,8 +1,6 @@
-paths:
-  mnt_path: /app/artifacts
-  model_dir: ${paths.mnt_path}/models/scgpt
-  # Todo: Migrate from PVC to S3 and EFS
-  data_dir: ${paths.mnt_path}/datasets/tabula_sapiens_2/tsp1_33/
+models:
+  human:
+    model_name: human
+    model_uri: s3://generate-cross-species/models/scgpt/human
 
-model:
-  model_name: human
+default_model: human

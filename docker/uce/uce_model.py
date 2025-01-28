@@ -8,18 +8,39 @@ import argparse
 from omegaconf import OmegaConf
 import tempfile
 import os
+from czibench.utils import sync_s3_to_local
+
 logger = logging.getLogger(__name__)
 
 
 class UCE(UCEValidator):
 
+    def get_model_weights_subdir(self) -> str:
+        return ""
+    
+    def _download_model_weights(self):
+        config = OmegaConf.load("config.yaml")
+        model_dir = pathlib.Path(self.model_weights_dir)
+        model_dir.mkdir(exist_ok=True) 
+        
+        model_uri = config.model_uri
+        bucket = model_uri.split("/")[2]
+        key = "/".join(model_uri.split("/")[3:])
+        
+        sync_s3_to_local(bucket, key, self.model_weights_dir)
+        
     def run_model(self):
         from evaluate import AnndataProcessor
 
         config = OmegaConf.load("config.yaml")
+        config.model_config.protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
+        config.model_config.model_loc = f"{self.model_weights_dir}/{config.model_config.model_filename}"
+        config.model_config.offset_pkl_path = f"{self.model_weights_dir}/species_offsets.pkl"
+        config.model_config.token_file = f"{self.model_weights_dir}/all_tokens.torch"
+        config.model_config.spec_chrom_csv_path = f"{self.model_weights_dir}/species_chrom.csv"
 
         # Create symbolic link for protein embeddings directory
-        protein_embeddings_source = pathlib.Path(config.paths.embedding_dir)
+        protein_embeddings_source = pathlib.Path(config.model_config.protein_embeddings_dir)
         protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
         if protein_embeddings_target.exists():
