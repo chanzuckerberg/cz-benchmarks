@@ -47,7 +47,7 @@ class EmbeddingTask(BaseTask):
 class BatchIntegrationTask(BaseTask):
     def __init__(self, batch_key: str):
         self.batch_key = batch_key
-        
+
     def validate(self, data: SingleCellDataset):
         return data.output_embedding is not None and self.batch_key in data.sample_metadata.columns
 
