@@ -2,9 +2,7 @@ import os
 import hydra
 from hydra.utils import instantiate
 import boto3
-from pathlib import Path
 from typing import Optional
-from importlib import resources
 import yaml
 from omegaconf import OmegaConf
 from ..constants import DATASETS_CACHE_PATH

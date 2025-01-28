@@ -37,7 +37,6 @@ class BaseDataset(ABC):
 
         The loaded data should be stored as instance attributes that can be accessed by other methods.
         """
-        pass
 
     @abstractmethod
     def unload_data(self) -> None:
@@ -51,7 +50,6 @@ class BaseDataset(ABC):
 
         Any instance attributes containing loaded data should be cleared or set to None.
         """
-        pass
 
     def serialize(self, path: str) -> None:
         """
