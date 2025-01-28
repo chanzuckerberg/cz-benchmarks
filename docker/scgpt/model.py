@@ -1,20 +1,15 @@
 import pathlib
 
-from datetime import datetime
-import os
-
 import scgpt as scg
-import boto3
 from omegaconf import OmegaConf
 
-from czibench.models.sc import BaseSingleCell
 from czibench.datasets.sc import SingleCellDataset
 from czibench.datasets.types import Organism
+from czibench.models.sc import BaseSingleCell
 from czibench.utils import sync_s3_to_local
-                    
+
+
 class ScGPT(BaseSingleCell):
-
-
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["gene_symbol"]
@@ -29,23 +24,22 @@ class ScGPT(BaseSingleCell):
         if missing_keys:
             raise ValueError(f"Missing required var keys: {missing_keys}")
 
-
     def get_model_weights_subdir(self) -> str:
         config = OmegaConf.load("config.yaml")
         selected_model = config.models[config.default_model]
-        model_name = selected_model.model_name        
+        model_name = selected_model.model_name
         return model_name
-    
+
     def _download_model_weights(self):
         config = OmegaConf.load("config.yaml")
         selected_model = config.models[config.default_model]
         model_uri = selected_model.model_uri
-        
+
         pathlib.Path(self.model_weights_dir).mkdir(exist_ok=True)
-        
+
         bucket = model_uri.split("/")[2]
         key = "/".join(model_uri.split("/")[3:])
-        
+
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
     def run_model(self):
