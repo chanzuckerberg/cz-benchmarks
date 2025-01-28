@@ -1,8 +1,14 @@
 import logging
 import os
+from abc import ABC, abstractmethod
+from typing import ClassVar, Type
 
+from ..constants import (
+    INPUT_DATA_PATH_DOCKER,
+    MODEL_WEIGHTS_PATH_DOCKER,
+    OUTPUT_DATA_PATH_DOCKER,
+)
 from ..datasets.base import BaseDataset
-from ..constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -26,8 +32,7 @@ class BaseModel(ABC):
         super().__init_subclass__()
         if not hasattr(cls, "dataset_type"):
             raise TypeError(
-                "Can't instantiate "
-                f"{cls.__name__} without dataset_type class variable"
+                f"Can't instantiate {cls.__name__} without dataset_type class variable"
             )
 
     @abstractmethod
@@ -38,19 +43,18 @@ class BaseModel(ABC):
     def validate_dataset(cls, dataset: BaseDataset):
         if not isinstance(dataset, cls.dataset_type):
             raise ValueError(
-                "Dataset type mismatch: expected "
-                f"{cls.dataset_type.__name__}, got {type(dataset).__name__}"
+                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
+                "got {type(dataset).__name__}",
             )
 
         cls._validate_dataset(dataset)
 
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
-        """Return the subdirectory (if applicable) where this model
-        variant's weights should be stored.
+        """Return the subdirectory (if applicable) where this model variant's
+        weights should be stored.
 
-        If the model variant does not require a subdirectory,
-        return an empty string.
+        If the model variant does not require a subdirectory, return an empty string.
         """
 
     @abstractmethod
@@ -72,27 +76,6 @@ class BaseModel(ABC):
             logger.info("Model weights already downloaded...")
 
     @abstractmethod
-    def get_model_weights_subdir(self) -> str:
-        """Return the subdirectory (if applicable) where this model variant's weights should be stored.
-        If the model variant does not require a subdirectory, return an empty string.
-        """
-        pass
-
-    @abstractmethod
-    def _download_model_weights(self):
-        pass
-    
-    def download_model_weights(self) -> None:
-        self.model_weights_dir = f"{MODEL_WEIGHTS_PATH_DOCKER}/{self.get_model_weights_subdir()}"
-
-        if not os.path.exists(self.model_weights_dir) or not any(os.listdir(self.model_weights_dir)):
-            logger.info(f"Downloading model weights...")
-            self._download_model_weights()
-            logger.info(f"Model weights downloaded successfully")
-        else:
-            logger.info(f"Model weights already downloaded...")
-        
-    @abstractmethod
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
 
@@ -110,7 +93,7 @@ class BaseModel(ABC):
 
         self.download_model_weights()
 
-        logger.info(f"Running model...")
+        logger.info("Running model...")
         self.run_model()
         logger.info("Model ran successfully")
 

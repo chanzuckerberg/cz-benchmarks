@@ -28,7 +28,6 @@ rebuild: clean all
 check-tools:
 	@command -v black >/dev/null 2>&1 || { echo >&2 "black not found, installing..."; pip install black; }
 	@command -v flake8 >/dev/null 2>&1 || { echo >&2 "flake8 not found, installing..."; pip install flake8; }
-	@command -v autopep8 >/dev/null 2>&1 || { echo >&2 "autopep8 not found, installing..."; pip install autopep8; }
 	@command -v autoflake >/dev/null 2>&1 || { echo >&2 "autoflake not found, installing..."; pip install autoflake; }
 
 # Check formatting with black
@@ -43,20 +42,14 @@ black-fix: check-tools
 flake8: check-tools
 	flake8 . --max-line-length 90
 
-# Apply fixes for unused imports and variables
-autoflake: check-tools
-	autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive .
-
-# Apply fixes for PEP8 issues
-autopep8: check-tools
-	autopep8 --in-place --recursive .
 
 # Run all linters and checkers
 lint: black-check flake8
 
 # Run all linters and fixers
-lint-fix: autoflake autopep8 black-fix flake8
+lint-fix: autoflake black flake8
+
 
 # Install tools explicitly
 install-tools:
-	pip install black flake8 autopep8 autoflake
+	pip install black flake8 autoflake
