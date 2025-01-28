@@ -1,9 +1,11 @@
 from enum import Enum
 from omegaconf import OmegaConf
 
+
 class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
     MOUSE = ("mus_musculus", "ENSMUSG")
+
     # Todo: add other organisms
     def __init__(self, name: str, prefix: str):
         self._value_ = (name, prefix)  # This is handled automatically by Enum
@@ -22,8 +24,6 @@ class Organism(Enum):
     def prefix(self):
         return self.value[1]
 
+
 # Register Organism resolver
-OmegaConf.register_new_resolver(
-    "organism",
-    lambda name: getattr(Organism, name)
-)
+OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
