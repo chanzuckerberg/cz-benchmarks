@@ -29,7 +29,6 @@ class ClusteringTask(BaseTask):
             "adjusted_rand_index": adjusted_rand_index(
                 self.input_labels, self.predicted_labels
             ),
-
             "normalized_mutual_info": normalized_mutual_info(
                 self.input_labels, self.predicted_labels
             ),
@@ -53,9 +52,4 @@ class EmbeddingTask(BaseTask):
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "silhouette_score": silhouette_score(
-                self.embedding,
-                self.input_labels
-            )
-        }
+        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
