@@ -1,4 +1,4 @@
-.PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autopep8 autoflake lint lint-fix install-tools rebuild
+.PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autoflake lint lint-fix install-tools rebuild
 
 # Default target
 all: scvi uce scgpt
@@ -32,16 +32,23 @@ check-tools:
 
 # Check formatting with black
 black-check: check-tools
+	# Check if code conforms to Black's formatting style
 	black --check .
 
 # Fix formatting with black
 black-fix: check-tools
+	# Automatically format code using Black
 	black .
 
 # Run flake8 to lint the code
 flake8: check-tools
-	flake8 . --max-line-length 90
+	# Lint the code using Flake8
+	flake8
 
+# Apply fixes for unused imports and variables
+autoflake: check-tools
+	# Automatically remove unused imports and variables
+	autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive .
 
 # Run all linters and checkers
 lint: black-check flake8
@@ -49,7 +56,7 @@ lint: black-check flake8
 # Run all linters and fixers
 lint-fix: autoflake black flake8
 
-
 # Install tools explicitly
 install-tools:
+	# Install all required linting and formatting tools
 	pip install black flake8 autoflake
