@@ -40,5 +40,6 @@ class SingleCellDataset(BaseDataset):
 
         if not var:
             raise ValueError(
-                f"Dataset does not contain valid gene names. Gene names must start with {self.organism.prefix}"
+                "Dataset does not contain valid gene names. Gene names must"
+                f" start with {self.organism.prefix}"
             )

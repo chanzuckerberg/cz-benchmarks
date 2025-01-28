@@ -1,13 +1,13 @@
 from typing import Dict
-from .base import BaseTask
+
+from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score
+from .base import BaseTask
 from .utils import cluster_embedding
-from ..datasets.sc import SingleCellDataset
 
 
 class ClusteringTask(BaseTask):
-
     def __init__(self, label_key: str):
         self.label_key = label_key
 

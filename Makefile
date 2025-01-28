@@ -41,7 +41,7 @@ black-fix: check-tools
 
 # Run flake8 to lint the code
 flake8: check-tools
-	flake8 .
+	flake8 . --max-line-length 90
 
 # Apply fixes for unused imports and variables
 autoflake: check-tools
@@ -55,7 +55,7 @@ autopep8: check-tools
 lint: black-check flake8
 
 # Run all linters and fixers
-lint-fix: autoflake autopep8 black flake8
+lint-fix: autoflake autopep8 black-fix flake8
 
 # Install tools explicitly
 install-tools:

@@ -1,19 +1,19 @@
-import pathlib
-import pathlib
-import pandas as pd
-import logging
-from accelerate import Accelerator
-from czibench.models.sc import UCEValidator
 import argparse
-from omegaconf import OmegaConf
-import tempfile
+import logging
 import os
+import pathlib
+import tempfile
+
+import pandas as pd
+from accelerate import Accelerator
+from omegaconf import OmegaConf
+
+from czibench.models.sc import UCEValidator
 
 logger = logging.getLogger(__name__)
 
 
 class UCE(UCEValidator):
-
     def run_model(self):
         from evaluate import AnndataProcessor
 
@@ -39,12 +39,13 @@ class UCE(UCEValidator):
         adata.var_names = pd.Index(list(adata.var["feature_name"]))
         tmp_dir = pathlib.Path(tempfile.gettempdir()) / "temp_adata"
         os.makedirs(tmp_dir, exist_ok=True)
-        temp_adata_path = tmp_dir / f"temp_adata.h5ad"
+        temp_adata_path = tmp_dir / "temp_adata.h5ad"
 
         # Save adata to tempdir
         adata.write_h5ad(temp_adata_path)
 
-        # set features to be gene symbols which is required by required by evaluate.AnndataProcessor
+        # set features to be gene symbols which is required by required by
+        # evaluate.AnndataProcessor
         adata.var_names = adata.var["feature_name"].values
         config.model_config.adata_path = str(temp_adata_path)
 

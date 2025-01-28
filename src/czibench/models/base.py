@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import Type, ClassVar
 import logging
-from ..datasets.base import BaseDataset
+from abc import ABC, abstractmethod
+from typing import ClassVar, Type
+
 from ..constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER
+from ..datasets.base import BaseDataset
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -25,7 +26,8 @@ class BaseModel(ABC):
         super().__init_subclass__()
         if not hasattr(cls, "dataset_type"):
             raise TypeError(
-                f"Can't instantiate {cls.__name__} without dataset_type class variable"
+                f"Can't instantiate {cls.__name__} without dataset_type class"
+                " variable"
             )
 
     @abstractmethod
@@ -36,7 +38,8 @@ class BaseModel(ABC):
     def validate_dataset(cls, dataset: BaseDataset):
         if not isinstance(dataset, cls.dataset_type):
             raise ValueError(
-                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, got {type(dataset).__name__}"
+                "Dataset type mismatch: expected"
+                f" {cls.dataset_type.__name__}, got {type(dataset).__name__}"
             )
 
         cls._validate_dataset(dataset)
@@ -48,18 +51,18 @@ class BaseModel(ABC):
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
 
-        logger.info(f"Loading data...")
+        logger.info("Loading data...")
         self.data.load_data()
-        logger.info(f"Data loaded successfully")
+        logger.info("Data loaded successfully")
 
-        logger.info(f"Validating data...")
+        logger.info("Validating data...")
         self.data.validate()
         self.validate_dataset(self.data)
-        logger.info(f"Data validated successfully")
+        logger.info("Data validated successfully")
 
-        logger.info(f"Running model...")
+        logger.info("Running model...")
         self.run_model()
-        logger.info(f"Model ran successfully")
+        logger.info("Model ran successfully")
 
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)

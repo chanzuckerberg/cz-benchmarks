@@ -1,12 +1,14 @@
 import os
-import tempfile
-import docker
 import pathlib
+import tempfile
 from typing import Any
+
+import docker
+
 from .constants import (
+    ARTIFACTS_PATH_DOCKER,
     INPUT_DATA_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
-    ARTIFACTS_PATH_DOCKER,
     RAW_INPUT_DIR_PATH_DOCKER,
 )
 from .datasets.base import BaseDataset
@@ -29,7 +31,6 @@ class ContainerRunner:
         self.client = docker.from_env()
 
     def run(self, data: BaseDataset) -> BaseDataset:
-
         with tempfile.TemporaryDirectory() as temp_dir:
             # Setup I/O paths
             input_dir = os.path.join(temp_dir, "input")
@@ -59,8 +60,14 @@ class ContainerRunner:
             volumes = {
                 input_dir: {"bind": input_dir_docker, "mode": "ro"},
                 output_dir: {"bind": output_dir_docker, "mode": "rw"},
-                self.artifact_mount_path: {"bind": ARTIFACTS_PATH_DOCKER, "mode": "rw"},
-                orig_parent_dir: {"bind": RAW_INPUT_DIR_PATH_DOCKER, "mode": "ro"},
+                self.artifact_mount_path: {
+                    "bind": ARTIFACTS_PATH_DOCKER,
+                    "mode": "rw",
+                },
+                orig_parent_dir: {
+                    "bind": RAW_INPUT_DIR_PATH_DOCKER,
+                    "mode": "ro",
+                },
             }
 
             command = []
@@ -85,7 +92,7 @@ class ContainerRunner:
                 result = container.wait()
                 if result["StatusCode"] != 0:
                     raise RuntimeError(
-                        f"Container exited with status code {result['StatusCode']}"
+                        "Container exited with status code" f" {result['StatusCode']}"
                     )
 
                 data = BaseDataset.deserialize(output_path)

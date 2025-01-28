@@ -1,7 +1,8 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+
 import dill
-import os
 import numpy as np
 import pandas as pd
 
@@ -32,10 +33,13 @@ class BaseDataset(ABC):
         """
         Load the dataset into memory.
 
-        This method should be implemented by subclasses to load their specific data format.
-        For example, SingleCellDataset loads an AnnData object from an h5ad file.
+        This method should be implemented by subclasses to load their specific
+        data format.
+        For example, SingleCellDataset loads an AnnData object from an h5ad
+        file.
 
-        The loaded data should be stored as instance attributes that can be accessed by other methods.
+        The loaded data should be stored as instance attributes that can be
+        accessed by other methods.
         """
 
     @abstractmethod
@@ -43,12 +47,16 @@ class BaseDataset(ABC):
         """
         Unload the dataset from memory.
 
-        This method should be implemented by subclasses to free memory by clearing loaded data.
+        This method should be implemented by subclasses to free memory by
+        clearing loaded data.
         For example, SingleCellDataset sets its AnnData object to None.
 
-        This is used to clear memory-intensive data before serialization, since serializing large raw data artifacts can be error-prone and inefficient.
+        This is used to clear memory-intensive data before serialization,
+        since serializing large raw data artifacts can be error-prone and
+        inefficient.
 
-        Any instance attributes containing loaded data should be cleared or set to None.
+        Any instance attributes containing loaded data should be cleared or
+        set to None.
         """
 
     def serialize(self, path: str) -> None:
