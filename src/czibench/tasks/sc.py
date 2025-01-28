@@ -34,6 +34,7 @@ class ClusteringTask(BaseTask):
             ),
         }
 
+
 class EmbeddingTask(BaseTask):
     def __init__(self, label_key: str):
         self.label_key = label_key
@@ -51,9 +52,7 @@ class EmbeddingTask(BaseTask):
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "silhouette_score": silhouette_score(self.embedding, self.input_labels)
-        }
+        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
 
 
 class MetadataLabelPredictionTask(BaseTask):
@@ -63,7 +62,10 @@ class MetadataLabelPredictionTask(BaseTask):
         self.seed = seed
 
     def validate(self, data: SingleCellDataset):
-        return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
+        return (
+            data.output_embedding is not None
+            and self.label_key in data.sample_metadata.columns
+        )
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         # Get embedding and labels
@@ -72,14 +74,12 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Create classifiers
         classifiers = {
-            "lr": Pipeline([
-                ("scaler", StandardScaler()),
-                ("lr", LogisticRegression())
-            ]),
-            "knn": Pipeline([
-                ("scaler", StandardScaler()),
-                ("knn", KNeighborsClassifier())
-            ])
+            "lr": Pipeline(
+                [("scaler", StandardScaler()), ("lr", LogisticRegression())]
+            ),
+            "knn": Pipeline(
+                [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
+            ),
         }
 
         # Determine scoring metrics based on number of classes
@@ -88,11 +88,13 @@ class MetadataLabelPredictionTask(BaseTask):
             "accuracy": make_scorer(accuracy_score),
             "f1": make_scorer(f1_score, average=target_type),
             "precision": make_scorer(precision_score, average=target_type),
-            "recall": make_scorer(recall_score, average=target_type)
+            "recall": make_scorer(recall_score, average=target_type),
         }
 
         # Setup cross validation
-        skf = StratifiedKFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
+        skf = StratifiedKFold(
+            n_splits=self.n_folds, shuffle=True, random_state=self.seed
+        )
 
         # Store results
         self.results = []
@@ -106,7 +108,7 @@ class MetadataLabelPredictionTask(BaseTask):
                 labels.codes,
                 cv=skf,
                 scoring=scorers,
-                return_train_score=False
+                return_train_score=False,
             )
 
             for fold in range(self.n_folds):
