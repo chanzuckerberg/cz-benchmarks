@@ -21,8 +21,8 @@ def _download_dataset(uri: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # Parse S3 URL
-    bucket = uri.split('/')[2]
-    key = '/'.join(uri.split('/')[3:])
+    bucket = uri.split("/")[2]
+    key = "/".join(uri.split("/")[3:])
 
     # Download from S3
     s3_client = boto3.client("s3")
@@ -54,8 +54,7 @@ def load_dataset(
 
     # Load default config first and make it unstructured
     cfg = OmegaConf.create(
-        OmegaConf.to_container(hydra.compose(
-            config_name="datasets"), resolve=True)
+        OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
     )
 
     # If custom config provided, load and merge it
@@ -65,8 +64,7 @@ def load_dataset(
         config_path = os.path.abspath(config_path)
 
         if not os.path.exists(config_path):
-            raise FileNotFoundError(
-                f"Custom config file not found: {config_path}")
+            raise FileNotFoundError(f"Custom config file not found: {config_path}")
 
         # Load custom config
         with open(config_path) as f:
@@ -81,7 +79,7 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
     original_path = dataset_info.path
 
-    is_s3_path = original_path.startswith('s3://')
+    is_s3_path = original_path.startswith("s3://")
     expanded_path = os.path.expanduser(original_path)
 
     if not is_s3_path:

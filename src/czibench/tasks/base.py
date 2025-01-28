@@ -20,8 +20,7 @@ class BaseTask(ABC):
 
     def run(self, data: BaseDataset) -> BaseDataset:
         if not self.validate(data):
-            raise ValueError(
-                f"Data validation failed for {self.__class__.__name__}")
+            raise ValueError(f"Data validation failed for {self.__class__.__name__}")
         data = self._run_task(data)
         results = self._compute_metrics()
         return data, results
