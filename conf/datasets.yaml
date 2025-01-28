@@ -15,4 +15,4 @@ datasets:
   tsv2_bladder:
     _target_: czibench.datasets.sc.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /mnt/efs/datasets/tabula_sapiens_2/tsp1_33/Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad
+    path: /mnt/efs/fs1/datasets/tabula_sapiens_2/tsp1_33/Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad

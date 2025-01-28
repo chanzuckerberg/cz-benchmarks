@@ -23,6 +23,5 @@ RUN pip install -e /app/package
 
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
-ENV ARTIFACTS_PATH=/mnt/efs/fs1
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"]

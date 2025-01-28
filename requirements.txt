@@ -18,5 +18,4 @@ leidenalg>=0.10.2
 
 hydra-core
 hnswlib>=0.8.0  # May need to also run this to resolve any ImportErrors: # cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ~/miniconda3/envs/bench/lib/
-numpy>=2.0.2
 scib-metrics==0.5.1
