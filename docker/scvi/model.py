@@ -23,18 +23,14 @@ class SCVI(BaseSingleCell):
     def _validate_model_requirements(cls, dataset: SingleCellDataset):
         # Check if all required batch keys are present in obs
         missing_keys = [
-            key
-            for key in cls.required_obs_keys
-            if key not in dataset.adata.obs.columns
+            key for key in cls.required_obs_keys if key not in dataset.adata.obs.columns
         ]
 
         if missing_keys:
             raise ValueError(f"Missing required obs keys: {missing_keys}")
 
         missing_keys = [
-            key
-            for key in cls.required_var_keys
-            if key not in dataset.adata.var.columns
+            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
         ]
 
         if missing_keys:

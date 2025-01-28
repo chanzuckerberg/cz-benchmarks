@@ -51,10 +51,10 @@ autoflake: check-tools
 	autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive .
 
 # Run all linters and checkers
-lint: black-check flake8
+lint: flake8 black-check
 
 # Run all linters and fixers
-lint-fix: autoflake black flake8
+lint-fix: autoflake black-fix
 
 # Install tools explicitly
 install-tools:
