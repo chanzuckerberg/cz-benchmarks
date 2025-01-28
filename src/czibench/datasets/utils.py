@@ -21,8 +21,8 @@ def _download_dataset(uri: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # Parse S3 URL
-    bucket = uri.split("/")[2]
-    key = "/".join(uri.split("/")[3:])
+    bucket = uri.split('/')[2]
+    key = '/'.join(uri.split('/')[3:])
 
     # Download from S3
     s3_client = boto3.client("s3")
@@ -81,7 +81,13 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
     original_path = dataset_info.path
 
-    if original_path.startswith("s3://"):
+    is_s3_path = original_path.startswith('s3://')
+    expanded_path = os.path.expanduser(original_path)
+
+    if not is_s3_path:
+        if not os.path.exists(expanded_path):
+            raise FileNotFoundError(f"Local dataset file not found: {expanded_path}")
+    else:
         # Setup cache path
         cache_path = os.path.expanduser(DATASETS_CACHE_PATH)
         os.makedirs(cache_path, exist_ok=True)
