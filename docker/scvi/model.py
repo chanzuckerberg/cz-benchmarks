@@ -1,11 +1,10 @@
 import functools
-import pathlib
-import boto3
-import pathlib
-import scvi
 import logging
-from omegaconf import OmegaConf
+import pathlib
 
+import boto3
+import scvi
+from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
 from czibench.models.sc import ScviValidator
@@ -14,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class SCVI(ScviValidator):
-
     def run_model(self):
         config = OmegaConf.load("config.yaml")
 

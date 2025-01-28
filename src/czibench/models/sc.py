@@ -1,9 +1,10 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import ClassVar, List
-from .base import BaseModel
+
 from ..datasets.sc import SingleCellDataset
 from ..datasets.types import Organism
-import logging
+from .base import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -18,17 +19,20 @@ class BaseSingleCell(BaseModel, ABC):
         super().__init_subclass__()
         if not hasattr(cls, "available_organisms"):
             raise TypeError(
-                f"Can't instantiate {cls.__name__} without available_organisms class variable"
+                f"Can't instantiate {cls.__name__} without"
+                " available_organisms class variable"
             )
 
         if not hasattr(cls, "required_obs_keys"):
             raise TypeError(
-                f"Can't instantiate {cls.__name__} without required_obs_keys class variable"
+                f"Can't instantiate {cls.__name__} without required_obs_keys"
+                " class variable"
             )
 
         if not hasattr(cls, "required_var_keys"):
             raise TypeError(
-                f"Can't instantiate {cls.__name__} without required_var_keys class variable"
+                f"Can't instantiate {cls.__name__} without required_var_keys"
+                " class variable"
             )
 
     @classmethod
@@ -40,7 +44,8 @@ class BaseSingleCell(BaseModel, ABC):
     def _validate_dataset(cls, dataset: SingleCellDataset):
         if dataset.organism not in cls.available_organisms:
             raise ValueError(
-                f"Dataset organism {dataset.organism} is not supported for {cls.__name__}"
+                f"Dataset organism {dataset.organism} is not supported for"
+                f" {cls.__name__}"
             )
 
         cls._validate_model_requirements(dataset)

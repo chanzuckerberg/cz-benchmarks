@@ -6,7 +6,6 @@ from czibench.models.sc import ScGPTValidator
 
 
 class ScGPT(ScGPTValidator):
-
     def run_model(self):
         config = OmegaConf.load("config.yaml")
         adata = self.data.adata
