@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class SCVI(ScviValidator):
-    
+
     def run_model(self):
         config = OmegaConf.load("config.yaml")
 

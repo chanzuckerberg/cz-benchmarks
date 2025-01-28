@@ -23,5 +23,6 @@ class ScGPT(ScGPTValidator):
 
         self.data.output_embedding = ref_embed_adata.obsm["X_scGPT"]
 
+
 if __name__ == "__main__":
     ScGPT().run()

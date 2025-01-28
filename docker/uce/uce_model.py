@@ -8,6 +8,7 @@ import argparse
 from omegaconf import OmegaConf
 import tempfile
 import os
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,19 +21,20 @@ class UCE(UCEValidator):
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(config.paths.embedding_dir)
-        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
+        protein_embeddings_target = pathlib.Path(
+            "model_files/protein_embeddings")
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
         if protein_embeddings_target.exists():
             protein_embeddings_target.unlink()
         protein_embeddings_target.symlink_to(protein_embeddings_source)
-        
+
         print(f"Contents of {protein_embeddings_target}:\n")
         if protein_embeddings_target.exists():
             for path in protein_embeddings_target.rglob("*"):
                 print(f"{path.relative_to(protein_embeddings_target)}\n")
         else:
             print("Directory does not exist\n")
-            
+
         adata = self.data.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))
         tmp_dir = pathlib.Path(tempfile.gettempdir()) / "temp_adata"
@@ -46,7 +48,8 @@ class UCE(UCEValidator):
         adata.var_names = adata.var["feature_name"].values
         config.model_config.adata_path = str(temp_adata_path)
 
-        accelerator = Accelerator(project_dir=".")  # where the embeddings are saved
+        # where the embeddings are saved
+        accelerator = Accelerator(project_dir=".")
         config_dict = OmegaConf.to_container(config.model_config, resolve=True)
         args = argparse.Namespace(**config_dict)
         processor = AnndataProcessor(args, accelerator)
@@ -54,6 +57,7 @@ class UCE(UCEValidator):
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
         self.data.output_embedding = embedding_adata.X.toarray()
+
 
 if __name__ == "__main__":
     UCE().run()

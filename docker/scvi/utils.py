@@ -6,11 +6,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     """Filter adata by HVGs."""
     # Create a full copy at the start to avoid view issues
     adata = adata.copy()
-    
+
     hvg = pd.read_csv(hvg_path)
     adata.var["feature_id"] = adata.var["feature_id"].astype(str)
     hvg["feature_id"] = hvg["feature_id"].astype(str)
@@ -22,7 +23,9 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     missing_features = set(hvg.feature_id) - set(adata.var.feature_id)
 
     if missing_features:
-        logger.info(f"WARNING:{len(missing_features)} HVGs are not present in the AnnData object")
+        logger.info(
+            f"WARNING:{len(missing_features)} HVGs are not present in the AnnData object"
+        )
         # Create an empty adata with missing genes as all zeros, make the array sparse
         missing_var = pd.DataFrame({"feature_id": list(missing_features)})
         missing_var["feature_name"] = missing_var["feature_id"]
@@ -32,15 +35,12 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
         adata_missing = ad.AnnData(
             X=missing_X,
             var=missing_var,
-            obs=adata_filtered.obs.copy()  # Make sure to copy the obs
+            obs=adata_filtered.obs.copy(),  # Make sure to copy the obs
         )
 
         # Concatenate the filtered adata with the missing genes adata
         adata_concat = ad.concat(
-            [adata_filtered, adata_missing],
-            axis=1,
-            join="outer",
-            merge="first"
+            [adata_filtered, adata_missing], axis=1, join="outer", merge="first"
         )
     else:
         adata_concat = adata_filtered
@@ -51,6 +51,6 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     adata_reordered = ad.AnnData(
         X=adata_concat[:, hvg.feature_id].X,
         obs=adata_concat.obs.copy(),
-        var=adata_concat.var.loc[hvg.feature_id].copy()
+        var=adata_concat.var.loc[hvg.feature_id].copy(),
     )
     return adata_reordered
