@@ -2,7 +2,6 @@ import os
 import tempfile
 import docker
 import pathlib
-import shutil
 from typing import Any
 from .constants import (
     INPUT_DATA_PATH_DOCKER,

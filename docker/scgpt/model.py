@@ -1,7 +1,5 @@
 import pathlib
-from datetime import datetime
 
-import anndata as ad
 import scgpt as scg
 from omegaconf import OmegaConf
 from czibench.models.sc import ScGPTValidator

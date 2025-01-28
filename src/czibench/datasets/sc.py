@@ -1,6 +1,5 @@
 import anndata as ad
 import pandas as pd
-from typing import Optional, Any
 from .base import BaseDataset
 from .types import Organism
 

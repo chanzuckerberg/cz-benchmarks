@@ -44,7 +44,6 @@ class BaseModel(ABC):
     @abstractmethod
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
-        pass
 
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
