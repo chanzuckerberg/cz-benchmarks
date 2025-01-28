@@ -1,42 +1,37 @@
 from typing import Dict
-from .base import BaseTask
+
+from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score
+from .base import BaseTask
 from .utils import cluster_embedding
-from ..datasets.sc import SingleCellDataset
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_validate, StratifiedKFold
-from sklearn.metrics import (
-    make_scorer,
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-)
-import pandas as pd
+
 
 class ClusteringTask(BaseTask):
-
     def __init__(self, label_key: str):
         self.label_key = label_key
 
     def validate(self, data: SingleCellDataset):
-        return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
+        return (
+            data.output_embedding is not None
+            and self.label_key in data.sample_metadata.columns
+        )
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         adata = data.adata
         adata.obsm["emb"] = data.output_embedding
         self.input_labels = data.sample_metadata[self.label_key]
-        self.predicted_labels = cluster_embedding(adata, obsm_key = "emb")
+        self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
-            "adjusted_rand_index": adjusted_rand_index(self.input_labels, self.predicted_labels),
-            "normalized_mutual_info": normalized_mutual_info(self.input_labels, self.predicted_labels),
+            "adjusted_rand_index": adjusted_rand_index(
+                self.input_labels, self.predicted_labels
+            ),
+            "normalized_mutual_info": normalized_mutual_info(
+                self.input_labels, self.predicted_labels
+            ),
         }
 
 class EmbeddingTask(BaseTask):
@@ -44,7 +39,10 @@ class EmbeddingTask(BaseTask):
         self.label_key = label_key
 
     def validate(self, data: SingleCellDataset):
-        return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
+        return (
+            data.output_embedding is not None
+            and self.label_key in data.sample_metadata.columns
+        )
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         # passthrough, embedding already exists
