@@ -8,13 +8,38 @@ from omegaconf import OmegaConf
 
 from utils import filter_adata_by_hvg
 
-from czibench.models.sc import ScviValidator
+from czibench.models.sc import BaseSingleCell
+from czibench.datasets.sc import SingleCellDataset
+from czibench.datasets.types import Organism
 
 logger = logging.getLogger(__name__)
 
 
-class SCVI(ScviValidator):
-    
+class SCVI(BaseSingleCell):
+
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
+    required_var_keys = []
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset):
+        # Check if all required batch keys are present in obs
+        missing_keys = [
+            key for key in cls.required_obs_keys if key not in dataset.adata.obs.columns
+        ]
+
+        if missing_keys:
+            raise ValueError(f"Missing required obs keys: {missing_keys}")
+        
+        missing_keys = [
+            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
+        ]
+
+        if missing_keys:
+            raise ValueError(f"Missing required var keys: {missing_keys}")
+
+        return True
+        
     def get_model_weights_subdir(self) -> str:
         return self.data.organism.name
     

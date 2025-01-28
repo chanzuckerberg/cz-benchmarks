@@ -3,18 +3,35 @@ import pathlib
 import pandas as pd
 import logging
 from accelerate import Accelerator
-from czibench.models.sc import UCEValidator
 import argparse
 from omegaconf import OmegaConf
 import tempfile
 import os
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import Organism
+from czibench.datasets.sc import SingleCellDataset
+from czibench.models.sc import BaseSingleCell
 
 logger = logging.getLogger(__name__)
 
 
-class UCE(UCEValidator):
+class UCE(BaseSingleCell):
 
+    available_organisms = [Organism.HUMAN, Organism.MOUSE] # TODO: add other UCE organisms
+    required_obs_keys = []
+    required_var_keys = ["gene_symbol"]
+
+    @classmethod
+    def _validate_model_requirements(cls, dataset: SingleCellDataset):
+        missing_keys = [
+            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
+        ]
+
+        if missing_keys:
+            raise ValueError(f"Missing required var keys: {missing_keys}")
+
+        return True
+    
     def get_model_weights_subdir(self) -> str:
         return ""
     
