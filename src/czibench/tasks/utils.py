@@ -2,6 +2,7 @@ from typing import List
 import scanpy as sc
 from anndata import AnnData
 
+
 # TODO: Later we can add cluster parameters as kwargs here and add them to the task config
 def cluster_embedding(adata: AnnData, obsm_key: str = "emb") -> List[int]:
     """Cluster the embedding using the Leiden algorithm"""
