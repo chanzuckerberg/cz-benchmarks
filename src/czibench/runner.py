@@ -39,8 +39,7 @@ class ContainerRunner:
             os.makedirs(output_dir, exist_ok=True)
 
             input_dir_docker = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).parent)
-            output_dir_docker = str(pathlib.Path(
-                OUTPUT_DATA_PATH_DOCKER).parent)
+            output_dir_docker = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).parent)
             input_filename = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).name)
             output_filename = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name)
 

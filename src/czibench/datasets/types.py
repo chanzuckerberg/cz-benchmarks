@@ -26,5 +26,4 @@ class Organism(Enum):
 
 
 # Register Organism resolver
-OmegaConf.register_new_resolver(
-    "organism", lambda name: getattr(Organism, name))
+OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))

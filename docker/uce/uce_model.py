@@ -21,8 +21,7 @@ class UCE(UCEValidator):
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(config.paths.embedding_dir)
-        protein_embeddings_target = pathlib.Path(
-            "model_files/protein_embeddings")
+        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
         if protein_embeddings_target.exists():
             protein_embeddings_target.unlink()
