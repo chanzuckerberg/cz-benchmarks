@@ -14,7 +14,7 @@ class ContainerRunner:
         self,
         image: str,
         gpu: bool = False,
-        artifact_mount_path: str = "/mnt/efs",
+        artifact_mount_path: str = "/mnt/efs/fs1",
         **kwargs: Any
     ):
         self.image = image
