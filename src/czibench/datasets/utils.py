@@ -100,5 +100,6 @@ def load_dataset(
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
+    dataset.path = os.path.expanduser(dataset.path)
 
     return dataset
