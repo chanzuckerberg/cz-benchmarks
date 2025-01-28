@@ -1,7 +1,7 @@
 from typing import Dict
 from .base import BaseTask
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
-from ..metrics.embedding import silhouette_score
+from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .utils import cluster_embedding
 from ..datasets.sc import SingleCellDataset
 
@@ -42,4 +42,21 @@ class EmbeddingTask(BaseTask):
     def _compute_metrics(self) -> Dict[str, float]:
         return {
             "silhouette_score": silhouette_score(self.embedding, self.input_labels)
+        }
+
+class BatchIntegrationTask(BaseTask):
+    def __init__(self, batch_key: str):
+        self.batch_key = batch_key
+        
+    def validate(self, data: SingleCellDataset):
+        return data.output_embedding is not None and self.batch_key in data.sample_metadata.columns
+
+    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        self.embedding = data.output_embedding
+        self.batch_labels = data.sample_metadata[self.batch_key]
+        return data
+
+    def _compute_metrics(self) -> Dict[str, float]:
+        return {
+            "entropy_per_cell": compute_entropy_per_cell(self.embedding, self.batch_labels)
         }
