@@ -71,9 +71,8 @@ class EmbeddingTask(BaseTask):
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "silhouette_score": silhouette_score(self.embedding, self.input_labels)
-        }
+        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
+
 
 class BatchIntegrationTask(BaseTask):
     def __init__(self, label_key: str, batch_key: str):
@@ -81,7 +80,10 @@ class BatchIntegrationTask(BaseTask):
         self.batch_key = batch_key
 
     def validate(self, data: SingleCellDataset):
-        return data.output_embedding is not None and self.batch_key in data.sample_metadata.columns
+        return (
+            data.output_embedding is not None
+            and self.batch_key in data.sample_metadata.columns
+        )
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         self.embedding = data.output_embedding
@@ -91,9 +93,14 @@ class BatchIntegrationTask(BaseTask):
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
-            "entropy_per_cell": compute_entropy_per_cell(self.embedding, self.batch_labels),
-            "silhouette_score": silhouette_batch(self.embedding, self.labels, self.batch_labels)
+            "entropy_per_cell": compute_entropy_per_cell(
+                self.embedding, self.batch_labels
+            ),
+            "silhouette_score": silhouette_batch(
+                self.embedding, self.labels, self.batch_labels
+            ),
         }
+
 
 class MetadataLabelPredictionTask(BaseTask):
     def __init__(
