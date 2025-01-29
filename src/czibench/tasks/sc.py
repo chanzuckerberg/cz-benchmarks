@@ -15,7 +15,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .base import BaseTask
