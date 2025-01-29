@@ -1,10 +1,28 @@
 from typing import Dict
+import numpy as np
+import pandas as pd
+import logging
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    make_scorer,
+    precision_score,
+    recall_score,
+)
+from sklearn.model_selection import StratifiedKFold, cross_validate
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score
 from .base import BaseTask
 from .utils import cluster_embedding
+
+logger = logging.getLogger(__name__)
 
 
 class ClusteringTask(BaseTask):
@@ -55,11 +73,44 @@ class EmbeddingTask(BaseTask):
         return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
 
 
+def filter_minimum_class(
+    X: np.ndarray, y: np.ndarray | pd.Series, min_class_size: int = 10
+) -> tuple[np.ndarray, np.ndarray | pd.Series]:
+    logger.info(f"Label composition ({y.name if hasattr(y, 'name') else 'unknown'}):")
+    value_counts = pd.Series(y).value_counts()
+    logger.info(f"Total classes before filtering: {len(value_counts)}")
+
+    filtered_counts = value_counts[value_counts >= min_class_size]
+    logger.info(
+        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
+    )
+
+    y = pd.Series(y) if isinstance(y, np.ndarray) else y
+    class_counts = y.value_counts()
+
+    valid_classes = class_counts[class_counts >= min_class_size].index
+    valid_indices = y.isin(valid_classes)
+
+    X_filtered = X[valid_indices]
+    y_filtered = y[valid_indices]
+
+    return X_filtered, pd.Categorical(y_filtered)
+
+
 class MetadataLabelPredictionTask(BaseTask):
-    def __init__(self, label_key: str, n_folds: int = 5, seed: int = 42):
+    def __init__(
+        self,
+        label_key: str,
+        n_folds: int = 5,
+        seed: int = 42,
+        min_class_size: int = 10,
+        generate_predictions: bool = False,
+    ):
         self.label_key = label_key
         self.n_folds = n_folds
         self.seed = seed
+        self.min_class_size = min_class_size
+        self.generate_predictions = generate_predictions
 
     def validate(self, data: SingleCellDataset):
         return (
@@ -72,15 +123,10 @@ class MetadataLabelPredictionTask(BaseTask):
         embeddings = data.output_embedding
         labels = data.sample_metadata[self.label_key]
 
-        # Create classifiers
-        classifiers = {
-            "lr": Pipeline(
-                [("scaler", StandardScaler()), ("lr", LogisticRegression())]
-            ),
-            "knn": Pipeline(
-                [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
-            ),
-        }
+        # Filter classes with minimum size requirement
+        embeddings, labels = filter_minimum_class(
+            embeddings, labels, min_class_size=self.min_class_size
+        )
 
         # Determine scoring metrics based on number of classes
         target_type = "binary" if len(labels.unique()) == 2 else "weighted"
@@ -96,8 +142,19 @@ class MetadataLabelPredictionTask(BaseTask):
             n_splits=self.n_folds, shuffle=True, random_state=self.seed
         )
 
-        # Store results
+        # Create classifiers
+        classifiers = {
+            "lr": Pipeline(
+                [("scaler", StandardScaler()), ("lr", LogisticRegression())]
+            ),
+            "knn": Pipeline(
+                [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
+            ),
+        }
+
+        # Store results and predictions
         self.results = []
+        self.predictions = []
 
         # Run cross validation for each classifier
         labels = pd.Categorical(labels.astype(str))
@@ -117,20 +174,44 @@ class MetadataLabelPredictionTask(BaseTask):
                     fold_results[metric] = cv_results[f"test_{metric}"][fold]
                 self.results.append(fold_results)
 
+            if self.generate_predictions:
+                # Generate CV predictions per sample
+                for fold, (train_idx, test_idx) in enumerate(
+                    skf.split(embeddings, labels)
+                ):
+                    clf.fit(embeddings[train_idx], labels.codes[train_idx])
+                    y_pred = clf.predict(embeddings[test_idx])
+                    y_true = labels.codes[test_idx]
+                    for i, idx in enumerate(test_idx):
+                        self.predictions.append(
+                            {
+                                "classifier": name,
+                                "split": fold,
+                                "sample_idx": idx,
+                                "y_true": labels.categories[y_true[i]],
+                                "y_pred": labels.categories[y_pred[i]],
+                            }
+                        )
+
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         # Convert results to DataFrame
         results_df = pd.DataFrame(self.results)
+        metrics = {}
 
         # Calculate mean metrics across folds and classifiers
-        mean_metrics = {}
         for metric in ["accuracy", "f1", "precision", "recall"]:
-            mean_metrics[f"mean_{metric}"] = results_df[metric].mean()
+            metrics[f"mean_{metric}"] = results_df[metric].mean()
 
             # Add per-classifier means
             for clf in results_df["classifier"].unique():
                 clf_results = results_df[results_df["classifier"] == clf]
-                mean_metrics[f"{clf}_mean_{metric}"] = clf_results[metric].mean()
+                metrics[f"{clf}_mean_{metric}"] = clf_results[metric].mean()
 
-        return mean_metrics
+        # Add predictions if generated
+        if self.generate_predictions:
+            self.predictions_df = pd.DataFrame(self.predictions)
+            metrics["predictions"] = self.predictions_df
+
+        return metrics
