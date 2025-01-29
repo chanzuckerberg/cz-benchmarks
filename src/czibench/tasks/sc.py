@@ -20,7 +20,7 @@ from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score
 from .base import BaseTask
-from .utils import cluster_embedding
+from .utils import cluster_embedding, filter_minimum_class
 
 logger = logging.getLogger(__name__)
 
@@ -71,30 +71,6 @@ class EmbeddingTask(BaseTask):
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
-
-
-def filter_minimum_class(
-    X: np.ndarray, y: np.ndarray | pd.Series, min_class_size: int = 10
-) -> tuple[np.ndarray, np.ndarray | pd.Series]:
-    logger.info(f"Label composition ({y.name if hasattr(y, 'name') else 'unknown'}):")
-    value_counts = pd.Series(y).value_counts()
-    logger.info(f"Total classes before filtering: {len(value_counts)}")
-
-    filtered_counts = value_counts[value_counts >= min_class_size]
-    logger.info(
-        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
-    )
-
-    y = pd.Series(y) if isinstance(y, np.ndarray) else y
-    class_counts = y.value_counts()
-
-    valid_classes = class_counts[class_counts >= min_class_size].index
-    valid_indices = y.isin(valid_classes)
-
-    X_filtered = X[valid_indices]
-    y_filtered = y[valid_indices]
-
-    return X_filtered, pd.Categorical(y_filtered)
 
 
 class MetadataLabelPredictionTask(BaseTask):
