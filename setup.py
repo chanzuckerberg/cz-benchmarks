@@ -1,16 +1,18 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+    requirements = [
+        line.strip() for line in fh if line.strip() and not line.startswith("#")
+    ]
 
 setup(
     name="czibench",
     version="0.1.0",
     author="Chan Zuckerberg Initiative",
-    description="A framework for benchmarking single-cell machine learning models",
+    description=("A framework for benchmarking single-cell machine learning models"),
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/chanzuckerberg/benchmarking-prototype",
@@ -31,8 +33,6 @@ setup(
     include_package_data=True,
     package_data={
         "containers": ["model_manifest.yaml"],
-        "datasets": [
-            "conf/*.yaml"
-        ],
-    }
+        "datasets": ["conf/*.yaml"],
+    },
 )

@@ -4,6 +4,7 @@ import numpy as np
 def _safelog(a):
     return np.log(a, out=np.zeros_like(a), where=(a != 0))
 
+
 def silhouette_score(embedding, labels):
     return sklearn_silhouette_score(
         embedding,

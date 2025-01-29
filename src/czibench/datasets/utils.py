@@ -2,13 +2,12 @@ import os
 import hydra
 from hydra.utils import instantiate
 import boto3
-from pathlib import Path
 from typing import Optional
-from importlib import resources
 import yaml
 from omegaconf import OmegaConf
 from ..constants import DATASETS_CACHE_PATH
 from .base import BaseDataset
+
 
 def _download_dataset(uri: str, output_path: str):
     """
@@ -22,12 +21,13 @@ def _download_dataset(uri: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # Parse S3 URL
-    bucket = uri.split('/')[2]
-    key = '/'.join(uri.split('/')[3:])
+    bucket = uri.split("/")[2]
+    key = "/".join(uri.split("/")[3:])
 
     # Download from S3
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     s3_client.download_file(bucket, key, output_path)
+
 
 def load_dataset(
     dataset_name: str,
@@ -53,7 +53,9 @@ def load_dataset(
     )
 
     # Load default config first and make it unstructured
-    cfg = OmegaConf.create(OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True))
+    cfg = OmegaConf.create(
+        OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
+    )
 
     # If custom config provided, load and merge it
     if config_path is not None:
@@ -77,7 +79,7 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
     original_path = dataset_info.path
 
-    is_s3_path = original_path.startswith('s3://')
+    is_s3_path = original_path.startswith("s3://")
     expanded_path = os.path.expanduser(original_path)
 
     if not is_s3_path:
@@ -98,5 +100,6 @@ def load_dataset(
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
+    dataset.path = os.path.expanduser(dataset.path)
 
     return dataset
