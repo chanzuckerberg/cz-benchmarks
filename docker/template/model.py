@@ -14,7 +14,6 @@ from czibench.models.sc import BaseYourModel
 
 
 class ExampleModel(BaseYourModel):
-
     def run_model(self):
         """
         Required: Implement your model's inference logic here.
