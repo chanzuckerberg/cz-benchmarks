@@ -45,6 +45,14 @@ class Geneformer(BaseSingleCell):
         token_config = selected_model.token_config
         seq_len = token_config.input_size
 
+        # Add n_counts if not present
+        if 'n_counts' not in self.data.adata.obs.columns:
+            self.data.adata.obs['n_counts'] = self.data.adata.X.sum(axis=1)
+
+        # Save adata to temp file
+        temp_path = Path("temp_dataset.h5ad")
+        self.data.adata.write_h5ad(temp_path)
+
         # Setup tokenizer
         tk = TranscriptomeTokenizer(
             {},  # No metadata mapping needed
@@ -55,6 +63,21 @@ class Geneformer(BaseSingleCell):
             special_token=(seq_len != 2048),  # True for 95M models, False for 30M
             model_input_size=seq_len,
         )
+
+        # Create dataset directory
+        dataset_dir = Path("dataset")
+        dataset_dir.mkdir(exist_ok=True)
+
+        # Tokenize data
+        tk.tokenize_data(
+            ".",
+            str(dataset_dir),
+            "tokenized_dataset",
+            file_format="h5ad"
+        )
+
+        # print("Dataset directory contents:")
+        # print(list(dataset_dir.glob("*")))
 
         # Extract embeddings
         embex = EmbExtractor(
@@ -70,7 +93,7 @@ class Geneformer(BaseSingleCell):
         # Get embeddings
         embs = embex.extract_embs(
             model_directory=self.model_weights_dir,
-            input_data_file=self.data.adata,
+            input_data_file=str(dataset_dir / "tokenized_dataset.dataset"),
             output_directory=".",
             output_prefix="geneformer",
             cell_state={},  # trick to make it return the dataframe and not save it
@@ -78,6 +101,11 @@ class Geneformer(BaseSingleCell):
 
         # Store embeddings
         self.data.output_embedding = embs.cpu().numpy()
+
+        # Cleanup
+        temp_path.unlink()
+        import shutil
+        shutil.rmtree(dataset_dir)
 
 
 if __name__ == "__main__":
