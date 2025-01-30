@@ -71,9 +71,6 @@ class Geneformer(BaseSingleCell):
         # Tokenize data
         tk.tokenize_data(".", str(dataset_dir), "tokenized_dataset", file_format="h5ad")
 
-        # print("Dataset directory contents:")
-        # print(list(dataset_dir.glob("*")))
-
         # Extract embeddings
         embex = EmbExtractor(
             model_type="Pretrained",
