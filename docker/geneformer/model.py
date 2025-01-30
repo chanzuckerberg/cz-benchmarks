@@ -46,8 +46,8 @@ class Geneformer(BaseSingleCell):
         seq_len = token_config.input_size
 
         # Add n_counts if not present
-        if 'n_counts' not in self.data.adata.obs.columns:
-            self.data.adata.obs['n_counts'] = self.data.adata.X.sum(axis=1)
+        if "n_counts" not in self.data.adata.obs.columns:
+            self.data.adata.obs["n_counts"] = self.data.adata.X.sum(axis=1)
 
         # Save adata to temp file
         temp_path = Path("temp_dataset.h5ad")
@@ -56,7 +56,7 @@ class Geneformer(BaseSingleCell):
         # Setup tokenizer
         tk = TranscriptomeTokenizer(
             {},  # No metadata mapping needed
-            nproc=16,
+            nproc=8,
             gene_median_file=str(Path(token_config.gene_median_file)),
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             gene_mapping_file=str(Path(token_config.ensembl_mapping_file)),
@@ -69,12 +69,7 @@ class Geneformer(BaseSingleCell):
         dataset_dir.mkdir(exist_ok=True)
 
         # Tokenize data
-        tk.tokenize_data(
-            ".",
-            str(dataset_dir),
-            "tokenized_dataset",
-            file_format="h5ad"
-        )
+        tk.tokenize_data(".", str(dataset_dir), "tokenized_dataset", file_format="h5ad")
 
         # print("Dataset directory contents:")
         # print(list(dataset_dir.glob("*")))
@@ -85,7 +80,7 @@ class Geneformer(BaseSingleCell):
             emb_layer=-1,
             emb_mode="cell",
             forward_batch_size=200 if seq_len == 2048 else 100,
-            nproc=16,
+            nproc=8,
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             max_ncells=None,
         )
@@ -105,6 +100,7 @@ class Geneformer(BaseSingleCell):
         # Cleanup
         temp_path.unlink()
         import shutil
+
         shutil.rmtree(dataset_dir)
 
 
