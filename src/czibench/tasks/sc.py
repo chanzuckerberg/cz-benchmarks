@@ -15,11 +15,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets.sc import SingleCellDataset
 from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
-from ..metrics.embedding import silhouette_score
+from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .base import BaseTask
 from .utils import cluster_embedding, filter_minimum_class
+from ..datasets.sc import SingleCellDataset
+from scib_metrics import silhouette_batch
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,34 @@ class EmbeddingTask(BaseTask):
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
+
+
+class BatchIntegrationTask(BaseTask):
+    def __init__(self, label_key: str, batch_key: str):
+        self.label_key = label_key
+        self.batch_key = batch_key
+
+    def validate(self, data: SingleCellDataset):
+        return (
+            data.output_embedding is not None
+            and self.batch_key in data.sample_metadata.columns
+        )
+
+    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        self.embedding = data.output_embedding
+        self.batch_labels = data.sample_metadata[self.batch_key]
+        self.labels = data.sample_metadata[self.label_key]
+        return data
+
+    def _compute_metrics(self) -> Dict[str, float]:
+        return {
+            "entropy_per_cell": compute_entropy_per_cell(
+                self.embedding, self.batch_labels
+            ),
+            "silhouette_score": silhouette_batch(
+                self.embedding, self.labels, self.batch_labels
+            ),
+        }
 
 
 class MetadataLabelPredictionTask(BaseTask):
