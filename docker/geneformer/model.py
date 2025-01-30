@@ -70,9 +70,10 @@ class Geneformer(BaseSingleCell):
         # Get embeddings
         embs = embex.extract_embs(
             model_directory=self.model_weights_dir,
-            input_data=self.data.adata,
-            tokenizer=tk,
-            return_tensor=True,
+            input_data_file=self.data.adata,
+            output_directory=".",
+            output_prefix="geneformer",
+            cell_state={},  # trick to make it return the dataframe and not save it
         )
 
         # Store embeddings

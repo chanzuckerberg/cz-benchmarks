@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY docker/geneformer/model.py .
 COPY docker/geneformer/config.yaml .
+COPY docker/geneformer/gene_dictionaries /app/gene_dictionaries
 
 # Install the czibench package
 COPY src /app/package/src
