@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Example Model Runner (mlflow)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.czibench.runners.example_model_runner",
+            "console": "integratedTerminal",
+            "args": [
+                "--model-runtime-type", "mlflow",
+                "--model-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
+                "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad"
+            ]
+        }
+    ]
+}

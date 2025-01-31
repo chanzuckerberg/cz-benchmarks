@@ -4,7 +4,7 @@ import docker
 import pathlib
 from typing import Any
 
-from .constants import (
+from ..constants import (
     INPUT_DATA_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
     MODEL_WEIGHTS_PATH_DOCKER,
@@ -12,7 +12,7 @@ from .constants import (
     MODEL_WEIGHTS_CACHE_PATH,
 )
 
-from .datasets.base import BaseDataset
+from ..datasets.base import BaseDataset
 
 
 class ContainerRunner:

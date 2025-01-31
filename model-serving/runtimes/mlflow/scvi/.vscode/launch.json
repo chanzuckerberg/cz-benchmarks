@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Package Model",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/package.py",
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Run Model: mlflow",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+            ],
+        },
+        {
+            "name": "Run Model: debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "args": [
+                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+                "--debug"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

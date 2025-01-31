@@ -1,0 +1,2 @@
+# Python packages for the MLflow model
+scvi-tools==1.2.2.post2
