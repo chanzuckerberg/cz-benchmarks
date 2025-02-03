@@ -1,0 +1,8 @@
+service: "service:svc"
+labels:
+  owner: czibench
+  project: scvi
+include:
+  - "*.py"
+python:
+  requirements_txt: requirements.txt

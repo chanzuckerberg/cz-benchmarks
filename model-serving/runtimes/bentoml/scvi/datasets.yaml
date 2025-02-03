@@ -1,0 +1,5 @@
+datasets:
+  example:
+    _target_: czibench.datasets.sc.SingleCellDataset
+    organism: ${organism:HUMAN}
+    path: model-serving/runtimes/bentoml/scvi/example.h5ad

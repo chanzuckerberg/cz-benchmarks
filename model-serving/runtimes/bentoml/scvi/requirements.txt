@@ -1,0 +1,7 @@
+bentoml
+czibench
+scvi-tools
+anndata
+torch
+pandas
+numpy
