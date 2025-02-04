@@ -66,3 +66,9 @@ venv.bak/
 /output/
 *.dill
 *.h5ad
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl

@@ -1,4 +1,4 @@
-.PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autoflake lint lint-fix install-tools rebuild
+.PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autoflake lint lint-fix install-tools rebuild tf-init tf-plan tf-apply tf-plan-apply tf-destroy tf-clean
 
 # Default target
 all: scvi uce scgpt
@@ -60,3 +60,32 @@ lint-fix: autoflake black-fix
 install-tools:
 	# Install all required linting and formatting tools
 	pip install black flake8 autoflake
+
+# Initialize Terraform working directory
+tf-init:
+	(cd terraform && terraform init)
+
+# Show planned changes
+tf-plan:
+	(cd terraform && terraform plan)
+
+# Apply changes
+tf-apply:
+	(cd terraform && terraform apply)
+
+# Clean up Terraform files
+tf-clean:
+	(cd terraform && \
+		rm -rf .terraform && \
+		rm -f terraform.tfstate* && \
+		rm -f .terraform.lock.hcl)
+
+# Plan and apply changes
+tf-plan-apply:
+	(cd terraform && \
+		terraform plan && \
+		terraform apply)
+
+# Destroy all Terraform-managed resources
+tf-destroy:
+	(cd terraform && terraform destroy)
