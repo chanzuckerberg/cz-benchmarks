@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Example Model Runner (mlflow)",
+            "name": "Run mlflow,scvi,local",
             "type": "debugpy",
             "request": "launch",
             "module": "src.czibench.runners.example_model_runner",
@@ -15,6 +15,20 @@
                 "--model-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
                 "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad"
             ]
+        },
+        {
+            "name": "Run mlflow,scvi,remote",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.czibench.runners.example_model_runner",
+            "console": "integratedTerminal",
+            "args": [
+                "--model-runtime-type", "mlflow",
+                "--model-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
+                "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad",
+                "--remote"
+            ]
         }
+    
     ]
 }

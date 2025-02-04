@@ -16,9 +16,8 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     args = parser.parse_args()
     
-    adata = ad.read_h5ad(args.input_h5ad)
-    print(adata)
-    
+    # adata = ad.read_h5ad(args.input_h5ad)
+    # print(adata)
     # input_data = pickle.dumps(adata)
 
     print("\nRunning prediction...\n")

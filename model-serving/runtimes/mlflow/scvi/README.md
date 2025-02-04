@@ -26,8 +26,22 @@ EOF
 To run the model as local API server:
 ```
 # Serve the model
-mlflow models serve -m runtime
+mlflow models serve -m runtime --env-manager uv
 
 # Send a request to the model
 curl http://localhost:5000/invocations -H "Content-Type:application/json"  --data '{"inputs": [["example.h5ad"]]}'> example-output.json
+```
+
+# Databricks Usage
+
+To log models to Databricks and to calls MLflow models served on Databricks, you will need obtain a access token. See https://docs.databricks.com/en/mlflow/access-hosted-tracking-server.html#access-the-mlflow-tracking-server-from-outside-databricks
+
+1. Install Databricks CLI (https://docs.databricks.com/en/dev-tools/cli/install.html#install)
+```
+mlflow brew tap databricks/tap
+brew install databricks
+```
+2. Create and set an access token:
+```
+databricks api post /api/2.0/token/create | jq .token_value | databricks configure --host https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com token
 ```

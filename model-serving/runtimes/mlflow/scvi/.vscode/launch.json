@@ -5,11 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Package Model",
+            "name": "Package Model: local",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/package.py",
             "console": "integratedTerminal",
+            "args": ["--target", "local"]
+        },
+        {
+            "name": "Package Model: databricks",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/package.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--target", "databricks",
+                "--experiment-name", "/Users/atolopko@chanzuckerberg.com/model-serving-poc/experiments/scvi"
+            ]
         },
         {
             "name": "Run Model: mlflow",
@@ -31,6 +44,34 @@
                 "--debug"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Run Model: debug dbfs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--input-h5ad", "dbfs:/Volumes/czi_virtual_cells_dev_databricks_default/public/model-serving-poc/data/example.h5ad",
+                "--debug"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Run Model: debug s3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "args": [
+                "--input-h5ad", "https://generate-cross-species.s3.us-west-2.amazonaws.com/datasets/test/example.h5ad?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEB0aCXVzLXdlc3QtMiJIMEYCIQCtZvZ%2FfoadOwe5UtydEi7HRWvevpl1Vi3ZQTGnlNYLVwIhAOX9%2Bb%2BGfNLdL47TPC1DlHFOSqVYW6IOsdimhkjHHlCfKo8ECDYQABoMMDU4MjY0MTM5Mjk5IgzEiOD639xEoaXDbB8q7AOLJCZ%2FY0bpM0NfMqNua0aYmdwR%2Ffl%2BbIPMr6YVYrAZEeouT5perEDiwaZuYjJMh3%2FHR%2FKJ1%2FlQEHrsSX0xFuJILyR6RcmAfPWgTqdJD7E%2FQFb%2BvGZZW%2FMBePGhoxSaiwE5KY6Yu0cfcxFJ%2B7Mhb3Dm8FKCmtOKCklocmWk7KIvPSXJyPQ8TiML792lJUx1ARn1o7OEHACjjs25qn6tzeGpv4lgrkQ7qHR5RKCk2XRrr8EOqwO9VmJ4VW%2BzBs%2Bol5dpmgXBNNu1aA3tjnaANIFB7ihee6O8ddUiyRb2vY8BnEL3x3lTe7G5pPtyDjfzQGMdVolh51ugosHQFCdvXB3nVBqPXOnt%2FqcqzEk0q4xCHi6FMkEJl%2BfU0b9vzH78uJuwTDwEf5Qf19uE21jHqYZZlqbl5CdXotaa%2FVOjh4Bfmk11Vo%2FiRuwRLN%2FTw5VbH0oVgribGordnLHewPgTrHGr7a3I2JS0J43TbNK7if30Pwo04lMDuNryWRlKriAnmqOuEUOT1TT8VbtCJYkD56XXqyLGoHYOlbPzKX1iNyeB%2B9SSGZvl76a9cGua5X2PkFYdaeaI%2BhVdbQToVcxHrQI3k2%2FlDr61My2Ty9IMEMHo9VQytUKq3NSfc5B%2BZg1ghtanq%2BlpjkA%2FR7%2B%2Fp9ww7fOJvQY6tAKbRXuXzmX3rOo1cL01ucChDouKJQCS8QQwNF9kyYXrX74y0NhIkGywPMlwknc39TFQmt422y2m9%2BwRH9%2Fp73rrBYZw09fRfySM1%2FhedQlaT3i68CP8Rw4eLOvbio4ut3ydnkMdHVAdb8zDpgll4NTIAdOvcGFj47jTTKmG7fJpjiM7R4%2F%2F7FRVkVUEZQrdsMxlA0KZiShIs0cnB8w%2BUdVrNN74%2FMZ9MkixUZtAU%2BymfulNxrnFAKkFTPV5t1NVaYR8h1asaQ358sEly8lkCH%2BkvIpPvBSk4gaO0ZLjnTTD4TYJV%2FHMJAmZvK0ua4v7jcorluj5vpiEhW0q%2Fw3WNYSpbA8lAz5P9Bl%2FEco21Baa7McyEDWwyDXfVRtpFU41hvVqXOt9V2EldBCKmdHvIK1xRrx8jg%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ3EGQGYRQ26RGFOP%2F20250204%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250204T203638Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=479732c0f230e57ffd024084222e60ffd8e7bd075efd15ff427797d7419de8fe",
+                "--debug"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+
+            
         }
+
     ]
 }

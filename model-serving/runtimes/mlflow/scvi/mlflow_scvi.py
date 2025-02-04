@@ -1,4 +1,5 @@
 import functools
+import os
 from anndata import AnnData, read_h5ad
 import mlflow
 import mlflow.pyfunc
@@ -9,6 +10,9 @@ from scipy import sparse
 
 import logging
 from pathlib import Path
+from databricks.sdk import WorkspaceClient
+import requests
+from urllib.request import urlretrieve
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +29,26 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
         print(params)
         
         # adata = pickle.loads(model_input.iloc[0, 0])
-        adata = read_h5ad(model_input.iloc[0, 0])
+        adata_url = str(model_input.iloc[0, 0])
+        if adata_url.startswith("dbfs:/"):
+            # FIXME: This does not work (locally, at least). dbfs.copy() simply does not write to /tmp!?
+            if not all(env_var in os.environ for env_var in ["DATABRICKS_HOST", "DATABRICKS_TOKEN"]):
+                raise EnvironmentError("DATABRICKS_HOST and DATABRICKS_TOKEN must be set as environment variables")
+            client = WorkspaceClient()
+            local_path = "/tmp/input_adata.h5ad"
+            client.dbfs.copy(adata_url, local_path, overwrite=True)
+            print(f"Downloaded input data file from {adata_url}")
+        elif adata_url.startswith("https://") or adata_url.startswith("http://"):
+            local_path = "/tmp/input_data.h5ad"
+            urlretrieve(adata_url, local_path)
+            response = requests.get(adata_url)
+            with open(local_path, 'wb') as f:
+                f.write(response.content)
+            print(f"Downloaded input data file from {adata_url}")
+        else:
+            local_path = adata_url
+            
+        adata = read_h5ad(local_path)
 
         hvg_file = context.artifacts[f"hvg_names_{params['organism']}"]
         # Use the full path when loading the model weights
