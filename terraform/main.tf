@@ -48,7 +48,6 @@ resource "aws_s3_bucket_policy" "public_read_policy" {
 }
 
 # IAM policy defining write permissions for the bucket
-# This policy allows uploading, deleting, and listing objects
 resource "aws_iam_policy" "s3_write_policy" {
   name        = "s3-bucket-write-policy"
   description = "Policy for write access to specific S3 bucket"
@@ -74,7 +73,7 @@ resource "aws_iam_policy" "s3_write_policy" {
   })
 }
 
-# Add policy to allow poweruser role access to the bucket
+# Add policy to allow poweruser role write access to the bucket
 resource "aws_iam_role_policy_attachment" "poweruser_bucket_access" {
   role       = "poweruser"
   policy_arn = aws_iam_policy.s3_write_policy.arn
