@@ -1,0 +1,20 @@
+# -----------------------------
+# File: bentofile.yaml
+# -----------------------------
+service: "service:svc"
+
+python:
+  # Instead of specifying 'packages', we reference an existing requirements.txt
+  requirements_txt: "requirements.txt"
+
+# Add everything we want included in the Bento
+include:
+  - service.py
+  - inference.py
+  - config.yaml
+  - requirements.txt
+  - artifacts/**
+
+# We can exclude large or unneeded files/directories as needed.
+# exclude:
+#   - some_large_dir
