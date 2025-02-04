@@ -1,0 +1,3 @@
+bentoml
+scvi-tools==1.2.2.post2
+pyyaml
