@@ -1,7 +1,7 @@
 .PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autoflake lint lint-fix install-tools rebuild
 
 # Default target
-all: scvi uce scgpt
+all: scvi uce scgpt scgenept
 
 # Build the scvi image
 scvi:
@@ -15,12 +15,17 @@ uce:
 scgpt:
 	docker build -t czibench-scgpt:latest -f docker/scgpt/Dockerfile .
 
+# Build the scgenept image
+scgenept:
+	docker build -t czibench-scgenept:latest -f docker/scgenept/Dockerfile .
+
 # Clean up images
 clean:
 	docker rmi czibench-scvi:latest || true
 	docker rmi czibench-uce:latest || true
 	docker rmi czibench-scgpt:latest || true
-
+	docker rmi czibench-scgenept:latest || true
+	
 # Helper target to rebuild everything from scratch
 rebuild: clean all
 
