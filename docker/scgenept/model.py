@@ -1,5 +1,5 @@
 import pathlib
-
+import numpy as np
 from omegaconf import OmegaConf
 from glob import glob
 import torch
@@ -56,6 +56,7 @@ class ScGenePT(BaseSingleCell):
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="scgenept_go_c")
         parser.add_argument("--dataset_name", type=str, default="adamson")
+        parser.add_argument("--chunk_size", type=int, default=512)
         args = parser.parse_args()
         return args
     
@@ -125,10 +126,16 @@ class ScGenePT(BaseSingleCell):
         
         gene_names = adata.var["gene_name"].to_list()
         gene_pert = 'CEBPB+ctrl'
+        chunk_size = args.chunk_size
+        all_preds = []
+        num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size  
+        for i in range(num_chunks):
+            logger.info(f"Predicting perturbations for chunk {i + 1} of {num_chunks}")
+            chunk = adata[i*chunk_size:(i+1)*chunk_size]
+            preds = model.pred_perturb_from_ctrl(chunk, gene_pert, gene_names, device, gene_ids, pool_size = None, return_mean = False).squeeze()  
+            all_preds.append(preds)
         
-        preds = model.pred_perturb_from_ctrl(adata, gene_pert, gene_names, device, gene_ids, pool_size = None, return_mean = False).squeeze()  
-                
-        self.data.perturbation_predictions = pd.DataFrame(data = preds, index = adata.obs_names, columns = gene_names)
+        self.data.perturbation_predictions = pd.DataFrame(data = np.concatenate(all_preds, axis = 0), index = adata.obs_names, columns = gene_names)
 
 
 if __name__ == "__main__":
