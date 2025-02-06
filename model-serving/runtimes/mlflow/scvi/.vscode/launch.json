@@ -5,11 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Package Model",
+            "name": "Package Model: local",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/package.py",
             "console": "integratedTerminal",
+            "args": ["--target", "local"]
+        },
+        {
+            "name": "Package Model: databricks",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/package.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--target", "databricks",
+                "--experiment-name", "/Users/atolopko@chanzuckerberg.com/model-serving-poc/experiments/scvi"
+            ]
         },
         {
             "name": "Run Model: mlflow",
@@ -18,7 +31,17 @@
             "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "args": [
-                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+                "--input-h5ad", "${input:inputDataUrl}",
+            ],
+        },
+        {
+            "name": "Run Model: mlflow (s3)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--input-h5ad", "${input:inputDataUrl}",
             ],
         },
         {
@@ -27,10 +50,35 @@
             "request": "launch",
             "program": "${workspaceFolder}/run.py",
             "args": [
-                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+                "--input-h5ad", "${input:inputDataUrl}",
                 "--debug"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Run Model: debug s3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "args": [
+                "--input-h5ad", "${input:inputDataUrl}",
+                "--debug"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ],
+    "inputs":[
+        {
+            "id": "modelEndpoint",
+            "type": "promptString",
+            "description": "Enter the model endpoint"
+        },
+        {
+            "id": "inputDataUrl",
+            "type": "promptString",
+            "description": "Enter the input data URL"
         }
     ]
+
 }
