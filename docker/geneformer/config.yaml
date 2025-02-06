@@ -1,0 +1,63 @@
+# Training configuration
+label_feature: cell_subclass
+# Specific labels to exclude from training and evaluation
+label_blocklist:
+  - unknown
+  - abnormal cell
+  - animal cell
+  - eukaryotic cell
+# Also exclude labels with too few examples
+label_min_examples: 10
+# Fraction of the input Dataset to hold out for evaluation
+test_size: 0.1
+
+# Training arguments
+training_args:
+  learning_rate: 0.00005
+  lr_scheduler_type: linear
+  warmup_steps: 500
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 2
+  num_train_epochs: 16
+  bf16: true
+
+# Model configurations
+models:
+  gf_12L_30M:
+    model_name: gf-12L-30M-i2048
+    model_uri: s3://generate-cross-species/models/geneformer/gf-12L-30M-i2048
+    token_config:
+      gene_median_file: gene_dictionaries/gene_median_dictionary_gc30M.pkl
+      token_dictionary_file: gene_dictionaries/token_dictionary_gc30M.pkl
+      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc30M.pkl
+      input_size: 2048
+
+  gf_12L_95M:
+    model_name: gf-12L-95M-i4096
+    model_uri: s3://generate-cross-species/models/geneformer/gf-12L-95M-i4096
+    token_config:
+      gene_median_file: gene_dictionaries/gene_median_dictionary_gc95M.pkl
+      token_dictionary_file: gene_dictionaries/token_dictionary_gc95M.pkl
+      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc95M.pkl
+      input_size: 4096
+
+  gf_20L_95M:
+    model_name: gf-20L-95M-i4096
+    model_uri: s3://generate-cross-species/models/geneformer/gf-20L-95M-i4096
+    token_config:
+      gene_median_file: gene_dictionaries/gene_median_dictionary_gc95M.pkl
+      token_dictionary_file: gene_dictionaries/token_dictionary_gc95M.pkl
+      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc95M.pkl
+      input_size: 4096
+
+  gf_6L_30M:
+    model_name: gf-6L-30M-i2048
+    model_uri: s3://generate-cross-species/models/geneformer/gf-6L-30M-i2048
+    token_config:
+      gene_median_file: gene_dictionaries/gene_median_dictionary_gc30M.pkl
+      token_dictionary_file: gene_dictionaries/token_dictionary_gc30M.pkl
+      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc30M.pkl
+      input_size: 2048
+
+default_model: gf_12L_30M
