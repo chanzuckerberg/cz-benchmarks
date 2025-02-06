@@ -45,3 +45,19 @@ brew install databricks
 ```
 databricks api post /api/2.0/token/create | jq .token_value | databricks configure --host https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com token
 ```
+
+To perform inference on a Databricks model endpoint, where the model accepts an S3 object URL as input:
+```
+curl \
+  -u token:<DATABRICKS_TOKEN> \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"inputs": [[<S3_OBJECT_URL>]]}' \
+  https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/<MODEL_SERVING_ENDPOINT_NAME>/invocations`
+```
+You must specify the `DATABRICKS_TOKEN`, `S3_OBJECT_URL`, and `MODEL_MODEL_SERVING_ENDPOINT_NAME` values. The S#
+
+
+
+
+

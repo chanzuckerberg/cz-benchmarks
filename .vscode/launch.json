@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--model-runtime-type", "mlflow",
-                "--model-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
+                "--model-resource-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
                 "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad"
             ]
         },
@@ -24,11 +24,22 @@
             "console": "integratedTerminal",
             "args": [
                 "--model-runtime-type", "mlflow",
-                "--model-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
-                "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad",
-                "--remote"
+                "--model-endpoint", "${input:modelEndpoint}",
+                "--input-data-url", "${input:inputDataUrl}",
             ]
         }
     
+    ],
+    "inputs":[
+        {
+            "id": "modelEndpoint",
+            "type": "promptString",
+            "description": "Enter the model endpoint"
+        },
+        {
+            "id": "inputDataUrl",
+            "type": "promptString",
+            "description": "Enter the input data URL"
+        }
     ]
 }
