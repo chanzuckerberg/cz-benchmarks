@@ -60,6 +60,7 @@ class ScGenePT(BaseSingleCell):
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="scgenept_go_c")
+        parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
         parser.add_argument("--dataset_name", type=str, default="adamson")
         parser.add_argument("--chunk_size", type=int, default=512)
         args = parser.parse_args()
@@ -153,7 +154,7 @@ class ScGenePT(BaseSingleCell):
         )
 
         gene_names = adata.var["gene_name"].to_list()
-        gene_pert = "CEBPB+ctrl"
+        gene_pert = args.gene_pert
         chunk_size = args.chunk_size
         all_preds = []
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
