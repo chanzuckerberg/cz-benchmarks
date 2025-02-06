@@ -15,12 +15,16 @@ uce:
 scgpt:
 	docker build -t czibench-scgpt:latest -f docker/scgpt/Dockerfile .
 
+# Build the geneformer image
+geneformer:
+	docker build -t czibench-geneformer:latest -f docker/geneformer/Dockerfile .
+
 # Clean up images
 clean:
 	docker rmi czibench-scvi:latest || true
 	docker rmi czibench-uce:latest || true
 	docker rmi czibench-scgpt:latest || true
-
+	docker rmi czibench-geneformer:latest || true
 # Helper target to rebuild everything from scratch
 rebuild: clean all
 
