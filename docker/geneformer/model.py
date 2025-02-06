@@ -71,13 +71,14 @@ class Geneformer(BaseSingleCell):
         # Tokenize data
         tk.tokenize_data(".", str(dataset_dir), "tokenized_dataset", file_format="h5ad")
 
-        # Extract embeddings
+        # Extract embeddings with smaller batch size
         embex = EmbExtractor(
             model_type="Pretrained",
             emb_layer=-1,
             emb_mode="cell",
-            forward_batch_size=200 if seq_len == 2048 else 100,
-            nproc=8,
+            # forward_batch_size=200 if seq_len == 2048 else 100,
+            forward_batch_size=32,  # Significantly reduced batch size (needed for 95M model memory management)
+            nproc=4,  # Reduced from 8
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             max_ncells=None,
         )
@@ -97,7 +98,6 @@ class Geneformer(BaseSingleCell):
         # Cleanup
         temp_path.unlink()
         import shutil
-
         shutil.rmtree(dataset_dir)
 
 
