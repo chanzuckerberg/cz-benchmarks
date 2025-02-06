@@ -31,7 +31,7 @@
             "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "args": [
-                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+                "--input-h5ad", "${input:inputDataUrl}",
             ],
         },
         {
@@ -41,7 +41,7 @@
             "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "args": [
-                "--input-h5ad", "https://generate-cross-species.s3.us-west-2.amazonaws.com/datasets/test/example.h5ad?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEEgaCXVzLXdlc3QtMiJFMEMCIEL3YHq%2Fc3RbypVS%2BuR%2FQ%2BV0Tp9uuJbDHzZvlxQtPrf0Ah8%2Bn61l33ZxbW6fsFZNaA%2BA5n2XIAzp64nbLK%2BNAkPhKo8ECGEQABoMMDU4MjY0MTM5Mjk5IgwSF3n1W8Aobb3dnR0q7ANcwLsisYn0ZIiTu66qP6cKPLdm5ki54Cu6D35HFizg81TAfOwozv%2B6gVZssviK4Nw8JCm8Gmsr1TO7xjvQOcyO7jHW9k9u9T8JINovtopC7XKnJhdOIKks8y3NIOQZqEUTO5dC4JJHrpcb8CQ30S6fvF1n1Cbek6eYaTK30uo3UEw3eEQ%2FXYQ9rSokP%2B0qNwl3ASV%2BVuJ5zW627r5%2BDCCNryGY2ARUEvFhj6%2FCzGjymwC0AFKWFk5TiIiB697nPnyeuv%2BKJ5Qs7Wn165WKBOEauYLxOgsY5c8BjyUPfCVIy%2BvlslWSEvNLaKeWP3rDvo%2F1Bbzeo0VD%2BPh233xOQyX1DH5LV0LDZwE0%2B88k%2BAtETNY0jhdvDThTw%2BjbdQHuGkbu7nIkv0oiTIT6IUDGeHiuuhYu94uOkbeOBU0QCPzZtWZ17hy57jFsUQFKwy8xKOaWR%2BFst1%2BT38B0BP6qEUurYl22SCzoyMgHILt3yHcDz1VgONNpKDDInjI0grWoMtx89HEpGcxLkPoAnlPmdftoGjdB%2Bv0I3OoTTWWN0%2BoY1yyunG0xBO54QktrSh8O%2F4W0weLbtg87u2Pdec6vv0S4nM88LBGz3wsxnL0%2Fd2qCyy4DidzDTungdEY72FvdIgEej32keLdazlXaYf0woLqTvQY6twJAnYPHgjdXlsn3lSRVIgqvL%2FOrQUMy2u2Vf31BeOFJJNgcqci5EaVL04DID3a01iMc8kwx7QHDsp0junVR6izwI4Zjnb9wwz0GKf32YeSNr%2FlBge79A2tywryBEHCdGv6qFagKXps7lFxbyUOG7ZBWooSOnkGPQ60gnnfNYTH11NHUBx%2BNE3ORXUR0Cf%2F0z5in44vVGhyD1q91nTa5N1WkMFPjGRFSR47x5yZeByO2cpNlJGFlYbXTj9OKzMmRcvnOykw%2F1AJ0s%2F5cQFzmNYndth%2FABBMVphfVYV2s%2BVrjqu%2BQINoTEqtb5r03Bt4PM6PQrZodt0CSBxy9NHeOI%2FG3bXXL3IcFfjYVxErvnvTTBzh04cBEifbvH9OIZcX%2FSzQ0DlDH%2FFqsZCNKpr1D9ct81CRZm0%2Biiw%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ3EGQGYR323CFT2U%2F20250206%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250206T160324Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=e5590bc6b593dcaca9a79eb236f89c48e7b649c1e1d1bf8fa246cbd13fff2dd8",
+                "--input-h5ad", "${input:inputDataUrl}",
             ],
         },
         {
@@ -50,23 +50,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/run.py",
             "args": [
-                "--input-h5ad", "${workspaceFolder}/example.h5ad",
+                "--input-h5ad", "${input:inputDataUrl}",
                 "--debug"
             ],
             "console": "integratedTerminal"
-        },
-        {
-            "name": "Run Model: debug dbfs",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/run.py",
-            "envFile": "${workspaceFolder}/.env",
-            "args": [
-                "--input-h5ad", "dbfs:/Volumes/czi_virtual_cells_dev_databricks_default/public/model-serving-poc/data/example.h5ad",
-                "--debug"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true
         },
         {
             "name": "Run Model: debug s3",
@@ -74,14 +61,24 @@
             "request": "launch",
             "program": "${workspaceFolder}/run.py",
             "args": [
-                "--input-h5ad", "https://generate-cross-species.s3.us-west-2.amazonaws.com/datasets/test/example.h5ad?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEEgaCXVzLXdlc3QtMiJFMEMCIEL3YHq%2Fc3RbypVS%2BuR%2FQ%2BV0Tp9uuJbDHzZvlxQtPrf0Ah8%2Bn61l33ZxbW6fsFZNaA%2BA5n2XIAzp64nbLK%2BNAkPhKo8ECGEQABoMMDU4MjY0MTM5Mjk5IgwSF3n1W8Aobb3dnR0q7ANcwLsisYn0ZIiTu66qP6cKPLdm5ki54Cu6D35HFizg81TAfOwozv%2B6gVZssviK4Nw8JCm8Gmsr1TO7xjvQOcyO7jHW9k9u9T8JINovtopC7XKnJhdOIKks8y3NIOQZqEUTO5dC4JJHrpcb8CQ30S6fvF1n1Cbek6eYaTK30uo3UEw3eEQ%2FXYQ9rSokP%2B0qNwl3ASV%2BVuJ5zW627r5%2BDCCNryGY2ARUEvFhj6%2FCzGjymwC0AFKWFk5TiIiB697nPnyeuv%2BKJ5Qs7Wn165WKBOEauYLxOgsY5c8BjyUPfCVIy%2BvlslWSEvNLaKeWP3rDvo%2F1Bbzeo0VD%2BPh233xOQyX1DH5LV0LDZwE0%2B88k%2BAtETNY0jhdvDThTw%2BjbdQHuGkbu7nIkv0oiTIT6IUDGeHiuuhYu94uOkbeOBU0QCPzZtWZ17hy57jFsUQFKwy8xKOaWR%2BFst1%2BT38B0BP6qEUurYl22SCzoyMgHILt3yHcDz1VgONNpKDDInjI0grWoMtx89HEpGcxLkPoAnlPmdftoGjdB%2Bv0I3OoTTWWN0%2BoY1yyunG0xBO54QktrSh8O%2F4W0weLbtg87u2Pdec6vv0S4nM88LBGz3wsxnL0%2Fd2qCyy4DidzDTungdEY72FvdIgEej32keLdazlXaYf0woLqTvQY6twJAnYPHgjdXlsn3lSRVIgqvL%2FOrQUMy2u2Vf31BeOFJJNgcqci5EaVL04DID3a01iMc8kwx7QHDsp0junVR6izwI4Zjnb9wwz0GKf32YeSNr%2FlBge79A2tywryBEHCdGv6qFagKXps7lFxbyUOG7ZBWooSOnkGPQ60gnnfNYTH11NHUBx%2BNE3ORXUR0Cf%2F0z5in44vVGhyD1q91nTa5N1WkMFPjGRFSR47x5yZeByO2cpNlJGFlYbXTj9OKzMmRcvnOykw%2F1AJ0s%2F5cQFzmNYndth%2FABBMVphfVYV2s%2BVrjqu%2BQINoTEqtb5r03Bt4PM6PQrZodt0CSBxy9NHeOI%2FG3bXXL3IcFfjYVxErvnvTTBzh04cBEifbvH9OIZcX%2FSzQ0DlDH%2FFqsZCNKpr1D9ct81CRZm0%2Biiw%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ3EGQGYR323CFT2U%2F20250206%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250206T160324Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=e5590bc6b593dcaca9a79eb236f89c48e7b649c1e1d1bf8fa246cbd13fff2dd8",
+                "--input-h5ad", "${input:inputDataUrl}",
                 "--debug"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
-
-            
         }
-
+    ],
+    "inputs":[
+        {
+            "id": "modelEndpoint",
+            "type": "promptString",
+            "description": "Enter the model endpoint"
+        },
+        {
+            "id": "inputDataUrl",
+            "type": "promptString",
+            "description": "Enter the input data URL"
+        }
     ]
+
 }
