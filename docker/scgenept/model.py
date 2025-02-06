@@ -10,7 +10,6 @@ from czibench.utils import sync_s3_to_local, download_s3_file
 import pandas as pd
 from gears import PertData
 
-from train import load_dataloader
 from utils.data_loading import load_trained_scgenept_model
 
 import logging
@@ -21,18 +20,6 @@ logger = logging.getLogger(__name__)
 def load_dataloader(
     dataset_name, data_dir, batch_size, val_batch_size, split="simulation"
 ):
-    """
-    Loads data in a PertData format. Uses GEARS dataloaders implementation as described under https://github.com/snap-stanford/GEARS
-
-    Args:
-        dataset_name: name of the dataset to load. Example: 'adamson', 'norman'.
-        batch_size: batch_size for the train datalaoder
-        val_batch_size: batch_size for the validation dataloader
-        split: split to use; tested with 'simulation'
-
-    Returns:
-        pert_data: PertData object
-    """
     pert_data = PertData(f"{data_dir}/")
     pert_data.load(data_name=dataset_name)
     pert_data.prepare_split(split=split, seed=1)
@@ -89,7 +76,7 @@ class ScGenePT(BaseSingleCell):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
         logger.info(
-            f"Downloaded model weights from {model_uri} to {self.model_weights_dir}"
+            f"Downloaded model weights from {model_uri} to " f"{self.model_weights_dir}"
         )
 
         # Copy the vocab.json file from S3 to local model weights directory
@@ -115,7 +102,8 @@ class ScGenePT(BaseSingleCell):
         gene_embeddings_dir.mkdir(parents=True, exist_ok=True)
         sync_s3_to_local(bucket, gene_embeddings_key, str(gene_embeddings_dir))
         logger.info(
-            f"Downloaded gene_embeddings from {gene_embeddings_uri} to {gene_embeddings_dir}"
+            f"Downloaded gene_embeddings from {gene_embeddings_uri} "
+            f"to {gene_embeddings_dir}"
         )
 
     def run_model(self):
