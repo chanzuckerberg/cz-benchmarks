@@ -49,18 +49,18 @@ class Geneformer(BaseSingleCell):
         if "n_counts" not in self.data.adata.obs.columns:
             self.data.adata.obs["n_counts"] = self.data.adata.X.sum(axis=1)
 
+
         # Save adata to temp file
         temp_path = Path("temp_dataset.h5ad")
         self.data.adata.write_h5ad(temp_path)
 
-        # Setup tokenizer
         tk = TranscriptomeTokenizer(
             {},  # No metadata mapping needed
-            nproc=8,
+            nproc=4,
             gene_median_file=str(Path(token_config.gene_median_file)),
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             gene_mapping_file=str(Path(token_config.ensembl_mapping_file)),
-            special_token=(seq_len != 2048),  # True for 95M models, False for 30M
+            special_token=(seq_len != 2048), # True for 95M models, False for 30M
             model_input_size=seq_len,
         )
 

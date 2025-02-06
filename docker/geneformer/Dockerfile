@@ -33,7 +33,7 @@ ENV OUTPUT_PATH=/app/output/data.dill
 ENV ARTIFACTS_PATH=/mnt/efs
 
 # Add memory management environment variables
-ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+ENV PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 ENV CUDA_LAUNCH_BLOCKING=1
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"]
