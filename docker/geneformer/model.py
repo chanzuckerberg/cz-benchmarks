@@ -22,14 +22,26 @@ class Geneformer(BaseSingleCell):
         if missing_keys:
             raise ValueError(f"Missing required var keys: {missing_keys}")
 
+    def parse_args(self):
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--model_name", type=str, default="gf_12L_30M")
+        args = parser.parse_args()
+        return args
+    
     def get_model_weights_subdir(self) -> str:
+        args = self.parse_args()
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[config.default_model]
-        return selected_model.model_name
+        assert (
+            f"{args.model_name}" in config.models
+        ), f"Model {args.model_name} not found in config"
+        return args.model_name
+
 
     def _download_model_weights(self):
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[config.default_model]
+        args = self.parse_args()
+        selected_model = config.models[args.model_name]
         model_uri = selected_model.model_uri
 
         Path(self.model_weights_dir).mkdir(exist_ok=True)
@@ -41,7 +53,8 @@ class Geneformer(BaseSingleCell):
 
     def run_model(self):
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[config.default_model]
+        args = self.parse_args()
+        selected_model = config.models[args.model_name]
         token_config = selected_model.token_config
         seq_len = token_config.input_size
 
