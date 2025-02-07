@@ -59,5 +59,3 @@ models:
       token_dictionary_file: gene_dictionaries/token_dictionary_gc30M.pkl
       ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc30M.pkl
       input_size: 2048
-
-default_model: gf_12L_30M

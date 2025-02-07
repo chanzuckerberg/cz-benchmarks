@@ -4,47 +4,49 @@ WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/New_York
 
-# Install Python 3.11
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
+    wget \
     git \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Python 3.11 as default
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-RUN update-alternatives --set python3 /usr/bin/python3.11
+# Install Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh
 
-# Clone the UCE repository and install UCE into the uce virtual environment
+# Add conda to path and create Python 3.11 environment
+ENV PATH="/opt/conda/bin:${PATH}"
+RUN conda create -n uce python=3.11 -y && \
+    conda init bash && \
+    echo "conda activate uce" >> ~/.bashrc
+
+# Clone the UCE repository and install UCE
 RUN git clone https://github.com/giovp/UCE && \
     cd UCE && \
-    pip install . && \
+    /opt/conda/envs/uce/bin/pip install . && \
     cd ..
 
 # Install base requirements
 COPY docker/uce/requirements.txt .
-RUN pip install -r requirements.txt
-
-# Copy model files
-COPY docker/uce/uce_model.py .
-COPY docker/uce/config.yaml .
-COPY docker/uce/model_files/new_species_protein_embeddings.csv model_files/new_species_protein_embeddings.csv
+RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
 # Install the czibench package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt
 COPY README.md /app/package/README.md
-RUN pip install -e /app/package
+RUN /opt/conda/envs/uce/bin/pip install -e /app/package
+
+# Copy model files
+COPY docker/uce/uce_model.py .
+COPY docker/uce/config.yaml .
+COPY docker/uce/model_files/new_species_protein_embeddings.csv model_files/new_species_protein_embeddings.csv
 
 # Set environment variables for data paths
 ENV INPUT_PATH=/app/input/data.dill
 ENV OUTPUT_PATH=/app/output/data.dill
 ENV ARTIFACTS_PATH=/app/artifacts
 
-ENTRYPOINT ["python3", "-u", "/app/uce_model.py"]
+ENTRYPOINT ["/opt/conda/envs/uce/bin/python", "-u", "/app/uce_model.py"]

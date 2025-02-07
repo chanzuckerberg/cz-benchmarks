@@ -104,7 +104,7 @@ class UCE(BaseSingleCell):
         processor.preprocess_anndata()
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
-        self.data.output_embedding = embedding_adata.X.toarray()
+        self.data.output_embedding = embedding_adata.obsm["X_uce"]
 
 
 if __name__ == "__main__":
