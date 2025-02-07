@@ -24,11 +24,12 @@ class Geneformer(BaseSingleCell):
 
     def parse_args(self):
         import argparse
+
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="gf_12L_30M")
         args = parser.parse_args()
         return args
-    
+
     def get_model_weights_subdir(self) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
@@ -36,7 +37,6 @@ class Geneformer(BaseSingleCell):
             f"{args.model_name}" in config.models
         ), f"Model {args.model_name} not found in config"
         return args.model_name
-
 
     def _download_model_weights(self):
         config = OmegaConf.load("config.yaml")
@@ -59,7 +59,7 @@ class Geneformer(BaseSingleCell):
         seq_len = token_config.input_size
 
         # Add cell index as metadata to track order
-        self.data.adata.obs['cell_idx'] = range(len(self.data.adata.obs))
+        self.data.adata.obs["cell_idx"] = range(len(self.data.adata.obs))
 
         # Add n_counts if not present
         if "n_counts" not in self.data.adata.obs.columns:
@@ -96,7 +96,7 @@ class Geneformer(BaseSingleCell):
             nproc=4,
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             max_ncells=None,
-            emb_label=['cell_idx']  # Include cell_idx in output
+            emb_label=["cell_idx"],  # Include cell_idx in output
         )
 
         # Get embeddings
@@ -110,15 +110,16 @@ class Geneformer(BaseSingleCell):
         )
 
         # Sort embeddings by cell_idx to restore original order
-        embs = embs.sort_values('cell_idx')
-        
+        embs = embs.sort_values("cell_idx")
+
         # Remove the cell_idx column and convert to numpy array
-        embs = embs.drop('cell_idx', axis=1)
+        embs = embs.drop("cell_idx", axis=1)
         self.data.output_embedding = embs.values
 
         # Cleanup
         temp_path.unlink()
         import shutil
+
         shutil.rmtree(dataset_dir)
 
 
