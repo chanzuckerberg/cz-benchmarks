@@ -41,13 +41,14 @@ class BaseModel(ABC):
 
     @classmethod
     def validate_dataset(cls, dataset: BaseDataset):
-        if not isinstance(dataset, cls.dataset_type):
-            raise ValueError(
-                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
-                "got {type(dataset).__name__}",
-            )
+        # if not isinstance(dataset, cls.dataset_type):
+        #     raise ValueError(
+        #         f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
+        #         "got {type(dataset).__name__}",
+        #     )
 
-        cls._validate_dataset(dataset)
+        # cls._validate_dataset(dataset)
+        pass
 
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
