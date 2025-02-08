@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     """Filter adata by HVGs."""
     # Create a full copy at the start to avoid view issues
+    logger.info(f"Filtering adata by HVGs with hvg_path:  {hvg_path}")
     adata = adata.copy()
 
     hvg = pd.read_csv(hvg_path)
