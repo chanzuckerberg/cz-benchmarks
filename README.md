@@ -212,3 +212,9 @@ dataset, clustering_results = task.run(dataset)
 task = EmbeddingTask(label_key="cell_type")
 dataset, embedding_results = task.run(dataset)
 ```
+
+## Contributing
+This project adheres to the Contributor Covenant code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
+
+## Reporting Security Issues
+Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@chanzuckerberg.com.
