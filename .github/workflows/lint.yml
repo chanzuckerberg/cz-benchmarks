@@ -13,6 +13,7 @@ on:
 
 jobs:
   lint:
+    name: Lint Codebase
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.x'
           check-latest: true
 
       - name: Install dependencies
@@ -33,11 +34,11 @@ jobs:
       - name: Run pre-commit checks
         run: |
           pre-commit run --all-files --show-diff-on-failure
-    
+
       #- name: Run Pyright
         #run: |
          #pyright --version
          # pyright
       
-     #- name: Run linting
-         #run: make lint
+     - name: Run linting
+       run: make lint

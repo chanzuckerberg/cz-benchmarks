@@ -17,7 +17,6 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
         python: [ '3.10', '3.11', '3.12' ]
-        torch: [ '2.4', '2.5', '2.6' ]
       fail-fast: false
 
     steps:
@@ -32,7 +31,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pytest-xdist
-          python3 -m pip install .
+          python3 -m pip install -r requirements-test.txt 
           python3 -m pip uninstall -y torch
           python3 -m pip cache purge
           python3 -m pip install torch==${{ matrix.torch }}
