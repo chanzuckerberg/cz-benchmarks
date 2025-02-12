@@ -1,0 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cz-benchmark"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
