@@ -10,7 +10,6 @@ import pandas as pd
 class BaseDataset(ABC):
     output_embedding: Optional[np.ndarray] = None
     sample_metadata: Optional[pd.DataFrame] = None
-    perturbation_predictions: Optional[pd.DataFrame] = None
 
     def __init__(self, path: str, **kwargs: Any):
         self.path = path
