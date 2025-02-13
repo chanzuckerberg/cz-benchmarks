@@ -1,4 +1,6 @@
 from pathlib import Path
+import argparse
+import shutil
 
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
@@ -23,7 +25,6 @@ class Geneformer(BaseSingleCell):
             raise ValueError(f"Missing required var keys: {missing_keys}")
 
     def parse_args(self):
-        import argparse
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="gf_12L_30M")
@@ -118,8 +119,6 @@ class Geneformer(BaseSingleCell):
 
         # Cleanup
         temp_path.unlink()
-        import shutil
-
         shutil.rmtree(dataset_dir)
 
 
