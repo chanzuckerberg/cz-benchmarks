@@ -10,6 +10,9 @@ from czibench.models.base import BaseModelImplementation
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
+    def parse_args(self):
+        pass
+
     def get_model_weights_subdir(self) -> str:
         return self.data.organism.name
 
