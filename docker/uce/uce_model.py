@@ -7,7 +7,7 @@ import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czibench.models.uce import UCEValidator
+from czibench.models.validators.uce import UCEValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
 

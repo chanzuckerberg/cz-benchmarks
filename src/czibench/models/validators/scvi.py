@@ -1,5 +1,5 @@
-from .single_cell import BaseSingleCellValidator
-from ..datasets.types import Organism
+from ...datasets.types import Organism
+from ..single_cell import BaseSingleCellValidator
 
 
 class SCVIValidator(BaseSingleCellValidator):

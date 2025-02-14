@@ -8,7 +8,7 @@ from gears import PertData
 import logging
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.models.scgenept import ScGenePTValidator
+from czibench.models.validators.scgenept import ScGenePTValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local, download_s3_file
 

@@ -2,7 +2,7 @@ import pathlib
 import scgpt as scg
 from omegaconf import OmegaConf
 
-from czibench.models.scgpt import ScGPTValidator
+from czibench.models.validators.scgpt import ScGPTValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
 

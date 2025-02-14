@@ -3,7 +3,7 @@ import argparse
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.models.geneformer import GeneformerValidator
+from czibench.models.validators.geneformer import GeneformerValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
 

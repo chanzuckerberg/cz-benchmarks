@@ -5,7 +5,7 @@ import scvi
 from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
-from czibench.models.scvi import SCVIValidator
+from czibench.models.validators.scvi import SCVIValidator
 from czibench.models.base import BaseModelImplementation
 
 
