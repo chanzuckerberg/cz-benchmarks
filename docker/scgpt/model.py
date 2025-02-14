@@ -14,7 +14,7 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
         parser.add_argument("--model_name", type=str, default="human")
         args = parser.parse_args()
         return args
-    
+
     def get_model_weights_subdir(self) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
