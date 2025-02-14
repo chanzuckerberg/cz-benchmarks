@@ -84,10 +84,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     @abstractmethod
     def parse_args(self):
-        """Return parsed arguments for the model.
-
-        Each model implementation must define its own argument parsing logic.
-        """
+        """Return parsed arguments for the model."""
 
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
