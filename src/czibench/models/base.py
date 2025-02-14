@@ -21,12 +21,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BaseModel(ABC):
+class BaseModelValidator(ABC):
     # Type annotation for class variable
     dataset_type: ClassVar[Type[BaseDataset]]
-    data: BaseDataset
-    model_weights_dir: str
-
+    
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
@@ -49,6 +47,11 @@ class BaseModel(ABC):
 
         cls._validate_dataset(dataset)
 
+
+class BaseModelImplementation(BaseModelValidator, ABC):
+    data: BaseDataset
+    model_weights_dir: str
+    
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
         """Return the subdirectory (if applicable) where this model variant's
@@ -99,3 +102,4 @@ class BaseModel(ABC):
 
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
+    
