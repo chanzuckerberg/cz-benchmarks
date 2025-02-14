@@ -19,6 +19,7 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
+        continue-on-error: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,10 +36,5 @@ jobs:
         run: |
           pre-commit run --all-files --show-diff-on-failure
 
-      #- name: Run Pyright
-        #run: |
-         #pyright --version
-         # pyright
-      
      - name: Run linting
        run: make lint
