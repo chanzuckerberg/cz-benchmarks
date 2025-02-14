@@ -1,0 +1,25 @@
+# Core dependencies
+docker>=6.1.0
+pyyaml>=6.0
+boto3>=1.28.0
+pre-commit>=4.1.0
+
+# Data handling
+anndata>=0.9.0
+h5py>=3.8.0
+
+# Optional but recommended
+typing-extensions>=4.5.0
+
+dill>=0.3.6
+scikit-learn
+scanpy
+igraph>=0.11.8
+leidenalg>=0.10.2
+
+hydra-core
+hnswlib>=0.8.0  # May need to also run this to resolve any ImportErrors: # cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ~/miniconda3/envs/bench/lib/
+scib-metrics==0.5.1
+
+# Test dependencies
+pytest-xdist==3.6.1

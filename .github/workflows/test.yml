@@ -2,12 +2,12 @@ name: CI testing
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [ main ]
     tags:
       - '[0-9]+\.[0-9]+\.[0-9]+'
       - '[0-9]+\.[0-9]+\.[0-9]+-*'
   pull_request:
-    branches: [ develop, main ]
+    branches: [ main ]
 
 jobs:
   run_tests:
@@ -30,7 +30,6 @@ jobs:
       - name: Install cz-benchmark with pytest dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install pytest-xdist
           python3 -m pip install -r requirements-test.txt 
           python3 -m pip uninstall -y torch
           python3 -m pip cache purge
