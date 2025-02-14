@@ -2,6 +2,33 @@ import os
 from datetime import datetime
 
 import boto3
+import logging
+
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
+
+
+def download_s3_file(bucket, key, local_path):
+    """
+    Downloads a single file from S3 to a local path.
+
+    :param bucket: S3 bucket name
+    :param key: S3 key (file path) to download
+    :param local_path: Local file path to save to
+    """
+    s3 = boto3.client("s3")
+
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+    try:
+        s3.download_file(bucket, key, local_path)
+        logger.info(f"Downloaded {key} from s3://{bucket} to {local_path}")
+    except Exception as e:
+        logger.error(f"Failed to download {key} from s3://{bucket}: {str(e)}")
+        raise
 
 
 def sync_s3_to_local(bucket, prefix, local_dir):
@@ -9,10 +36,12 @@ def sync_s3_to_local(bucket, prefix, local_dir):
     Syncs files from an S3 bucket prefix to a local directory.
 
     :param bucket: S3 bucket name
-    :param prefix: S3 prefix (directory path) to sync from
+    :param prefix: S3 prefix (directory path or file) to sync from
     :param local_dir: Local directory path to sync to
     """
     s3 = boto3.client("s3")
+
+    # Prefix is a directory, proceed with original logic
     paginator = s3.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
 
@@ -39,7 +68,7 @@ def sync_s3_to_local(bucket, prefix, local_dir):
             # Check if download/update is needed
             if not os.path.exists(local_file_path):
                 s3.download_file(bucket, key, local_file_path)
-                print(f"Downloaded: {relative_key}")
+                logger.info(f"Downloaded: {relative_key} to {local_file_path}")
             else:
                 # Compare last modified times
                 s3_time = obj["LastModified"].replace(tzinfo=None)
@@ -48,4 +77,4 @@ def sync_s3_to_local(bucket, prefix, local_dir):
                 )
                 if s3_time > local_time:
                     s3.download_file(bucket, key, local_file_path)
-                    print(f"Updated: {relative_key}")
+                    logger.info(f"Updated: {relative_key} at {local_file_path}")
