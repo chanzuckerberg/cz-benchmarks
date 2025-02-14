@@ -28,24 +28,24 @@ class BaseModelValidator(ABC):
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
-        if not hasattr(cls, "dataset_type"):
-            raise TypeError(
-                f"Can't instantiate {cls.__name__} without dataset_type class variable"
-            )
+        
+        if cls.__name__ != 'BaseModelImplementation':
+            if not hasattr(cls, "dataset_type"):
+                raise TypeError(
+                    f"Can't instantiate {cls.__name__} without dataset_type class variable"
+                )
 
     @abstractmethod
-    def _validate_dataset(self, dataset: BaseDataset) -> bool:
+    def _validate_dataset(self, dataset: BaseDataset):
         pass
 
-    @classmethod
-    def validate_dataset(cls, dataset: BaseDataset):
-        if not isinstance(dataset, cls.dataset_type):
+    def validate_dataset(self, dataset: BaseDataset):
+        if not isinstance(dataset, self.dataset_type):
             raise ValueError(
-                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
-                "got {type(dataset).__name__}",
+                f"Dataset type mismatch: expected {self.dataset_type.__name__}, "
+                f"got {type(dataset).__name__}"
             )
-
-        cls._validate_dataset(dataset)
+        self._validate_dataset(dataset)
 
 
 class BaseModelImplementation(BaseModelValidator, ABC):
