@@ -1,7 +1,0 @@
-# Model Configuration Template
-# This file should contain any configuration parameters needed by your model.
-# Examples might include:
-# - model_uri: URI to download model weights/checkpoints
-# - batch_size: Inference batch size
-# - device: CPU/GPU settings
-# - model_specific_parameters: Any other parameters needed for your model
