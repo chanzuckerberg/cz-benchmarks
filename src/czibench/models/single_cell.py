@@ -1,8 +1,8 @@
 from typing import ClassVar, List
-from abc import abstractmethod
 from .base import BaseModelValidator
 from ..datasets.sc import SingleCellDataset
 from ..datasets.types import Organism
+
 
 class BaseSingleCellValidator(BaseModelValidator):
     dataset_type = SingleCellDataset
@@ -38,14 +38,18 @@ class BaseSingleCellValidator(BaseModelValidator):
             )
 
         missing_keys = [
-            key for key in self.required_obs_keys if key not in dataset.adata.obs.columns
+            key
+            for key in self.required_obs_keys
+            if key not in dataset.adata.obs.columns
         ]
 
         if missing_keys:
             raise ValueError(f"Missing required obs keys: {missing_keys}")
 
         missing_keys = [
-            key for key in self.required_var_keys if key not in dataset.adata.var.columns
+            key
+            for key in self.required_var_keys
+            if key not in dataset.adata.var.columns
         ]
 
         if missing_keys:

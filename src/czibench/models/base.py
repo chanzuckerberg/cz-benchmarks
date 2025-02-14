@@ -24,12 +24,12 @@ logger.setLevel(logging.INFO)
 class BaseModelValidator(ABC):
     # Type annotation for class variable
     dataset_type: ClassVar[Type[BaseDataset]]
-    
+
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
-        
-        if cls.__name__ != 'BaseModelImplementation':
+
+        if cls.__name__ != "BaseModelImplementation":
             if not hasattr(cls, "dataset_type"):
                 raise TypeError(
                     f"Can't instantiate {cls.__name__} without dataset_type class variable"
@@ -51,7 +51,7 @@ class BaseModelValidator(ABC):
 class BaseModelImplementation(BaseModelValidator, ABC):
     data: BaseDataset
     model_weights_dir: str
-    
+
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
         """Return the subdirectory (if applicable) where this model variant's
@@ -102,4 +102,3 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
-    

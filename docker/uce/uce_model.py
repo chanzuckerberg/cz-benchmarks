@@ -13,6 +13,7 @@ from czibench.utils import sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
+
 class UCE(UCEValidator, BaseModelImplementation):
     def get_model_weights_subdir(self) -> str:
         return ""
@@ -86,6 +87,7 @@ class UCE(UCEValidator, BaseModelImplementation):
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
         self.data.output_embedding = embedding_adata.obsm["X_uce"]
+
 
 if __name__ == "__main__":
     UCE().run()

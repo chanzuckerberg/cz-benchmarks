@@ -8,6 +8,7 @@ from utils import filter_adata_by_hvg
 from czibench.models.scvi import SCVIValidator
 from czibench.models.base import BaseModelImplementation
 
+
 class SCVI(SCVIValidator, BaseModelImplementation):
     def get_model_weights_subdir(self) -> str:
         return self.data.organism.name
@@ -38,13 +39,12 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         scvi.model.SCVI.prepare_query_anndata(
             adata, str(self.model_weights_dir), return_reference_var_names=True
         )
-        vae_q = scvi.model.SCVI.load_query_data(
-            adata, str(self.model_weights_dir)
-        )
+        vae_q = scvi.model.SCVI.load_query_data(adata, str(self.model_weights_dir))
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 
         self.data.output_embedding = qz_m
+
 
 if __name__ == "__main__":
     SCVI().run()

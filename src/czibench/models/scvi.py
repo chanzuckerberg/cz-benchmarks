@@ -1,6 +1,6 @@
 from .single_cell import BaseSingleCellValidator
-from ..datasets.sc import SingleCellDataset
 from ..datasets.types import Organism
+
 
 class SCVIValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]

@@ -102,6 +102,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Cleanup
         temp_path.unlink()
         import shutil
+
         shutil.rmtree(dataset_dir)
 
 

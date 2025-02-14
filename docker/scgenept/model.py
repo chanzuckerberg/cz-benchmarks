@@ -14,6 +14,7 @@ from czibench.utils import sync_s3_to_local, download_s3_file
 
 logger = logging.getLogger(__name__)
 
+
 def load_dataloader(
     dataset_name, data_dir, batch_size, val_batch_size, split="simulation"
 ):
@@ -22,6 +23,7 @@ def load_dataloader(
     pert_data.prepare_split(split=split, seed=1)
     pert_data.get_dataloader(batch_size=batch_size, test_batch_size=val_batch_size)
     return pert_data
+
 
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
@@ -146,6 +148,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             index=adata.obs_names,
             columns=gene_names,
         )
+
 
 if __name__ == "__main__":
     ScGenePT().run()
