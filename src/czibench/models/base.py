@@ -21,33 +21,37 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BaseModel(ABC):
+class BaseModelValidator(ABC):
     # Type annotation for class variable
     dataset_type: ClassVar[Type[BaseDataset]]
-    data: BaseDataset
-    model_weights_dir: str
 
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
-        if not hasattr(cls, "dataset_type"):
-            raise TypeError(
-                f"Can't instantiate {cls.__name__} without dataset_type class variable"
-            )
+
+        if cls.__name__ != "BaseModelImplementation":
+            if not hasattr(cls, "dataset_type"):
+                raise TypeError(
+                    f"Can't instantiate {cls.__name__}"
+                    " without dataset_type class variable"
+                )
 
     @abstractmethod
-    def _validate_dataset(self, dataset: BaseDataset) -> bool:
+    def _validate_dataset(self, dataset: BaseDataset):
         pass
 
-    @classmethod
-    def validate_dataset(cls, dataset: BaseDataset):
-        if not isinstance(dataset, cls.dataset_type):
+    def validate_dataset(self, dataset: BaseDataset):
+        if not isinstance(dataset, self.dataset_type):
             raise ValueError(
-                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
-                "got {type(dataset).__name__}",
+                f"Dataset type mismatch: expected {self.dataset_type.__name__}, "
+                f"got {type(dataset).__name__}"
             )
+        self._validate_dataset(dataset)
 
-        cls._validate_dataset(dataset)
+
+class BaseModelImplementation(BaseModelValidator, ABC):
+    data: BaseDataset
+    model_weights_dir: str
 
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
@@ -78,6 +82,10 @@ class BaseModel(ABC):
     @abstractmethod
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
+
+    @abstractmethod
+    def parse_args(self):
+        """Return parsed arguments for the model."""
 
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
