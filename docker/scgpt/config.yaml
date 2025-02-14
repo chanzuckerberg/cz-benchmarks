@@ -2,5 +2,3 @@ models:
   human:
     model_name: human
     model_uri: s3://generate-cross-species/models/scgpt/human
-
-default_model: human

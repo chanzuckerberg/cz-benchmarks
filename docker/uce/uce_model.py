@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class UCE(UCEValidator, BaseModelImplementation):
+    def parse_args(self):
+        pass
+    
     def get_model_weights_subdir(self) -> str:
         return ""
 

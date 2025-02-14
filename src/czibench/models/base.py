@@ -82,6 +82,14 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
 
+    @abstractmethod
+    def parse_args(self):
+        """Return parsed arguments for the model.
+        
+        Each model implementation must define its own argument parsing logic.
+        """
+        pass
+
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
 

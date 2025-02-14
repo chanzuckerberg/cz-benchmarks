@@ -1,3 +1,4 @@
+import argparse
 import pathlib
 import numpy as np
 from omegaconf import OmegaConf
@@ -27,8 +28,6 @@ def load_dataloader(
 
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
-        import argparse
-
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="scgenept_go_c")
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
