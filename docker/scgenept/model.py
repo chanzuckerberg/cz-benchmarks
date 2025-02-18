@@ -128,6 +128,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_pert = args.gene_pert
         chunk_size = args.chunk_size
         all_preds = []
+
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
         for i in range(num_chunks):
             logger.info(f"Predicting perturbations for chunk {i + 1} of {num_chunks}")
@@ -142,16 +143,42 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
                 return_mean=False,
             ).squeeze()
             all_preds.append(preds)
-
+            
         self.set_output(
-            DataType.PERTURBATION,
-            pd.DataFrame(
-                data=np.concatenate(all_preds, axis=0),
-                index=adata.obs_names,
-                columns=gene_names,
-            ),
+            DataType.PERTURBATION_PRED,
+            {
+                gene_pert: pd.DataFrame(
+                    data=np.concatenate(all_preds, axis=0),
+                    index=adata.obs_names,
+                    columns=gene_names,
+                )
+            },
         )
 
+        # Store control data for each condition in the reference dataset
+        conditions = np.array(list(ref_adata.obs["condition"]))
+        truth_data = {
+            condition: pd.DataFrame(
+                data=ref_adata[conditions == condition].X.toarray(),
+                index=ref_adata[conditions == condition].obs_names,
+                columns=ref_adata[conditions == condition].var_names,
+            )[gene_names]
+            for condition in set(conditions)
+        }
+        
+        self.set_output(
+            DataType.PERTURBATION_TRUTH,
+            truth_data,
+        )
+        
+        self.set_output(
+            DataType.PERTURBATION_CONTROL,
+            pd.DataFrame(
+                data=ref_adata[:, gene_names].X.toarray(),
+                index=ref_adata[:, gene_names].obs_names,
+                columns=ref_adata[:, gene_names].var_names,
+            ),
+        )
 
 if __name__ == "__main__":
     ScGenePT().run()

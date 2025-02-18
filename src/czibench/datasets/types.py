@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Type, Union
+from typing import Type, Union, Dict
 import numpy as np
 import pandas as pd
 import anndata as ad
@@ -68,10 +68,23 @@ class DataType(Enum):
         description="Learned cell embeddings",
         is_input=False,
     )
-    PERTURBATION = DataTypeSpec(
+    PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
-        dtype=pd.DataFrame,
+        dtype=Dict[str, pd.DataFrame],
         description="Predicted perturbation effects",
+        is_input=False,
+    )
+    PERTURBATION_TRUTH = DataTypeSpec(
+        name="perturbation_truth",
+        dtype=Dict[str, pd.DataFrame],
+        description="Truth perturbation data",
+        is_input=False,
+    )
+    
+    PERTURBATION_CONTROL = DataTypeSpec(
+        name="perturbation_control",
+        dtype=pd.DataFrame,
+        description="Control perturbation data",
         is_input=False,
     )
 

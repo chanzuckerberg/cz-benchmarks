@@ -1,7 +1,7 @@
 from typing import Dict, Set
 import pandas as pd
 import logging
-
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -19,7 +19,7 @@ from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .base import BaseTask
 from .utils import cluster_embedding, filter_minimum_class
-from ..datasets.sc import SingleCellDataset
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
 from scib_metrics import silhouette_batch
 
@@ -255,4 +255,45 @@ class MetadataLabelPredictionTask(BaseTask):
             logger.info(f"Generated predictions for {len(self.predictions_df)} samples")
 
         logger.info("Metrics computation completed")
+        return metrics
+
+
+class PerturbationTask(BaseTask):
+    def __init__(self, label_key: str, batch_key: str):
+        self.label_key = label_key
+        self.batch_key = batch_key
+
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.PERTURBATION_PRED, DataType.PERTURBATION_TRUTH, DataType.PERTURBATION_CONTROL}
+
+    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
+        self.perturbation_truth = data.get_output(DataType.PERTURBATION_TRUTH)
+        self.perturbation_control = data.get_output(DataType.PERTURBATION_CONTROL)
+        
+        return data
+
+    def _compute_metrics(self) -> Dict[str, float]:
+        metrics = {}
+        
+        avg_perturbation_control = self.perturbation_control.mean(axis=0)
+        
+        for key in self.perturbation_pred.keys():
+            if key in self.perturbation_truth.keys():
+                metrics[key] = {}
+                
+                avg_perturbation_pred = self.perturbation_pred[key].mean(axis=0)
+                avg_perturbation_truth = self.perturbation_truth[key].mean(axis=0)
+                
+                # Compute meansquare error between avg_perturbation and avg_perturbation_control
+                mse = np.mean((avg_perturbation_pred - avg_perturbation_truth) ** 2)
+                delta_pearson_corr = np.corrcoef(avg_perturbation_pred - avg_perturbation_control, avg_perturbation_truth - avg_perturbation_control)[0, 1]
+                metrics[key]["mse"] = mse
+                metrics[key]["delta_pearson_corr"] = delta_pearson_corr
+                
         return metrics
