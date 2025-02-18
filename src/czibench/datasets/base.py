@@ -1,16 +1,14 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Optional
-
+from typing import Any, Dict
 import dill
-import numpy as np
-import pandas as pd
+
+from ..datasets.types import DataType, DataValue
 
 
 class BaseDataset(ABC):
-    output_embedding: Optional[np.ndarray] = None
-    sample_metadata: Optional[pd.DataFrame] = None
-    perturbation_predictions: Optional[pd.DataFrame] = None
+    inputs: Dict[DataType, DataValue] = {}
+    outputs: Dict[DataType, DataValue] = {}
 
     def __init__(self, path: str, **kwargs: Any):
         self.path = path

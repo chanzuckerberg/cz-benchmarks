@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Set
 import pandas as pd
 import logging
 
@@ -20,6 +20,7 @@ from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .base import BaseTask
 from .utils import cluster_embedding, filter_minimum_class
 from ..datasets.sc import SingleCellDataset
+from ..datasets.types import DataType
 from scib_metrics import silhouette_batch
 
 logger = logging.getLogger(__name__)
@@ -29,16 +30,18 @@ class ClusteringTask(BaseTask):
     def __init__(self, label_key: str):
         self.label_key = label_key
 
-    def validate(self, data: SingleCellDataset):
-        return (
-            data.output_embedding is not None
-            and self.label_key in data.sample_metadata.columns
-        )
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         adata = data.adata
-        adata.obsm["emb"] = data.output_embedding
-        self.input_labels = data.sample_metadata[self.label_key]
+        adata.obsm["emb"] = data.outputs[DataType.EMBEDDING]
+        self.input_labels = data.inputs[DataType.METADATA][self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
         return data
 
@@ -57,16 +60,18 @@ class EmbeddingTask(BaseTask):
     def __init__(self, label_key: str):
         self.label_key = label_key
 
-    def validate(self, data: SingleCellDataset):
-        return (
-            data.output_embedding is not None
-            and self.label_key in data.sample_metadata.columns
-        )
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         # passthrough, embedding already exists
-        self.embedding = data.output_embedding
-        self.input_labels = data.sample_metadata[self.label_key]
+        self.embedding = data.outputs[DataType.EMBEDDING]
+        self.input_labels = data.inputs[DataType.METADATA][self.label_key]
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
@@ -78,16 +83,18 @@ class BatchIntegrationTask(BaseTask):
         self.label_key = label_key
         self.batch_key = batch_key
 
-    def validate(self, data: SingleCellDataset):
-        return (
-            data.output_embedding is not None
-            and self.batch_key in data.sample_metadata.columns
-        )
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        self.embedding = data.output_embedding
-        self.batch_labels = data.sample_metadata[self.batch_key]
-        self.labels = data.sample_metadata[self.label_key]
+        self.embedding = data.outputs[DataType.EMBEDDING]
+        self.batch_labels = data.inputs[DataType.METADATA][self.batch_key]
+        self.labels = data.inputs[DataType.METADATA][self.label_key]
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
@@ -122,18 +129,20 @@ class MetadataLabelPredictionTask(BaseTask):
             f"generate_predictions={generate_predictions}"
         )
 
-    def validate(self, data: SingleCellDataset):
-        return (
-            data.output_embedding is not None
-            and self.label_key in data.sample_metadata.columns
-        )
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
         # Get embedding and labels
-        embeddings = data.output_embedding
-        labels = data.sample_metadata[self.label_key]
+        embeddings = data.outputs[DataType.EMBEDDING]
+        labels = data.inputs[DataType.METADATA][self.label_key]
         logger.info(
             f"Initial data shape: {embeddings.shape}, labels shape: {labels.shape}"
         )

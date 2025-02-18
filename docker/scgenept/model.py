@@ -12,6 +12,7 @@ from utils.data_loading import load_trained_scgenept_model
 from czibench.models.validators.scgenept import ScGenePTValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local, download_s3_file
+from czibench.datasets.types import DataType
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             ).squeeze()
             all_preds.append(preds)
 
-        self.data.perturbation_predictions = pd.DataFrame(
+        self.data.outputs[DataType.PERTURBATION] = pd.DataFrame(
             data=np.concatenate(all_preds, axis=0),
             index=adata.obs_names,
             columns=gene_names,

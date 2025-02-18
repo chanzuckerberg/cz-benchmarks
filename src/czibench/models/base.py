@@ -1,7 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import ClassVar, Type
+from typing import ClassVar, Type, Set
 
 from ..constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -9,6 +9,7 @@ from ..constants import (
     OUTPUT_DATA_PATH_DOCKER,
 )
 from ..datasets.base import BaseDataset
+from ..datasets.types import DataType
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -40,12 +41,25 @@ class BaseModelValidator(ABC):
     def _validate_dataset(self, dataset: BaseDataset):
         pass
 
+    @property
+    @abstractmethod
+    def inputs(self) -> Set[DataType]:
+        """Specify what input types this model requires"""
+
+    @property
+    @abstractmethod
+    def outputs(self) -> Set[DataType]:
+        """Specify what output types this model produces"""
+
     def validate_dataset(self, dataset: BaseDataset):
         if not isinstance(dataset, self.dataset_type):
-            raise ValueError(
-                f"Dataset type mismatch: expected {self.dataset_type.__name__}, "
-                f"got {type(dataset).__name__}"
-            )
+            raise ValueError("Dataset type mismatch")
+
+        # Validate required inputs are available
+        missing_inputs = self.inputs - set(dataset.inputs.keys())
+        if missing_inputs:
+            raise ValueError(f"Missing required inputs: {missing_inputs}")
+
         self._validate_dataset(dataset)
 
 
