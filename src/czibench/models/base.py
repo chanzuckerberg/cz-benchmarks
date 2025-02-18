@@ -129,4 +129,4 @@ class BaseModelImplementation(BaseModelValidator, ABC):
                 f"Output {data_type.name} has incorrect type: "
                 f"expected {data_type.dtype}, got {type(value)}"
             )
-        self.data.outputs[data_type] = value
+        self.data.set_output(data_type, value)

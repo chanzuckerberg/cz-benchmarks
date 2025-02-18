@@ -7,15 +7,56 @@ from ..datasets.types import DataType, DataValue
 
 
 class BaseDataset(ABC):
-    inputs: Dict[DataType, DataValue] = {}
-    outputs: Dict[DataType, DataValue] = {}
 
     def __init__(self, path: str, **kwargs: Any):
+        self._inputs: Dict[DataType, DataValue] = {}
+        self._outputs: Dict[DataType, DataValue] = {}
+        
         self.path = path
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    @property
+    def inputs(self) -> Dict[DataType, DataValue]:
+        """Get the inputs dictionary."""
+        return self._inputs
+
+    @property
+    def outputs(self) -> Dict[DataType, DataValue]:
+        """Get the outputs dictionary."""
+        return self._outputs
+
+    def set_input(self, data_type: DataType, value: DataValue) -> None:
+        """Safely set an input with type checking."""
+        if not isinstance(value, data_type.dtype):
+            raise TypeError(
+                f"Input {data_type.name} has incorrect type: "
+                f"expected {data_type.dtype}, got {type(value)}"
+            )
+        self._inputs[data_type] = value
+
+    def set_output(self, data_type: DataType, value: DataValue) -> None:
+        """Safely set an output with type checking."""
+        if not isinstance(value, data_type.dtype):
+            raise TypeError(
+                f"Output {data_type.name} has incorrect type: "
+                f"expected {data_type.dtype}, got {type(value)}"
+            )
+        self._outputs[data_type] = value
+
+    def get_input(self, data_type: DataType) -> DataValue:
+        """Safely get an input with error handling."""
+        if data_type not in self._inputs:
+            raise KeyError(f"Input {data_type.name} not found")
+        return self._inputs[data_type]
+
+    def get_output(self, data_type: DataType) -> DataValue:
+        """Safely get an output with error handling."""
+        if data_type not in self._outputs:
+            raise KeyError(f"Output {data_type.name} not found")
+        return self._outputs[data_type]
 
     @abstractmethod
     def _validate(self) -> None:

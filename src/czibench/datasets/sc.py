@@ -11,23 +11,24 @@ class SingleCellDataset(BaseDataset):
         organism: Organism,
     ):
         super().__init__(path)
-        self.inputs[DataType.ORGANISM] = organism
+        self.set_input(DataType.ORGANISM, organism)
 
     def load_data(self) -> None:
-        self.inputs[DataType.ANNDATA] = ad.read_h5ad(self.path)
-        self.inputs[DataType.METADATA] = self.inputs[DataType.ANNDATA].obs
+        adata = ad.read_h5ad(self.path)
+        self.set_input(DataType.ANNDATA, adata)
+        self.set_input(DataType.METADATA, adata.obs)
 
     def unload_data(self) -> None:
-        self.inputs.pop(DataType.ANNDATA)
-        self.inputs.pop(DataType.METADATA)
+        self._inputs.pop(DataType.ANNDATA, None)
+        self._inputs.pop(DataType.METADATA, None)
 
     @property
     def organism(self) -> Organism:
-        return self.inputs.get(DataType.ORGANISM)
+        return self.get_input(DataType.ORGANISM)
 
     @property
     def adata(self) -> ad.AnnData:
-        return self.inputs.get(DataType.ANNDATA)
+        return self.get_input(DataType.ANNDATA)
 
     def _validate(self) -> None:
         if not self.adata:

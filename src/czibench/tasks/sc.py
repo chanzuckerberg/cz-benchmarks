@@ -40,8 +40,8 @@ class ClusteringTask(BaseTask):
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         adata = data.adata
-        adata.obsm["emb"] = data.outputs[DataType.EMBEDDING]
-        self.input_labels = data.inputs[DataType.METADATA][self.label_key]
+        adata.obsm["emb"] = data.get_output(DataType.EMBEDDING)
+        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
         return data
 
@@ -70,8 +70,8 @@ class EmbeddingTask(BaseTask):
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         # passthrough, embedding already exists
-        self.embedding = data.outputs[DataType.EMBEDDING]
-        self.input_labels = data.inputs[DataType.METADATA][self.label_key]
+        self.embedding = data.get_output(DataType.EMBEDDING)
+        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
@@ -92,9 +92,9 @@ class BatchIntegrationTask(BaseTask):
         return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        self.embedding = data.outputs[DataType.EMBEDDING]
-        self.batch_labels = data.inputs[DataType.METADATA][self.batch_key]
-        self.labels = data.inputs[DataType.METADATA][self.label_key]
+        self.embedding = data.get_output(DataType.EMBEDDING)
+        self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
+        self.labels = data.get_input(DataType.METADATA)[self.label_key]
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
@@ -141,8 +141,8 @@ class MetadataLabelPredictionTask(BaseTask):
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
         # Get embedding and labels
-        embeddings = data.outputs[DataType.EMBEDDING]
-        labels = data.inputs[DataType.METADATA][self.label_key]
+        embeddings = data.get_output(DataType.EMBEDDING)
+        labels = data.get_input(DataType.METADATA)[self.label_key]
         logger.info(
             f"Initial data shape: {embeddings.shape}, labels shape: {labels.shape}"
         )
