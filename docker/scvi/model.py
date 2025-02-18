@@ -7,6 +7,7 @@ from utils import filter_adata_by_hvg
 
 from czibench.models.validators.scvi import SCVIValidator
 from czibench.models.base import BaseModelImplementation
+from czibench.datasets.types import DataType
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
@@ -46,7 +47,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 
-        self.data.output_embedding = qz_m
+        self.set_output(DataType.EMBEDDING, qz_m)
 
 
 if __name__ == "__main__":
