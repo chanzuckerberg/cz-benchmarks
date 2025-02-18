@@ -17,12 +17,23 @@ class BaseTask(ABC):
     def required_outputs(self) -> Set[DataType]:
         """Specify what output types from models this task requires"""
 
-    def validate(self, data: BaseDataset) -> bool:
+    def validate(self, data: BaseDataset):
         # Check both inputs and outputs are available
-        has_inputs = self.required_inputs.issubset(data.inputs.keys())
-        has_outputs = self.required_outputs.issubset(data.outputs.keys())
-        if not (has_inputs and has_outputs):
-            raise ValueError(f"Data validation failed for {self.__class__.__name__}")
+        missing_inputs = self.required_inputs - set(data.inputs.keys())
+        missing_outputs = self.required_outputs - set(data.outputs.keys())
+
+        if missing_inputs or missing_outputs:
+            error_msg = []
+            if missing_inputs:
+                error_msg.append(f"Missing required inputs: {missing_inputs}")
+            if missing_outputs:
+                error_msg.append(f"Missing required outputs: {missing_outputs}")
+            raise ValueError(
+                f"Data validation failed for {self.__class__.__name__}: "
+                f"{' | '.join(error_msg)}"
+            )
+
+        data.validate()
 
     @abstractmethod
     def _run_task(self, data: BaseDataset) -> BaseDataset:

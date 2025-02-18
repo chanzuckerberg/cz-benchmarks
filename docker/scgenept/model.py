@@ -143,10 +143,13 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             ).squeeze()
             all_preds.append(preds)
 
-        self.data.outputs[DataType.PERTURBATION] = pd.DataFrame(
-            data=np.concatenate(all_preds, axis=0),
-            index=adata.obs_names,
-            columns=gene_names,
+        self.set_output(
+            DataType.PERTURBATION,
+            pd.DataFrame(
+                data=np.concatenate(all_preds, axis=0),
+                index=adata.obs_names,
+                columns=gene_names,
+            ),
         )
 
 

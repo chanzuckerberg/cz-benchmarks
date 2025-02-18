@@ -9,7 +9,7 @@ from ..constants import (
     OUTPUT_DATA_PATH_DOCKER,
 )
 from ..datasets.base import BaseDataset
-from ..datasets.types import DataType
+from ..datasets.types import DataType, DataValue
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -121,3 +121,12 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
+
+    def set_output(self, data_type: DataType, value: DataValue) -> None:
+        """Safely set an output with type checking"""
+        if not isinstance(value, data_type.dtype):
+            raise TypeError(
+                f"Output {data_type.name} has incorrect type: "
+                f"expected {data_type.dtype}, got {type(value)}"
+            )
+        self.data.outputs[data_type] = value

@@ -25,6 +25,21 @@ class BaseDataset(ABC):
         if not os.path.exists(self.path):
             raise ValueError(f"Dataset {self.path} is not valid")
 
+        """Validate that all inputs and outputs match their expected types"""
+        for data_type, value in self.inputs.items():
+            if not isinstance(value, data_type.dtype):
+                raise TypeError(
+                    f"Input {data_type.name} has incorrect type: "
+                    f"expected {data_type.dtype}, got {type(value)}"
+                )
+
+        for data_type, value in self.outputs.items():
+            if not isinstance(value, data_type.dtype):
+                raise TypeError(
+                    f"Output {data_type.name} has incorrect type: "
+                    f"expected {data_type.dtype}, got {type(value)}"
+                )
+
         self._validate()
 
     @abstractmethod
