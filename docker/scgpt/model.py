@@ -6,6 +6,7 @@ import argparse
 from czibench.models.validators.scgpt import ScGPTValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import DataType
 
 
 class ScGPT(ScGPTValidator, BaseModelImplementation):
@@ -44,7 +45,7 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
             gene_col="gene_name",
             batch_size=32,
         )
-        self.data.output_embedding = ref_embed_adata.obsm["X_scGPT"]
+        self.set_output(DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"])
 
 
 if __name__ == "__main__":

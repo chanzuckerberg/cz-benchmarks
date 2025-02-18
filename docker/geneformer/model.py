@@ -6,6 +6,7 @@ from omegaconf import OmegaConf
 from czibench.models.validators.geneformer import GeneformerValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import DataType
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -97,7 +98,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
         embs = embs.drop("cell_idx", axis=1)
-        self.data.output_embedding = embs.values
+        self.set_output(DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()
