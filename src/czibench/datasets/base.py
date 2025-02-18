@@ -7,11 +7,10 @@ from ..datasets.types import DataType, DataValue
 
 
 class BaseDataset(ABC):
-
     def __init__(self, path: str, **kwargs: Any):
         self._inputs: Dict[DataType, DataValue] = {}
         self._outputs: Dict[DataType, DataValue] = {}
-        
+
         self.path = path
         self.kwargs = kwargs
 
