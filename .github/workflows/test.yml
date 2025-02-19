@@ -30,10 +30,8 @@ jobs:
       - name: Install cz-benchmark with pytest dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements-test.txt 
-          python3 -m pip uninstall -y torch
+          python3 -m pip install -r requirements.txt 
           python3 -m pip cache purge
-          python3 -m pip install torch==${{ matrix.torch }}
 
       - name: Pytest
         run: |
