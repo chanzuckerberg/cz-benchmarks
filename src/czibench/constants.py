@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 # Base paths
@@ -10,16 +9,21 @@ DATASETS_CACHE_PATH = "~/.cz-benchmarks/datasets"
 MODEL_WEIGHTS_PATH_DOCKER = "/app/weights"
 MODEL_WEIGHTS_CACHE_PATH = "~/.cz-benchmarks/weights"
 
+
 # Derived constants
 def get_numbered_path(base_path: str, index: int | None = None) -> str:
-    """Get numbered version of a path (e.g., /path/to/data.dill -> /path/to/data_1.dill)"""
+    """
+    Get numbered version of a path
+    (e.g., /path/to/data.dill-> /path/to/data_1.dill)
+    """
     path = pathlib.Path(base_path)
     if index is None:
         return str(path)
-    
+
     stem = path.stem  # 'data'
     suffix = path.suffix  # '.dill'
     return str(path.parent / f"{stem}_{index}{suffix}")
+
 
 def get_base_name(path: str) -> str:
     """Get the base filename pattern (e.g., /path/to/data.dill -> data*.dill)"""

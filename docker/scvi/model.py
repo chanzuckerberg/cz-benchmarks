@@ -10,6 +10,7 @@ from czibench.models.base import BaseModelImplementation
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
 
+
 class SCVI(SCVIValidator, BaseModelImplementation):
     def parse_args(self):
         pass
@@ -33,9 +34,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
         batch_keys = self.required_obs_keys
-        adata = filter_adata_by_hvg(
-            adata, f"hvg_names_{dataset.organism.name}.csv.gz"
-        )
+        adata = filter_adata_by_hvg(adata, f"hvg_names_{dataset.organism.name}.csv.gz")
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )

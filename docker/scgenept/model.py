@@ -14,6 +14,7 @@ from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local, download_s3_file
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
+
 logger = logging.getLogger(__name__)
 
 

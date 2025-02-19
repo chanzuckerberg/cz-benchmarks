@@ -10,10 +10,10 @@ from ..constants import (
     MODEL_WEIGHTS_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
     get_numbered_path,
-    get_base_name
+    get_base_name,
 )
 from ..datasets.base import BaseDataset
-from ..datasets.types import DataType, DataValue
+from ..datasets.types import DataType
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -110,7 +110,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         input_dir = pathlib.Path(INPUT_DATA_PATH_DOCKER).parent
         base_pattern = get_base_name(INPUT_DATA_PATH_DOCKER)
         input_files = sorted(glob.glob(os.path.join(input_dir, base_pattern)))
-        
+
         if not input_files:
             raise FileNotFoundError("No input datasets found")
 
@@ -121,8 +121,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
         # Load all datasets
         self.datasets = [
-            self.dataset_type.deserialize(input_file)
-            for input_file in input_files
+            self.dataset_type.deserialize(input_file) for input_file in input_files
         ]
 
         logger.info("Loading data...")
@@ -147,5 +146,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         # Unload and serialize all datasets
         for i, dataset in enumerate(self.datasets):
             dataset.unload_data()
-            output_path = get_numbered_path(OUTPUT_DATA_PATH_DOCKER, None if i == 0 else i)
+            output_path = get_numbered_path(
+                OUTPUT_DATA_PATH_DOCKER, None if i == 0 else i
+            )
             dataset.serialize(output_path)

@@ -25,7 +25,9 @@ class ContainerRunner:
         self.cli_args = kwargs
         self.client = docker.from_env()
 
-    def run(self, datasets: Union[BaseDataset, List[BaseDataset]]) -> Union[BaseDataset, List[BaseDataset]]:
+    def run(
+        self, datasets: Union[BaseDataset, List[BaseDataset]]
+    ) -> Union[BaseDataset, List[BaseDataset]]:
         # Convert single dataset to list for consistent handling
         if not isinstance(datasets, list):
             datasets = [datasets]
@@ -41,7 +43,7 @@ class ContainerRunner:
 
             input_dir_docker = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).parent)
             output_dir_docker = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).parent)
-            
+
             # Store original paths
             orig_paths = [os.path.expanduser(d.path) for d in datasets]
             orig_parent_dirs = {str(pathlib.Path(p).parent) for p in orig_paths}
@@ -49,13 +51,12 @@ class ContainerRunner:
             # Update dataset paths and serialize
             for i, dataset in enumerate(datasets):
                 dataset.path = os.path.join(
-                    RAW_INPUT_DIR_PATH_DOCKER, 
-                    pathlib.Path(orig_paths[i]).name
+                    RAW_INPUT_DIR_PATH_DOCKER, pathlib.Path(orig_paths[i]).name
                 )
                 dataset.unload_data()
                 input_path = get_numbered_path(
                     os.path.join(input_dir, pathlib.Path(INPUT_DATA_PATH_DOCKER).name),
-                    None if i == 0 else i
+                    None if i == 0 else i,
                 )
                 dataset.serialize(input_path)
 
@@ -68,7 +69,7 @@ class ContainerRunner:
                     "mode": "rw",
                 },
             }
-            
+
             # Add all unique parent directories as volumes
             for parent_dir in orig_parent_dirs:
                 volumes[parent_dir] = {"bind": RAW_INPUT_DIR_PATH_DOCKER, "mode": "ro"}
@@ -76,13 +77,15 @@ class ContainerRunner:
             # Run container and process results
             try:
                 self._run_container(volumes)
-                
+
                 # Load results
                 result_datasets = []
                 for i in range(len(datasets)):
                     output_path = get_numbered_path(
-                        os.path.join(output_dir, pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name),
-                        None if i == 0 else i
+                        os.path.join(
+                            output_dir, pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name
+                        ),
+                        None if i == 0 else i,
                     )
                     dataset = BaseDataset.deserialize(output_path)
                     dataset.path = orig_paths[i]
@@ -137,6 +140,4 @@ class ContainerRunner:
 
     def _get_weights_cache_path(self):
         image_name = self.image.split("/")[-1].split(":")[0]
-        return os.path.expanduser(
-            os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name)
-        )
+        return os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))

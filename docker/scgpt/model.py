@@ -9,6 +9,7 @@ from czibench.utils import sync_s3_to_local
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
 
+
 class ScGPT(ScGPTValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
