@@ -3,6 +3,8 @@
 This is a simple example of how to deploy a model using Sagemaker.
 
 ## Deploying the model
+This will package the source code in `code/` and upload it to S3. It will also create a SageMaker model and deploy an endpoint.
+If needed, it will also create a new IAM role which allows SageMaker to access the model artifacts and the data in S3.
 
 ```bash
 make deploy
@@ -20,27 +22,31 @@ High level summary:
 - Run `make deploy` to package and upload model code to S3 and deploy the model to SageMaker
 - Run `make test` to test the model
 
-Detailed flow:
 ```mermaid
 graph TD
-    A[Developer] -->|Run `make deploy`| B[Makefile: Deploy Target]
-    B --> C[Package Source Code<br/>(`make package`)]
-    C --> D[Upload to S3<br/>(`aws s3 cp`)]
-    D --> E[Execute `deploy.py`]
-    E --> F[Check/Create IAM Role<br/>(`create_sagemaker_role.py`)]
-    F --> G[Create SageMaker Model<br/>(`PyTorchModel`)]
-    G --> H[Deploy SageMaker Endpoint<br/>(`sagemaker.Session().deploy()`)]
+    A[Developer] -->|Deploy flow| B[make deploy]
+    B --> C[Package Source Code in /code]
+    C --> E[Upload to S3]
+    E --> F[Check/Create IAM Role]
+    F --> G[Create SageMaker Model]
+    G --> H[Deploy SageMaker Endpoint]
     
-    A -->|Run `make test`| I[Makefile: Test Target]
-    I --> J[Execute `test.py`]
-    J --> K[Invoke SageMaker Endpoint<br/>(`sagemaker-runtime.invoke_endpoint`)]
+    A -->|Test flow| I[make test]
+    I --> K[Invoke SageMaker Endpoint]
     K --> L[SageMaker Processes Request]
     L --> M[Return Prediction Result]
-    
-    %% AWS Services
-    subgraph AWS
-        D[S3 Bucket: omar-data]
-        G[SageMaker]
-        F[IAM Role]
+
+    %% deploy.py
+    subgraph deploy.py
+        F
+        G
+        H
+    end
+
+    %% test.py
+    subgraph test.py
+        K
+        L
+        M
     end
 ```
