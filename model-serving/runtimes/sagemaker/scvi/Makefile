@@ -24,3 +24,6 @@ clean:
 
 deploy:
 	python deploy.py
+
+test:
+	python test.py

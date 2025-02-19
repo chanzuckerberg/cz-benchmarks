@@ -1,6 +1,7 @@
 # This file is used to create a model and endpoint in SageMaker
 # It also creates an IAM role if it doesn't exist, which is used by SageMaker to access S3 and other AWS services
 
+from datetime import datetime
 import sagemaker
 from sagemaker.pytorch.model import PyTorchModel
 from create_sagemaker_role import create_sagemaker_execution_role
@@ -32,11 +33,13 @@ def main():
             model_data=MODEL_DATA,
             role=role,
             framework_version="2.5",
-            py_version="py3",
+            py_version="py311",
             entry_point="inference.py",
             source_dir="code",
-            sagemaker_session=sm_session
+            sagemaker_session=sm_session,
+            model_package_name=f"{MODEL_NAME}-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
         )
+
         print(f"Model '{MODEL_NAME}' created.")
     else:
         print (f"Model '{MODEL_NAME}' already exists.")
@@ -44,16 +47,20 @@ def main():
     # Create endpoint if it doesn't exist
     if not endpoint_already_exists:
         async_config = sagemaker.async_inference.AsyncInferenceConfig(
-            output_path=f"s3://{bucket}/scvi-async-output/"
+            output_path=f"s3://{BUCKET}/scvi-async-output/"
         )
 
         # Deploy model
-        predictor = pytorch_model.deploy(
+        pytorch_model.deploy(
             initial_instance_count=1,
             instance_type="ml.m5.large",
             async_inference_config=async_config,
+            endpoint_name=ENDPOINT_NAME
         )
-        print(f"Endpoint '{ENDPOINT_NAME}' created.")
+
+        # Log the URL of the endpoint
+        endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"
+        print(f"Endpoint URL: {endpoint_url}")
     else:
         print(f"Endpoint '{ENDPOINT_NAME}' already exists.")
 
