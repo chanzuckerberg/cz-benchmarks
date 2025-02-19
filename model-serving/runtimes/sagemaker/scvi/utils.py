@@ -1,5 +1,33 @@
 import json
+from botocore.exceptions import ClientError
 import boto3
+
+def model_exists(model_name, sm_client):
+    try:
+        sm_client.describe_model(ModelName=model_name)
+        print(f"Model '{model_name}' already exists.")
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ValidationException":
+            # Model does not exist
+            print(f"Model '{model_name}' does not exist.")
+            return False
+        else:
+            raise
+
+def endpoint_exists(endpoint_name, sm_client):
+    try:
+        sm_client.describe_endpoint(EndpointName=endpoint_name)
+        print(f"Endpoint '{endpoint_name}' already exists.")
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ValidationException":
+            # Endpoint does not exist
+            print(f"Endpoint '{endpoint_name}' does not exist.")
+            return False
+        else:
+            raise
+
 
 def create_sagemaker_execution_role(role_name="SageMakerExecutionRole"):
     """

@@ -4,9 +4,8 @@
 from datetime import datetime
 import sagemaker
 from sagemaker.pytorch.model import PyTorchModel
-from create_sagemaker_role import create_sagemaker_execution_role
+from utils import create_sagemaker_execution_role, model_exists, endpoint_exists
 import boto3
-from botocore.exceptions import ClientError
 
 # Set constants
 REGION = "us-west-2"
@@ -63,33 +62,6 @@ def main():
         print(f"Endpoint URL: {endpoint_url}")
     else:
         print(f"Endpoint '{ENDPOINT_NAME}' already exists.")
-
-
-def model_exists(model_name, sm_client):
-    try:
-        sm_client.describe_model(ModelName=model_name)
-        print(f"Model '{model_name}' already exists.")
-        return True
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "ValidationException":
-            # Model does not exist
-            print(f"Model '{model_name}' does not exist.")
-            return False
-        else:
-            raise
-
-def endpoint_exists(endpoint_name, sm_client):
-    try:
-        sm_client.describe_endpoint(EndpointName=endpoint_name)
-        print(f"Endpoint '{endpoint_name}' already exists.")
-        return True
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "ValidationException":
-            # Endpoint does not exist
-            print(f"Endpoint '{endpoint_name}' does not exist.")
-            return False
-        else:
-            raise
 
 if __name__ == "__main__":
     main()
