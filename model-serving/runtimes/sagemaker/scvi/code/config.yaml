@@ -1,0 +1,9 @@
+census_version: "2024-07-01"
+
+homo_sapiens:
+  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/homo_sapiens/model.pt
+  hvg_names: s3://generate-cross-species/models/scvi/hvg_names_homo_sapiens.csv.gz
+
+mus_musculus:
+  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/mus_musculus/model.pt
+  hvg_names: s3://generate-cross-species/models/scvi/hvg_names_mus_musculus.csv.gz
