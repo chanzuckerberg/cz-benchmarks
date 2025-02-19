@@ -11,7 +11,7 @@ from czibench.models.validators.uce import UCEValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
 from czibench.datasets.types import DataType
-
+from czibench.datasets.base import BaseDataset
 logger = logging.getLogger(__name__)
 
 
@@ -19,10 +19,10 @@ class UCE(UCEValidator, BaseModelImplementation):
     def parse_args(self):
         pass
 
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         return ""
 
-    def _download_model_weights(self):
+    def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
@@ -33,7 +33,7 @@ class UCE(UCEValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
-    def run_model(self):
+    def run_model(self, dataset: BaseDataset):
         from evaluate import AnndataProcessor
 
         config = OmegaConf.load("config.yaml")
@@ -68,7 +68,7 @@ class UCE(UCEValidator, BaseModelImplementation):
         else:
             print("Directory does not exist\n")
 
-        adata = self.data.adata
+        adata = dataset.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))
         tmp_dir = pathlib.Path(tempfile.gettempdir()) / "temp_adata"
         os.makedirs(tmp_dir, exist_ok=True)
@@ -90,7 +90,7 @@ class UCE(UCEValidator, BaseModelImplementation):
         processor.preprocess_anndata()
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
-        self.set_output(DataType.EMBEDDING, embedding_adata.obsm["X_uce"])
+        dataset.set_output(DataType.EMBEDDING, embedding_adata.obsm["X_uce"])
 
 
 if __name__ == "__main__":
