@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 # model_fn, input_fn, predict_fn, output_fn are required by SageMaker
-
-
 def model_fn(model_dir):
     """
     Load and initialize the SCVI model from the specified directory.
@@ -45,8 +43,6 @@ def model_fn(model_dir):
     with open(config_path, "r") as f:
         artifacts = yaml.safe_load(f)
 
-    # Initialize the SCVI model with artifacts, and ensure model weights are downloaded if needed.
-    # SCVI.artifacts is a dictionary of paths to the model weights and HVG names for each organism.
     model = SCVI(artifacts)
     return model
 
@@ -118,11 +114,11 @@ def predict_fn(input_data, model):
     except KeyError as e:
         raise KeyError(f"Missing key in input_data: {e}")
 
-    # Download model weights from S3
+    # Download model weights from S3 for the specified organism
     model._download_model_weights(organism)
     model_dir = model.artifacts.get(f"model_weights_{organism}")
 
-    # Filter adata by HVGs
+    # Filter adata by HVGs for the specified organism
     hvg_file = model.artifacts.get(f"hvg_names_{organism}")
     adata = model._filter_adata_by_hvg(adata, organism)
 
@@ -155,7 +151,7 @@ def output_fn(prediction, content_type):
         buffer = BytesIO()
         np.save(buffer, prediction)
         return buffer.getvalue(), "application/x-npy"
-        # When making a request to the endpoint, the response is a binary stream in NumPy .npy format so we can reconstruct the array using np.load (e.g. np.load(io.BytesIO(response_body) ))
+        # When making a request to the endpoint, the response is a binary stream in NumPy .npy format so we can reconstruct the array using np.load(io.BytesIO(response_body)
 
     elif content_type == "application/json":
         # Convert NumPy array to JSON
@@ -190,17 +186,14 @@ class SCVI:
         # Filter input anndata by HVGs
         adata = SCVI._filter_adata_by_hvg(adata, hvg_file)
 
-        # Combine batch keys into a single "batch" column
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
 
-        # Prepare a query anndata
         scvi.model.SCVI.prepare_query_anndata(
             adata, str(reference_model_path), return_reference_var_names=True
         )
 
-        # Load query data and set "is_trained" to True
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
             str(reference_model_path),
