@@ -22,7 +22,7 @@ upload: package
 clean:
 	rm -f $(ARCHIVE_NAME)
 
-deploy:
+deploy: upload
 	python deploy.py
 
 test:
