@@ -66,4 +66,3 @@ venv.bak/
 /output/
 *.dill
 *.h5ad
-venv*

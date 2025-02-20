@@ -28,18 +28,9 @@ class Organism(Enum):
     @property
     def prefix(self):
         return self.value[1]
-    
-    @staticmethod
-    def from_string(s):
-        s = s.lower()
-        if s in ["human", "homo_sapiens"]:
-            return Organism.HUMAN
-        elif s in ["mouse", "mus_musculus"]:
-            return Organism.MOUSE
-        else:
-            raise ValueError(f"Unknown organism: {s}")
 
 
+# Register Organism resolver
 OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
 
 

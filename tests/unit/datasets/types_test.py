@@ -24,15 +24,6 @@ def test_organism_enum():
     assert repr(mouse) == "mus_musculus"
 
 
-def test_organism_from_string():
-    assert Organism.from_string("human") == Organism.HUMAN
-    assert Organism.from_string("homo_sapiens") == Organism.HUMAN
-    assert Organism.from_string("mouse") == Organism.MOUSE
-    assert Organism.from_string("mus_musculus") == Organism.MOUSE
-    with pytest.raises(ValueError):
-        Organism.from_string("unknown")
-
-
 def test_omegaconf_organism_resolver():
     cfg = OmegaConf.create({"org": "${organism:HUMAN}"})
     assert cfg.org == Organism.HUMAN

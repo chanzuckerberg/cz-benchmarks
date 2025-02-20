@@ -163,10 +163,3 @@ def test_single_cell_dataset_organism_mismatch(mouse_anndata_file):
     ds.load_data()
     with pytest.raises(ValueError, match="valid gene names"):
         ds.validate()
-
-
-def test_organism_from_string():
-    assert Organism.from_string("human") == Organism.HUMAN
-    assert Organism.from_string("mouse") == Organism.MOUSE
-    with pytest.raises(ValueError, match="Unknown organism"):
-        Organism.from_string("unknown")

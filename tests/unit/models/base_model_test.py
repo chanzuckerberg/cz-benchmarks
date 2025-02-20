@@ -129,16 +129,3 @@ class DummyDataset:
 def test_run_invalid_data_type(mock_deserialize, test_model):
     with pytest.raises(ValueError, match="Dataset type mismatch"):
         test_model.run()
-
-
-@patch("czibench.models.base.BaseDataset.deserialize")
-def test_serialize(mock_deserialize, test_model, base_dataset):
-    mock_deserialize.return_value = base_dataset
-    test_model.run_model = MagicMock()
-    test_model.download_model_weights = MagicMock()
-    base_dataset.load_data = MagicMock()
-    base_dataset.validate = MagicMock()
-    base_dataset.unload_data = MagicMock()
-    base_dataset.serialize = MagicMock()
-    test_model.run()
-    base_dataset.serialize.assert_called_once_with("./app/output/data.dill")

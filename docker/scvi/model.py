@@ -3,18 +3,7 @@ import pathlib
 import boto3
 import scvi
 from omegaconf import OmegaConf
-from sympy import im
-from .utils import filter_adata_by_hvg
-
-import os
-import sys
-
-root_dir = pathlib.Path(__file__).parent.parent.parent
-sys.path.append(os.path.join(root_dir, 'src'))
-sys.path.append(os.path.join(root_dir, 'docker'))
-sys.path.append(os.path.join(root_dir, 'docker/scvi'))
-
-print(sys.path)
+from utils import filter_adata_by_hvg
 
 from czibench.models.validators.scvi import SCVIValidator
 from czibench.models.base import BaseModelImplementation
@@ -45,7 +34,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         adata = self.data.adata
         batch_keys = self.required_obs_keys
         adata = filter_adata_by_hvg(
-            adata, f"docker/scvi/hvg_names_{self.data.organism.name}.csv.gz"
+            adata, f"hvg_names_{self.data.organism.name}.csv.gz"
         )
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
