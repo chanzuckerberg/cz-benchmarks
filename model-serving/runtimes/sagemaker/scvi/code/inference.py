@@ -71,11 +71,14 @@ def input_fn(request_body, request_content_type):
         ValueError: If the `request_content_type` is not supported or required keys are missing in the JSON.
         json.JSONDecodeError: If the `request_body` is not valid JSON.
     """
+    logger.info(f"Input function called with content type: {request_content_type}")
+    logger.info(f"Request body: {request_body}")
     if request_content_type != "application/json":
         raise ValueError(f"Unsupported content type: {request_content_type}")
 
     # Parse the input JSON
     data = json.loads(request_body)
+    logger.info(f"Input data: {data}")
     s3_input = data.get("s3_input")
     organism = data.get("organism")
 
@@ -83,9 +86,11 @@ def input_fn(request_body, request_content_type):
         raise ValueError("JSON must contain 's3_input' and 'organism' keys.")
 
     # Download input file from S3
+    logger.info(f"Downloading input file from S3")
     local_path = download_from_s3(s3_input)
 
     # Load the input file as an AnnData object
+    logger.info(f"Loading input file as AnnData object")
     adata = read_h5ad(local_path)
 
     return {"adata": adata, "organism": organism}
@@ -118,15 +123,18 @@ def predict_fn(input_data, model):
     except KeyError as e:
         raise KeyError(f"Missing key in input_data: {e}")
 
+    logger.info(f"Downloading model weights")
     # Download model weights from S3 for the specified organism
     model._download_model_weights(organism)
     model_dir = model.artifacts.get(f"model_weights_{organism}")
 
     # Filter adata by HVGs for the specified organism
+    logger.info(f"Filtering adata by HVGs")
     hvg_file = model.artifacts.get(f"hvg_names_{organism}")
     adata = model._filter_adata_by_hvg(adata, organism)
 
     # Delegate to model's predict method
+    logger.info(f"Predicting")
     return model._predict(adata, hvg_file, model_dir)
 
 
@@ -150,6 +158,10 @@ def output_fn(prediction, content_type):
     Raises:
         ValueError: If the specified `content_type` is not supported.
     """
+    logger.info(f"Output function called with content type: {content_type}")
+    logger.info(f"Prediction type: {type(prediction)}")
+    logger.info(f"Prediction shape: {prediction.shape}")
+
     if content_type == "application/x-npy":
         # Convert NumPy array to binary stream in NumPy .npy format
         buffer = BytesIO()
@@ -188,16 +200,18 @@ class SCVI:
         batch_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
 
         # Filter input anndata by HVGs
+        logger.info(f"Filtering adata by HVGs")
         adata = SCVI._filter_adata_by_hvg(adata, hvg_file)
 
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
 
+        logger.info(f"Preparing query anndata")
         scvi.model.SCVI.prepare_query_anndata(
             adata, str(reference_model_path), return_reference_var_names=True
         )
-
+        logger.info(f"Loading query data")
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
             str(reference_model_path),
@@ -205,7 +219,9 @@ class SCVI:
         vae_q.is_trained = True
 
         # Get latent representation
+        logger.info(f"Getting latent representation")
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
+        logger.info(f"Latent representation shape: {qz_m.shape}")
         return qz_m
 
     def _filter_adata_by_hvg(self, adata: ad.AnnData, organism: str) -> ad.AnnData:
