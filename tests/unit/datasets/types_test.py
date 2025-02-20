@@ -1,6 +1,14 @@
+import anndata as ad
+import numpy as np
+import pandas as pd
 import pytest
+from czibench.datasets.types import DataType, Organism
 from omegaconf import OmegaConf
-from czibench.datasets.types import Organism
+
+
+@pytest.fixture
+def example_anndata():
+    return ad.read_h5ad("tests/assets/example-small.h5ad")
 
 
 def test_organism_enum():
@@ -9,38 +17,46 @@ def test_organism_enum():
     assert human.prefix == "ENSG"
     assert str(human) == "homo_sapiens"
     assert repr(human) == "homo_sapiens"
-
     mouse = Organism.MOUSE
     assert mouse.name == "mus_musculus"
     assert mouse.prefix == "ENSMUSG"
     assert str(mouse) == "mus_musculus"
     assert repr(mouse) == "mus_musculus"
 
+
 def test_organism_from_string():
     assert Organism.from_string("human") == Organism.HUMAN
     assert Organism.from_string("homo_sapiens") == Organism.HUMAN
     assert Organism.from_string("mouse") == Organism.MOUSE
     assert Organism.from_string("mus_musculus") == Organism.MOUSE
-
     with pytest.raises(ValueError):
         Organism.from_string("unknown")
 
-# TODO - debug running fine individually, failing for suite
-# def test_organism_resolver():
-#     # Create a config object
-#     config = OmegaConf.create({"organism": "${organism:human}"})
-#     OmegaConf.resolve(config)
-#     assert config["organism"] == Organism.HUMAN
-#     config = OmegaConf.create({"organism": "${organism:homo_sapiens}"})
-#     OmegaConf.resolve(config)
-#     assert config["organism"] == Organism.HUMAN
-#     config = OmegaConf.create({"organism": "${organism:mouse}"})
-#     OmegaConf.resolve(config)
-#     assert config["organism"] == Organism.MOUSE
-#     config = OmegaConf.create({"organism": "${organism:mus_musculus}"})
-#     OmegaConf.resolve(config)
-#     assert config["organism"] == Organism.MOUSE
-#     config = OmegaConf.create({"organism": "${organism:unknown}"})
 
-#     with pytest.raises(ValueError):
-#         OmegaConf.resolve(config)
+def test_omegaconf_organism_resolver():
+    cfg = OmegaConf.create({"org": "${organism:HUMAN}"})
+    assert cfg.org == Organism.HUMAN
+    cfg = OmegaConf.create({"org": "${organism:MOUSE}"})
+    assert cfg.org == Organism.MOUSE
+
+
+def test_datatype_members():
+    assert DataType.METADATA.dtype == pd.DataFrame
+    assert DataType.ANNDATA.dtype == ad.AnnData
+    assert DataType.ORGANISM.dtype == Organism
+    assert DataType.EMBEDDING.dtype == np.ndarray
+    assert DataType.PERTURBATION.dtype == pd.DataFrame
+
+
+def test_datatype_properties():
+    assert DataType.METADATA.is_input
+    assert not DataType.METADATA.is_output
+    assert not DataType.EMBEDDING.is_input
+    assert DataType.EMBEDDING.is_output
+    assert DataType.ANNDATA.description == "AnnData object containing expression data"
+
+
+def test_datatype_anndata(example_anndata):
+    assert isinstance(example_anndata, ad.AnnData)
+    assert example_anndata.shape[0] > 0
+    assert example_anndata.shape[1] > 0

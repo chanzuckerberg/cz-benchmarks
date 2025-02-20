@@ -7,6 +7,7 @@ h5py>=3.8.0
 
 # Optional but recommended
 typing-extensions>=4.5.0
+scvi-tools==1.1.6.post2
 
 dill>=0.3.6
 scikit-learn
