@@ -4,7 +4,7 @@
 from datetime import datetime
 import sagemaker
 from sagemaker.pytorch.model import PyTorchModel
-from utils import create_sagemaker_execution_role, model_exists, endpoint_exists
+from utils import create_sagemaker_execution_role, model_exists, endpoint_exists, endpoint_config_exists
 import boto3
 
 # Set constants
@@ -25,43 +25,57 @@ def main():
     # Determine if model and endpoint already exist
     model_already_exists = model_exists(MODEL_NAME, sm_client)
     endpoint_already_exists = endpoint_exists(ENDPOINT_NAME, sm_client)
+    endpoint_config_already_exists = endpoint_config_exists(ENDPOINT_NAME, sm_client)
 
-    # Create model if it doesn't exist
-    if not model_already_exists:    
-        pytorch_model = PyTorchModel(
-            model_data=MODEL_DATA,
-            role=role,
-            framework_version="2.5",
-            py_version="py311",
-            entry_point="inference.py",
-            source_dir="code",
-            sagemaker_session=sm_session,
-            model_package_name=f"{MODEL_NAME}-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
-        )
-
-        print(f"Model '{MODEL_NAME}' created.")
+    # Replace model if it exists
+    if model_already_exists:
+        print(f"Model '{MODEL_NAME}' already exists. Deleting the existing model.")
+        sm_client.delete_model(ModelName=MODEL_NAME)
     else:
-        print (f"Model '{MODEL_NAME}' already exists.")
+        print(f"Model '{MODEL_NAME}' does not exist. Creating a new model.")
 
-    # Create endpoint if it doesn't exist
-    if not endpoint_already_exists:
-        async_config = sagemaker.async_inference.AsyncInferenceConfig(
-            output_path=f"s3://{BUCKET}/scvi-async-output/"
-        )
+    # Create model
+    pytorch_model = PyTorchModel(
+        model_data=MODEL_DATA,
+        role=role,
+        framework_version="2.5",
+        py_version="py311",
+        entry_point="inference.py",
+        source_dir="code/",
+        sagemaker_session=sm_session,
+        name=f"{MODEL_NAME}"
+    )
 
-        # Deploy model
-        pytorch_model.deploy(
-            initial_instance_count=1,
-            instance_type="ml.m5.large",
-            async_inference_config=async_config,
-            endpoint_name=ENDPOINT_NAME
-        )
+    print(f"Model '{MODEL_NAME}' has been created or updated.")
 
-        # Log the URL of the endpoint
-        endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"
-        print(f"Endpoint URL: {endpoint_url}")
+    # Create endpoint config and deploy model
+    if endpoint_config_already_exists:
+        print(f"Endpoint config '{ENDPOINT_NAME}' already exists. Deleting the existing endpoint config.")
+        sm_client.delete_endpoint_config(EndpointConfigName=ENDPOINT_NAME)
     else:
-        print(f"Endpoint '{ENDPOINT_NAME}' already exists.")
+        print(f"Endpoint config '{ENDPOINT_NAME}' does not exist. Creating a new endpoint config.")
+    
+    async_config = sagemaker.async_inference.AsyncInferenceConfig(
+        output_path=f"s3://{BUCKET}/scvi-async-output/"
+    )
+
+    # Replace endpoint if it exists
+    if endpoint_already_exists:
+        print(f"Endpoint '{ENDPOINT_NAME}' already exists. Deleting the existing endpoint.")
+        sm_client.delete_endpoint(EndpointName=ENDPOINT_NAME)
+    else:
+        print(f"Endpoint '{ENDPOINT_NAME}' does not exist. Creating a new endpoint.")
+
+    pytorch_model.deploy(
+        initial_instance_count=1,
+        instance_type="ml.g4dn.xlarge",
+        async_inference_config=async_config,
+        endpoint_name=ENDPOINT_NAME
+    )
+
+    # Log the URL of the endpoint
+    endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"
+    print(f"Endpoint URL: {endpoint_url}")
 
 if __name__ == "__main__":
     main()

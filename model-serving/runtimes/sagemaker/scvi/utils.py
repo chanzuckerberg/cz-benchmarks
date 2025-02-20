@@ -1,6 +1,10 @@
 import json
 from botocore.exceptions import ClientError
 import boto3
+import uuid
+
+REGION = "us-west-2"
+S3_BUCKET = "omar-data"
 
 def model_exists(model_name, sm_client):
     try:
@@ -24,6 +28,20 @@ def endpoint_exists(endpoint_name, sm_client):
         if e.response["Error"]["Code"] == "ValidationException":
             # Endpoint does not exist
             print(f"Endpoint '{endpoint_name}' does not exist.")
+            return False
+        else:
+            raise
+
+
+def endpoint_config_exists(endpoint_config_name, sm_client):
+    try:
+        sm_client.describe_endpoint_config(EndpointConfigName=endpoint_config_name)
+        print(f"Endpoint config '{endpoint_config_name}' already exists.")
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ValidationException":
+            # Endpoint config does not exist
+            print(f"Endpoint config '{endpoint_config_name}' does not exist.")
             return False
         else:
             raise
@@ -91,3 +109,11 @@ def create_sagemaker_execution_role(role_name="SageMakerExecutionRole"):
     time.sleep(5)
 
     return role_arn
+
+def upload_to_s3(payload, prefix="scvi-async-input/"):
+    s3_client = boto3.client('s3', region_name=REGION)
+    inference_id = str(uuid.uuid4())
+    s3_key = f"{prefix}{inference_id}.json"
+    s3_client.put_object(Bucket=S3_BUCKET, Key=s3_key, Body=payload)
+    s3_uri = f"s3://{S3_BUCKET}/{s3_key}"
+    return inference_id, s3_uri

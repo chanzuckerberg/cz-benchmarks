@@ -22,8 +22,13 @@ upload: package
 clean:
 	rm -f $(ARCHIVE_NAME)
 
-deploy: upload
+sagemaker-deploy: upload
 	python deploy.py
+	make clean
 
-test:
+sagemaker-test:
 	python test.py
+
+# Delete the endpoint and model
+sagemaker-cleanup:
+	python cleanup.py $(ENDPOINT_NAME) $(MODEL_NAME)

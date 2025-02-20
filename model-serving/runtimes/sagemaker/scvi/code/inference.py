@@ -1,7 +1,7 @@
-import base64
 import functools
 import json
 from anndata import AnnData, read_h5ad
+from omegaconf import OmegaConf
 import scvi
 import anndata as ad
 import pandas as pd
@@ -37,11 +37,15 @@ def model_fn(model_dir):
     Raises:
         FileNotFoundError: If the `config.yaml` file is not found in the provided `model_dir`.
     """
-    config_path = os.path.join(model_dir, "config.yaml")
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Config file not found in model_dir: {config_path}")
-    with open(config_path, "r") as f:
-        artifacts = yaml.safe_load(f)
+    logger.info(f"Model directory: {model_dir}")
+    logger.info(f"Contents of model_dir: {os.listdir(model_dir)}")
+    config_file = os.path.join(model_dir, "code/config.yaml")
+
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Config file not found in model_dir: {config_file}")
+    with open(config_file, "r") as f:
+        cfg = OmegaConf.load(f)
+        artifacts = OmegaConf.to_container(cfg, resolve=True)
 
     model = SCVI(artifacts)
     return model
