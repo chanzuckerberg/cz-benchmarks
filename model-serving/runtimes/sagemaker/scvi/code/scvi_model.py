@@ -39,12 +39,12 @@ class SCVI:
 
         logger.info(f"Preparing query anndata")
         scvi.model.SCVI.prepare_query_anndata(
-            adata, "/tmp", return_reference_var_names=True
+            adata, str(reference_model_path), return_reference_var_names=True
         )
         logger.info(f"Loading query data")
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
-            "/tmp",
+            str(reference_model_path),
         )
         vae_q.is_trained = True
 
@@ -53,6 +53,7 @@ class SCVI:
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
         logger.info(f"Latent representation shape: {qz_m.shape}")
         return qz_m
+
 
     def _filter_adata_by_hvg(self, adata: ad.AnnData, hvg_file_path: str) -> ad.AnnData:
         """Filter adata by HVGs for the specified organism, downloading HVG names if not already present."""
@@ -100,37 +101,39 @@ class SCVI:
         )
         return adata_reordered
 
-    def _download_hvg_names(self, organism: str):
+
+    def _download_hvg_names(self, organism: str, destination_dir: str):
         """
         Downloads HVG names from S3 for the specified organism.
 
         Args:
             organism (str): The organism identifier (e.g., 'homo_sapiens').
+            destination_dir (str): The directory to download the HVG names to.
         """
+        os.makedirs(destination_dir, exist_ok=True)
         hvg_val = self.artifacts.get(organism, {}).get("hvg_names")
+        logger.info(f"Downloading HVG names for {organism} from {hvg_val}")
+
         if hvg_val and isinstance(hvg_val, str) and hvg_val.startswith("s3://"):
-            local_dir = "/tmp"
-            os.makedirs(local_dir, exist_ok=True)
-            local_path = os.path.join(local_dir, os.path.basename(hvg_val))
+            local_path = os.path.join(destination_dir, os.path.basename(hvg_val))
             if not os.path.exists(local_path):
                 download_from_s3(hvg_val, local_path)
-            self.artifacts[f"hvg_names_{organism}"] = local_path
-            self.artifacts[organism]["hvg_names"] = local_path
             return local_path
 
-    def _download_model_weights(self, organism: str):
+
+    def _download_model_weights(self, organism: str, destination_dir: str):
         """
         Downloads model weights from S3 for the specified organism.
 
         Args:
             organism (str): The organism identifier (e.g., 'homo_sapiens').
         """
+        os.makedirs(destination_dir, exist_ok=True)
         mw_val = self.artifacts.get(organism, {}).get("model_weights")
+        logger.info(f"Downloading model weights for {organism} from {mw_val}")
+
         if mw_val and isinstance(mw_val, str) and mw_val.startswith("s3://"):
-            local_dir = "/tmp"
-            local_path = os.path.join(local_dir, os.path.basename(mw_val))
+            local_path = os.path.join(destination_dir, os.path.basename(mw_val))
             if not os.path.exists(local_path):
                 download_from_s3(mw_val, local_path)
-            self.artifacts[f"model_weights_{organism}"] = local_path
-            self.artifacts[organism]["model_weights"] = local_path
             return local_path

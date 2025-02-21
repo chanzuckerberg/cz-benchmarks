@@ -117,22 +117,24 @@ def predict_fn(input_data, model: SCVI):
     try:
         adata = input_data["adata"]
         organism = input_data["organism"]
+        destination_dir = f"/tmp/{organism}"
+        os.makedirs(destination_dir, exist_ok=True)
     except KeyError as e:
         raise KeyError(f"Missing key in input_data: {e}")
 
     logger.info(f"Downloading model weights")
     # Download model weights from S3 for the specified organism
-    model_dir_path = model._download_model_weights(organism)
+    model_dir_path = model._download_model_weights(organism, destination_dir)
     logger.info(f"{organism} model weights downloaded to {model_dir_path}")
 
-    # Filter adata by HVGs for the specified organism
+    # Download HVG names from S3 for the specified organism
     logger.info(f"Filtering adata by HVGs")
-    hvg_file_path = model._download_hvg_names(organism)
+    hvg_file_path = model._download_hvg_names(organism, destination_dir)
     logger.info(f"{organism} HVG file downloaded to {hvg_file_path}")
 
     # Delegate to model's predict method
     logger.info(f"Predicting")
-    return model.predict(adata, hvg_file_path, model_dir_path)
+    return model.predict(adata, hvg_file_path, destination_dir)
 
 
 def output_fn(prediction, content_type):

@@ -2,6 +2,7 @@ import boto3
 import json
 import numpy as np
 from utils import upload_to_s3, download_s3_file, wait_for_s3_file
+import time
 
 REGION = "us-west-2"
 
@@ -38,11 +39,12 @@ if __name__ == "__main__":
         "organism": "homo_sapiens"
     })
 
+    start_time = time.perf_counter()    
     output_location = test_endpoint(endpoint_name, payload)
 
     # Wait for the output file to be available
     try:
-        wait_for_s3_file(output_location, timeout=3600, interval=10)  # Wait up to 1 hour, check every 10 seconds
+        wait_for_s3_file(output_location, timeout=3600, interval=1)  # Wait up to 1 hour, check every 10 seconds
     except TimeoutError as e:
         print(str(e))
         exit(1)
@@ -54,3 +56,8 @@ if __name__ == "__main__":
 
     npy_array = np.frombuffer(buffer, dtype=np.float32)
     print(npy_array)
+    
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    # Takes around 7 seconds for the example-small.h5ad dataset
+    print(f"Execution Time: {elapsed_time:.2f} seconds")
