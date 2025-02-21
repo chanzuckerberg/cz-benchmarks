@@ -4,6 +4,8 @@ import boto3
 import uuid
 import logging
 from sagemaker.async_inference import AsyncInferenceConfig
+import time
+from urllib.parse import urlparse
 
 REGION = "us-west-2"
 S3_BUCKET = "omar-data"
@@ -153,3 +155,40 @@ def upload_to_s3(payload, prefix="scvi-async-input/"):
     s3_client.put_object(Bucket=S3_BUCKET, Key=s3_key, Body=payload)
     s3_uri = f"s3://{S3_BUCKET}/{s3_key}"
     return inference_id, s3_uri
+
+def download_s3_file(s3_uri, local_filename):
+    parsed = urlparse(s3_uri)
+    bucket = parsed.netloc
+    key = parsed.path.lstrip('/')
+    s3 = boto3.client('s3', region_name=REGION)
+    s3.download_file(bucket, key, local_filename)
+
+def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
+    """
+    Waits for a file to become available in S3.
+
+    :param s3_uri: The S3 URI of the file to wait for.
+    :param timeout: Maximum time to wait in seconds (default: 1 hour).
+    :param interval: Time between checks in seconds (default: 5 minutes).
+    :raises TimeoutError: If the file is not available within the timeout period.
+    """
+    parsed = urlparse(s3_uri)
+    bucket = parsed.netloc
+    key = parsed.path.lstrip('/')
+    s3 = boto3.client('s3', region_name=REGION)
+    
+    start_time = time.time()
+    while True:
+        try:
+            s3.head_object(Bucket=bucket, Key=key)
+            print(f"File {s3_uri} is now available.")
+            break
+        except boto3.exceptions.botocore.client.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                elapsed = time.time() - start_time
+                if elapsed >= timeout:
+                    raise TimeoutError(f"Timeout: {s3_uri} not available after {timeout} seconds.")
+                print(f"File {s3_uri} not found. Waiting for {interval} seconds before retrying...")
+                time.sleep(interval)
+            else:
+                raise

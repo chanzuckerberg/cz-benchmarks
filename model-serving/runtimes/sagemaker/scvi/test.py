@@ -1,17 +1,17 @@
 import boto3
 import json
-from utils import upload_to_s3
+import numpy as np
+from utils import upload_to_s3, download_s3_file, wait_for_s3_file
+
 REGION = "us-west-2"
 
 def test_endpoint(endpoint_name, payload):
-    # Create a SageMaker runtime client
     runtime = boto3.client("sagemaker-runtime", region_name=REGION)
 
     inference_id, s3_uri = upload_to_s3(payload)
     print(f"Inference ID: {inference_id}")
     print(f"S3 URI: {s3_uri}")
 
-    # Invoke the endpoint
     response = runtime.invoke_endpoint_async(
         EndpointName=endpoint_name,
         ContentType="application/json",
@@ -21,6 +21,7 @@ def test_endpoint(endpoint_name, payload):
     )
     print(f"Inference ID: {response['InferenceId']}")
     print(f"Output Location: {response['OutputLocation']}")
+    return response["OutputLocation"]
 
 
 def list_endpoints():
@@ -37,4 +38,19 @@ if __name__ == "__main__":
         "organism": "homo_sapiens"
     })
 
-    test_endpoint(endpoint_name, payload)
+    output_location = test_endpoint(endpoint_name, payload)
+
+    # Wait for the output file to be available
+    try:
+        wait_for_s3_file(output_location, timeout=3600, interval=10)  # Wait up to 1 hour, check every 10 seconds
+    except TimeoutError as e:
+        print(str(e))
+        exit(1)
+
+    download_s3_file(output_location, 'output.out')
+
+    with open('output.out', 'rb') as f:
+        buffer = f.read()
+
+    npy_array = np.frombuffer(buffer, dtype=np.float32)
+    print(npy_array)
