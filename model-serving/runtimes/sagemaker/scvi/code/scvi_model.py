@@ -39,12 +39,12 @@ class SCVI:
 
         logger.info(f"Preparing query anndata")
         scvi.model.SCVI.prepare_query_anndata(
-            adata, str(reference_model_path), return_reference_var_names=True
+            adata, "/tmp", return_reference_var_names=True
         )
         logger.info(f"Loading query data")
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
-            str(reference_model_path),
+            "/tmp",
         )
         vae_q.is_trained = True
 

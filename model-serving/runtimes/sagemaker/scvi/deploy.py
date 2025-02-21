@@ -13,7 +13,6 @@ REGION = "us-west-2"
 BUCKET = "omar-data"
 MODEL_NAME = "scvi"
 ENDPOINT_NAME = "scvi-endpoint"
-MODEL_DATA = f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz"
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ def main():
 
     # Create model
     pytorch_model = PyTorchModel(
-        model_data=MODEL_DATA,
+        model_data=f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz",
         role=role,
         framework_version="2.5",
         py_version="py311",
