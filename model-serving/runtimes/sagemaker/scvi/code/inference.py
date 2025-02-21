@@ -127,11 +127,17 @@ def predict_fn(input_data, model):
     # Download model weights from S3 for the specified organism
     model._download_model_weights(organism)
     model_dir = model.artifacts.get(f"model_weights_{organism}")
+    logger.info(f"{organism} model weights downloaded to {model_dir}")
 
     # Filter adata by HVGs for the specified organism
     logger.info(f"Filtering adata by HVGs")
+    model._download_hvg_names(organism)
     hvg_file = model.artifacts.get(f"hvg_names_{organism}")
+    logger.info(f"{organism} HVG file downloaded to {hvg_file}")
+
+    logger.info(f"Filtering adata by HVGs")
     adata = model._filter_adata_by_hvg(adata, organism)
+    logger.info(f"{organism} adata filtered by HVGs")
 
     # Delegate to model's predict method
     logger.info(f"Predicting")

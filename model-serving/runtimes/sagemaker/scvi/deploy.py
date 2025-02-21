@@ -3,6 +3,7 @@
 
 from datetime import datetime
 import sagemaker
+from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.pytorch.model import PyTorchModel
 from utils import create_sagemaker_execution_role, model_exists, endpoint_exists, endpoint_config_exists
 import boto3
@@ -55,8 +56,10 @@ def main():
     else:
         print(f"Endpoint config '{ENDPOINT_NAME}' does not exist. Creating a new endpoint config.")
     
-    async_config = sagemaker.async_inference.AsyncInferenceConfig(
-        output_path=f"s3://{BUCKET}/scvi-async-output/"
+    async_config = AsyncInferenceConfig(
+        output_path=f"s3://{BUCKET}/scvi-async-output/",
+        failure_path=f"s3://{BUCKET}/scvi-async-failure/",
+        # TODO: Add notification configs for success and failure
     )
 
     # Replace endpoint if it exists
