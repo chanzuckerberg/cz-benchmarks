@@ -1,30 +1,16 @@
 from pathlib import Path
-
+import argparse
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.datasets.sc import SingleCellDataset
-from czibench.datasets.types import Organism
-from czibench.models.sc import BaseSingleCell
+from czibench.models.validators.geneformer import GeneformerValidator
+from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import DataType
 
 
-class Geneformer(BaseSingleCell):
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = []
-    required_var_keys = ["feature_id"]
-
-    @classmethod
-    def _validate_model_requirements(cls, dataset: SingleCellDataset):
-        missing_keys = [
-            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
-        ]
-        if missing_keys:
-            raise ValueError(f"Missing required var keys: {missing_keys}")
-
+class Geneformer(GeneformerValidator, BaseModelImplementation):
     def parse_args(self):
-        import argparse
-
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="gf_12L_30M")
         args = parser.parse_args()
@@ -71,7 +57,7 @@ class Geneformer(BaseSingleCell):
 
         # Initialize tokenizer with cell_idx tracking
         tk = TranscriptomeTokenizer(
-            custom_attr_name_dict={"cell_idx": "cell_idx"},  # Track cell order
+            custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
             gene_median_file=str(Path(token_config.gene_median_file)),
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
@@ -96,7 +82,7 @@ class Geneformer(BaseSingleCell):
             nproc=4,
             token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             max_ncells=None,
-            emb_label=["cell_idx"],  # Include cell_idx in output
+            emb_label=["cell_idx"],
         )
 
         # Get embeddings
@@ -111,10 +97,8 @@ class Geneformer(BaseSingleCell):
 
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
-
-        # Remove the cell_idx column and convert to numpy array
         embs = embs.drop("cell_idx", axis=1)
-        self.data.output_embedding = embs.values
+        self.set_output(DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()

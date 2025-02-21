@@ -1,7 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import ClassVar, Type
+from typing import ClassVar, Type, Set
 
 from ..constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -9,6 +9,7 @@ from ..constants import (
     OUTPUT_DATA_PATH_DOCKER,
 )
 from ..datasets.base import BaseDataset
+from ..datasets.types import DataType, DataValue
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -21,33 +22,50 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BaseModel(ABC):
+class BaseModelValidator(ABC):
     # Type annotation for class variable
     dataset_type: ClassVar[Type[BaseDataset]]
-    data: BaseDataset
-    model_weights_dir: str
 
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables"""
         super().__init_subclass__()
-        if not hasattr(cls, "dataset_type"):
-            raise TypeError(
-                f"Can't instantiate {cls.__name__} without dataset_type class variable"
-            )
+
+        if cls.__name__ != "BaseModelImplementation":
+            if not hasattr(cls, "dataset_type"):
+                raise TypeError(
+                    f"Can't instantiate {cls.__name__}"
+                    " without dataset_type class variable"
+                )
 
     @abstractmethod
-    def _validate_dataset(self, dataset: BaseDataset) -> bool:
+    def _validate_dataset(self, dataset: BaseDataset):
         pass
 
-    @classmethod
-    def validate_dataset(cls, dataset: BaseDataset):
-        if not isinstance(dataset, cls.dataset_type):
-            raise ValueError(
-                f"Dataset type mismatch: expected {cls.dataset_type.__name__}, ",
-                "got {type(dataset).__name__}",
-            )
+    @property
+    @abstractmethod
+    def inputs(self) -> Set[DataType]:
+        """Specify what input types this model requires"""
 
-        cls._validate_dataset(dataset)
+    @property
+    @abstractmethod
+    def outputs(self) -> Set[DataType]:
+        """Specify what output types this model produces"""
+
+    def validate_dataset(self, dataset: BaseDataset):
+        if not isinstance(dataset, self.dataset_type):
+            raise ValueError("Dataset type mismatch")
+
+        # Validate required inputs are available
+        missing_inputs = self.inputs - set(dataset.inputs.keys())
+        if missing_inputs:
+            raise ValueError(f"Missing required inputs: {missing_inputs}")
+
+        self._validate_dataset(dataset)
+
+
+class BaseModelImplementation(BaseModelValidator, ABC):
+    data: BaseDataset
+    model_weights_dir: str
 
     @abstractmethod
     def get_model_weights_subdir(self) -> str:
@@ -79,6 +97,10 @@ class BaseModel(ABC):
     def run_model(self) -> None:
         """Implement model-specific inference logic"""
 
+    @abstractmethod
+    def parse_args(self):
+        """Return parsed arguments for the model."""
+
     def run(self):
         self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
 
@@ -99,3 +121,12 @@ class BaseModel(ABC):
 
         self.data.unload_data()
         self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
+
+    def set_output(self, data_type: DataType, value: DataValue) -> None:
+        """Safely set an output with type checking"""
+        if not isinstance(value, data_type.dtype):
+            raise TypeError(
+                f"Output {data_type.name} has incorrect type: "
+                f"expected {data_type.dtype}, got {type(value)}"
+            )
+        self.data.set_output(data_type, value)
