@@ -1,25 +1,22 @@
-import functools
+# This file is used to define the necessary functions to deploy the SCVI model to SageMaker
+# model_fn, input_fn, predict_fn, output_fn are required to be implemented by SageMaker
+# More info on the dir structure: https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/using_pytorch.html#model-directory-structure
+# These get packaged up into a .tar.gz file, uploaded to an S3 bucket, and then deployed to SageMaker via deploy.py
+
 import json
-from anndata import AnnData, read_h5ad
+from anndata import read_h5ad
 from omegaconf import OmegaConf
-import scvi
-import anndata as ad
-import pandas as pd
-from scipy import sparse
 from utils import download_from_s3
 import os
 import logging
-from pathlib import Path
 import os
-import yaml
 import numpy as np
-from utils import encode_array
 from io import BytesIO
+from scvi_model import SCVI
 
 logger = logging.getLogger(__name__)
 
 
-# model_fn, input_fn, predict_fn, output_fn are required by SageMaker
 def model_fn(model_dir):
     """
     Load and initialize the SCVI model from the specified directory.
@@ -96,7 +93,7 @@ def input_fn(request_body, request_content_type):
     return {"adata": adata, "organism": organism}
 
 
-def predict_fn(input_data, model):
+def predict_fn(input_data, model: SCVI):
     """
     Execute the prediction logic using the loaded SCVI model.
 
@@ -125,15 +122,13 @@ def predict_fn(input_data, model):
 
     logger.info(f"Downloading model weights")
     # Download model weights from S3 for the specified organism
-    model._download_model_weights(organism)
-    model_dir = model.artifacts.get(f"model_weights_{organism}")
-    logger.info(f"{organism} model weights downloaded to {model_dir}")
+    model_dir_path = model._download_model_weights(organism)
+    logger.info(f"{organism} model weights downloaded to {model_dir_path}")
 
     # Filter adata by HVGs for the specified organism
     logger.info(f"Filtering adata by HVGs")
-    model._download_hvg_names(organism)
-    hvg_file = model.artifacts.get(f"hvg_names_{organism}")
-    logger.info(f"{organism} HVG file downloaded to {hvg_file}")
+    hvg_file_path = model._download_hvg_names(organism)
+    logger.info(f"{organism} HVG file downloaded to {hvg_file_path}")
 
     logger.info(f"Filtering adata by HVGs")
     adata = model._filter_adata_by_hvg(adata, organism)
@@ -141,7 +136,7 @@ def predict_fn(input_data, model):
 
     # Delegate to model's predict method
     logger.info(f"Predicting")
-    return model._predict(adata, hvg_file, model_dir)
+    return model._predict(adata, hvg_file_path, model_dir_path)
 
 
 def output_fn(prediction, content_type):
@@ -185,134 +180,3 @@ def output_fn(prediction, content_type):
         buffer = BytesIO()
         np.save(buffer, prediction)
         return buffer.getvalue(), "application/x-npy"
-
-
-class SCVI:
-    """
-    This class loads scvi-tools models and performs inference.
-    It expects a dictionary of artifact paths in self.artifacts.
-    """
-
-    def __init__(self, artifacts: dict = None):
-        # Initialize the SCVI model. If artifacts are not provided, load them from config.yaml
-        if artifacts is None:
-            config_path = os.environ.get("SCVI_CONFIG", "config.yaml")
-            with open(config_path, "r") as f:
-                artifacts = yaml.safe_load(f)
-        self.artifacts = artifacts
-
-    @staticmethod
-    def predict(adata: AnnData, hvg_file: str, reference_model_path: Path):
-        batch_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
-
-        # Filter input anndata by HVGs
-        logger.info(f"Filtering adata by HVGs")
-        adata = SCVI._filter_adata_by_hvg(adata, hvg_file)
-
-        adata.obs["batch"] = functools.reduce(
-            lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
-        )
-
-        logger.info(f"Preparing query anndata")
-        scvi.model.SCVI.prepare_query_anndata(
-            adata, str(reference_model_path), return_reference_var_names=True
-        )
-        logger.info(f"Loading query data")
-        vae_q = scvi.model.SCVI.load_query_data(
-            adata,
-            str(reference_model_path),
-        )
-        vae_q.is_trained = True
-
-        # Get latent representation
-        logger.info(f"Getting latent representation")
-        qz_m, _ = vae_q.get_latent_representation(return_dist=True)
-        logger.info(f"Latent representation shape: {qz_m.shape}")
-        return qz_m
-
-    def _filter_adata_by_hvg(self, adata: ad.AnnData, organism: str) -> ad.AnnData:
-        """Filter adata by HVGs for the specified organism, downloading HVG names if not already present."""
-
-        # Check if HVG file for the organism is already downloaded
-        hvg_key = f"hvg_names_{organism}"
-        if hvg_key not in self.artifacts:
-            logger.info(f"HVG file for organism '{organism}' not found. Downloading...")
-            self._download_hvg_names(organism)
-
-        hvg_path = self.artifacts.get(hvg_key)
-        if not hvg_path or not os.path.exists(hvg_path):
-            raise FileNotFoundError(
-                f"HVG file for organism '{organism}' could not be found or downloaded."
-            )
-
-        adata = adata.copy()
-
-        hvg = pd.read_csv(hvg_path)
-        adata.var["feature_id"] = adata.var["feature_id"].astype(str)
-        hvg["feature_id"] = hvg["feature_id"].astype(str)
-
-        # Remove duplicate columns if present
-        adata.var = adata.var.loc[:, ~adata.var.columns.duplicated()]
-
-        mask = adata.var["feature_id"].isin(hvg["feature_id"])
-        adata_filtered = adata[:, mask].copy()
-
-        missing_features = set(hvg.feature_id) - set(adata.var.feature_id)
-        if missing_features:
-            logger.info(
-                f"WARNING: {len(missing_features)} HVGs are not present in the AnnData object"
-            )
-            missing_var = pd.DataFrame({"feature_id": list(missing_features)})
-            missing_var["feature_name"] = missing_var["feature_id"]
-            missing_var.set_index("feature_name", inplace=True)
-            missing_X = sparse.csr_matrix((adata.n_obs, len(missing_features)))
-            adata_missing = ad.AnnData(
-                X=missing_X, var=missing_var, obs=adata_filtered.obs.copy()
-            )
-            adata_concat = ad.concat(
-                [adata_filtered, adata_missing], axis=1, join="outer", merge="first"
-            )
-        else:
-            adata_concat = adata_filtered
-
-        hvg_unique = hvg.drop_duplicates(subset="feature_id")
-        adata_reordered = ad.AnnData(
-            X=adata_concat[:, hvg_unique.feature_id].X,
-            obs=adata_concat.obs.copy(),
-            var=adata_concat.var.loc[hvg_unique.feature_id].copy(),
-        )
-        return adata_reordered
-
-    def _download_hvg_names(self, organism: str):
-        """
-        Downloads HVG names from S3 for the specified organism.
-
-        Args:
-            organism (str): The organism identifier (e.g., 'homo_sapiens').
-        """
-        hvg_val = self.artifacts.get(organism, {}).get("hvg_names")
-        if hvg_val and isinstance(hvg_val, str) and hvg_val.startswith("s3://"):
-            local_dir = "/tmp"
-            os.makedirs(local_dir, exist_ok=True)
-            local_path = os.path.join(local_dir, os.path.basename(hvg_val))
-            if not os.path.exists(local_path):
-                download_from_s3(hvg_val, local_path)
-            self.artifacts[f"hvg_names_{organism}"] = local_path
-            self.artifacts[organism]["hvg_names"] = local_path
-
-    def _download_model_weights(self, organism: str):
-        """
-        Downloads model weights from S3 for the specified organism.
-
-        Args:
-            organism (str): The organism identifier (e.g., 'homo_sapiens').
-        """
-        mw_val = self.artifacts.get(organism, {}).get("model_weights")
-        if mw_val and isinstance(mw_val, str) and mw_val.startswith("s3://"):
-            local_dir = os.environ.get("MODEL_DIR", "./model_weights")
-            os.makedirs(local_dir, exist_ok=True)
-            local_path = os.path.join(local_dir, os.path.basename(mw_val))
-            if not os.path.exists(local_path):
-                download_from_s3(mw_val, local_path)
-            self.artifacts[f"model_weights_{organism}"] = local_path
-            self.artifacts[organism]["model_weights"] = local_path
