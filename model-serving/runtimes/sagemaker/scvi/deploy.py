@@ -2,10 +2,10 @@
 # It also creates an IAM role if it doesn't exist, which is used by SageMaker to access S3 and other AWS services
 
 from datetime import datetime
+import logging
 import sagemaker
-from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.pytorch.model import PyTorchModel
-from utils import create_sagemaker_execution_role, model_exists, endpoint_exists, endpoint_config_exists
+from utils import create_sagemaker_execution_role, model_exists, endpoint_exists, endpoint_config_exists, create_async_endpoint_config
 import boto3
 
 # Set constants
@@ -14,6 +14,8 @@ BUCKET = "omar-data"
 MODEL_NAME = "scvi"
 ENDPOINT_NAME = "scvi-endpoint"
 MODEL_DATA = f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz"
+
+logger = logging.getLogger(__name__)
 
 def main():
     # Create IAM role if it doesn't exist
@@ -26,11 +28,12 @@ def main():
     # Determine if model and endpoint already exist
     model_already_exists = model_exists(MODEL_NAME, sm_client)
     endpoint_already_exists = endpoint_exists(ENDPOINT_NAME, sm_client)
-    endpoint_config_already_exists = endpoint_config_exists(ENDPOINT_NAME, sm_client)
 
     # Replace model if it exists
     if model_already_exists:
         print(f"Model '{MODEL_NAME}' already exists. Deleting the existing model.")
+        # TODO: Upload a model package and register a new version of the model to AWS SageMaker Model Registry 
+        # So we can update the model without deleting and recreating the entire model
         sm_client.delete_model(ModelName=MODEL_NAME)
     else:
         print(f"Model '{MODEL_NAME}' does not exist. Creating a new model.")
@@ -47,34 +50,31 @@ def main():
         name=f"{MODEL_NAME}"
     )
 
+    pytorch_model.create(instance_type="ml.g4dn.xlarge")
     print(f"Model '{MODEL_NAME}' has been created or updated.")
 
-    # Create endpoint config and deploy model
-    if endpoint_config_already_exists:
-        print(f"Endpoint config '{ENDPOINT_NAME}' already exists. Deleting the existing endpoint config.")
-        sm_client.delete_endpoint_config(EndpointConfigName=ENDPOINT_NAME)
-    else:
-        print(f"Endpoint config '{ENDPOINT_NAME}' does not exist. Creating a new endpoint config.")
-    
-    async_config = AsyncInferenceConfig(
-        output_path=f"s3://{BUCKET}/scvi-async-output/",
-        failure_path=f"s3://{BUCKET}/scvi-async-failure/",
-        # TODO: Add notification configs for success and failure
-    )
+    endpoint_config_name = f"{ENDPOINT_NAME}-config-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
+    create_async_endpoint_config(endpoint_config_name, MODEL_NAME)
 
-    # Replace endpoint if it exists
     if endpoint_already_exists:
-        print(f"Endpoint '{ENDPOINT_NAME}' already exists. Deleting the existing endpoint.")
-        sm_client.delete_endpoint(EndpointName=ENDPOINT_NAME)
+        print(f"Endpoint '{ENDPOINT_NAME}' already exists. Updating the existing endpoint.")
+        response = sm_client.update_endpoint(
+            EndpointName=ENDPOINT_NAME,
+            EndpointConfigName=endpoint_config_name
+        )
+        logger.info(f"Endpoint '{ENDPOINT_NAME}' updated with arn: {response['EndpointArn']}")
     else:
         print(f"Endpoint '{ENDPOINT_NAME}' does not exist. Creating a new endpoint.")
+        response = sm_client.create_endpoint(
+            EndpointName=ENDPOINT_NAME,
+            EndpointConfigName=endpoint_config_name
+        )
+        logger.info(f"Endpoint '{ENDPOINT_NAME}' created with arn: {response['EndpointArn']}")
 
-    pytorch_model.deploy(
-        initial_instance_count=1,
-        instance_type="ml.g4dn.xlarge",
-        async_inference_config=async_config,
-        endpoint_name=ENDPOINT_NAME
-    )
+    # Create a waiter for the endpoint to be in service
+    waiter = sm_client.get_waiter('endpoint_in_service')
+    waiter.wait(EndpointName=ENDPOINT_NAME)
+    logger.info(f"Endpoint '{ENDPOINT_NAME}' is in service")
 
     # Log the URL of the endpoint
     endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"

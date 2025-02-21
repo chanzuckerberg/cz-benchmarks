@@ -130,13 +130,9 @@ def predict_fn(input_data, model: SCVI):
     hvg_file_path = model._download_hvg_names(organism)
     logger.info(f"{organism} HVG file downloaded to {hvg_file_path}")
 
-    logger.info(f"Filtering adata by HVGs")
-    adata = model._filter_adata_by_hvg(adata, organism)
-    logger.info(f"{organism} adata filtered by HVGs")
-
     # Delegate to model's predict method
     logger.info(f"Predicting")
-    return model._predict(adata, hvg_file_path, model_dir_path)
+    return model.predict(adata, hvg_file_path, model_dir_path)
 
 
 def output_fn(prediction, content_type):

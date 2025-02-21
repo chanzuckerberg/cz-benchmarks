@@ -26,13 +26,12 @@ class SCVI:
                 artifacts = yaml.safe_load(f)
         self.artifacts = artifacts
 
-    @staticmethod
-    def predict(adata: AnnData, hvg_file_path: str, reference_model_path: Path):
+    def predict(self, adata: AnnData, hvg_file_path: str, reference_model_path: Path):
         batch_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
 
         # Filter input anndata by HVGs
         logger.info(f"Filtering adata by HVGs")
-        adata = SCVI._filter_adata_by_hvg(adata, hvg_file_path)
+        adata = self._filter_adata_by_hvg(adata, hvg_file_path)
 
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
@@ -128,8 +127,7 @@ class SCVI:
         """
         mw_val = self.artifacts.get(organism, {}).get("model_weights")
         if mw_val and isinstance(mw_val, str) and mw_val.startswith("s3://"):
-            local_dir = os.environ.get("MODEL_DIR", "./model_weights")
-            os.makedirs(local_dir, exist_ok=True)
+            local_dir = "/tmp"
             local_path = os.path.join(local_dir, os.path.basename(mw_val))
             if not os.path.exists(local_path):
                 download_from_s3(mw_val, local_path)

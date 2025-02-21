@@ -2,9 +2,45 @@ import json
 from botocore.exceptions import ClientError
 import boto3
 import uuid
+import logging
+from sagemaker.async_inference import AsyncInferenceConfig
 
 REGION = "us-west-2"
 S3_BUCKET = "omar-data"
+
+logger = logging.getLogger(__name__)
+
+def create_async_endpoint_config(endpoint_config_name, model_name):
+    sm_client = boto3.client("sagemaker", region_name=REGION)
+    if endpoint_config_exists(endpoint_config_name, sm_client):
+        print(f"Endpoint config '{endpoint_config_name}' already exists. Creating a new endpoint config.")
+    
+    async_config = AsyncInferenceConfig(
+        output_path=f"s3://{S3_BUCKET}/scvi-async-output/",
+        failure_path=f"s3://{S3_BUCKET}/scvi-async-failure/",
+        # TODO: Add notification configs for success and failure
+    )
+
+    response = sm_client.create_endpoint_config(
+        EndpointConfigName=endpoint_config_name,
+        ProductionVariants=[
+            {
+                "ModelName": model_name,
+                "VariantName": "SCVIHumanMouseVariant",
+                "InitialInstanceCount": 1,
+                "InstanceType": "ml.g4dn.xlarge"
+            }
+        ],
+        AsyncInferenceConfig=async_config._to_request_dict(),
+        # ExecutionRoleArn?? 
+
+    )
+
+    endpoint_config_arn = response["EndpointConfigArn"]
+    logger.info(f"Endpoint config '{endpoint_config_name}' created with arn: {endpoint_config_arn}")
+
+    return endpoint_config_arn
+
 
 def model_exists(model_name, sm_client):
     try:
