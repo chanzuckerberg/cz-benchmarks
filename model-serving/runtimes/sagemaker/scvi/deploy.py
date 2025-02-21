@@ -5,10 +5,13 @@ from datetime import datetime
 import logging
 import sagemaker
 from sagemaker.pytorch.model import PyTorchModel
-from utils import create_sagemaker_execution_role, model_exists, endpoint_exists, endpoint_config_exists, create_async_endpoint_config
+from utils import (
+    create_sagemaker_execution_role,
+    endpoint_exists,
+    create_async_endpoint_config,
+)
 import boto3
 
-# Set constants
 REGION = "us-west-2"
 BUCKET = "omar-data"
 MODEL_NAME = "scvi"
@@ -17,67 +20,73 @@ ENDPOINT_NAME = "scvi-endpoint"
 logger = logging.getLogger(__name__)
 
 def main():
-    # Create IAM role if it doesn't exist
     role = create_sagemaker_execution_role("OmarSageMakerRole")
-
-    # Create SageMaker client and session
-    sm_client = boto3.client("sagemaker", region_name=REGION)
-    sm_session = sagemaker.Session()
+    sm_client, sm_session = setup_sagemaker_session(REGION)
     
-    # Determine if model and endpoint already exist
-    model_already_exists = model_exists(MODEL_NAME, sm_client)
-    endpoint_already_exists = endpoint_exists(ENDPOINT_NAME, sm_client)
+    create_pytorch_model(sm_session, role, BUCKET, MODEL_NAME)
+    
+    endpoint_config_name = create_endpoint_configuration(ENDPOINT_NAME, MODEL_NAME)
+    create_or_update_endpoint(sm_client, ENDPOINT_NAME, endpoint_config_name)
+    
+    # Wait for the endpoint to be in service 
+    wait_for_endpoint_in_service(sm_client, ENDPOINT_NAME)
 
-    # Replace model if it exists
-    if model_already_exists:
-        print(f"Model '{MODEL_NAME}' already exists. Deleting the existing model.")
-        # TODO: Upload a model package and register a new version of the model to AWS SageMaker Model Registry 
-        # So we can update the model without deleting and recreating the entire model
-        sm_client.delete_model(ModelName=MODEL_NAME)
-    else:
-        print(f"Model '{MODEL_NAME}' does not exist. Creating a new model.")
+    # Log the endpoint URL
+    endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"
+    logger.info(f"Endpoint URL: {endpoint_url}")
 
-    # Create model
+
+def setup_sagemaker_session(region: str):
+    """Create SageMaker client and session."""
+    sm_client = boto3.client("sagemaker", region_name=region)
+    sm_session = sagemaker.Session()
+    return sm_client, sm_session
+
+def create_pytorch_model(sm_session, role: str, bucket: str, model_name: str) -> PyTorchModel:
+    """Create or update the PyTorch model in SageMaker."""
     pytorch_model = PyTorchModel(
-        model_data=f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz",
+        model_data=f"s3://{bucket}/scvi/scvi_model_code.tar.gz",
         role=role,
         framework_version="2.5",
         py_version="py311",
         entry_point="inference.py",
         source_dir="code/",
         sagemaker_session=sm_session,
-        name=f"{MODEL_NAME}"
+        name=model_name
     )
-
     pytorch_model.create(instance_type="ml.g4dn.xlarge")
-    print(f"Model '{MODEL_NAME}' has been created or updated.")
+    logger.info(f"Model '{model_name}' has been created or updated.")
+    return pytorch_model
 
-    endpoint_config_name = f"{ENDPOINT_NAME}-config-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
-    create_async_endpoint_config(endpoint_config_name, MODEL_NAME)
+def create_endpoint_configuration(endpoint_name: str, model_name: str) -> str:
+    """Create an asynchronous endpoint configuration."""
+    timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    endpoint_config_name = f"{endpoint_name}-config-{timestamp}"
+    create_async_endpoint_config(endpoint_config_name, model_name)
+    return endpoint_config_name
 
-    if endpoint_already_exists:
-        print(f"Endpoint '{ENDPOINT_NAME}' already exists. Updating the existing endpoint.")
+def create_or_update_endpoint(sm_client, endpoint_name: str, endpoint_config_name: str):
+    """Create a new endpoint or update an existing one."""
+    if endpoint_exists(endpoint_name, sm_client):
+        logger.info(f"Endpoint '{endpoint_name}' already exists. Updating the existing endpoint.")
         response = sm_client.update_endpoint(
-            EndpointName=ENDPOINT_NAME,
+            EndpointName=endpoint_name,
             EndpointConfigName=endpoint_config_name
         )
-        logger.info(f"Endpoint '{ENDPOINT_NAME}' updated with arn: {response['EndpointArn']}")
+        logger.info(f"Endpoint '{endpoint_name}' updated with arn: {response['EndpointArn']}")
     else:
-        print(f"Endpoint '{ENDPOINT_NAME}' does not exist. Creating a new endpoint.")
+        logger.info(f"Endpoint '{endpoint_name}' does not exist. Creating a new endpoint.")
         response = sm_client.create_endpoint(
-            EndpointName=ENDPOINT_NAME,
+            EndpointName=endpoint_name,
             EndpointConfigName=endpoint_config_name
         )
-        logger.info(f"Endpoint '{ENDPOINT_NAME}' created with arn: {response['EndpointArn']}")
+        logger.info(f"Endpoint '{endpoint_name}' created with arn: {response['EndpointArn']}")
 
-    # Create a waiter for the endpoint to be in service
+def wait_for_endpoint_in_service(sm_client, endpoint_name: str):
+    """Wait for the endpoint to be in service."""
     waiter = sm_client.get_waiter('endpoint_in_service')
-    waiter.wait(EndpointName=ENDPOINT_NAME)
-    logger.info(f"Endpoint '{ENDPOINT_NAME}' is in service")
-
-    # Log the URL of the endpoint
-    endpoint_url = f"https://runtime.sagemaker.{REGION}.amazonaws.com/endpoints/{ENDPOINT_NAME}/invocations"
-    print(f"Endpoint URL: {endpoint_url}")
+    waiter.wait(EndpointName=endpoint_name)
+    logger.info(f"Endpoint '{endpoint_name}' is in service")
 
 if __name__ == "__main__":
     main()

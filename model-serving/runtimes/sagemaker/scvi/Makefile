@@ -8,7 +8,6 @@ SOURCE_DIR ?= code/
 
 .PHONY: all package upload clean
 
-all: package upload
 
 # Create a tar.gz archive of the source directory
 package:
@@ -27,8 +26,5 @@ sagemaker-deploy: upload
 	make clean
 
 sagemaker-test:
-	python test.py
+	python test_inference.py
 
-# Delete the endpoint and model
-sagemaker-cleanup:
-	python cleanup.py $(ENDPOINT_NAME) $(MODEL_NAME)
