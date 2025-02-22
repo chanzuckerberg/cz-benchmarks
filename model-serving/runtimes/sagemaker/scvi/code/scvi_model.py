@@ -9,6 +9,7 @@ import pandas as pd
 import scipy.sparse as sparse
 import logging
 from utils import download_from_s3
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,14 +55,11 @@ class SCVI:
         logger.info(f"Latent representation shape: {qz_m.shape}")
         return qz_m
 
-
     def _filter_adata_by_hvg(self, adata: ad.AnnData, hvg_file_path: str) -> ad.AnnData:
         """Filter adata by HVGs for the specified organism, downloading HVG names if not already present."""
 
         if not os.path.exists(hvg_file_path):
-            raise FileNotFoundError(
-                f"HVG file could not be found at {hvg_file_path}"
-            )
+            raise FileNotFoundError(f"HVG file could not be found at {hvg_file_path}")
 
         adata = adata.copy()
 
@@ -101,7 +99,6 @@ class SCVI:
         )
         return adata_reordered
 
-
     def _download_hvg_names(self, organism: str, destination_dir: str):
         """
         Downloads HVG names from S3 for the specified organism.
@@ -119,7 +116,6 @@ class SCVI:
             if not os.path.exists(local_path):
                 download_from_s3(hvg_val, local_path)
             return local_path
-
 
     def _download_model_weights(self, organism: str, destination_dir: str):
         """

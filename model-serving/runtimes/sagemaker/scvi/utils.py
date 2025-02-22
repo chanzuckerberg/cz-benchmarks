@@ -12,11 +12,14 @@ S3_BUCKET = "omar-data"
 
 logger = logging.getLogger(__name__)
 
+
 def create_async_endpoint_config(endpoint_config_name, model_name):
     sm_client = boto3.client("sagemaker", region_name=REGION)
     if endpoint_config_exists(endpoint_config_name, sm_client):
-        print(f"Endpoint config '{endpoint_config_name}' already exists. Creating a new endpoint config.")
-    
+        print(
+            f"Endpoint config '{endpoint_config_name}' already exists. Creating a new endpoint config."
+        )
+
     async_config = AsyncInferenceConfig(
         output_path=f"s3://{S3_BUCKET}/scvi-async-output/",
         failure_path=f"s3://{S3_BUCKET}/scvi-async-failure/",
@@ -30,16 +33,17 @@ def create_async_endpoint_config(endpoint_config_name, model_name):
                 "ModelName": model_name,
                 "VariantName": "SCVIHumanMouseVariant",
                 "InitialInstanceCount": 1,
-                "InstanceType": "ml.g4dn.xlarge"
+                "InstanceType": "ml.g4dn.xlarge",
             }
         ],
         AsyncInferenceConfig=async_config._to_request_dict(),
-        # ExecutionRoleArn?? 
-
+        # ExecutionRoleArn??
     )
 
     endpoint_config_arn = response["EndpointConfigArn"]
-    logger.info(f"Endpoint config '{endpoint_config_name}' created with arn: {endpoint_config_arn}")
+    logger.info(
+        f"Endpoint config '{endpoint_config_name}' created with arn: {endpoint_config_arn}"
+    )
 
     return endpoint_config_arn
 
@@ -56,6 +60,7 @@ def model_exists(model_name, sm_client):
             return False
         else:
             raise
+
 
 def endpoint_exists(endpoint_name, sm_client):
     try:
@@ -101,19 +106,17 @@ def create_sagemaker_execution_role(role_name="SageMakerExecutionRole"):
         "Statement": [
             {
                 "Effect": "Allow",
-                "Principal": {
-                    "Service": "sagemaker.amazonaws.com"
-                },
-                "Action": "sts:AssumeRole"
+                "Principal": {"Service": "sagemaker.amazonaws.com"},
+                "Action": "sts:AssumeRole",
             }
-        ]
+        ],
     }
 
     # Check if the role already exists
     try:
         existing_role = iam.get_role(RoleName=role_name)
         print(f"Role '{role_name}' already exists. ARN: {existing_role['Role']['Arn']}")
-        return existing_role['Role']['Arn']
+        return existing_role["Role"]["Arn"]
     except iam.exceptions.NoSuchEntityException:
         pass  # Role does not exist, proceed to create it
 
@@ -122,46 +125,49 @@ def create_sagemaker_execution_role(role_name="SageMakerExecutionRole"):
     create_role_response = iam.create_role(
         RoleName=role_name,
         AssumeRolePolicyDocument=json.dumps(assume_role_policy_document),
-        Description="Role for SageMaker to access S3 and other AWS services"
+        Description="Role for SageMaker to access S3 and other AWS services",
     )
     role_arn = create_role_response["Role"]["Arn"]
     print(f"Created role: {role_arn}")
 
-    # 3) Attach policies. 
+    # 3) Attach policies.
     #    *At minimum*, attach AmazonS3FullAccess if you need S3 read and write permissions
     #    and a restricted SageMaker policy (like AmazonSageMakerFullAccess or a custom policy).
     #    For demonstration, we'll attach these AWS-managed policies:
     iam.attach_role_policy(
-        RoleName=role_name,
-        PolicyArn="arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        RoleName=role_name, PolicyArn="arn:aws:iam::aws:policy/AmazonS3FullAccess"
     )
     iam.attach_role_policy(
         RoleName=role_name,
-        PolicyArn="arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+        PolicyArn="arn:aws:iam::aws:policy/AmazonSageMakerFullAccess",
     )
 
     print(f"Attached AmazonS3FullAccess and AmazonSageMakerFullAccess to {role_name}")
 
     # Give a little time for the role to fully propagate (sometimes needed)
     import time
+
     time.sleep(5)
 
     return role_arn
 
+
 def upload_to_s3(payload, prefix="scvi-async-input/"):
-    s3_client = boto3.client('s3', region_name=REGION)
+    s3_client = boto3.client("s3", region_name=REGION)
     inference_id = str(uuid.uuid4())
     s3_key = f"{prefix}{inference_id}.json"
     s3_client.put_object(Bucket=S3_BUCKET, Key=s3_key, Body=payload)
     s3_uri = f"s3://{S3_BUCKET}/{s3_key}"
     return inference_id, s3_uri
 
+
 def download_s3_file(s3_uri, local_filename):
     parsed = urlparse(s3_uri)
     bucket = parsed.netloc
-    key = parsed.path.lstrip('/')
-    s3 = boto3.client('s3', region_name=REGION)
+    key = parsed.path.lstrip("/")
+    s3 = boto3.client("s3", region_name=REGION)
     s3.download_file(bucket, key, local_filename)
+
 
 def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
     """
@@ -174,9 +180,9 @@ def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
     """
     parsed = urlparse(s3_uri)
     bucket = parsed.netloc
-    key = parsed.path.lstrip('/')
-    s3 = boto3.client('s3', region_name=REGION)
-    
+    key = parsed.path.lstrip("/")
+    s3 = boto3.client("s3", region_name=REGION)
+
     start_time = time.time()
     while True:
         try:
@@ -184,11 +190,15 @@ def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
             print(f"File {s3_uri} is now available.")
             break
         except boto3.exceptions.botocore.client.ClientError as e:
-            if e.response['Error']['Code'] == '404':
+            if e.response["Error"]["Code"] == "404":
                 elapsed = time.time() - start_time
                 if elapsed >= timeout:
-                    raise TimeoutError(f"Timeout: {s3_uri} not available after {timeout} seconds.")
-                print(f"File {s3_uri} not found. Waiting for {interval} seconds before retrying...")
+                    raise TimeoutError(
+                        f"Timeout: {s3_uri} not available after {timeout} seconds."
+                    )
+                print(
+                    f"File {s3_uri} not found. Waiting for {interval} seconds before retrying..."
+                )
                 time.sleep(interval)
             else:
                 raise
