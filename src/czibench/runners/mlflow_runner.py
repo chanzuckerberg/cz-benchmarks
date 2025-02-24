@@ -17,7 +17,7 @@ class MLflowModelRunner(ModelRunnerBase):
         with tempfile.NamedTemporaryFile(mode="w") as output:
             prediction = mlflow.models.predict(
                 model_uri=self.model_resource_url, 
-                input_data=dataset.path, 
+                input_data=dataset.local_path, 
                 output_path=output.name,
                 env_manager="uv",
                 # FIXME: this is not working; as is, it uses /tmp/
@@ -37,7 +37,7 @@ class MLflowModelRunner(ModelRunnerBase):
             raise EnvironmentError("DATABRICKS_TOKEN environment variable is missing")
         headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
 
-        input_data = json.dumps({"inputs": [[dataset.path]]})
+        input_data = json.dumps({"inputs": [[dataset.source_path]]})
 
         response = requests.request(method='POST', headers=headers, url=self.model_endpoint, data=input_data)
         response.raise_for_status()

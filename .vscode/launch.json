@@ -12,7 +12,9 @@
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
-            }
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "args": ["--model-mode", "${input:modelMode}"]
         },
         {
             "name": "Run mlflow,scvi,local",
@@ -42,7 +44,8 @@
                 "${input:modelEndpoint}",
                 "--input-data-url",
                 "${input:inputDataUrl}",
-            ]
+            ],
+            "envFile": "${workspaceFolder}/.env"
         }
     ],
     "inputs": [
@@ -55,6 +58,12 @@
             "id": "inputDataUrl",
             "type": "promptString",
             "description": "Enter the input data URL"
+        },
+        {
+            "id": "modelMode",
+            "type": "pickString",
+            "description": "Select the invocation mode, local or remote",
+            "options": ["local", "remote"]
         }
     ]
 }

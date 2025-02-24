@@ -7,14 +7,14 @@ from .types import Organism, DataType
 class SingleCellDataset(BaseDataset):
     def __init__(
         self,
-        path: str,
+        source_path: str,
         organism: Organism,
     ):
-        super().__init__(path)
-        self.set_input(DataType.ORGANISM, Organism.HUMAN)
+        super().__init__(source_path)
+        self.set_input(DataType.ORGANISM, organism)
 
     def load_data(self) -> None:
-        adata = ad.read_h5ad(self.path)
+        adata = ad.read_h5ad(self.local_path)
         self.set_input(DataType.ANNDATA, adata)
         self.set_input(DataType.METADATA, adata.obs)
 
