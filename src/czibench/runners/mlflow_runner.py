@@ -1,20 +1,32 @@
 import json
 import os
+import tempfile
 import mlflow
+import numpy as np
 import requests
 
 from .model_runner import ModelRunnerBase
 from ..datasets.base import BaseDataset
+import io
 
 class MLflowModelRunner(ModelRunnerBase):
     """Handles model execution logic for an MLflow model"""
     
     def run_local(self, dataset: BaseDataset) -> BaseDataset:
-        dataset.output_embedding = mlflow.models.predict(
-            model_uri=self.model_resource_url, input_data=dataset.path, env_manager="uv"
-        )
-    
-        return dataset
+        with tempfile.NamedTemporaryFile(mode="w") as output:
+            prediction = mlflow.models.predict(
+                model_uri=self.model_resource_url, 
+                input_data=dataset.path, 
+                output_path=output.name,
+                env_manager="uv",
+                extra_envs={"MLFLOW_ENV_ROOT": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/mlflow-envs"}
+            )
+            output.flush()
+            with open(output.name) as f:
+                prediction_json = json.load(f)
+                prediction = np.array(prediction_json["predictions"])
+                dataset.output_embedding = prediction
+            return dataset
 
     # TODO: test & debug!
     def run_remote(self, dataset: BaseDataset) -> BaseDataset:

@@ -13,6 +13,7 @@ from pathlib import Path
 from databricks.sdk import WorkspaceClient
 import requests
 from urllib.request import urlretrieve
+import boto3
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,14 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
             client = WorkspaceClient()
             local_path = "/tmp/input_adata.h5ad"
             client.dbfs.copy(adata_url, local_path, overwrite=True)
+            print(f"Downloaded input data file from {adata_url}")
+        elif adata_url.startswith("s3://"):
+            s3 = boto3.client('s3')
+            bucket_name = adata_url.split('/')[2]
+            key = '/'.join(adata_url.split('/')[3:])
+            local_path = "/tmp/input_data.h5ad"
+
+            s3.download_file(bucket_name, key, local_path)
             print(f"Downloaded input data file from {adata_url}")
         elif adata_url.startswith("https://") or adata_url.startswith("http://"):
             local_path = "/tmp/input_data.h5ad"

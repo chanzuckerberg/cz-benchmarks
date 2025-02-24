@@ -1,6 +1,5 @@
 from abc import abstractmethod
-from operator import xor
-from typing import Any
+from typing import Any, Optional
 
 from ..datasets.base import BaseDataset
 
@@ -9,8 +8,8 @@ class ModelRunnerBase:
     
     def __init__(
         self,
-        model_resource_url: str,
-        model_endpoint: str,
+        model_resource_url: Optional[str] = None,
+        model_endpoint: Optional[str] = None,
         **kwargs: Any
     ):
 
@@ -21,13 +20,15 @@ class ModelRunnerBase:
         self.model_endpoint = model_endpoint
         self.model_params = kwargs
         
-    def run(self, data: BaseDataset) -> BaseDataset:
+    def run(self, dataset: BaseDataset) -> BaseDataset:
         """Run the model locally or remotely, depending on the ModelRunner's configuration."""
         if self.model_endpoint:
-            return self.run_remote(data)
+            dataset = self.run_remote(dataset)
         else:
             assert self.model_resource_url
-            return self.run_local(data)
+            dataset = self.run_local(dataset)
+                    
+        return dataset
 
     @abstractmethod
     def run_local(self, data: BaseDataset) -> BaseDataset:

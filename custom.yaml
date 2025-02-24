@@ -2,4 +2,4 @@ datasets:
   example:
     _target_: czibench.datasets.sc.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: ~/cz-benchmarks/example.h5ad
+    path: ~/cz-benchmarks/example-small.h5ad
