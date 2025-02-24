@@ -23,19 +23,19 @@ class ModelRunnerBase:
     def run(self, dataset: BaseDataset) -> BaseDataset:
         """Run the model locally or remotely, depending on the ModelRunner's configuration."""
         if self.model_endpoint:
-            dataset = self.run_remote(dataset)
+            dataset = self._run_remote(dataset)
         else:
             assert self.model_resource_url
-            dataset = self.run_local(dataset)
+            dataset = self._run_local(dataset)
                     
         return dataset
 
     @abstractmethod
-    def run_local(self, data: BaseDataset) -> BaseDataset:
+    def _run_local(self, data: BaseDataset) -> BaseDataset:
          raise NotImplementedError("ModelRunner is an abstract class.")
 
     @abstractmethod
-    def run_remote(self, data: BaseDataset) -> BaseDataset:
+    def _run_remote(self, data: BaseDataset) -> BaseDataset:
          raise NotImplementedError("ModelRunner is an abstract class.")
 
 
