@@ -30,7 +30,6 @@ class MLflowModelRunner(ModelRunnerBase):
                 dataset.set_output(DataType.EMBEDDING, prediction)
             return dataset
 
-    # TODO: test & debug!
     def _run_remote(self, dataset: BaseDataset) -> BaseDataset:
         token = os.environ.get("DATABRICKS_TOKEN")
         if not token:

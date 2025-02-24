@@ -8,7 +8,7 @@
             "name": "Example Benchmark",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/example.py",
+            "program": "${workspaceFolder}/example_mlflow.py",
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
