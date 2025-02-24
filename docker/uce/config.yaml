@@ -36,7 +36,7 @@ model_config:
     filter: true
     skip: true
     model_filename: 4layer_model.torch
-    batch_size: 100
+    batch_size: 40
     pad_length: 1536
     pad_token_idx: 0
     chrom_token_left_idx: 1
