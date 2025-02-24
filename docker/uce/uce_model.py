@@ -3,35 +3,21 @@ import logging
 import os
 import pathlib
 import tempfile
-
 import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czibench.datasets.sc import SingleCellDataset
-from czibench.datasets.types import Organism
-from czibench.models.sc import BaseSingleCell
+from czibench.models.validators.uce import UCEValidator
+from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import DataType
 
 logger = logging.getLogger(__name__)
 
 
-class UCE(BaseSingleCell):
-    # TODO: add other UCE organisms
-    available_organisms = [Organism.HUMAN, Organism.MOUSE]
-    required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
-
-    @classmethod
-    def _validate_model_requirements(cls, dataset: SingleCellDataset):
-        missing_keys = [
-            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
-        ]
-
-        if missing_keys:
-            raise ValueError(f"Missing required var keys: {missing_keys}")
-
-        return True
+class UCE(UCEValidator, BaseModelImplementation):
+    def parse_args(self):
+        pass
 
     def get_model_weights_subdir(self) -> str:
         return ""
@@ -104,7 +90,7 @@ class UCE(BaseSingleCell):
         processor.preprocess_anndata()
         processor.generate_idxs()
         embedding_adata = processor.run_evaluation()
-        self.data.output_embedding = embedding_adata.X.toarray()
+        self.set_output(DataType.EMBEDDING, embedding_adata.obsm["X_uce"])
 
 
 if __name__ == "__main__":
