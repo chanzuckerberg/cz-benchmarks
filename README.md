@@ -1,35 +1,18 @@
-# czibench
+# CZ Benchmarks
+
+**PROJECT STATUS: UNSTABLE**
+
+**This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support.**
 
 ## Installation Instructions
 
 ### From Source
 
 ```bash
-git clone https://github.com/chanzuckerberg/czibench.git
-cd czibench
+git clone https://github.com/chanzuckerberg/cz-benchmarks.git
+cd cz-benchmarks
 pip install -e .
 ```
-
-## Requirements
-
-Core dependencies:
-
-- docker>=6.1.0
-- pyyaml>=6.0
-- boto3>=1.28.0
-
-Data handling:
-
-- anndata>=0.9.0
-- h5py>=3.8.0
-- dill>=0.3.6
-- scikit-learn
-- scanpy
-
-Clustering:
-
-- igraph>=0.11.8
-- leidenalg>=0.10.2
 
 ## Architecture Overview
 
