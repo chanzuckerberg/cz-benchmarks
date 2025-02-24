@@ -1,3 +1,4 @@
+from czibench.datasets.types import DataType
 from czibench.runners.mlflow_runner import MLflowModelRunner
 from czibench.tasks.sc import ClusteringTask, EmbeddingTask
 from czibench.datasets.utils import load_dataset
@@ -8,7 +9,7 @@ dataset = load_dataset("example", config_path="custom.yaml")
 runner = MLflowModelRunner(model_resource_url="model-serving/runtimes/mlflow/scvi/runtime")
 dataset = runner.run(dataset)
 dataset.load_data()
-print(dataset.output_embedding)
+print(dataset.get_output(DataType.EMBEDDING))
 
 task = ClusteringTask(label_key="cell_type")
 dataset, clustering_results = task.run(dataset)

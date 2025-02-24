@@ -1,4 +1,6 @@
 from pprint import pp
+
+from ..datasets.types import DataType
 from ..datasets.sc import SingleCellDataset
 from .mlflow_runner import MLflowModelRunner
 import argparse
@@ -33,4 +35,4 @@ if __name__ == '__main__':
     else:
         raise ValueError(f"Unsupported model runtime type: {args.model_runtime_type}")
 
-    pp(dataset.output_embedding, depth=2, compact=True, width=80)
+    pp(dataset.get_output(DataType.EMBEDDING), depth=2, compact=True, width=80)

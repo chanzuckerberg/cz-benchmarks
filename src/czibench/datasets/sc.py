@@ -11,7 +11,7 @@ class SingleCellDataset(BaseDataset):
         organism: Organism,
     ):
         super().__init__(path)
-        self.set_input(DataType.ORGANISM, organism)
+        self.set_input(DataType.ORGANISM, Organism.HUMAN)
 
     def load_data(self) -> None:
         adata = ad.read_h5ad(self.path)

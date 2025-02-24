@@ -5,9 +5,10 @@ import mlflow
 import numpy as np
 import requests
 
+from ..datasets.types import DataType
+
 from .model_runner import ModelRunnerBase
 from ..datasets.base import BaseDataset
-import io
 
 class MLflowModelRunner(ModelRunnerBase):
     """Handles model execution logic for an MLflow model"""
@@ -19,13 +20,14 @@ class MLflowModelRunner(ModelRunnerBase):
                 input_data=dataset.path, 
                 output_path=output.name,
                 env_manager="uv",
-                extra_envs={"MLFLOW_ENV_ROOT": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/mlflow-envs"}
+                # FIXME: this is not working; as is, it uses /tmp/
+                extra_envs={"MLFLOW_ENV_ROOT": "mlflow-envs"}
             )
             output.flush()
             with open(output.name) as f:
                 prediction_json = json.load(f)
                 prediction = np.array(prediction_json["predictions"])
-                dataset.output_embedding = prediction
+                dataset.set_output(DataType.EMBEDDING, prediction)
             return dataset
 
     # TODO: test & debug!
@@ -40,6 +42,7 @@ class MLflowModelRunner(ModelRunnerBase):
         response = requests.request(method='POST', headers=headers, url=self.model_endpoint, data=input_data)
         response.raise_for_status()
         
-        dataset.output_embedding = response.json()
+        prediction = response.json()
+        dataset.set_output(DataType.EMBEDDING, prediction)
         
         return dataset
