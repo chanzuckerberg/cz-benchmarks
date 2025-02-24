@@ -27,16 +27,20 @@ def main():
     sm_client, sm_session = setup_sagemaker_session(REGION)
 
     # Create PyTorch Model
-    create_pytorch_model(sm_session, role)
+    model = create_pytorch_model(sm_session, role)
 
-    # Create Model Package Group
+    # Create Model Package Group if it doesn't already exist
     model_package_group_name = "scvi-model-package-group"
     create_model_package_group(
         sm_client, model_package_group_name, "Model Package Group for SCVI"
     )
 
     # Register Model to Package Group
-    register_model_package(sm_client, model_package_group_name)
+    model.register(
+        model_package_group_name=model_package_group_name,
+        inference_instances=["ml.g4dn.xlarge"],
+        approval_status="PendingManualApproval",
+    )
 
     # Endpoint Configuration and Deployment
     endpoint_config_name = create_endpoint_configuration(ENDPOINT_NAME, MODEL_NAME)
@@ -70,7 +74,7 @@ def create_pytorch_model(sm_session, role: str) -> PyTorchModel:
         sagemaker_session=sm_session,
         name=MODEL_NAME,
     )
-    pytorch_model.create(instance_type="ml.g4dn.xlarge")
+    # pytorch_model.create(instance_type="ml.g4dn.xlarge")
     logger.info(f"Model '{MODEL_NAME}' has been created or updated.")
     return pytorch_model
 
@@ -105,39 +109,6 @@ def create_model_package_group(sm_client, group_name, description):
             f"Model Package Group '{group_name}' created successfully with ARN: {model_package_group_arn}"
         )
         return model_package_group_arn
-
-
-def register_model_package(
-    sm_client, model_package_group_name: str, model_package_name: str = None
-):
-    """Register the model to a SageMaker Model Package Group."""
-    if not model_package_name:
-        model_package_name = f"scvi-package-{uuid.uuid4()}"
-
-    try:
-        response = sm_client.create_model_package(
-            ModelPackageGroupName=model_package_group_name,
-            ModelPackageDescription="SCVI model package",
-            InferenceSpecification={
-                "Containers": [
-                    {
-                        "Image": "763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-inference:2.5-gpu-py311",
-                        "ModelDataUrl": f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz",
-                    }
-                ],
-                "SupportedTransformInstanceTypes": ["ml.g4dn.xlarge"],
-                "SupportedContentTypes": ["application/json"],
-                "SupportedResponseMIMETypes": ["application/json"],
-            },
-            CertifyForMarketplace=False,
-        )
-        logger.info(
-            f"Model Package '{model_package_name}' created and added to Group '{model_package_group_name}'."
-        )
-        return response["ModelPackageArn"]
-    except Exception as e:
-        logger.error(f"Failed to create Model Package: {e}")
-        raise
 
 
 def create_endpoint_configuration(endpoint_name: str, model_name: str) -> str:
