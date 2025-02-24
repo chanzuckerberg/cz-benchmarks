@@ -1,4 +1,9 @@
+from dataclasses import dataclass
 from enum import Enum
+from typing import Type, Union
+import numpy as np
+import pandas as pd
+import anndata as ad
 from omegaconf import OmegaConf
 
 
@@ -27,3 +32,68 @@ class Organism(Enum):
 
 # Register Organism resolver
 OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
+
+
+@dataclass(frozen=True)
+class DataTypeSpec:
+    """Specification for a data type in the system"""
+
+    name: str
+    dtype: Type
+    description: str
+    is_input: bool = True
+
+
+class DataType(Enum):
+    # Input types
+    METADATA = DataTypeSpec(
+        name="metadata", dtype=pd.DataFrame, description="Sample metadata"
+    )
+    ANNDATA = DataTypeSpec(
+        name="anndata",
+        dtype=ad.AnnData,
+        description="AnnData object containing expression data",
+    )
+
+    ORGANISM = DataTypeSpec(
+        name="organism",
+        dtype=Organism,
+        description="Organism type (e.g. human, mouse)",
+    )
+
+    # Output types
+    EMBEDDING = DataTypeSpec(
+        name="embedding",
+        dtype=np.ndarray,
+        description="Learned cell embeddings",
+        is_input=False,
+    )
+    PERTURBATION = DataTypeSpec(
+        name="perturbation",
+        dtype=pd.DataFrame,
+        description="Predicted perturbation effects",
+        is_input=False,
+    )
+
+    @property
+    def spec(self) -> DataTypeSpec:
+        return self.value
+
+    @property
+    def dtype(self) -> Type:
+        return self.value.dtype
+
+    @property
+    def description(self) -> str:
+        return self.value.description
+
+    @property
+    def is_input(self) -> bool:
+        return self.value.is_input
+
+    @property
+    def is_output(self) -> bool:
+        return not self.value.is_input
+
+
+DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]

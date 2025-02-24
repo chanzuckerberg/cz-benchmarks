@@ -1,7 +1,7 @@
 import anndata as ad
 import pandas as pd
 from .base import BaseDataset
-from .types import Organism
+from .types import Organism, DataType
 
 
 class SingleCellDataset(BaseDataset):
@@ -10,20 +10,31 @@ class SingleCellDataset(BaseDataset):
         path: str,
         organism: Organism,
     ):
-        super().__init__(path, organism=organism)
+        super().__init__(path)
+        self.set_input(DataType.ORGANISM, organism)
 
     def load_data(self) -> None:
-        self.adata = ad.read_h5ad(self.path)
-        self.sample_metadata = self.adata.obs
+        adata = ad.read_h5ad(self.path)
+        self.set_input(DataType.ANNDATA, adata)
+        self.set_input(DataType.METADATA, adata.obs)
 
     def unload_data(self) -> None:
-        self.adata = None
+        self._inputs.pop(DataType.ANNDATA, None)
+        self._inputs.pop(DataType.METADATA, None)
+
+    @property
+    def organism(self) -> Organism:
+        return self.get_input(DataType.ORGANISM)
+
+    @property
+    def adata(self) -> ad.AnnData:
+        return self.get_input(DataType.ANNDATA)
 
     def _validate(self) -> None:
-        if not hasattr(self, "adata"):
+        if not self.adata:
             raise ValueError("Dataset does not contain anndata object")
 
-        if not hasattr(self, "organism"):
+        if not self.organism:
             raise ValueError("Organism is not specified")
 
         if not isinstance(self.organism, Organism):
