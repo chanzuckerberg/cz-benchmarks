@@ -1,9 +1,9 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Type
 import dill
 
-from ..datasets.types import DataType, DataValue
+from .types import DataType, DataValue
 
 
 class BaseDataset(ABC):
@@ -27,13 +27,55 @@ class BaseDataset(ABC):
         """Get the outputs dictionary."""
         return self._outputs
 
+    def _validate_type(self, value: Any, expected_type: Type, type_name: str = "") -> None:
+        """Helper function to validate types including generics.
+        
+        Args:
+            value: The value to check
+            expected_type: The expected type (can be generic like Dict[str, DataFrame])
+            type_name: Optional name of the type for error messages
+        """
+        # Check if it's a generic type
+        if hasattr(expected_type, "__origin__"):
+            base_type = expected_type.__origin__
+            type_args = expected_type.__args__
+            
+            # Special handling for Dict types
+            if base_type is dict:
+                if not isinstance(value, dict):
+                    raise TypeError(
+                        f"{type_name} has incorrect type: "
+                        f"expected {expected_type}, got {type(value)}"
+                    )
+                # Check key and value types
+                key_type, value_type = type_args
+                for k, v in value.items():
+                    if not isinstance(k, key_type):
+                        raise TypeError(
+                            f"Dict key has incorrect type: expected {key_type}, got {type(k)}"
+                        )
+                    if not isinstance(v, value_type):
+                        raise TypeError(
+                            f"Dict value has incorrect type: expected {value_type}, got {type(v)}"
+                        )
+            else:
+                # Handle other generic types if needed
+                if not isinstance(value, base_type):
+                    raise TypeError(
+                        f"{type_name} has incorrect type: "
+                        f"expected {expected_type}, got {type(value)}"
+                    )
+        else:
+            # Non-generic types
+            if not isinstance(value, expected_type):
+                raise TypeError(
+                    f"{type_name} has incorrect type: "
+                    f"expected {expected_type}, got {type(value)}"
+                )
+
     def set_input(self, data_type: DataType, value: DataValue) -> None:
         """Safely set an input with type checking."""
-        if not isinstance(value, data_type.dtype):
-            raise TypeError(
-                f"Input {data_type.name} has incorrect type: "
-                f"expected {data_type.dtype}, got {type(value)}"
-            )
+        self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
         self._inputs[data_type] = value
 
     def set_output(self, data_type: DataType, value: DataValue) -> None:
@@ -67,18 +109,10 @@ class BaseDataset(ABC):
 
         """Validate that all inputs and outputs match their expected types"""
         for data_type, value in self.inputs.items():
-            if not isinstance(value, data_type.dtype):
-                raise TypeError(
-                    f"Input {data_type.name} has incorrect type: "
-                    f"expected {data_type.dtype}, got {type(value)}"
-                )
+            self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
 
         for data_type, value in self.outputs.items():
-            if not isinstance(value, data_type.dtype):
-                raise TypeError(
-                    f"Output {data_type.name} has incorrect type: "
-                    f"expected {data_type.dtype}, got {type(value)}"
-                )
+            self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
 
         self._validate()
 

@@ -76,6 +76,13 @@ class DataType(Enum):
         is_input=True,
     )
 
+    SPLIT_KEY = DataTypeSpec(
+        name="split_key",
+        dtype=str,
+        description="Train, test, val, split key for perturbation data",
+        is_input=True,
+    )
+
     PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
         dtype=Dict[str, pd.DataFrame],
@@ -84,7 +91,7 @@ class DataType(Enum):
     )
     PERTURBATION_TRUTH = DataTypeSpec(
         name="perturbation_truth",
-        dtype=Dict[str, pd.Series],
+        dtype=Dict[str, pd.DataFrame],
         description="Truth perturbation data",
         is_input=True,
     )
