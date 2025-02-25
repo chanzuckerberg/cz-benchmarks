@@ -68,6 +68,14 @@ class DataType(Enum):
         description="Learned cell embeddings",
         is_input=False,
     )
+
+    CONDITION_KEY = DataTypeSpec(
+        name="condition_key",
+        dtype=str,
+        description="Condition key for perturbation data",
+        is_input=True,
+    )
+
     PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
         dtype=Dict[str, pd.DataFrame],
@@ -76,16 +84,9 @@ class DataType(Enum):
     )
     PERTURBATION_TRUTH = DataTypeSpec(
         name="perturbation_truth",
-        dtype=Dict[str, pd.DataFrame],
+        dtype=Dict[str, pd.Series],
         description="Truth perturbation data",
-        is_input=False,
-    )
-    
-    PERTURBATION_CONTROL = DataTypeSpec(
-        name="perturbation_control",
-        dtype=pd.DataFrame,
-        description="Control perturbation data",
-        is_input=False,
+        is_input=True,
     )
 
     @property

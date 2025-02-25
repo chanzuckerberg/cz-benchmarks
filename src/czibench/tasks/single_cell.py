@@ -265,35 +265,50 @@ class PerturbationTask(BaseTask):
 
     @property
     def required_inputs(self) -> Set[DataType]:
-        return {}
+        return {DataType.PERTURBATION_TRUTH}
 
     @property
     def required_outputs(self) -> Set[DataType]:
-        return {DataType.PERTURBATION_PRED, DataType.PERTURBATION_TRUTH, DataType.PERTURBATION_CONTROL}
+        return {DataType.PERTURBATION_PRED}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
         self.perturbation_truth = data.get_output(DataType.PERTURBATION_TRUTH)
-        self.perturbation_control = data.get_output(DataType.PERTURBATION_CONTROL)
-        
+
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         metrics = {}
-        
-        avg_perturbation_control = self.perturbation_control.mean(axis=0)
-        
+
+        avg_perturbation_control = self.perturbation_truth["ctrl"]
+
         for key in self.perturbation_pred.keys():
             if key in self.perturbation_truth.keys():
                 metrics[key] = {}
-                
+
                 avg_perturbation_pred = self.perturbation_pred[key].mean(axis=0)
                 avg_perturbation_truth = self.perturbation_truth[key].mean(axis=0)
-                
-                # Compute meansquare error between avg_perturbation and avg_perturbation_control
-                mse = np.mean((avg_perturbation_pred - avg_perturbation_truth) ** 2)
-                delta_pearson_corr = np.corrcoef(avg_perturbation_pred - avg_perturbation_control, avg_perturbation_truth - avg_perturbation_control)[0, 1]
+
+                intersecting_genes = (
+                    set(avg_perturbation_pred.columns)
+                    & set(avg_perturbation_truth.columns)
+                    & set(avg_perturbation_control.columns)
+                )
+
+                mse = np.mean(
+                    (
+                        avg_perturbation_pred[intersecting_genes]
+                        - avg_perturbation_truth[intersecting_genes]
+                    )
+                    ** 2
+                )
+                delta_pearson_corr = np.corrcoef(
+                    avg_perturbation_pred[intersecting_genes]
+                    - avg_perturbation_control[intersecting_genes],
+                    avg_perturbation_truth[intersecting_genes]
+                    - avg_perturbation_control[intersecting_genes],
+                )[0, 1]
                 metrics[key]["mse"] = mse
                 metrics[key]["delta_pearson_corr"] = delta_pearson_corr
-                
+
         return metrics

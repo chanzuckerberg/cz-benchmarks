@@ -143,7 +143,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
                 return_mean=False,
             ).squeeze()
             all_preds.append(preds)
-            
+
         self.set_output(
             DataType.PERTURBATION_PRED,
             {
@@ -155,30 +155,6 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             },
         )
 
-        # Store control data for each condition in the reference dataset
-        conditions = np.array(list(ref_adata.obs["condition"]))
-        truth_data = {
-            condition: pd.DataFrame(
-                data=ref_adata[conditions == condition].X.toarray(),
-                index=ref_adata[conditions == condition].obs_names,
-                columns=ref_adata[conditions == condition].var_names,
-            )[gene_names]
-            for condition in set(conditions)
-        }
-        
-        self.set_output(
-            DataType.PERTURBATION_TRUTH,
-            truth_data,
-        )
-        
-        self.set_output(
-            DataType.PERTURBATION_CONTROL,
-            pd.DataFrame(
-                data=ref_adata[:, gene_names].X.toarray(),
-                index=ref_adata[:, gene_names].obs_names,
-                columns=ref_adata[:, gene_names].var_names,
-            ),
-        )
 
 if __name__ == "__main__":
     ScGenePT().run()
