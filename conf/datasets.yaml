@@ -2,17 +2,30 @@ defaults:
   - _self_
 
 datasets:
-  mouse_brain_atlas:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
-    organism: ${organism:MOUSE}
-    path: s3://example-bucket/datasets/mouse_brain_atlas.h5ad
+  adamson:
+    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    path: s3://generate-cross-species/datasets/perturbation/single_cell/adamson.h5ad
 
-  human_pbmc_10x:
+  norman:
+    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    path: s3://generate-cross-species/datasets/perturbation/single_cell/norman.h5ad
+
+  dixit:
+    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    path: s3://generate-cross-species/datasets/perturbation/single_cell/dixit.h5ad
+
+  example:
     _target_: czibench.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: s3://example-bucket/datasets/human_pbmc_10k.h5ad
+    path: s3://generate-cross-species/datasets/test/example.h5ad
 
-  tsv2_bladder:
+  example_small:
     _target_: czibench.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /mnt/efs/datasets/tabula_sapiens_2/tsp1_33/Bladder_TSP1_33_10X_smartseq_scvi_version1_may2024-026.h5ad
+    path: s3://generate-cross-species/datasets/test/example_small.h5ad
