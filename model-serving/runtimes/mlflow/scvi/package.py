@@ -1,4 +1,3 @@
-import os
 import mlflow
 import mlflow.models
 import mlflow.pyfunc

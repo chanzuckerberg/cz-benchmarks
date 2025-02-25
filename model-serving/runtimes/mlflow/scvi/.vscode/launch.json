@@ -35,28 +35,7 @@
             ],
         },
         {
-            "name": "Run Model: mlflow (s3)",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/run.py",
-            "console": "integratedTerminal",
-            "args": [
-                "--input-h5ad", "${input:inputDataUrl}",
-            ],
-        },
-        {
             "name": "Run Model: debug",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/run.py",
-            "args": [
-                "--input-h5ad", "${input:inputDataUrl}",
-                "--debug"
-            ],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Run Model: debug s3",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/run.py",
