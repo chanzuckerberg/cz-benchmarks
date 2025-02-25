@@ -12,7 +12,7 @@ from ..datasets.base import BaseDataset
 
 class MLflowModelRunner(ModelRunnerBase):
     """Handles model execution logic for an MLflow model"""
-    
+
     def _run_local(self, dataset: BaseDataset) -> BaseDataset:
         with tempfile.NamedTemporaryFile(mode="w") as output:
             prediction = mlflow.models.predict(

@@ -1,6 +1,6 @@
 from pprint import pp
 
-from ..datasets.types import DataType
+from ..datasets.types import DataType, Organism
 from ..datasets.sc import SingleCellDataset
 from .mlflow_runner import MLflowModelRunner
 import argparse
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     input_data_url = args.input_data_url
 
     # TODO: Dataset objects do not support remote URL paths for data, so this is not currently a proper design for working with remotely-stored input data.
-    dataset = SingleCellDataset(path=input_data_url, organism='HUMAN')
+    dataset = SingleCellDataset(source_path=input_data_url, organism=Organism.HUMAN)
 
     if args.model_runtime_type == 'mlflow':
         dataset = MLflowModelRunner(model_resource_url=model_resource_url, model_endpoint=args.model_endpoint).run(dataset)

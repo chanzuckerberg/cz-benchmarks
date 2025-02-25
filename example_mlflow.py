@@ -9,15 +9,24 @@ def main():
     parser = argparse.ArgumentParser(description="Run MLflow model on dataset")
     parser.add_argument('--model-mode', choices=['local', 'remote'], default='local', help='Mode to run the model (default: local)')
     args = parser.parse_args()
-
+    
     if args.model_mode == 'local':
         dataset = init_dataset("example-local", config_path="custom.yaml")
         runner = MLflowModelRunner(model_resource_url="model-serving/runtimes/mlflow/scvi/runtime")
     else:
         dataset = init_dataset("example-remote", config_path="custom.yaml")
         runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi4/invocations")
+        
+    # runner = ContainerRunner(
+    #     image="czibench-scvi:latest",
+    #     gpu=True,
+    # )
 
+    # Run local or remote inference
+    # Note: For both local and remote inference, only dataset.path is needed!
     dataset = runner.run(dataset)
+    
+    # Load 
     dataset.load_data()
     print(dataset.get_output(DataType.EMBEDDING))
 
