@@ -1,6 +1,6 @@
 import anndata as ad
 import pandas as pd
-from typing import Dict, List
+from typing import Dict
 import numpy as np
 from .base import BaseDataset
 from .types import Organism, DataType
@@ -67,6 +67,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         super().__init__(path, organism)
         self.set_input(DataType.CONDITION_KEY, condition_key)
         self.set_input(DataType.SPLIT_KEY, split_key)
+
     def load_data(self) -> None:
         super().load_data()
         assert (
@@ -75,9 +76,11 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
-        
-        test_conditions = set(self.adata.obs[self.condition_key][self.adata.obs[self.split_key] == "test"])
-        
+
+        test_conditions = set(
+            self.adata.obs[self.condition_key][self.adata.obs[self.split_key] == "test"]
+        )
+
         truth_data = {
             str(condition): pd.DataFrame(
                 data=self.adata[conditions == condition].X.toarray(),
@@ -88,12 +91,16 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         }
 
         self.set_input(
-            DataType.PERTURBATION_TRUTH, # This only contains the test conditions, not the training conditions
+            # This only contains the test conditions, not the training conditions
+            DataType.PERTURBATION_TRUTH,
             truth_data,
         )
-        
-        self.set_input(DataType.ANNDATA, self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy())
-        
+
+        self.set_input(
+            DataType.ANNDATA,
+            self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy(),
+        )
+
     def unload_data(self) -> None:
         super().unload_data()
         self._inputs.pop(DataType.PERTURBATION_TRUTH, None)

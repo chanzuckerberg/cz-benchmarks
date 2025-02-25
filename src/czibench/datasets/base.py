@@ -27,9 +27,11 @@ class BaseDataset(ABC):
         """Get the outputs dictionary."""
         return self._outputs
 
-    def _validate_type(self, value: Any, expected_type: Type, type_name: str = "") -> None:
+    def _validate_type(
+        self, value: Any, expected_type: Type, type_name: str = ""
+    ) -> None:
         """Helper function to validate types including generics.
-        
+
         Args:
             value: The value to check
             expected_type: The expected type (can be generic like Dict[str, DataFrame])
@@ -39,7 +41,7 @@ class BaseDataset(ABC):
         if hasattr(expected_type, "__origin__"):
             base_type = expected_type.__origin__
             type_args = expected_type.__args__
-            
+
             # Special handling for Dict types
             if base_type is dict:
                 if not isinstance(value, dict):
@@ -52,11 +54,13 @@ class BaseDataset(ABC):
                 for k, v in value.items():
                     if not isinstance(k, key_type):
                         raise TypeError(
-                            f"Dict key has incorrect type: expected {key_type}, got {type(k)}"
+                            "Dict key has incorrect type:"
+                            f"expected {key_type}, got {type(k)}"
                         )
                     if not isinstance(v, value_type):
                         raise TypeError(
-                            f"Dict value has incorrect type: expected {value_type}, got {type(v)}"
+                            "Dict value has incorrect type:"
+                            f"expected {value_type}, got {type(v)}"
                         )
             else:
                 # Handle other generic types if needed

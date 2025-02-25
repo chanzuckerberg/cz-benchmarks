@@ -311,6 +311,9 @@ class PerturbationTask(BaseTask):
                 metrics[key]["mse"] = mse
                 metrics[key]["delta_pearson_corr"] = delta_pearson_corr
             else:
-                logger.warning(f"Perturbation {key} is not available in the ground truth test perturbations. Skipping metrics for this perturbation.")
+                logger.warning(
+                    f"Perturbation {key} is not available in the ground truth"
+                    "test perturbations. Skipping metrics for this perturbation."
+                )
 
         return metrics
