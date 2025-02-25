@@ -7,6 +7,7 @@ from czibench.models.validators.geneformer import GeneformerValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
 from czibench.datasets.types import DataType
+from czibench.datasets.base import BaseDataset
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -16,7 +17,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         args = parser.parse_args()
         return args
 
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         assert (
@@ -24,7 +25,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         ), f"Model {args.model_name} not found in config"
         return args.model_name
 
-    def _download_model_weights(self):
+    def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
         selected_model = config.models[args.model_name]
@@ -37,7 +38,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
-    def run_model(self):
+    def run_model(self, dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
         selected_model = config.models[args.model_name]
@@ -45,15 +46,15 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         seq_len = token_config.input_size
 
         # Add cell index as metadata to track order
-        self.data.adata.obs["cell_idx"] = range(len(self.data.adata.obs))
+        dataset.adata.obs["cell_idx"] = range(len(dataset.adata.obs))
 
         # Add n_counts if not present
-        if "n_counts" not in self.data.adata.obs.columns:
-            self.data.adata.obs["n_counts"] = self.data.adata.X.sum(axis=1)
+        if "n_counts" not in dataset.adata.obs.columns:
+            dataset.adata.obs["n_counts"] = dataset.adata.X.sum(axis=1)
 
         # Save adata to temp file
         temp_path = Path("temp_dataset.h5ad")
-        self.data.adata.write_h5ad(temp_path)
+        dataset.adata.write_h5ad(temp_path)
 
         # Initialize tokenizer with cell_idx tracking
         tk = TranscriptomeTokenizer(
@@ -98,7 +99,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
         embs = embs.drop("cell_idx", axis=1)
-        self.set_output(DataType.EMBEDDING, embs.values)
+        dataset.set_output(DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()
