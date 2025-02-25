@@ -5,15 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Example Benchmark",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/example_mlflow.py",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "args": ["--model-mode", "${input:modelMode}"]
+        },
+        {
             "name": "Run mlflow,scvi,local",
             "type": "debugpy",
             "request": "launch",
             "module": "src.czibench.runners.example_model_runner",
             "console": "integratedTerminal",
             "args": [
-                "--model-runtime-type", "mlflow",
-                "--model-resource-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
-                "--input-data-url", "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad"
+                "--model-runtime-type",
+                "mlflow",
+                "--model-resource-url",
+                "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/runtime",
+                "--input-data-url",
+                "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/example.h5ad"
             ]
         },
         {
@@ -23,14 +38,17 @@
             "module": "src.czibench.runners.example_model_runner",
             "console": "integratedTerminal",
             "args": [
-                "--model-runtime-type", "mlflow",
-                "--model-endpoint", "${input:modelEndpoint}",
-                "--input-data-url", "${input:inputDataUrl}",
-            ]
+                "--model-runtime-type",
+                "mlflow",
+                "--model-endpoint",
+                "${input:modelEndpoint}",
+                "--input-data-url",
+                "${input:inputDataUrl}",
+            ],
+            "envFile": "${workspaceFolder}/.env"
         }
-    
     ],
-    "inputs":[
+    "inputs": [
         {
             "id": "modelEndpoint",
             "type": "promptString",
@@ -40,6 +58,12 @@
             "id": "inputDataUrl",
             "type": "promptString",
             "description": "Enter the input data URL"
+        },
+        {
+            "id": "modelMode",
+            "type": "pickString",
+            "description": "Select the invocation mode, local or remote",
+            "options": ["local", "remote"]
         }
     ]
 }

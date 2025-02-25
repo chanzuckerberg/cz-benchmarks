@@ -7,11 +7,11 @@ from ..datasets.types import DataType, DataValue
 
 
 class BaseDataset(ABC):
-    def __init__(self, path: str, **kwargs: Any):
+    def __init__(self, source_path: str, **kwargs: Any):
         self._inputs: Dict[DataType, DataValue] = {}
         self._outputs: Dict[DataType, DataValue] = {}
 
-        self.path = path
+        self.source_path = source_path
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
@@ -62,8 +62,8 @@ class BaseDataset(ABC):
         pass
 
     def validate(self) -> None:
-        if not os.path.exists(self.path):
-            raise ValueError(f"Dataset {self.path} is not valid")
+        if not os.path.exists(self.local_path):
+            raise ValueError(f"Dataset {self.local_path} is not valid")
 
         """Validate that all inputs and outputs match their expected types"""
         for data_type, value in self.inputs.items():

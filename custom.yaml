@@ -1,5 +1,10 @@
 datasets:
-  example:
+  example-local:
     _target_: czibench.datasets.sc.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: ~/cz-benchmarks/example.h5ad
+    source_path: ~/cz-benchmarks/example-small.h5ad
+  example-remote:
+    _target_: czibench.datasets.sc.SingleCellDataset
+    organism: ${organism:HUMAN}
+    source_path: https://generate-cross-species.s3.us-west-2.amazonaws.com/datasets/test/example-small.h5ad?response-content-disposition=inline&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPr%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJHMEUCIQCaAC%2FAtO5h3FvwalZIPyC2D9%2BUeOmcm%2B6oLHvPnOR%2BYQIgZgB8uHQop5yQVl8jq7HBee1YZNHiwn7dMXRo2nwFAaIqjwQIMxAAGgwwNTgyNjQxMzkyOTkiDOToos5vGh0aG2eksCrsA0TrxurZ%2B5CMTSRdxasAM%2BJ1GdXyhSciHomGaoCd7clS2%2FLHVfAL26EK0TyM2eIoH6T8vdwYcP1eXDwQVCLY%2FJ68jU6YECYB7rijM2JFcSMImZK0OG5QMOHkMA89jHvoVmnY1I%2F%2B9d6qQnmBRLm73MS%2BvZ4FejLdmbrAgpnzBhiCNCLrJbMTWrWioKgQLB8o3gjLAZfqXwrgEmWUZv6CxVpBX1SoohIGjNn3%2BLWIkU1frfsrlxsoPSCTcKUg1gtatJQs6UrQH7SxbLBivmxPyVGP8Cb%2F4kVbiCb90hVNvOxDfZZATDU5VX8SsxtSxHs5z%2Bvw%2BV6SzLfPH4uI4nw09BcDww5cQsmEeMhO4jbXn8L17sY5gQBIStXLsBHRyVyMUWYP7HuKDWmQIcgPfJBFz8uGmxYy7kkq8pNLldL0%2BfUSieAWCEGFR%2B1KMpeIuYLrfKhravEDj6BIYlsnoBLrqtwhwdtmRr6m%2FgRita82zBInYQzdqx2XzBmYnXjnjmxVamayO3N6U7S9Hji89xuZNc%2FYhSgkubvMCaFEeDKzudAJjXM5Q8XiIlogjjJPRkSJP4nr3lgFn3dPAgFX7Q1kZXP7t5anefZqn7%2FiqFRCr6Vj3jp4Oe1s7qtFYi%2FgfIRGmtx9eejuJrHaEaCZtjCA4%2FK9Bjq1AsQXzck9LyNlJ8Gogp9hjuKeO9PggX%2B%2FBBpsBGVo4zDKJWKpCwoLDr5LgB5li4BpxtTGMR2kwp8G95Xo6htL89rSYJihtNVnZNTxZHN9MgMO8k81iPBL8elRfhFHgb5dm1sMw2iLXTHvPHC6eacd%2BGR29FGquc3yZbw3PUv6zPDpbjsRZWsJ1F5Jx86S0OoOd4V4x4zi0g8NmtUp4EElq0Nk7BQ89zsUKDUS3nO6u6QWCx0%2BWZmUf9mr5Bf95N1gD2DXEi8LrKuyBu3eW%2FgTRb08awOCAxlPgsy%2FhaNpu%2Be%2FKC5pfcagLSgJ8kIFllyPUDrrNpmzVET2Kaqchgg8pX8Ey2dRItuG1DvQ%2FX7mMgHd25gN7iIV%2BZOzzpBHErmzlRgCVkao8293tBNCnV8Jaha57eqy3Q%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ3EGQGYRSDERGN3K%2F20250224%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250224T175356Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=host&X-Amz-Signature=329799bc06ebd8b3f89ff74fb3fbd29ecba27bf27daa8c9404d691cec6a98a4a
+  

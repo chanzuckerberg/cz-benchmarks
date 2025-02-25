@@ -16,14 +16,14 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     args = parser.parse_args()
     
-    # adata = ad.read_h5ad(args.input_h5ad)
-    # print(adata)
-    # input_data = pickle.dumps(adata)
 
     print("\nRunning prediction...\n")
 
     if len(sys.argv) > 1 and sys.argv[1] == "--debug":
         # For testing the internal prediction method, w/o mlflow input or context handling
+        adata = ad.read_h5ad(args.input_h5ad)
+        print(adata)
+        # input_data = pickle.dumps(adata)
         result = MLflowSCVI()._predict(adata, 
                                        "artifacts/homo_sapiens/hvg_names.csv.gz",
                                        Path("artifacts/homo_sapiens"))
