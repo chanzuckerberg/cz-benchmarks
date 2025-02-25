@@ -1,29 +1,57 @@
 model_uri: s3://generate-cross-species/models/uce
 
 model_config:
-  model_name: 33l_8ep_1024t_1280
-  adata_path: null # set in the inference script
-  dir: .
-  species: "human"
-  filter: true
-  skip: true
-  model_filename: 33l_8ep_1024t_1280.torch
-  batch_size: 40
-  pad_length: 1536
-  pad_token_idx: 0
-  chrom_token_left_idx: 1
-  chrom_token_right_idx: 2
-  cls_token_idx: 3
-  CHROM_TOKEN_OFFSET: 143574
-  sample_size: 1024
-  CXG: true
-  nlayers: 33
-  output_dim: 1280
-  d_hid: 5120
-  token_dim: 5120
-  multi_gpu: false
-  spec_chrom_csv_path: null #${paths.model_dir}/species_chrom.csv
-  token_file: null #${paths.model_dir}/all_tokens.torch
-  protein_embeddings_dir: null #${paths.embedding_dir}
-  offset_pkl_path: null #${paths.model_dir}/species_offsets.pkl
-  model_loc: null #${paths.model_dir}/${model_filename}
+  33l:
+    model_name: 33l_8ep_1024t_1280
+    adata_path: null # set in the inference script
+    dir: .
+    species: "human"
+    filter: true
+    skip: true
+    model_filename: 33l_8ep_1024t_1280.torch
+    batch_size: 40
+    pad_length: 1536
+    pad_token_idx: 0
+    chrom_token_left_idx: 1
+    chrom_token_right_idx: 2
+    cls_token_idx: 3
+    CHROM_TOKEN_OFFSET: 143574
+    sample_size: 1024
+    CXG: true
+    nlayers: 33
+    output_dim: 1280
+    d_hid: 5120
+    token_dim: 5120
+    multi_gpu: false
+    spec_chrom_csv_path: null #${paths.model_dir}/species_chrom.csv
+    token_file: null #${paths.model_dir}/all_tokens.torch
+    protein_embeddings_dir: null #${paths.embedding_dir}
+    offset_pkl_path: null #${paths.model_dir}/species_offsets.pkl
+    model_loc: null #${paths.model_dir}/${model_filename}
+  4l:
+    model_name: 4layer_model
+    adata_path: null # set in the inference script
+    dir: .
+    species: "human"
+    filter: true
+    skip: true
+    model_filename: 4layer_model.torch
+    batch_size: 40
+    pad_length: 1536
+    pad_token_idx: 0
+    chrom_token_left_idx: 1
+    chrom_token_right_idx: 2
+    cls_token_idx: 3
+    CHROM_TOKEN_OFFSET: 143574
+    sample_size: 1024
+    CXG: true
+    nlayers: 4
+    output_dim: 1280
+    d_hid: 5120
+    token_dim: 5120
+    multi_gpu: false
+    spec_chrom_csv_path: null #${paths.model_dir}/species_chrom.csv
+    token_file: null #${paths.model_dir}/all_tokens.torch
+    protein_embeddings_dir: null #${paths.embedding_dir}
+    offset_pkl_path: null #${paths.model_dir}/species_offsets.pkl
+    model_loc: null #${paths.model_dir}/${model_filename}
