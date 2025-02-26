@@ -19,5 +19,4 @@ class ScGenePTValidator(BaseSingleCellValidator):
         return {
             DataType.PERTURBATION_PRED,
             DataType.PERTURBATION_TRUTH,
-            DataType.PERTURBATION_CONTROL,
         }
