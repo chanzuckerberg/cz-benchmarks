@@ -39,7 +39,7 @@ This directory contains all the benchmark tasks. Tasks are organized based on th
 
        @property
        def required_outputs(self) -> Set[DataType]:
-           """Specify required output data types."""
+           """Specify required model output data types needed for task to run."""
            return {DataType.EMBEDDING}  # Example
 
        def _run_task(self, data):
