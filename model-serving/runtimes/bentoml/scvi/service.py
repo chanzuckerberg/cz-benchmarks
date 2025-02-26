@@ -22,7 +22,7 @@ class SCVIService:
         # Create an SCVI model instance
         self.model = SCVI(artifacts_dict)
 
-    @bentoml.api
+    @bentoml.task
     def predict(self, file_path: str, organism: str = "homo_sapiens") -> dict:
         """
         Expects JSON input with keys:
