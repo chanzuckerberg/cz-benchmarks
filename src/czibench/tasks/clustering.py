@@ -11,25 +11,62 @@ logger = logging.getLogger(__name__)
 
 
 class ClusteringTask(BaseTask):
+    """Task for evaluating clustering performance against ground truth labels.
+
+    This task performs clustering on embeddings and evaluates the results
+    using multiple clustering metrics (ARI and NMI).
+
+    Args:
+        label_key (str): Key to access ground truth labels in metadata
+    """
+
     def __init__(self, label_key: str):
         self.label_key = label_key
 
     @property
     def required_inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set of required input DataTypes (metadata with labels)
+        """
         return {DataType.METADATA}
 
     @property
     def required_outputs(self) -> Set[DataType]:
+        """Required output data types.
+
+        Returns:
+            Set of required output DataTypes (embedding to cluster)
+        """
         return {DataType.EMBEDDING}
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        """Runs clustering on the embedding data.
+
+        Performs clustering and stores results for metric computation.
+
+        Args:
+            data: Dataset containing embedding and ground truth labels
+
+        Returns:
+            Unmodified dataset (clustering results stored internally)
+        """
+        # Get anndata object and add embedding
         adata = data.adata
         adata.obsm["emb"] = data.get_output(DataType.EMBEDDING)
+
+        # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:
+        """Computes clustering evaluation metrics.
+
+        Returns:
+            Dictionary containing ARI and NMI scores
+        """
         return {
             "adjusted_rand_index": adjusted_rand_index(
                 self.input_labels, self.predicted_labels
