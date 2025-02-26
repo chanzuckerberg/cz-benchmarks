@@ -41,8 +41,7 @@ class MLflowModelRunner(ModelRunnerBase):
         input_data = json.dumps(
             {
                 "inputs": [[dataset.source_path]],
-                # FIXME: Figure out how to pass additional params to model, if possible
-                # "params": {"organism": str(dataset.get_input(DataType.ORGANISM))},
+                "params": {"organism": str(dataset.get_input(DataType.ORGANISM))},
             }
         )
 
