@@ -19,10 +19,11 @@ def main():
         elif args.model_runtime == 'mlflow':
             runner = MLflowModelRunner(model_resource_url="model-serving/runtimes/mlflow/scvi/runtime")
     else: # remote
-        dataset = init_dataset("example-remote", config_path="custom.yaml")
         if args.model_runtime == 'sagemaker':
+            dataset = init_dataset("example-remote-sagemaker", config_path="custom.yaml")
             runner = SageMakerRunner(model_endpoint="scvi-endpoint")
         if args.model_runtime == 'mlflow':
+            dataset = init_dataset("example-remote-mlflow", config_path="custom.yaml")
             runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi4/invocations")
     
     if runner is None:
