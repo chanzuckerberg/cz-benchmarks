@@ -47,7 +47,7 @@ class SageMakerRunner(ModelRunnerBase):
         try:
             wait_for_s3_file(
                 output_location, timeout=3600, interval=1
-            )  # Wait up to 1 hour, check every 10 seconds
+            )  # Wait up to 1 hour, check every second
         except TimeoutError as e:
             print(str(e))
             exit(1)
