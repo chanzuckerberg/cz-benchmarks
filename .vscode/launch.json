@@ -8,13 +8,15 @@
             "name": "Example Benchmark",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/example_mlflow.py",
+            "program": "${workspaceFolder}/example.py",
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "AWS_PROFILE": "virtual-cells-dev"
             },
             "envFile": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/.env",
-            "args": ["--model-mode", "${input:modelMode}"]
+            "args": ["--model-runtime", "${input:modelRuntime}",
+                     "--model-mode", "${input:modelMode}"]
         },
         {
             "name": "Run mlflow,scvi,local",
@@ -59,6 +61,12 @@
             "type": "promptString",
             "description": "Enter the input data URL"
         },
+        {
+            "id": "modelRuntime",
+            "type": "pickString",
+            "description": "Select the model runtime",
+            "options": ["mlflow", "sagemaker"]
+        },        
         {
             "id": "modelMode",
             "type": "pickString",
