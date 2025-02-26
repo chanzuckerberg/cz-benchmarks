@@ -84,11 +84,7 @@ class BaseDataset(ABC):
 
     def set_output(self, data_type: DataType, value: DataValue) -> None:
         """Safely set an output with type checking."""
-        if not isinstance(value, data_type.dtype):
-            raise TypeError(
-                f"Output {data_type.name} has incorrect type: "
-                f"expected {data_type.dtype}, got {type(value)}"
-            )
+        self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
         self._outputs[data_type] = value
 
     def get_input(self, data_type: DataType) -> DataValue:

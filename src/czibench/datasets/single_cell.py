@@ -106,7 +106,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         self._inputs.pop(DataType.PERTURBATION_TRUTH, None)
 
     @property
-    def perturbation_truth(self) -> Dict[str, pd.Series]:
+    def perturbation_truth(self) -> Dict[str, pd.DataFrame]:
         return self.get_input(DataType.PERTURBATION_TRUTH)
 
     @property

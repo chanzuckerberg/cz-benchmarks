@@ -9,17 +9,20 @@ from sklearn.metrics import (
     make_scorer,
     precision_score,
     recall_score,
+    r2_score,
+    mean_squared_error,
+    adjusted_rand_score,
+    adjusted_mutual_info_score,
+    silhouette_score,
 )
 from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
-from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
 from .base import BaseTask
-from .utils import cluster_embedding, filter_minimum_class
-from ..datasets.single_cell import SingleCellDataset
+from .utils import cluster_embedding, filter_minimum_class, compute_entropy_per_cell
+from ..datasets.single_cell import SingleCellDataset, PerturbationSingleCellDataset
 from ..datasets.types import DataType
 from scib_metrics import silhouette_batch
 
@@ -38,19 +41,18 @@ class ClusteringTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         adata = data.adata
         adata.obsm["emb"] = data.get_output(DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
-            "adjusted_rand_index": adjusted_rand_index(
+            "adjusted_rand_index": adjusted_rand_score(
                 self.input_labels, self.predicted_labels
             ),
-            "normalized_mutual_info": normalized_mutual_info(
+            "normalized_mutual_info": adjusted_mutual_info_score(
                 self.input_labels, self.predicted_labels
             ),
         }
@@ -68,11 +70,10 @@ class EmbeddingTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        # passthrough, embedding already exists
+    def _run_task(self, data: SingleCellDataset):
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        return data
+
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
@@ -91,11 +92,11 @@ class BatchIntegrationTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
         self.labels = data.get_input(DataType.METADATA)[self.label_key]
-        return data
+
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
@@ -137,7 +138,7 @@ class MetadataLabelPredictionTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
         # Get embedding and labels
@@ -228,7 +229,6 @@ class MetadataLabelPredictionTask(BaseTask):
                         )
 
         logger.info("Completed cross-validation for all classifiers")
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         logger.info("Computing final metrics...")
@@ -259,9 +259,6 @@ class MetadataLabelPredictionTask(BaseTask):
 
 
 class PerturbationTask(BaseTask):
-    def __init__(self, label_key: str, batch_key: str):
-        self.label_key = label_key
-        self.batch_key = batch_key
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -271,16 +268,16 @@ class PerturbationTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.PERTURBATION_PRED}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: PerturbationSingleCellDataset):
         self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
-        self.perturbation_truth = data.get_output(DataType.PERTURBATION_TRUTH)
+        self.perturbation_truth = data.perturbation_truth
+        self.perturbation_ctrl = pd.Series(data=data.adata.X.mean(0).A.flatten(), index=data.adata.var_names, name="ctrl")
 
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         metrics = {}
 
-        avg_perturbation_control = self.perturbation_truth["ctrl"]
+        avg_perturbation_control = self.perturbation_ctrl
 
         for key in self.perturbation_pred.keys():
             if key in self.perturbation_truth.keys():
@@ -289,30 +286,27 @@ class PerturbationTask(BaseTask):
                 avg_perturbation_pred = self.perturbation_pred[key].mean(axis=0)
                 avg_perturbation_truth = self.perturbation_truth[key].mean(axis=0)
 
-                intersecting_genes = (
-                    set(avg_perturbation_pred.columns)
-                    & set(avg_perturbation_truth.columns)
-                    & set(avg_perturbation_control.columns)
+                intersecting_genes = list(
+                    set(avg_perturbation_pred.index)
+                    & set(avg_perturbation_truth.index)
+                    & set(avg_perturbation_control.index)
                 )
 
-                mse = np.mean(
-                    (
-                        avg_perturbation_pred[intersecting_genes]
-                        - avg_perturbation_truth[intersecting_genes]
-                    )
-                    ** 2
+                mse = mean_squared_error(
+                    avg_perturbation_pred[intersecting_genes],
+                    avg_perturbation_truth[intersecting_genes]
                 )
-                delta_pearson_corr = np.corrcoef(
-                    avg_perturbation_pred[intersecting_genes]
+                delta_pearson_corr = r2_score(
+                    avg_perturbation_pred[intersecting_genes] 
                     - avg_perturbation_control[intersecting_genes],
                     avg_perturbation_truth[intersecting_genes]
-                    - avg_perturbation_control[intersecting_genes],
-                )[0, 1]
+                    - avg_perturbation_control[intersecting_genes]
+                )
                 metrics[key]["mse"] = mse
                 metrics[key]["delta_pearson_corr"] = delta_pearson_corr
             else:
                 logger.warning(
-                    f"Perturbation {key} is not available in the ground truth"
+                    f"Perturbation {key} is not available in the ground truth "
                     "test perturbations. Skipping metrics for this perturbation."
                 )
 

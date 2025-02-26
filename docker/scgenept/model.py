@@ -151,7 +151,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
                 gene_pert: pd.DataFrame(
                     data=np.concatenate(all_preds, axis=0),
                     index=adata.obs_names,
-                    columns=gene_names,
+                    columns=adata.var_names.to_list(),
                 )
             },
         )

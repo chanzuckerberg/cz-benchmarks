@@ -36,7 +36,7 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset) -> BaseDataset:
+    def _run_task(self, data: BaseDataset):
         pass
 
     @abstractmethod
