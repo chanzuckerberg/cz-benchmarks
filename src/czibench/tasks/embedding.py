@@ -36,7 +36,7 @@ class EmbeddingTask(BaseTask):
         """Required output data types.
 
         Returns:
-            Set of required output DataTypes (embedding coordinates)
+            required output types from models this task to run  (embedding coordinates)
         """
         return {DataType.EMBEDDING}
 

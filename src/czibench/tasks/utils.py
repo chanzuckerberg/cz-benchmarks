@@ -30,7 +30,7 @@ def cluster_embedding(adata: AnnData, obsm_key: str = "emb") -> List[int]:
 
 
 def filter_minimum_class(
-    X: np.ndarray, y: np.ndarray | pd.Series, min_class_size: int = 10
+    features: np.ndarray, labels: np.ndarray | pd.Series, min_class_size: int = 10
 ) -> tuple[np.ndarray, np.ndarray | pd.Series]:
     """Filter data to remove classes with too few samples.
 
@@ -38,8 +38,8 @@ def filter_minimum_class(
     Useful for ensuring enough samples per class for ML tasks.
 
     Args:
-        X: Feature matrix of shape (n_samples, n_features)
-        y: Labels array of shape (n_samples,)
+        features: Feature matrix of shape (n_samples, n_features)
+        labels: Labels array of shape (n_samples,)
         min_class_size: Minimum number of samples required per class
 
     Returns:
@@ -47,25 +47,25 @@ def filter_minimum_class(
             - Filtered feature matrix
             - Filtered labels as categorical data
     """
-    label_name = y.name if hasattr(y, "name") else "unknown"
+    label_name = labels.name if hasattr(labels, "name") else "unknown"
     logger.info(f"Label composition ({label_name}):")
 
-    value_counts = pd.Series(y).value_counts()
-    logger.info(f"Total classes before filtering: {len(value_counts)}")
+    class_counts = pd.Series(labels).value_counts()
+    logger.info(f"Total classes before filtering: {len(class_counts)}")
 
-    filtered_counts = value_counts[value_counts >= min_class_size]
+    filtered_counts = class_counts[class_counts >= min_class_size]
     logger.info(
         f"Total classes after filtering "
         f"(min_class_size={min_class_size}): {len(filtered_counts)}"
     )
 
-    y = pd.Series(y) if isinstance(y, np.ndarray) else y
-    class_counts = y.value_counts()
+    labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
+    class_counts = labels.value_counts()
 
     valid_classes = class_counts[class_counts >= min_class_size].index
-    valid_indices = y.isin(valid_classes)
+    valid_indices = labels.isin(valid_classes)
 
-    X_filtered = X[valid_indices]
-    y_filtered = y[valid_indices]
+    features_filtered = features[valid_indices]
+    labels_filtered = labels[valid_indices]
 
-    return X_filtered, pd.Categorical(y_filtered)
+    return features_filtered, pd.Categorical(labels_filtered)

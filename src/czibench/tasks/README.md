@@ -2,17 +2,6 @@
 
 This directory contains all the benchmark tasks. Tasks are organized based on their scope and applicability across different modalities.
 
-## Directory Structure
-
-tasks/
-├── init.py # Exports all available tasks
-├── embedding.py # Generic embedding evaluation
-├── clustering.py # Generic clustering tasks
-├── label_prediction.py # Generic label prediction
-└── single_cell/ # Single-cell specific tasks
-├── init.py
-└── custom_task.py
-
 
 ## Task Organization
 
@@ -34,18 +23,30 @@ tasks/
 
 2. **Create Task File**:
    ```python
-   from ..base import BaseTask
+   from typing import Dict, Set
+   from .base import BaseTask
+   from .datasets.types import DataType
 
    class YourNewTask(BaseTask):
        def __init__(self, **kwargs):
            # Initialize your task parameters
            pass
 
+       @property
+       def required_inputs(self) -> Set[DataType]:
+           """Specify required input data types."""
+           return {DataType.METADATA}  # Example
+
+       @property
+       def required_outputs(self) -> Set[DataType]:
+           """Specify required output data types."""
+           return {DataType.EMBEDDING}  # Example
+
        def _run_task(self, data):
            # Implement your task logic
            pass
 
-       def _compute_metrics(self):
+       def _compute_metrics(self) -> Dict[str, float]:
            # Return task-specific metrics
            return {"metric_name": value}
    ```
@@ -66,13 +67,3 @@ tasks/
 - Follow existing task patterns for consistency
 - Use type hints for better code clarity
 - Add logging for important task steps
-
-## Example Task Usage
-
-```python
-from czibench.tasks import EmbeddingTask
-# Initialize task
-task = EmbeddingTask(label_key="cell_type")
-# Run task
-results = task.run(data)
-```

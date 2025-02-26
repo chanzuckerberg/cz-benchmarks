@@ -37,7 +37,7 @@ class ClusteringTask(BaseTask):
         """Required output data types.
 
         Returns:
-            Set of required output DataTypes (embedding to cluster)
+            required output types from models this task to run (embedding to cluster)
         """
         return {DataType.EMBEDDING}
 
