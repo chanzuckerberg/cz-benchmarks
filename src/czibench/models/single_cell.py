@@ -1,6 +1,6 @@
 from typing import ClassVar, List
 from .base import BaseModelValidator
-from ..datasets.sc import SingleCellDataset
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import Organism
 
 
