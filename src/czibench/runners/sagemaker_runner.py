@@ -54,11 +54,9 @@ class SageMakerRunner(ModelRunnerBase):
 
         download_s3_file(output_location, "output.out")
 
-        with open("output.out", "rb") as f:
-            buffer = f.read()
-
-        prediction = np.frombuffer(buffer, dtype=np.float32)
+        prediction = np.load("output.out")
         print(prediction)
+        print(prediction.shape)
 
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
