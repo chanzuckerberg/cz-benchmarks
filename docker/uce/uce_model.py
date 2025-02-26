@@ -3,15 +3,16 @@ import logging
 import os
 import pathlib
 import tempfile
+
 import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czibench.models.validators.uce import UCEValidator
-from czibench.models.base import BaseModelImplementation
-from czibench.utils import sync_s3_to_local
-from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
+from czibench.datasets.types import DataType
+from czibench.models.base import BaseModelImplementation
+from czibench.models.validators.uce import UCEValidator
+from czibench.utils import sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
