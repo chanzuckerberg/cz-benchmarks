@@ -1,3 +1,5 @@
+# MLflow scVI Model
+
 This repo is self-container project with its own Python virtual environment requirements. 
 It can be added to the parent cz-benchmark project VS Code workspace using "File" > "Add Folder to Workspace".
 
@@ -6,6 +8,8 @@ Setup:
 export AWS_PROFILE=<PROFILE> # if needed
 ./setup.sh
 ```
+
+## Local Usage
 
 To package and run the model via Python, use the configured Run tasks (`.vscode/launch.json`):
 * "Package Model": Packages an MLflow model, saving in ./runtime directory (git ignored)
@@ -28,7 +32,7 @@ mlflow models serve -m runtime --env-manager uv
 curl http://localhost:5000/invocations -H "Content-Type:application/json"  --data '{"inputs": [["example.h5ad"]]}'> example-output.json
 ```
 
-# Databricks Usage
+## Remote Usage (Databricks)
 
 To log models to Databricks and to calls MLflow models served on Databricks, you will need obtain a access token. See https://docs.databricks.com/en/mlflow/access-hosted-tracking-server.html#access-the-mlflow-tracking-server-from-outside-databricks
 

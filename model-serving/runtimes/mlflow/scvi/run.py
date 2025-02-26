@@ -1,3 +1,8 @@
+# Run the MLflow model locally, for dev/testing.
+# With --debug option, runs the MLflowSCVI class directly, bypassing the MLflow input handling.
+# Without --debug option, runs the MLflow model, which handles input and context.
+# Expects that all model Python packages are installed in the current environment.
+
 from pathlib import Path
 import sys
 import anndata as ad

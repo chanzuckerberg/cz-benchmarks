@@ -67,3 +67,4 @@ venv.bak/
 *.dill
 *.h5ad
 **/artifacts/
+/mlruns/

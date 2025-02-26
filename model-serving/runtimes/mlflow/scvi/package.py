@@ -19,9 +19,9 @@ if __name__ == "__main__":
     
     artifacts={
         "model_weights_homo_sapiens": "artifacts/homo_sapiens/model.pt",
-        # "model_weights_mus_musculus": "artifacts/mus_musculus/model.pt",
+        "model_weights_mus_musculus": "artifacts/mus_musculus/model.pt",
         "hvg_names_homo_sapiens": "artifacts/homo_sapiens/hvg_names.csv.gz",
-        # "hvg_names_mus_musculus": "artifacts/mus_musculus/hvg_names.csv.gz"
+        "hvg_names_mus_musculus": "artifacts/mus_musculus/hvg_names.csv.gz"
     }
     signature=mlflow.models.ModelSignature(
                     inputs=Schema([ColSpec("string")]),

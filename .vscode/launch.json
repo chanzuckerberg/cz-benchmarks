@@ -13,7 +13,7 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
             },
-            "envFile": "${workspaceFolder}/.env",
+            "envFile": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/.env",
             "args": ["--model-mode", "${input:modelMode}"]
         },
         {
@@ -45,7 +45,7 @@
                 "--input-data-url",
                 "${input:inputDataUrl}",
             ],
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/.env",
         }
     ],
     "inputs": [

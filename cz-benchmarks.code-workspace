@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "./model-serving/runtimes/mlflow/scvi"
+			"path": "model-serving/runtimes/mlflow/scvi"
 		}
 	],
 	"settings": {}
