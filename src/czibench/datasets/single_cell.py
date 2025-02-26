@@ -60,7 +60,7 @@ class SingleCellDataset(BaseDataset):
                 f" start with {self.organism.prefix}"
             )
 
-            
+
 class PerturbationSingleCellDataset(SingleCellDataset):
     """Single cell dataset with perturbation data, containing control and perturbed cells.
 

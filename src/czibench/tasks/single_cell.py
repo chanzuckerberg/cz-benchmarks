@@ -292,6 +292,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
             ),
         }
 
+
 class PerturbationTask(BaseTask):
 
     @property
