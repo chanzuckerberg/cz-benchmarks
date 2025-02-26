@@ -1,7 +1,6 @@
 from typing import Dict, Set
 import pandas as pd
 import logging
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -74,7 +73,6 @@ class EmbeddingTask(BaseTask):
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
 
-
     def _compute_metrics(self) -> Dict[str, float]:
         return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
 
@@ -96,7 +94,6 @@ class BatchIntegrationTask(BaseTask):
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
         self.labels = data.get_input(DataType.METADATA)[self.label_key]
-
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
@@ -271,8 +268,11 @@ class PerturbationTask(BaseTask):
     def _run_task(self, data: PerturbationSingleCellDataset):
         self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
         self.perturbation_truth = data.perturbation_truth
-        self.perturbation_ctrl = pd.Series(data=data.adata.X.mean(0).A.flatten(), index=data.adata.var_names, name="ctrl")
-
+        self.perturbation_ctrl = pd.Series(
+            data=data.adata.X.mean(0).A.flatten(),
+            index=data.adata.var_names,
+            name="ctrl",
+        )
 
     def _compute_metrics(self) -> Dict[str, float]:
         metrics = {}
@@ -294,13 +294,13 @@ class PerturbationTask(BaseTask):
 
                 mse = mean_squared_error(
                     avg_perturbation_pred[intersecting_genes],
-                    avg_perturbation_truth[intersecting_genes]
+                    avg_perturbation_truth[intersecting_genes],
                 )
                 delta_pearson_corr = r2_score(
-                    avg_perturbation_pred[intersecting_genes] 
+                    avg_perturbation_pred[intersecting_genes]
                     - avg_perturbation_control[intersecting_genes],
                     avg_perturbation_truth[intersecting_genes]
-                    - avg_perturbation_control[intersecting_genes]
+                    - avg_perturbation_control[intersecting_genes],
                 )
                 metrics[key]["mse"] = mse
                 metrics[key]["delta_pearson_corr"] = delta_pearson_corr

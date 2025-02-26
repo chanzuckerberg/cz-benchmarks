@@ -7,6 +7,11 @@ from .types import Organism, DataType
 
 
 class SingleCellDataset(BaseDataset):
+    """Single cell dataset containing gene expression data and metadata.
+
+    Handles loading and validation of AnnData objects with gene expression data
+    and associated metadata for a specific organism."""
+
     def __init__(
         self,
         path: str,
@@ -57,6 +62,15 @@ class SingleCellDataset(BaseDataset):
 
 
 class PerturbationSingleCellDataset(SingleCellDataset):
+    """Single cell dataset with perturbation data, containing control and perturbed cells.
+
+    Input data requirements:
+    - H5AD file containing single cell gene expression data
+    - Must have a condition column in adata.obs specifying control ("ctrl") and perturbed
+      conditions
+    - Must have a split column in adata.obs to identify test samples
+    """
+
     def __init__(
         self,
         path: str,

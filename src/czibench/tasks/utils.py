@@ -44,8 +44,10 @@ def filter_minimum_class(
 
     return X_filtered, pd.Categorical(y_filtered)
 
+
 def _safelog(a):
     return np.log(a, out=np.zeros_like(a), where=(a != 0))
+
 
 def nearest_neighbors_hnsw(x, ef=200, M=48, n_neighbors=100):
     import hnswlib
@@ -73,5 +75,3 @@ def compute_entropy_per_cell(embedding, batch_labels):
     return (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(
         1
     ) / _safelog(len(unique_batch_labels))
-
-
