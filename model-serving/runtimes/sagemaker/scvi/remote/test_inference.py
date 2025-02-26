@@ -37,7 +37,7 @@ if __name__ == "__main__":
     endpoint_name = "scvi-endpoint"
     payload = json.dumps(
         {
-            "s3_input": "s3://generate-cross-species/datasets/test/example-small.h5ad",
+            "s3_input": "s3://generate-cross-species/datasets/test/example_small.h5ad",
             "organism": "mus_musculus",
         }
     )

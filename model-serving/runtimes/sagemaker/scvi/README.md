@@ -4,7 +4,7 @@ This directory contains the code for serving the SCVI model using SageMaker. Bel
 
 ## Overview
 To deploy the SCVI model, run `make sagemaker-deploy`. This will:
-* Create a SageMaker execution role (if it doesn't already exist) which will be used to allow SageMaker to access the model artifacts and data.
+* Create a SageMaker IAM execution role (if it doesn't already exist) which will be used to allow SageMaker to access the model artifacts and data.
 * Package the `/code` directory into a .tar.gz file and upload it to S3.
 * Create a SageMaker model package group (if it doesn't already exist) and register the model in the group.
 * Create a SageMaker endpoint configuration
