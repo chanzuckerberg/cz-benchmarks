@@ -1,18 +1,19 @@
+import argparse
 import pathlib
 import numpy as np
 from omegaconf import OmegaConf
 from glob import glob
 import torch
-from czibench.datasets.sc import SingleCellDataset
-from czibench.datasets.types import Organism
-from czibench.models.sc import BaseSingleCell
-from czibench.utils import sync_s3_to_local, download_s3_file
 import pandas as pd
 from gears import PertData
-
+import logging
 from utils.data_loading import load_trained_scgenept_model
 
-import logging
+from czibench.models.validators.scgenept import ScGenePTValidator
+from czibench.models.base import BaseModelImplementation
+from czibench.utils import sync_s3_to_local, download_s3_file
+from czibench.datasets.types import DataType
+from czibench.datasets.base import BaseDataset
 
 logger = logging.getLogger(__name__)
 
@@ -27,24 +28,8 @@ def load_dataloader(
     return pert_data
 
 
-class ScGenePT(BaseSingleCell):
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
-
-    @classmethod
-    def _validate_model_requirements(cls, dataset: SingleCellDataset):
-        # Check if all required var keys are present in var
-        missing_keys = [
-            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
-        ]
-
-        if missing_keys:
-            raise ValueError(f"Missing required var keys: {missing_keys}")
-
+class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
-        import argparse
-
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_name", type=str, default="scgenept_go_c")
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
@@ -53,7 +38,7 @@ class ScGenePT(BaseSingleCell):
         args = parser.parse_args()
         return args
 
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         assert (
@@ -61,7 +46,7 @@ class ScGenePT(BaseSingleCell):
         ), f"Model {args.model_name}__{args.dataset_name} not found in config"
         return f"{args.model_name}/{args.dataset_name}"
 
-    def _download_model_weights(self):
+    def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
 
@@ -83,7 +68,6 @@ class ScGenePT(BaseSingleCell):
         vocab_uri = config.models["vocab_uri"]
         vocab_key = "/".join(vocab_uri.split("/")[3:])
 
-        # Fix the vocab directory path to ensure it's properly formatted
         vocab_dir = (
             pathlib.Path(self.model_weights_dir).parent.parent / "pretrained" / "scgpt"
         )
@@ -106,8 +90,8 @@ class ScGenePT(BaseSingleCell):
             f"to {gene_embeddings_dir}"
         )
 
-    def run_model(self):
-        adata = self.data.adata
+    def run_model(self, dataset: BaseDataset):
+        adata = dataset.adata
         adata.var["gene_name"] = adata.var["gene_symbol"]
 
         args = self.parse_args()
@@ -160,10 +144,13 @@ class ScGenePT(BaseSingleCell):
             ).squeeze()
             all_preds.append(preds)
 
-        self.data.perturbation_predictions = pd.DataFrame(
-            data=np.concatenate(all_preds, axis=0),
-            index=adata.obs_names,
-            columns=gene_names,
+        dataset.set_output(
+            DataType.PERTURBATION,
+            pd.DataFrame(
+                data=np.concatenate(all_preds, axis=0),
+                index=adata.obs_names,
+                columns=gene_names,
+            ),
         )
 
 

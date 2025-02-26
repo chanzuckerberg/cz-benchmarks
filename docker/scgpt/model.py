@@ -1,38 +1,33 @@
 import pathlib
-
 import scgpt as scg
 from omegaconf import OmegaConf
+import argparse
 
-from czibench.datasets.sc import SingleCellDataset
-from czibench.datasets.types import Organism
-from czibench.models.sc import BaseSingleCell
+from czibench.models.validators.scgpt import ScGPTValidator
+from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local
+from czibench.datasets.types import DataType
+from czibench.datasets.base import BaseDataset
 
 
-class ScGPT(BaseSingleCell):
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
+class ScGPT(ScGPTValidator, BaseModelImplementation):
+    def parse_args(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--model_name", type=str, default="human")
+        args = parser.parse_args()
+        return args
 
-    @classmethod
-    def _validate_model_requirements(cls, dataset: SingleCellDataset):
-        # Check if all required var keys are present in var
-        missing_keys = [
-            key for key in cls.required_var_keys if key not in dataset.adata.var.columns
-        ]
-
-        if missing_keys:
-            raise ValueError(f"Missing required var keys: {missing_keys}")
-
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
+        args = self.parse_args()
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[config.default_model]
+        selected_model = config.models[args.model_name]
         model_name = selected_model.model_name
         return model_name
 
-    def _download_model_weights(self):
+    def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[config.default_model]
+        args = self.parse_args()
+        selected_model = config.models[args.model_name]
         model_uri = selected_model.model_uri
 
         pathlib.Path(self.model_weights_dir).mkdir(exist_ok=True)
@@ -42,8 +37,8 @@ class ScGPT(BaseSingleCell):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
-    def run_model(self):
-        adata = self.data.adata
+    def run_model(self, dataset: BaseDataset):
+        adata = dataset.adata
         adata.var["gene_name"] = adata.var["gene_symbol"]
         ref_embed_adata = scg.tasks.embed_data(
             adata,
@@ -51,7 +46,7 @@ class ScGPT(BaseSingleCell):
             gene_col="gene_name",
             batch_size=32,
         )
-        self.data.output_embedding = ref_embed_adata.obsm["X_scGPT"]
+        dataset.set_output(DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"])
 
 
 if __name__ == "__main__":
