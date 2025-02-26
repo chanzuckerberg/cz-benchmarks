@@ -1,0 +1,65 @@
+import logging
+from typing import Dict, Set
+
+from ..datasets.sc import SingleCellDataset
+from ..datasets.types import DataType
+from ..metrics.embedding import silhouette_score
+from .base import BaseTask
+
+logger = logging.getLogger(__name__)
+
+
+class EmbeddingTask(BaseTask):
+    """Task for evaluating embedding quality using labeled data.
+
+    This task computes quality metrics for embeddings using ground truth labels.
+    Currently supports silhouette score evaluation.
+
+    Args:
+        label_key (str): Key to access ground truth labels in metadata
+    """
+
+    def __init__(self, label_key: str):
+        self.label_key = label_key
+
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set of required input DataTypes (metadata with labels)
+        """
+        return {DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        """Required output data types.
+
+        Returns:
+            Set of required output DataTypes (embedding coordinates)
+        """
+        return {DataType.EMBEDDING}
+
+    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+        """Runs the embedding evaluation task.
+
+        Gets embedding coordinates and labels from the dataset for metric computation.
+
+        Args:
+            data: Dataset containing embedding and labels
+
+        Returns:
+            Unmodified dataset (this task only computes metrics)
+        """
+        # Store embedding and labels for metric computation
+        self.embedding = data.get_output(DataType.EMBEDDING)
+        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
+        return data
+
+    def _compute_metrics(self) -> Dict[str, float]:
+        """Computes embedding quality metrics.
+
+        Returns:
+            Dictionary containing silhouette score
+        """
+        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}

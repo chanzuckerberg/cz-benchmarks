@@ -1,7 +1,7 @@
-from typing import Dict, Set
-import pandas as pd
 import logging
+from typing import Dict, Set
 
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -15,97 +15,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
-from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
-from .base import BaseTask
-from .utils import cluster_embedding, filter_minimum_class
 from ..datasets.sc import SingleCellDataset
 from ..datasets.types import DataType
-from scib_metrics import silhouette_batch
+from .base import BaseTask
+from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
-
-
-class ClusteringTask(BaseTask):
-    def __init__(self, label_key: str):
-        self.label_key = label_key
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        adata = data.adata
-        adata.obsm["emb"] = data.get_output(DataType.EMBEDDING)
-        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "adjusted_rand_index": adjusted_rand_index(
-                self.input_labels, self.predicted_labels
-            ),
-            "normalized_mutual_info": normalized_mutual_info(
-                self.input_labels, self.predicted_labels
-            ),
-        }
-
-
-class EmbeddingTask(BaseTask):
-    def __init__(self, label_key: str):
-        self.label_key = label_key
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        # passthrough, embedding already exists
-        self.embedding = data.get_output(DataType.EMBEDDING)
-        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
-
-
-class BatchIntegrationTask(BaseTask):
-    def __init__(self, label_key: str, batch_key: str):
-        self.label_key = label_key
-        self.batch_key = batch_key
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        self.embedding = data.get_output(DataType.EMBEDDING)
-        self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
-        self.labels = data.get_input(DataType.METADATA)[self.label_key]
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "entropy_per_cell": compute_entropy_per_cell(
-                self.embedding, self.batch_labels
-            ),
-            "silhouette_score": silhouette_batch(
-                self.embedding, self.labels, self.batch_labels
-            ),
-        }
 
 
 class MetadataLabelPredictionTask(BaseTask):
