@@ -30,7 +30,9 @@ def cluster_embedding(adata: AnnData, obsm_key: str = "emb") -> List[int]:
 
 
 def filter_minimum_class(
-    features: np.ndarray, labels: np.ndarray | pd.Series, min_class_size: int = 10
+    features: np.ndarray,
+    labels: np.ndarray | pd.Series,
+    min_class_size: int = 10,
 ) -> tuple[np.ndarray, np.ndarray | pd.Series]:
     """Filter data to remove classes with too few samples.
 

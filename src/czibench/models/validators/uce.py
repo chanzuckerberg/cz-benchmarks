@@ -1,10 +1,20 @@
 from typing import Set
-from ...datasets.types import Organism, DataType
+
+from ...datasets.types import DataType, Organism
 from ..single_cell import BaseSingleCellValidator
 
 
 class UCEValidator(BaseSingleCellValidator):
-    """Validation requirements for UCE models."""
+    """Validation requirements for UCE models.
+
+    Validates datasets for use with Universal Cell Embeddings (UCE) models.
+    Requires gene symbols and supports both human and mouse data.
+
+    Class Variables:
+        available_organisms: Supported species (human and mouse)
+        required_obs_keys: No observation requirements
+        required_var_keys: Must have gene_symbol column
+    """
 
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = []
@@ -12,8 +22,18 @@ class UCEValidator(BaseSingleCellValidator):
 
     @property
     def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
         return {DataType.ANNDATA}
 
     @property
     def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
         return {DataType.EMBEDDING}

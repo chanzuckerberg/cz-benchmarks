@@ -1,16 +1,41 @@
 from typing import ClassVar, List
-from .base import BaseModelValidator
-from ..datasets.sc import SingleCellDataset
-from ..datasets.types import Organism
+
+from ...datasets.sc import SingleCellDataset
+from ...datasets.types import Organism
+from .base_model_validator import BaseModelValidator
 
 
 class BaseSingleCellValidator(BaseModelValidator):
+    """Base validator for single-cell models.
+
+    Defines common validation logic for single-cell models, including:
+    - Organism compatibility checking
+    - Required metadata validation
+    - AnnData observation and variable key validation
+
+    Class Variables:
+        dataset_type: Type of dataset this validator handles
+        available_organisms: List of supported organisms
+        required_obs_keys: Required columns in adata.obs
+        required_var_keys: Required columns in adata.var
+    """
+
     dataset_type = SingleCellDataset
     available_organisms: ClassVar[List[Organism]]
     required_obs_keys: ClassVar[List[str]]
     required_var_keys: ClassVar[List[str]]
 
     def __init_subclass__(cls) -> None:
+        """Validate required class variables in child classes.
+
+        Ensures child classes define:
+        - available_organisms
+        - required_obs_keys
+        - required_var_keys
+
+        Raises:
+            TypeError: If any required class variable is missing
+        """
         super().__init_subclass__()
         if not hasattr(cls, "available_organisms"):
             raise TypeError(
@@ -31,6 +56,19 @@ class BaseSingleCellValidator(BaseModelValidator):
             )
 
     def _validate_dataset(self, dataset: SingleCellDataset):
+        """Validate a single-cell dataset.
+
+        Checks:
+        1. Dataset organism is supported
+        2. Required observation keys are present
+        3. Required variable keys are present
+
+        Args:
+            dataset: SingleCellDataset to validate
+
+        Raises:
+            ValueError: If validation fails
+        """
         if dataset.organism not in self.available_organisms:
             raise ValueError(
                 f"Dataset organism {dataset.organism} "

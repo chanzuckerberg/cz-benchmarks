@@ -53,7 +53,8 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"{self.model_weights_dir}/protein_embeddings"
         )
         config.model_config[model_name].model_loc = (
-            f"{self.model_weights_dir}/{config.model_config[model_name].model_filename}"
+            f"{self.model_weights_dir}/"
+            f"{config.model_config[model_name].model_filename}"
         )
         config.model_config[model_name].offset_pkl_path = (
             f"{self.model_weights_dir}/species_offsets.pkl"
@@ -69,7 +70,9 @@ class UCE(UCEValidator, BaseModelImplementation):
         protein_embeddings_source = pathlib.Path(
             config.model_config[model_name].protein_embeddings_dir
         )
-        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
+        protein_embeddings_target = pathlib.Path(
+            "model_files/protein_embeddings"
+        )
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
         if protein_embeddings_target.exists():
             protein_embeddings_target.unlink()

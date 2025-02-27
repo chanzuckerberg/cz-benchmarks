@@ -6,17 +6,34 @@ from ..datasets.types import DataType
 
 
 class BaseTask(ABC):
-    """Base class for all tasks"""
+    """Abstract base class for all benchmark tasks.
+
+    Defines the interface that all tasks must implement. Tasks are responsible for:
+    1. Declaring their required input/output data types
+    2. Running task-specific computations
+    3. Computing evaluation metrics
+
+    Tasks should store any intermediate results as instance variables
+    to be used in metric computation.
+    """
 
     @property
     @abstractmethod
     def required_inputs(self) -> Set[DataType]:
-        """Specify what input types this task requires"""
+        """Required input data types this task requires.
+
+        Returns:
+            Set of DataType enums that must be present in input data
+        """
 
     @property
     @abstractmethod
     def required_outputs(self) -> Set[DataType]:
-        """Specify what output types from models this task requires"""
+        """Required output types from models this task requires
+
+        Returns:
+            Set of DataType enums that must be present in output data
+        """
 
     def validate(self, data: BaseDataset):
         # Check both inputs and outputs are available
@@ -28,7 +45,9 @@ class BaseTask(ABC):
             if missing_inputs:
                 error_msg.append(f"Missing required inputs: {missing_inputs}")
             if missing_outputs:
-                error_msg.append(f"Missing required outputs: {missing_outputs}")
+                error_msg.append(
+                    f"Missing required outputs: {missing_outputs}"
+                )
             raise ValueError(
                 f"Data validation failed for {self.__class__.__name__}: "
                 f"{' | '.join(error_msg)}"
@@ -38,13 +57,41 @@ class BaseTask(ABC):
 
     @abstractmethod
     def _run_task(self, data: BaseDataset) -> BaseDataset:
-        pass
+        """Run the task's core computation.
+
+        Should store any intermediate results needed for metric computation
+        as instance variables.
+
+        Args:
+            data: Dataset containing required input and output data
+
+        Returns:
+            Modified or unmodified dataset
+        """
 
     @abstractmethod
     def _compute_metrics(self) -> Dict[str, float]:
-        pass
+        """Compute evaluation metrics for the task.
 
-    def run(self, data: BaseDataset) -> BaseDataset:
+        Uses results stored during _run_task to compute metrics.
+
+        Returns:
+            Dictionary mapping metric names to values
+        """
+
+    def run(self, data: BaseDataset) -> Dict[str, float]:
+        """Run the full task pipeline.
+
+        1. Validates input/output data requirements
+        2. Runs the task computation
+        3. Computes evaluation metrics
+
+        Args:
+            data: Dataset containing required input and output data
+
+        Returns:
+            Dictionary containing computed metrics
+        """
         self.validate(data)
 
         data = self._run_task(data)

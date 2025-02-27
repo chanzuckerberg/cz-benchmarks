@@ -33,6 +33,6 @@ def compute_entropy_per_cell(embedding, batch_labels):
     label_counts_per_cell_normed = (
         label_counts_per_cell / label_counts_per_cell.sum(1)[:, None]
     )
-    return (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(
-        1
-    ) / _safelog(len(unique_batch_labels))
+    return (
+        -label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)
+    ).sum(1) / _safelog(len(unique_batch_labels))

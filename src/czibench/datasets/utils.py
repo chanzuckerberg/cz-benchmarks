@@ -54,7 +54,9 @@ def load_dataset(
 
     # Load default config first and make it unstructured
     cfg = OmegaConf.create(
-        OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
+        OmegaConf.to_container(
+            hydra.compose(config_name="datasets"), resolve=True
+        )
     )
 
     # If custom config provided, load and merge it
@@ -64,7 +66,9 @@ def load_dataset(
         config_path = os.path.abspath(config_path)
 
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Custom config file not found: {config_path}")
+            raise FileNotFoundError(
+                f"Custom config file not found: {config_path}"
+            )
 
         # Load custom config
         with open(config_path) as f:
@@ -84,7 +88,9 @@ def load_dataset(
 
     if not is_s3_path:
         if not os.path.exists(expanded_path):
-            raise FileNotFoundError(f"Local dataset file not found: {expanded_path}")
+            raise FileNotFoundError(
+                f"Local dataset file not found: {expanded_path}"
+            )
     else:
         # Setup cache path
         cache_path = os.path.expanduser(DATASETS_CACHE_PATH)

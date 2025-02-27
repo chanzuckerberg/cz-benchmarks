@@ -88,13 +88,16 @@ class MetadataLabelPredictionTask(BaseTask):
         Returns:
             Unmodified dataset (results stored internally)
         """
-        logger.info(f"Starting prediction task for label key: {self.label_key}")
+        logger.info(
+            f"Starting prediction task for label key: {self.label_key}"
+        )
 
         # Get embedding and labels
         embeddings = data.get_output(DataType.EMBEDDING)
         labels = data.get_input(DataType.METADATA)[self.label_key]
         logger.info(
-            f"Initial data shape: {embeddings.shape}, " f"labels shape: {labels.shape}"
+            f"Initial data shape: {embeddings.shape}, "
+            f"labels shape: {labels.shape}"
         )
 
         # Filter classes with minimum size requirement
@@ -107,7 +110,8 @@ class MetadataLabelPredictionTask(BaseTask):
         n_classes = len(labels.unique())
         target_type = "binary" if n_classes == 2 else "weighted"
         logger.info(
-            f"Found {n_classes} classes, using {target_type} " "averaging for metrics"
+            f"Found {n_classes} classes, using {target_type} "
+            "averaging for metrics"
         )
 
         scorers = {
@@ -122,7 +126,8 @@ class MetadataLabelPredictionTask(BaseTask):
             n_splits=self.n_folds, shuffle=True, random_state=self.seed
         )
         logger.info(
-            f"Using {self.n_folds}-fold cross validation " f"with seed {self.seed}"
+            f"Using {self.n_folds}-fold cross validation "
+            f"with seed {self.seed}"
         )
 
         # Create classifiers
@@ -198,14 +203,17 @@ class MetadataLabelPredictionTask(BaseTask):
         # Calculate mean metrics across folds and classifiers
         for metric in ["accuracy", "f1", "precision", "recall"]:
             metrics[f"mean_{metric}"] = results_df[metric].mean()
-            logger.info(f"Overall mean {metric}: " f"{metrics[f'mean_{metric}']:.3f}")
+            logger.info(
+                f"Overall mean {metric}: " f"{metrics[f'mean_{metric}']:.3f}"
+            )
 
             # Add per-classifier means
             for clf in results_df["classifier"].unique():
                 clf_results = results_df[results_df["classifier"] == clf]
                 metrics[f"{clf}_mean_{metric}"] = clf_results[metric].mean()
                 logger.info(
-                    f"{clf} mean {metric}: " f"{metrics[f'{clf}_mean_{metric}']:.3f}"
+                    f"{clf} mean {metric}: "
+                    f"{metrics[f'{clf}_mean_{metric}']:.3f}"
                 )
 
         # Add predictions if generated
@@ -213,7 +221,8 @@ class MetadataLabelPredictionTask(BaseTask):
             self.predictions_df = pd.DataFrame(self.predictions)
             metrics["predictions"] = self.predictions_df
             logger.info(
-                f"Generated predictions for {len(self.predictions_df)} " "samples"
+                f"Generated predictions for {len(self.predictions_df)} "
+                "samples"
             )
 
         logger.info("Metrics computation completed")
