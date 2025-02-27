@@ -2,15 +2,16 @@ import argparse
 import logging
 import pathlib
 import tempfile
+
 import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czibench.models.validators.uce import UCEValidator
-from czibench.models.base import BaseModelImplementation
-from czibench.utils import sync_s3_to_local
-from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
+from czibench.datasets.types import DataType
+from czibench.models.base import BaseModelImplementation
+from czibench.models.validators.uce import UCEValidator
+from czibench.utils import sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
@@ -47,21 +48,23 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"Valid models are: {list(config.model_config.keys())}"
         )
 
-        config.model_config[model_name].protein_embeddings_dir = (
-            f"{self.model_weights_dir}/protein_embeddings"
-        )
-        config.model_config[model_name].model_loc = (
+        config.model_config[
+            model_name
+        ].protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
+        config.model_config[
+            model_name
+        ].model_loc = (
             f"{self.model_weights_dir}/{config.model_config[model_name].model_filename}"
         )
-        config.model_config[model_name].offset_pkl_path = (
-            f"{self.model_weights_dir}/species_offsets.pkl"
-        )
-        config.model_config[model_name].token_file = (
-            f"{self.model_weights_dir}/all_tokens.torch"
-        )
-        config.model_config[model_name].spec_chrom_csv_path = (
-            f"{self.model_weights_dir}/species_chrom.csv"
-        )
+        config.model_config[
+            model_name
+        ].offset_pkl_path = f"{self.model_weights_dir}/species_offsets.pkl"
+        config.model_config[
+            model_name
+        ].token_file = f"{self.model_weights_dir}/all_tokens.torch"
+        config.model_config[
+            model_name
+        ].spec_chrom_csv_path = f"{self.model_weights_dir}/species_chrom.csv"
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(
