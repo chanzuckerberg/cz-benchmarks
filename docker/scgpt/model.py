@@ -30,7 +30,7 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
-        selected_model = config.models[args.model_name]
+        selected_model = config.models[args.model_name].strip()
         model_uri = selected_model.model_uri
 
         pathlib.Path(self.model_weights_dir).mkdir(exist_ok=True)

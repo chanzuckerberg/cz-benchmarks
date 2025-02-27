@@ -32,9 +32,11 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
         selected_model = config.models[args.model_name]
-        model_uri = selected_model.model_uri
+        model_uri = selected_model.model_uri.strip()
 
-        Path(self.model_weights_dir).mkdir(exist_ok=True)
+        # Clean path and ensure parent directories
+        model_dir = Path(self.model_weights_dir).resolve()
+        model_dir.mkdir(parents=True, exist_ok=True)
 
         bucket = model_uri.split("/")[2]
         key = "/".join(model_uri.split("/")[3:])

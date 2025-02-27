@@ -54,10 +54,11 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         args = self.parse_args()
 
         # Sync the finetuned model weights from S3 to the local model weights directory
-        model_uri = config.models[f"{args.model_name}__{args.dataset_name}"]
+        model_uri = config.models[f"{args.model_name}__{args.dataset_name}"].strip()
 
         # Create all parent directories
-        pathlib.Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
+        model_dir = pathlib.Path(self.model_weights_dir).resolve()
+        model_dir.mkdir(parents=True, exist_ok=True)
 
         bucket = model_uri.split("/")[2]
         key = "/".join(model_uri.split("/")[3:])

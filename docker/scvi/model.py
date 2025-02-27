@@ -23,12 +23,12 @@ class SCVI(SCVIValidator, BaseModelImplementation):
 
     def _download_model_weights(self, dataset: BaseDataset):
         s3 = boto3.client("s3")
-        model_dir = pathlib.Path(self.model_weights_dir)
-        model_dir.mkdir(exist_ok=True)
+        model_dir = pathlib.Path(self.model_weights_dir).resolve()  # Resolve to clean path
+        model_dir.mkdir(parents=True, exist_ok=True)
         model_filename = model_dir / "model.pt"
 
         config = OmegaConf.load("config.yaml")
-        s3_path = config[dataset.organism.name]["model_weights"]
+        s3_path = config[dataset.organism.name]["model_weights"].strip()
         bucket = s3_path.split("/")[2]
         key = "/".join(s3_path.split("/")[3:])
 
