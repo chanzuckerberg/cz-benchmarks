@@ -25,9 +25,6 @@ class BaseModelValidator(ABC):
     - Required metadata fields
     - Organism compatibility
     - Feature name formats
-
-    Class Variables:
-        dataset_type: Type of dataset this validator can handle
     """
 
     # Type annotation for class variable
