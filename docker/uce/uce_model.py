@@ -82,16 +82,13 @@ class UCE(UCEValidator, BaseModelImplementation):
             print("Directory does not exist\n")
 
         adata = dataset.adata
-        adata.var_names = pd.Index(list(adata.var["feature_name"]))
+        adata.var_names = pd.Index(list(adata.var["gene_symbol"]))
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_adata_path = f"{tmp_dir}/temp_adata.h5ad"
 
             # Save adata to tempdir
             adata.write_h5ad(temp_adata_path)
 
-            # set features to be gene symbols which is required
-            # by required by evaluate.AnndataProcessor
-            adata.var_names = adata.var["feature_name"].values
             config.model_config[model_name].adata_path = str(temp_adata_path)
             config.model_config[model_name].dir = tmp_dir
             # where the embeddings are saved
