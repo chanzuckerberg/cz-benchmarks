@@ -9,11 +9,6 @@ class GeneformerValidator(BaseSingleCellValidator):
 
     Validates datasets for use with Geneformer transformer models.
     Requires feature IDs and currently only supports human data.
-
-    Class Variables:
-        available_organisms: Only human data supported
-        required_obs_keys: No observation requirements
-        required_var_keys: Must have feature_id column for gene identifiers
     """
 
     available_organisms = [Organism.HUMAN]
