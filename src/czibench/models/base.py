@@ -98,7 +98,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
             logger.info("Model weights already downloaded...")
 
     @abstractmethod
-    def run_model(self) -> None:
+    def run_model(self, dataset: BaseDataset) -> None:
         """Implement model-specific inference logic"""
 
     @abstractmethod
@@ -147,6 +147,6 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         for i, dataset in enumerate(self.datasets):
             dataset.unload_data()
             output_path = get_numbered_path(
-                OUTPUT_DATA_PATH_DOCKER, None if i == 0 else i
+                OUTPUT_DATA_PATH_DOCKER, i
             )
             dataset.serialize(output_path)

@@ -94,14 +94,14 @@ class BatchIntegrationTask(BaseTask):
 
     def _run_task(self, data: SingleCellDataset):
         self.embedding = data.get_output(DataType.EMBEDDING)
-        self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
-        self.labels = data.get_input(DataType.METADATA)[self.label_key]
+        self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key].values
+        self.labels = data.get_input(DataType.METADATA)[self.label_key].values
 
     def _compute_metrics(self) -> Dict[str, float]:
         return {
             "entropy_per_cell": compute_entropy_per_cell(
                 self.embedding, self.batch_labels
-            ),
+            ).mean(),
             "silhouette_score": silhouette_batch(
                 self.embedding, self.labels, self.batch_labels
             ),
@@ -258,9 +258,8 @@ class MetadataLabelPredictionTask(BaseTask):
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
-    def __init__(self, label_key: str, species_key: str):
+    def __init__(self, label_key: str):
         self.label_key = label_key
-        self.species_key = species_key
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -279,9 +278,8 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self.labels = np.concatenate(
             [d.get_input(DataType.METADATA)[self.label_key] for d in data]
         )
-        self.species = np.concatenate(
-            [d.get_input(DataType.METADATA)[self.species_key] for d in data]
-        )
+        self.species = np.concatenate([[d.organism.name]*d.adata.shape[0] for d in data])
+        
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:

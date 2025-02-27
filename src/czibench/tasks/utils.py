@@ -46,7 +46,8 @@ def filter_minimum_class(
 
 
 def _safelog(a):
-    return np.log(a, out=np.zeros_like(a), where=(a != 0))
+    a_float = np.asarray(a, dtype=np.float64)
+    return np.log(a_float, out=np.zeros_like(a_float), where=(a_float != 0))
 
 
 def nearest_neighbors_hnsw(x, ef=200, M=48, n_neighbors=100):
@@ -61,10 +62,10 @@ def nearest_neighbors_hnsw(x, ef=200, M=48, n_neighbors=100):
     return idx, dist
 
 
-def compute_entropy_per_cell(embedding, batch_labels):
+def compute_entropy_per_cell(embedding: np.ndarray, batch_labels: np.ndarray):
     indices, dist = nearest_neighbors_hnsw(embedding, n_neighbors=200)
     unique_batch_labels = np.unique(batch_labels)
-    indices_batch = batch_labels.values[indices]
+    indices_batch = batch_labels[indices]
 
     label_counts_per_cell = np.vstack(
         [(indices_batch == label).sum(1) for label in unique_batch_labels]
