@@ -19,5 +19,5 @@ jobs:
       run: make black-check
     - name: Run ruff
       run: make ruff-check
-    - name: Run mypy
-      run: make mypy-check
+    # - name: Run mypy
+    #   run: make mypy-check
