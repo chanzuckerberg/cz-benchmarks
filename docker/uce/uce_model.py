@@ -29,10 +29,10 @@ class UCE(UCEValidator, BaseModelImplementation):
 
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
-        model_dir = pathlib.Path(self.model_weights_dir)
-        model_dir.mkdir(exist_ok=True)
+        model_dir = pathlib.Path(self.model_weights_dir).resolve()
+        model_dir.mkdir(parents=True, exist_ok=True)
 
-        model_uri = config.model_uri
+        model_uri = config.model_uri.strip()
         bucket = model_uri.split("/")[2]
         key = "/".join(model_uri.split("/")[3:])
 
