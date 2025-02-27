@@ -23,7 +23,9 @@ class SCVI(SCVIValidator, BaseModelImplementation):
 
     def _download_model_weights(self, dataset: BaseDataset):
         s3 = boto3.client("s3")
-        model_dir = pathlib.Path(self.model_weights_dir).resolve()  # Resolve to clean path
+        model_dir = pathlib.Path(
+            self.model_weights_dir
+        ).resolve()  # Resolve to clean path
         model_dir.mkdir(parents=True, exist_ok=True)
         model_filename = model_dir / "model.pt"
 
