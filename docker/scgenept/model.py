@@ -10,7 +10,7 @@ import logging
 from utils.data_loading import load_trained_scgenept_model
 
 from czibench.models.validators.scgenept import ScGenePTValidator
-from czibench.models.base import BaseModelImplementation
+from czibench.models.implementations.base_model_implementation import BaseModelImplementation  # noqa: E501
 from czibench.utils import sync_s3_to_local, download_s3_file
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset

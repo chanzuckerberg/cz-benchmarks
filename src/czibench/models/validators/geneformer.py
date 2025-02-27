@@ -1,7 +1,7 @@
 from typing import Set
 
 from ...datasets.types import DataType, Organism
-from ..single_cell import BaseSingleCellValidator
+from .base_single_cell_model_validator import BaseSingleCellValidator
 
 
 class GeneformerValidator(BaseSingleCellValidator):

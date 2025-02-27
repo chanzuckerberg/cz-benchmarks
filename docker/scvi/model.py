@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
 from czibench.models.validators.scvi import SCVIValidator
-from czibench.models.base import BaseModelImplementation
+from czibench.models.implementations.base_model_implementation import BaseModelImplementation  # noqa: E501
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
 
