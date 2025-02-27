@@ -35,6 +35,10 @@ class ScGenePTValidator(BaseSingleCellValidator):
         """Expected model output types.
 
         Returns:
-            Set containing perturbation predictions
+            Set containing perturbation predictions and ground truth values for
+            evaluating perturbation prediction performance
         """
-        return {DataType.PERTURBATION}
+        return {
+            DataType.PERTURBATION_PRED,
+            DataType.PERTURBATION_TRUTH,
+        }

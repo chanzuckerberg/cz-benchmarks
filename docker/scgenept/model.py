@@ -10,7 +10,9 @@ import logging
 from utils.data_loading import load_trained_scgenept_model
 
 from czibench.models.validators.scgenept import ScGenePTValidator
-from czibench.models.implementations.base_model_implementation import BaseModelImplementation  # noqa: E501
+from czibench.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)  # noqa: E501
 from czibench.utils import sync_s3_to_local, download_s3_file
 from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
@@ -139,6 +141,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_pert = args.gene_pert
         chunk_size = args.chunk_size
         all_preds = []
+
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
         for i in range(num_chunks):
             logger.info(
@@ -157,12 +160,14 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             all_preds.append(preds)
 
         dataset.set_output(
-            DataType.PERTURBATION,
-            pd.DataFrame(
-                data=np.concatenate(all_preds, axis=0),
-                index=adata.obs_names,
-                columns=gene_names,
-            ),
+            DataType.PERTURBATION_PRED,
+            {
+                gene_pert: pd.DataFrame(
+                    data=np.concatenate(all_preds, axis=0),
+                    index=adata.obs_names,
+                    columns=adata.var_names.to_list(),
+                )
+            },
         )
 
 

@@ -10,7 +10,9 @@ from omegaconf import OmegaConf
 
 from czibench.datasets.base import BaseDataset
 from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import BaseModelImplementation  # noqa: E501
+from czibench.models.implementations.base_model_implementation import (
+    BaseModelImplementation,  # noqa: E501
+)
 from czibench.models.validators.uce import UCEValidator
 from czibench.utils import sync_s3_to_local
 

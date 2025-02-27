@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.sc import SingleCellDataset
+from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
 from .base import BaseTask
 from .utils import cluster_embedding
 
@@ -41,16 +42,13 @@ class ClusteringTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         """Runs clustering on the embedding data.
 
         Performs clustering and stores results for metric computation.
 
         Args:
             data: Dataset containing embedding and ground truth labels
-
-        Returns:
-            Unmodified dataset (clustering results stored internally)
         """
         # Get anndata object and add embedding
         adata = data.adata
@@ -59,7 +57,6 @@ class ClusteringTask(BaseTask):
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         """Computes clustering evaluation metrics.
@@ -68,10 +65,10 @@ class ClusteringTask(BaseTask):
             Dictionary containing ARI and NMI scores
         """
         return {
-            "adjusted_rand_index": adjusted_rand_index(
+            "adjusted_rand_index": adjusted_rand_score(
                 self.input_labels, self.predicted_labels
             ),
-            "normalized_mutual_info": normalized_mutual_info(
+            "normalized_mutual_info": normalized_mutual_info_score(
                 self.input_labels, self.predicted_labels
             ),
         }
