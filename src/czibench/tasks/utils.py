@@ -99,6 +99,6 @@ def compute_entropy_per_cell(embedding: np.ndarray, batch_labels: np.ndarray):
     label_counts_per_cell_normed = (
         label_counts_per_cell / label_counts_per_cell.sum(1)[:, None]
     )
-    return (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(
+    return ((-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(
         1
-    ) / _safelog(len(unique_batch_labels))
+    ) / _safelog(len(unique_batch_labels))).mean()
