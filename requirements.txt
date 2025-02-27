@@ -19,3 +19,10 @@ leidenalg>=0.10.2
 hydra-core
 hnswlib>=0.8.0  # May need to also run this to resolve any ImportErrors: # cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ~/miniconda3/envs/bench/lib/
 scib-metrics==0.5.1
+
+# Local dependencies
+black==25.1.0
+flake8==7.0.0
+autoflake==2.2.1
+ruff==0.9.8
+mypy==1.9.0
