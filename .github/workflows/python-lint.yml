@@ -14,10 +14,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black==25.1.0 flake8==7.0.0 autoflake==2.2.1 ruff==0.9.8 mypy==1.9.0
+        pip install black==24.8.0 flake8==7.0.0 autoflake==2.2.1 ruff==0.9.8 mypy==1.9.0
     - name: Run black
       run: make black-check
     - name: Run ruff
       run: make ruff-check
     - name: Run mypy
-      run: make mypy
+      run: make mypy-check

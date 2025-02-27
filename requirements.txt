@@ -21,7 +21,7 @@ hnswlib>=0.8.0  # May need to also run this to resolve any ImportErrors: # cp /u
 scib-metrics==0.5.1
 
 # Local dependencies
-black==25.1.0
+black==24.8.0
 flake8==7.0.0
 autoflake==2.2.1
 ruff==0.9.8
