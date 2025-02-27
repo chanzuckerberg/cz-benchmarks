@@ -18,7 +18,8 @@ logging.basicConfig(level=logging.INFO)
 
 def set_credentials():
     """
-    Get AWS credentials by running the aws-oidc command.
+    This function is only needed for local mode running on a Mac. Not needed for local mode running on a EC2 instance.
+    Get AWS credentials by running the aws-oidc command locally and exporting the credentials to the environment.
 
     Sagemaker has an issue with trying to generate credentials with the aws-oidc command (under `credential_process` in ~/.aws/config) in the local mode.
     This is a workaround to set the credentials manually. Credentials are valid for 8 hrs.
