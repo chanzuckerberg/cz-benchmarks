@@ -10,11 +10,6 @@ class ScGenePTValidator(BaseSingleCellValidator):
     Validates datasets for use with Single-cell Gene Perturbation Transformer models.
     Requires gene symbols and currently only supports human data.
     Used for perturbation prediction tasks.
-
-    Class Variables:
-        available_organisms: Only human data supported
-        required_obs_keys: No observation requirements
-        required_var_keys: Must have gene_symbol column
     """
 
     available_organisms = [Organism.HUMAN]
