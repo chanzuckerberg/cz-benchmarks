@@ -12,7 +12,9 @@ def main():
 
     if args.model_mode == 'local':
         dataset = init_dataset("example-local", config_path="custom.yaml")
-        runner = BentomlModelRunner(model_endpoint="http://localhost:3000")
+        # Make sure `bentoml list` has at least one bento to serve.
+        # Otherwise build a bento with `bentoml build`.
+        runner = BentomlModelRunner(model_resource_url="scvi_service:latest")
     else:
         dataset = init_dataset("example-remote", config_path="custom.yaml")
         # TODO: Change the url to be the real remote url when it is ready
