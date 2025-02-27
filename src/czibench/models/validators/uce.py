@@ -10,10 +10,6 @@ class UCEValidator(BaseSingleCellValidator):
     Validates datasets for use with Universal Cell Embeddings (UCE) models.
     Requires gene symbols and supports both human and mouse data.
 
-    Class Variables:
-        available_organisms: Supported species (human and mouse)
-        required_obs_keys: No observation requirements
-        required_var_keys: Must have gene_symbol column
     """
 
     available_organisms = [
