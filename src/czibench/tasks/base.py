@@ -42,6 +42,10 @@ class BaseTask(ABC):
     @abstractmethod
     def _compute_metrics(self) -> Dict[str, float]:
         pass
+    
+    @abstractmethod
+    def run_baseline(self, data: BaseDataset): -> BaseDataset:
+        pass
 
     def run(self, data: BaseDataset) -> BaseDataset:
         self.validate(data)

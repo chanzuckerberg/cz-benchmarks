@@ -37,6 +37,9 @@ class ClusteringTask(BaseTask):
     @property
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
+    
+    def run_baseline(self, data: SingleCellDataset) -> SingleCellDataset:
+        pass
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         adata = data.adata
@@ -68,6 +71,9 @@ class EmbeddingTask(BaseTask):
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
 
+    def run_baseline(self, data: SingleCellDataset) -> SingleCellDataset:
+        pass
+
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         # passthrough, embedding already exists
         self.embedding = data.get_output(DataType.EMBEDDING)
@@ -90,6 +96,9 @@ class BatchIntegrationTask(BaseTask):
     @property
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
+
+    def run_baseline(self, data: SingleCellDataset) -> SingleCellDataset:
+        pass
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         self.embedding = data.get_output(DataType.EMBEDDING)
@@ -136,6 +145,9 @@ class MetadataLabelPredictionTask(BaseTask):
     @property
     def required_outputs(self) -> Set[DataType]:
         return {DataType.EMBEDDING}
+
+    def run_baseline(self, data: SingleCellDataset) -> SingleCellDataset:
+        pass
 
     def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
         logger.info(f"Starting prediction task for label key: {self.label_key}")
