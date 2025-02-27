@@ -21,7 +21,6 @@ if __name__ == "__main__":
     # The local endpoint URL is typically hosted on port 8080 in local mode.
     endpoint_url = "http://localhost:8080/invocations"
     
-    # Use the same payload as the remote case if appropriate.
     payload = json.dumps({
         "s3_input": "s3://generate-cross-species/datasets/test/example_small.h5ad",
         "organism": "mus_musculus",

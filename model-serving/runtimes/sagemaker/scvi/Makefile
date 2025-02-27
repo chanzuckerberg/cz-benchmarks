@@ -34,4 +34,3 @@ sagemaker-deploy-local: package
 
 sagemaker-test-local:
 	python local/test_inference.py
-
