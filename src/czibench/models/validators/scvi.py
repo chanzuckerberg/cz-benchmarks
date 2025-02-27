@@ -11,14 +11,6 @@ class SCVIValidator(BaseSingleCellValidator):
     Requires detailed metadata about the dataset, assay, and donor information.
     Supports both human and mouse data.
 
-    Class Variables:
-        available_organisms: Supports human and mouse data
-        required_obs_keys: Required metadata columns:
-            - dataset_id: Identifier for the dataset
-            - assay: Type of assay used
-            - suspension_type: Sample preparation method
-            - donor_id: Sample donor identifier
-        required_var_keys: No variable requirements
     """
 
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
