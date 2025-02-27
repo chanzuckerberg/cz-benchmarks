@@ -278,8 +278,10 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self.labels = np.concatenate(
             [d.get_input(DataType.METADATA)[self.label_key] for d in data]
         )
-        self.species = np.concatenate([[d.organism.name]*d.adata.shape[0] for d in data])
-        
+        self.species = np.concatenate(
+            [[d.organism.name] * d.adata.shape[0] for d in data]
+        )
+
         return data
 
     def _compute_metrics(self) -> Dict[str, float]:

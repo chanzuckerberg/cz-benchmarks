@@ -55,7 +55,8 @@ class ContainerRunner:
                 )
                 dataset.unload_data()
                 input_path = get_numbered_path(
-                    os.path.join(input_dir, pathlib.Path(INPUT_DATA_PATH_DOCKER).name), i
+                    os.path.join(input_dir, pathlib.Path(INPUT_DATA_PATH_DOCKER).name),
+                    i,
                 )
                 dataset.serialize(input_path)
 
@@ -84,7 +85,7 @@ class ContainerRunner:
                         os.path.join(
                             output_dir, pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name
                         ),
-                        i
+                        i,
                     )
                     dataset = BaseDataset.deserialize(output_path)
                     dataset.path = orig_paths[i]
