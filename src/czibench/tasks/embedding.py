@@ -59,8 +59,4 @@ class EmbeddingTask(BaseTask):
         Returns:
             Dictionary containing silhouette score
         """
-        return {
-            "silhouette_score": silhouette_score(
-                self.embedding, self.input_labels
-            )
-        }
+        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}

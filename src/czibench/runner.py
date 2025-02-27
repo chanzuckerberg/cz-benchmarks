@@ -1,18 +1,18 @@
 import os
-import tempfile
-import docker
 import pathlib
-from typing import Any, Union, List
+import tempfile
+from typing import Any, List, Union
+
+import docker
 
 from .constants import (
     INPUT_DATA_PATH_DOCKER,
-    OUTPUT_DATA_PATH_DOCKER,
-    MODEL_WEIGHTS_PATH_DOCKER,
-    RAW_INPUT_DIR_PATH_DOCKER,
     MODEL_WEIGHTS_CACHE_PATH,
+    MODEL_WEIGHTS_PATH_DOCKER,
+    OUTPUT_DATA_PATH_DOCKER,
+    RAW_INPUT_DIR_PATH_DOCKER,
     get_numbered_path,
 )
-
 from .datasets.base import BaseDataset
 
 
@@ -42,15 +42,11 @@ class ContainerRunner:
             os.makedirs(output_dir, exist_ok=True)
 
             input_dir_docker = str(pathlib.Path(INPUT_DATA_PATH_DOCKER).parent)
-            output_dir_docker = str(
-                pathlib.Path(OUTPUT_DATA_PATH_DOCKER).parent
-            )
+            output_dir_docker = str(pathlib.Path(OUTPUT_DATA_PATH_DOCKER).parent)
 
             # Store original paths
             orig_paths = [os.path.expanduser(d.path) for d in datasets]
-            orig_parent_dirs = {
-                str(pathlib.Path(p).parent) for p in orig_paths
-            }
+            orig_parent_dirs = {str(pathlib.Path(p).parent) for p in orig_paths}
 
             # Update dataset paths and serialize
             for i, dataset in enumerate(datasets):
@@ -59,10 +55,8 @@ class ContainerRunner:
                 )
                 dataset.unload_data()
                 input_path = get_numbered_path(
-                    os.path.join(
-                        input_dir, pathlib.Path(INPUT_DATA_PATH_DOCKER).name
-                    ),
-                    None if i == 0 else i,
+                    os.path.join(input_dir, pathlib.Path(INPUT_DATA_PATH_DOCKER).name),
+                    i,
                 )
                 dataset.serialize(input_path)
 
@@ -95,7 +89,7 @@ class ContainerRunner:
                             output_dir,
                             pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name,
                         ),
-                        None if i == 0 else i,
+                        i,
                     )
                     dataset = BaseDataset.deserialize(output_path)
                     dataset.path = orig_paths[i]
@@ -150,6 +144,4 @@ class ContainerRunner:
 
     def _get_weights_cache_path(self):
         image_name = self.image.split("/")[-1].split(":")[0]
-        return os.path.expanduser(
-            os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name)
-        )
+        return os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))

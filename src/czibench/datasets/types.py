@@ -10,6 +10,12 @@ from omegaconf import OmegaConf
 class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
     MOUSE = ("mus_musculus", "ENSMUSG")
+    TROPICAL_CLAWED_FROG = ("xenopus_tropicalis", "ENSXETG")
+    ZEBRAFISH = ("danio_rerio", "ENSDARG")
+    MOUSE_LEMUR = ("microcebus_murinus", "ENSMICG")
+    WILD_BOAR = ("sus_scrofa", "ENSSSCG")
+    CRAB_EATING_MACAQUE = ("macaca_fascicularis", "ENSMFAG")
+    RHESUS_MACAQUE = ("macaca_mulatta", "ENSMMUG")
 
     # Todo: add other organisms
     def __init__(self, name: str, prefix: str):
@@ -31,9 +37,7 @@ class Organism(Enum):
 
 
 # Register Organism resolver
-OmegaConf.register_new_resolver(
-    "organism", lambda name: getattr(Organism, name)
-)
+OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
 
 
 @dataclass(frozen=True)

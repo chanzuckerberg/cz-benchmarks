@@ -37,9 +37,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
         batch_keys = self.required_obs_keys
-        adata = filter_adata_by_hvg(
-            adata, f"hvg_names_{dataset.organism.name}.csv.gz"
-        )
+        adata = filter_adata_by_hvg(adata, f"hvg_names_{dataset.organism.name}.csv.gz")
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
@@ -47,9 +45,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         scvi.model.SCVI.prepare_query_anndata(
             adata, str(self.model_weights_dir), return_reference_var_names=True
         )
-        vae_q = scvi.model.SCVI.load_query_data(
-            adata, str(self.model_weights_dir)
-        )
+        vae_q = scvi.model.SCVI.load_query_data(adata, str(self.model_weights_dir))
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Set
+from typing import Dict, List, Set, Union
 
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
@@ -35,6 +35,11 @@ class BaseTask(ABC):
             Set of DataType enums that must be present in output data
         """
 
+    @property
+    def requires_multiple_datasets(self) -> bool:
+        """Whether this task requires multiple datasets"""
+        return False
+
     def validate(self, data: BaseDataset):
         # Check both inputs and outputs are available
         missing_inputs = self.required_inputs - set(data.inputs.keys())
@@ -45,9 +50,7 @@ class BaseTask(ABC):
             if missing_inputs:
                 error_msg.append(f"Missing required inputs: {missing_inputs}")
             if missing_outputs:
-                error_msg.append(
-                    f"Missing required outputs: {missing_outputs}"
-                )
+                error_msg.append(f"Missing required outputs: {missing_outputs}")
             raise ValueError(
                 f"Data validation failed for {self.__class__.__name__}: "
                 f"{' | '.join(error_msg)}"
@@ -73,27 +76,45 @@ class BaseTask(ABC):
     def _compute_metrics(self) -> Dict[str, float]:
         """Compute evaluation metrics for the task.
 
-        Uses results stored during _run_task to compute metrics.
-
         Returns:
-            Dictionary mapping metric names to values
+            Dictionary mapping metric names to their float values
         """
 
-    def run(self, data: BaseDataset) -> Dict[str, float]:
-        """Run the full task pipeline.
-
-        1. Validates input/output data requirements
-        2. Runs the task computation
-        3. Computes evaluation metrics
+    def run(
+        self, data: Union[BaseDataset, List[BaseDataset]]
+    ) -> Union[Dict[str, float], List[Dict[str, float]]]:
+        """Run the task on input data and compute metrics.
 
         Args:
-            data: Dataset containing required input and output data
+            data: Single dataset or list of datasets to evaluate. Must contain
+                required input and output data types.
 
         Returns:
-            Dictionary containing computed metrics
-        """
-        self.validate(data)
+            For single dataset: Dictionary of metric name to value
+            For multiple datasets: List of metric dictionaries, one per dataset
 
-        data = self._run_task(data)
-        results = self._compute_metrics()
-        return data, results
+        Raises:
+            ValueError: If data is invalid type or missing required fields
+            ValueError: If task requires multiple datasets but single dataset provided
+        """
+        if isinstance(data, BaseDataset):
+            self.validate(data)
+        elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):
+            for d in data:
+                self.validate(d)
+        else:
+            raise ValueError(f"Invalid data type: {type(data)}")
+
+        if self.requires_multiple_datasets and not isinstance(data, list):
+            raise ValueError("This task requires a list of datasets")
+
+        if isinstance(data, list) and not self.requires_multiple_datasets:
+            all_metrics = []
+            for d in data:
+                self._run_task(d)
+                metrics = self._compute_metrics()
+                all_metrics.append(metrics)
+            return all_metrics
+        else:
+            self._run_task(data)
+            return self._compute_metrics()

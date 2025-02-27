@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import pathlib
 import tempfile
 
@@ -72,9 +71,7 @@ class UCE(UCEValidator, BaseModelImplementation):
         protein_embeddings_source = pathlib.Path(
             config.model_config[model_name].protein_embeddings_dir
         )
-        protein_embeddings_target = pathlib.Path(
-            "model_files/protein_embeddings"
-        )
+        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
         if protein_embeddings_target.exists():
             protein_embeddings_target.unlink()
@@ -88,29 +85,25 @@ class UCE(UCEValidator, BaseModelImplementation):
             print("Directory does not exist\n")
 
         adata = dataset.adata
-        adata.var_names = pd.Index(list(adata.var["feature_name"]))
-        tmp_dir = pathlib.Path(tempfile.gettempdir()) / "temp_adata"
-        os.makedirs(tmp_dir, exist_ok=True)
-        temp_adata_path = tmp_dir / "temp_adata.h5ad"
+        adata.var_names = pd.Index(list(adata.var["gene_symbol"]))
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_adata_path = f"{tmp_dir}/temp_adata.h5ad"
 
-        # Save adata to tempdir
-        adata.write_h5ad(temp_adata_path)
+            # Save adata to tempdir
+            adata.write_h5ad(temp_adata_path)
 
-        # set features to be gene symbols which is required
-        # by required by evaluate.AnndataProcessor
-        adata.var_names = adata.var["feature_name"].values
-        config.model_config[model_name].adata_path = str(temp_adata_path)
-
-        # where the embeddings are saved
-        accelerator = Accelerator(project_dir=".")
-        config_dict = OmegaConf.to_container(
-            config.model_config[model_name], resolve=True
-        )
-        args = argparse.Namespace(**config_dict)
-        processor = AnndataProcessor(args, accelerator)
-        processor.preprocess_anndata()
-        processor.generate_idxs()
-        embedding_adata = processor.run_evaluation()
+            config.model_config[model_name].adata_path = str(temp_adata_path)
+            config.model_config[model_name].dir = tmp_dir
+            # where the embeddings are saved
+            accelerator = Accelerator(project_dir=tmp_dir)
+            config_dict = OmegaConf.to_container(
+                config.model_config[model_name], resolve=True
+            )
+            args = argparse.Namespace(**config_dict)
+            processor = AnndataProcessor(args, accelerator)
+            processor.preprocess_anndata()
+            processor.generate_idxs()
+            embedding_adata = processor.run_evaluation()
         dataset.set_output(DataType.EMBEDDING, embedding_adata.obsm["X_uce"])
 
 

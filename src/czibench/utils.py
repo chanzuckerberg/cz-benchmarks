@@ -77,6 +77,4 @@ def sync_s3_to_local(bucket, prefix, local_dir):
                 )
                 if s3_time > local_time:
                     s3.download_file(bucket, key, local_file_path)
-                    logger.info(
-                        f"Updated: {relative_key} at {local_file_path}"
-                    )
+                    logger.info(f"Updated: {relative_key} at {local_file_path}")

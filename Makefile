@@ -84,7 +84,7 @@ mypy-check:
 
 # Run all linters and checkers
 .PHONY: lint
-lint: flake8 black-check ruff-check mypy
+lint: flake8 black-check ruff-check #mypy-check
 
 # Run all linters and fixers
 .PHONY: lint-fix

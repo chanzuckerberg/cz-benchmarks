@@ -136,7 +136,7 @@ def compute_entropy_per_cell(
     """
     indices, _ = nearest_neighbors_hnsw(embedding, n_neighbors=200)
     unique_batch_labels = np.unique(batch_labels)
-    indices_batch = batch_labels.values[indices]
+    indices_batch = batch_labels[indices]
 
     label_counts_per_cell = np.vstack(
         [(indices_batch == label).sum(1) for label in unique_batch_labels]
@@ -145,5 +145,6 @@ def compute_entropy_per_cell(
         label_counts_per_cell / label_counts_per_cell.sum(1)[:, None]
     )
     return (
-        -label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)
-    ).sum(1) / _safelog(len(unique_batch_labels))
+        (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(1)
+        / _safelog(len(unique_batch_labels))
+    ).mean()

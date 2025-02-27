@@ -74,12 +74,8 @@ class PerturbationTask(BaseTask):
             if key in self.perturbation_truth.keys():
                 metrics[key] = {}
 
-                avg_perturbation_pred = self.perturbation_pred[key].mean(
-                    axis=0
-                )
-                avg_perturbation_truth = self.perturbation_truth[key].mean(
-                    axis=0
-                )
+                avg_perturbation_pred = self.perturbation_pred[key].mean(axis=0)
+                avg_perturbation_truth = self.perturbation_truth[key].mean(axis=0)
 
                 intersecting_genes = list(
                     set(avg_perturbation_pred.index)

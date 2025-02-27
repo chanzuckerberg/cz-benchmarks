@@ -109,14 +109,10 @@ class BaseDataset(ABC):
 
         """Validate that all inputs and outputs match their expected types"""
         for data_type, value in self.inputs.items():
-            self._validate_type(
-                value, data_type.dtype, f"Input {data_type.name}"
-            )
+            self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
 
         for data_type, value in self.outputs.items():
-            self._validate_type(
-                value, data_type.dtype, f"Output {data_type.name}"
-            )
+            self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
 
         self._validate()
 

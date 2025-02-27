@@ -27,9 +27,7 @@ def load_dataloader(
     pert_data = PertData(f"{data_dir}/")
     pert_data.load(data_name=dataset_name)
     pert_data.prepare_split(split=split, seed=1)
-    pert_data.get_dataloader(
-        batch_size=batch_size, test_batch_size=val_batch_size
-    )
+    pert_data.get_dataloader(batch_size=batch_size, test_batch_size=val_batch_size)
     return pert_data
 
 
@@ -66,8 +64,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
         logger.info(
-            f"Downloaded model weights from {model_uri} to "
-            f"{self.model_weights_dir}"
+            f"Downloaded model weights from {model_uri} to " f"{self.model_weights_dir}"
         )
 
         # Copy the vocab.json file from S3 to local model weights directory
@@ -75,9 +72,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         vocab_key = "/".join(vocab_uri.split("/")[3:])
 
         vocab_dir = (
-            pathlib.Path(self.model_weights_dir).parent.parent
-            / "pretrained"
-            / "scgpt"
+            pathlib.Path(self.model_weights_dir).parent.parent / "pretrained" / "scgpt"
         )
         vocab_dir.mkdir(parents=True, exist_ok=True)
         vocab_file = vocab_dir / "vocab.json"
@@ -89,8 +84,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_embeddings_uri = config.models["gene_embeddings_uri"]
         gene_embeddings_key = "/".join(gene_embeddings_uri.split("/")[3:])
         gene_embeddings_dir = (
-            pathlib.Path(self.model_weights_dir).parent.parent
-            / "gene_embeddings"
+            pathlib.Path(self.model_weights_dir).parent.parent / "gene_embeddings"
         )
         gene_embeddings_dir.mkdir(parents=True, exist_ok=True)
         sync_s3_to_local(bucket, gene_embeddings_key, str(gene_embeddings_dir))
@@ -145,9 +139,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
         for i in range(num_chunks):
-            logger.info(
-                f"Predicting perturbations for chunk {i + 1} of {num_chunks}"
-            )
+            logger.info(f"Predicting perturbations for chunk {i + 1} of {num_chunks}")
             chunk = adata[i * chunk_size : (i + 1) * chunk_size]
             preds = model.pred_perturb_from_ctrl(
                 chunk,

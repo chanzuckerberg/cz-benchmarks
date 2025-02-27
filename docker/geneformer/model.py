@@ -64,9 +64,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
             gene_median_file=str(Path(token_config.gene_median_file)),
-            token_dictionary_file=str(
-                Path(token_config.token_dictionary_file)
-            ),
+            token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             gene_mapping_file=str(Path(token_config.ensembl_mapping_file)),
             special_token=(seq_len != 2048),
             model_input_size=seq_len,
@@ -77,9 +75,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         dataset_dir.mkdir(exist_ok=True)
 
         # Tokenize data
-        tk.tokenize_data(
-            ".", str(dataset_dir), "tokenized_dataset", file_format="h5ad"
-        )
+        tk.tokenize_data(".", str(dataset_dir), "tokenized_dataset", file_format="h5ad")
 
         # Extract embeddings with cell_idx label
         embex = EmbExtractor(
@@ -88,9 +84,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             emb_mode="cell",
             forward_batch_size=32,
             nproc=4,
-            token_dictionary_file=str(
-                Path(token_config.token_dictionary_file)
-            ),
+            token_dictionary_file=str(Path(token_config.token_dictionary_file)),
             max_ncells=None,
             emb_label=["cell_idx"],
         )
