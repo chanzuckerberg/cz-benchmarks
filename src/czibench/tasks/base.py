@@ -48,7 +48,9 @@ class BaseTask(ABC):
     def _compute_metrics(self) -> Dict[str, float]:
         pass
 
-    def run(self, data: Union[BaseDataset, List[BaseDataset]]) -> Dict[str, float]:
+    def run(
+        self, data: Union[BaseDataset, List[BaseDataset]]
+    ) -> Union[Dict[str, float], List[Dict[str, float]]]:
         if isinstance(data, BaseDataset):
             self.validate(data)
         elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):
