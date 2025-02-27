@@ -192,7 +192,7 @@ dataset = SingleCellDataset(
 from czibench.datasets.sc import SingleCellDataset
 from czibench.datasets.types import Organism
 from czibench.runner import ContainerRunner
-from czibench.tasks.sc import ClusteringTask, EmbeddingTask
+from czibench.tasks import ClusteringTask, EmbeddingTask
 
 dataset = SingleCellDataset(
     "example.h5ad",
