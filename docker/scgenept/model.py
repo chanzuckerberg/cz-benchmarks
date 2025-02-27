@@ -1,21 +1,22 @@
 import argparse
-import pathlib
-import numpy as np
-from omegaconf import OmegaConf
-from glob import glob
-import torch
-import pandas as pd
-from gears import PertData
 import logging
+import pathlib
+from glob import glob
+
+import numpy as np
+import pandas as pd
+import torch
+from gears import PertData
+from omegaconf import OmegaConf
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.models.validators.scgenept import ScGenePTValidator
+from czibench.datasets.base import BaseDataset
+from czibench.datasets.types import DataType
 from czibench.models.implementations.base_model_implementation import (
     BaseModelImplementation,
-)  # noqa: E501
-from czibench.utils import sync_s3_to_local, download_s3_file
-from czibench.datasets.types import DataType
-from czibench.datasets.base import BaseDataset
+)
+from czibench.models.validators.scgenept import ScGenePTValidator
+from czibench.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
