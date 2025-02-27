@@ -1,9 +1,9 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.sc import SingleCellDataset
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from ..metrics.embedding import silhouette_score
+from sklearn.metrics import silhouette_score
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -40,21 +40,17 @@ class EmbeddingTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         """Runs the embedding evaluation task.
 
         Gets embedding coordinates and labels from the dataset for metric computation.
 
         Args:
             data: Dataset containing embedding and labels
-
-        Returns:
-            Unmodified dataset (this task only computes metrics)
         """
         # Store embedding and labels for metric computation
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         """Computes embedding quality metrics.

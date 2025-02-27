@@ -15,7 +15,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets.sc import SingleCellDataset
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
 from .base import BaseTask
 from .utils import filter_minimum_class
@@ -76,7 +76,7 @@ class MetadataLabelPredictionTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
@@ -84,9 +84,6 @@ class MetadataLabelPredictionTask(BaseTask):
 
         Args:
             data: Dataset containing embedding and ground truth labels
-
-        Returns:
-            Unmodified dataset (results stored internally)
         """
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
@@ -180,7 +177,6 @@ class MetadataLabelPredictionTask(BaseTask):
                         )
 
         logger.info("Completed cross-validation for all classifiers")
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
         """Computes classification metrics across all folds.
