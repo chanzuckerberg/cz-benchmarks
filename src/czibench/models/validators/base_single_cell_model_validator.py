@@ -12,12 +12,6 @@ class BaseSingleCellValidator(BaseModelValidator):
     - Organism compatibility checking
     - Required metadata validation
     - AnnData observation and variable key validation
-
-    Class Variables:
-        dataset_type: Type of dataset this validator handles
-        available_organisms: List of supported organisms
-        required_obs_keys: Required columns in adata.obs
-        required_var_keys: Required columns in adata.var
     """
 
     dataset_type = SingleCellDataset
