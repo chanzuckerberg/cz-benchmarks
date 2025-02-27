@@ -13,6 +13,7 @@ from czibench.models.validators.scgenept import ScGenePTValidator
 from czibench.models.base import BaseModelImplementation
 from czibench.utils import sync_s3_to_local, download_s3_file
 from czibench.datasets.types import DataType
+from czibench.datasets.base import BaseDataset
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         args = parser.parse_args()
         return args
 
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         assert (
@@ -45,7 +46,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         ), f"Model {args.model_name}__{args.dataset_name} not found in config"
         return f"{args.model_name}/{args.dataset_name}"
 
-    def _download_model_weights(self):
+    def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
 
@@ -89,8 +90,8 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             f"to {gene_embeddings_dir}"
         )
 
-    def run_model(self):
-        adata = self.data.adata
+    def run_model(self, dataset: BaseDataset):
+        adata = dataset.adata
         adata.var["gene_name"] = adata.var["gene_symbol"]
 
         args = self.parse_args()
@@ -128,6 +129,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_pert = args.gene_pert
         chunk_size = args.chunk_size
         all_preds = []
+
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
         for i in range(num_chunks):
             logger.info(f"Predicting perturbations for chunk {i + 1} of {num_chunks}")
@@ -143,13 +145,15 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             ).squeeze()
             all_preds.append(preds)
 
-        self.set_output(
-            DataType.PERTURBATION,
-            pd.DataFrame(
-                data=np.concatenate(all_preds, axis=0),
-                index=adata.obs_names,
-                columns=gene_names,
-            ),
+        dataset.set_output(
+            DataType.PERTURBATION_PRED,
+            {
+                gene_pert: pd.DataFrame(
+                    data=np.concatenate(all_preds, axis=0),
+                    index=adata.obs_names,
+                    columns=adata.var_names.to_list(),
+                )
+            },
         )
 
 

@@ -1,15 +1,19 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import ClassVar, Type, Set
+from typing import ClassVar, Type, Set, List
+import glob
+import pathlib
 
 from ..constants import (
     INPUT_DATA_PATH_DOCKER,
     MODEL_WEIGHTS_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
+    get_numbered_path,
+    get_base_name,
 )
 from ..datasets.base import BaseDataset
-from ..datasets.types import DataType, DataValue
+from ..datasets.types import DataType
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -64,11 +68,11 @@ class BaseModelValidator(ABC):
 
 
 class BaseModelImplementation(BaseModelValidator, ABC):
-    data: BaseDataset
+    datasets: List[BaseDataset]
     model_weights_dir: str
 
     @abstractmethod
-    def get_model_weights_subdir(self) -> str:
+    def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         """Return the subdirectory (if applicable) where this model variant's
         weights should be stored.
 
@@ -76,25 +80,25 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """
 
     @abstractmethod
-    def _download_model_weights(self):
+    def _download_model_weights(self, dataset: BaseDataset):
         pass
 
-    def download_model_weights(self) -> None:
+    def download_model_weights(self, dataset: BaseDataset) -> None:
         self.model_weights_dir = (
-            f"{MODEL_WEIGHTS_PATH_DOCKER}/{self.get_model_weights_subdir()}"
+            f"{MODEL_WEIGHTS_PATH_DOCKER}/{self.get_model_weights_subdir(dataset)}"
         )
 
         if not os.path.exists(self.model_weights_dir) or not any(
             os.listdir(self.model_weights_dir)
         ):
             logger.info("Downloading model weights...")
-            self._download_model_weights()
+            self._download_model_weights(dataset)
             logger.info("Model weights downloaded successfully")
         else:
             logger.info("Model weights already downloaded...")
 
     @abstractmethod
-    def run_model(self) -> None:
+    def run_model(self, dataset: BaseDataset) -> None:
         """Implement model-specific inference logic"""
 
     @abstractmethod
@@ -102,31 +106,45 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """Return parsed arguments for the model."""
 
     def run(self):
-        self.data = self.dataset_type.deserialize(INPUT_DATA_PATH_DOCKER)
+        # Find all input datasets
+        input_dir = pathlib.Path(INPUT_DATA_PATH_DOCKER).parent
+        base_pattern = get_base_name(INPUT_DATA_PATH_DOCKER)
+        input_files = sorted(glob.glob(os.path.join(input_dir, base_pattern)))
+
+        if not input_files:
+            raise FileNotFoundError("No input datasets found")
+
+        # Ensure base file comes first if it exists
+        if INPUT_DATA_PATH_DOCKER in input_files:
+            input_files.remove(INPUT_DATA_PATH_DOCKER)
+            input_files = [INPUT_DATA_PATH_DOCKER] + input_files
+
+        # Load all datasets
+        self.datasets = [
+            self.dataset_type.deserialize(input_file) for input_file in input_files
+        ]
 
         logger.info("Loading data...")
-        self.data.load_data()
+        for dataset in self.datasets:
+            dataset.load_data()
         logger.info("Data loaded successfully")
 
         logger.info("Validating data...")
-        self.data.validate()
-        self.validate_dataset(self.data)
+        for dataset in self.datasets:
+            dataset.validate()
+            self.validate_dataset(dataset)
         logger.info("Data validated successfully")
 
-        self.download_model_weights()
+        for dataset in self.datasets:
+            self.download_model_weights(dataset)
 
         logger.info("Running model...")
-        self.run_model()
+        for dataset in self.datasets:
+            self.run_model(dataset)
         logger.info("Model ran successfully")
 
-        self.data.unload_data()
-        self.data.serialize(OUTPUT_DATA_PATH_DOCKER)
-
-    def set_output(self, data_type: DataType, value: DataValue) -> None:
-        """Safely set an output with type checking"""
-        if not isinstance(value, data_type.dtype):
-            raise TypeError(
-                f"Output {data_type.name} has incorrect type: "
-                f"expected {data_type.dtype}, got {type(value)}"
-            )
-        self.data.set_output(data_type, value)
+        # Unload and serialize all datasets
+        for i, dataset in enumerate(self.datasets):
+            dataset.unload_data()
+            output_path = get_numbered_path(OUTPUT_DATA_PATH_DOCKER, i)
+            dataset.serialize(output_path)
