@@ -1,29 +1,34 @@
-.PHONY: all scvi uce scgpt clean check-tools black black-check black-fix flake8 autoflake lint lint-fix install-tools rebuild
-
 # Default target
+.PHONY: all
 all: scvi uce scgpt scgenept
 
 # Build the scvi image
+.PHONY: scvi
 scvi:
 	docker build -t czibench-scvi:latest -f docker/scvi/Dockerfile .
 
 # Build the uce image
+.PHONY: uce
 uce:
 	docker build -t czibench-uce:latest -f docker/uce/Dockerfile .
 
 # Build the scgpt image
+.PHONY: scgpt
 scgpt:
 	docker build -t czibench-scgpt:latest -f docker/scgpt/Dockerfile .
 
 # Build the scgenept image
+.PHONY: scgenept
 scgenept:
 	docker build -t czibench-scgenept:latest -f docker/scgenept/Dockerfile .
 
 # Build the geneformer image
+.PHONY: geneformer
 geneformer:
 	docker build -t czibench-geneformer:latest -f docker/geneformer/Dockerfile .
 
 # Clean up images
+.PHONY: clean
 clean:
 	docker rmi czibench-scvi:latest || true
 	docker rmi czibench-uce:latest || true
@@ -32,41 +37,61 @@ clean:
   docker rmi czibench-geneformer:latest || true
 
 # Helper target to rebuild everything from scratch
+.PHONY: rebuild
 rebuild: clean all
 
-# Ensure all required tools are installed
-check-tools:
-	@command -v black >/dev/null 2>&1 || { echo >&2 "black not found, installing..."; pip install black; }
-	@command -v flake8 >/dev/null 2>&1 || { echo >&2 "flake8 not found, installing..."; pip install flake8; }
-	@command -v autoflake >/dev/null 2>&1 || { echo >&2 "autoflake not found, installing..."; pip install autoflake; }
-
 # Check formatting with black
-black-check: check-tools
+.PHONY: black-check
+black-check:
 	# Check if code conforms to Black's formatting style
 	black --check .
 
 # Fix formatting with black
-black-fix: check-tools
+.PHONY: black-fix
+black-fix:
 	# Automatically format code using Black
 	black .
 
 # Run flake8 to lint the code
-flake8: check-tools
+.PHONY: flake8
+flake8:
 	# Lint the code using Flake8
 	flake8
 
 # Apply fixes for unused imports and variables
-autoflake: check-tools
+.PHONY: autoflake
+autoflake:
 	# Automatically remove unused imports and variables
 	autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive .
 
+# Run ruff to check the code
+.PHONY: ruff-check
+ruff-check:
+	# Check code with Ruff
+	ruff check .
+
+# Run ruff with auto-fix
+.PHONY: ruff-fix
+ruff-fix:
+	# Auto-fix code with Ruff
+	ruff check . --fix
+
+# Run mypy type checking
+.PHONY: mypy-check
+mypy-check:
+	# Type check code with mypy
+	mypy .
+
 # Run all linters and checkers
-lint: flake8 black-check
+.PHONY: lint
+lint: flake8 black-check ruff-check #mypy-check
 
 # Run all linters and fixers
-lint-fix: autoflake black-fix
+.PHONY: lint-fix
+lint-fix: autoflake black-fix ruff-fix
 
 # Install tools explicitly
+.PHONY: install-tools
 install-tools:
 	# Install all required linting and formatting tools
 	pip install black flake8 autoflake

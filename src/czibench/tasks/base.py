@@ -1,21 +1,39 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Set, Union, List
+from typing import Dict, List, Set, Union
+
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
 
 
 class BaseTask(ABC):
-    """Base class for all tasks"""
+    """Abstract base class for all benchmark tasks.
+
+    Defines the interface that all tasks must implement. Tasks are responsible for:
+    1. Declaring their required input/output data types
+    2. Running task-specific computations
+    3. Computing evaluation metrics
+
+    Tasks should store any intermediate results as instance variables
+    to be used in metric computation.
+    """
 
     @property
     @abstractmethod
     def required_inputs(self) -> Set[DataType]:
-        """Specify what input types this task requires"""
+        """Required input data types this task requires.
+
+        Returns:
+            Set of DataType enums that must be present in input data
+        """
 
     @property
     @abstractmethod
     def required_outputs(self) -> Set[DataType]:
-        """Specify what output types from models this task requires"""
+        """Required output types from models this task requires
+
+        Returns:
+            Set of DataType enums that must be present in output data
+        """
 
     @property
     def requires_multiple_datasets(self) -> bool:
@@ -41,16 +59,44 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
-    def _run_task(self, data: Union[BaseDataset, List[BaseDataset]]):
-        pass
+    def _run_task(self, data: BaseDataset) -> BaseDataset:
+        """Run the task's core computation.
+
+        Should store any intermediate results needed for metric computation
+        as instance variables.
+
+        Args:
+            data: Dataset containing required input and output data
+
+        Returns:
+            Modified or unmodified dataset
+        """
 
     @abstractmethod
     def _compute_metrics(self) -> Dict[str, float]:
-        pass
+        """Compute evaluation metrics for the task.
+
+        Returns:
+            Dictionary mapping metric names to their float values
+        """
 
     def run(
         self, data: Union[BaseDataset, List[BaseDataset]]
     ) -> Union[Dict[str, float], List[Dict[str, float]]]:
+        """Run the task on input data and compute metrics.
+
+        Args:
+            data: Single dataset or list of datasets to evaluate. Must contain
+                required input and output data types.
+
+        Returns:
+            For single dataset: Dictionary of metric name to value
+            For multiple datasets: List of metric dictionaries, one per dataset
+
+        Raises:
+            ValueError: If data is invalid type or missing required fields
+            ValueError: If task requires multiple datasets but single dataset provided
+        """
         if isinstance(data, BaseDataset):
             self.validate(data)
         elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):

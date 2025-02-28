@@ -30,7 +30,9 @@ def cluster_embedding(adata: AnnData, obsm_key: str = "emb") -> List[int]:
 
 
 def filter_minimum_class(
-    features: np.ndarray, labels: np.ndarray | pd.Series, min_class_size: int = 10
+    features: np.ndarray,
+    labels: np.ndarray | pd.Series,
+    min_class_size: int = 10,
 ) -> tuple[np.ndarray, np.ndarray | pd.Series]:
     """Filter data to remove classes with too few samples.
 
@@ -71,25 +73,69 @@ def filter_minimum_class(
     return features_filtered, pd.Categorical(labels_filtered)
 
 
-def _safelog(a):
-    a_float = np.asarray(a, dtype=np.float64)
-    return np.log(a_float, out=np.zeros_like(a_float), where=(a_float != 0))
+def _safelog(a: np.ndarray) -> np.ndarray:
+    """Compute safe log that handles zeros by returning 0.
+
+    Args:
+        a: Input array
+
+    Returns:
+        Array with log values, with 0s where input was 0
+    """
+    a = a.astype("float")
+    return np.log(a, out=np.zeros_like(a), where=(a != 0))
 
 
-def nearest_neighbors_hnsw(x, ef=200, M=48, n_neighbors=100):
+def nearest_neighbors_hnsw(
+    data: np.ndarray,
+    expansion_factor: int = 200,
+    max_links: int = 48,
+    n_neighbors: int = 100,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Find nearest neighbors using HNSW algorithm.
+
+    Args:
+        data: Input data matrix of shape (n_samples, n_features)
+        expansion_factor: Size of dynamic candidate list for search
+        max_links: Number of bi-directional links created for every new element
+        n_neighbors: Number of nearest neighbors to find
+
+    Returns:
+        Tuple containing:
+            - Indices array of shape (n_samples, n_neighbors)
+            - Distances array of shape (n_samples, n_neighbors)
+    """
     import hnswlib
 
-    labels = np.arange(x.shape[0])
-    p = hnswlib.Index(space="l2", dim=x.shape[1])
-    p.init_index(max_elements=x.shape[0], ef_construction=ef, M=M)
-    p.add_items(x, labels)
-    p.set_ef(ef)
-    idx, dist = p.knn_query(x, k=n_neighbors)
-    return idx, dist
+    sample_indices = np.arange(data.shape[0])
+    index = hnswlib.Index(space="l2", dim=data.shape[1])
+    index.init_index(
+        max_elements=data.shape[0],
+        ef_construction=expansion_factor,
+        M=max_links,
+    )
+    index.add_items(data, sample_indices)
+    index.set_ef(expansion_factor)
+    neighbor_indices, distances = index.knn_query(data, k=n_neighbors)
+    return neighbor_indices, distances
 
 
-def compute_entropy_per_cell(embedding: np.ndarray, batch_labels: np.ndarray):
-    indices, dist = nearest_neighbors_hnsw(embedding, n_neighbors=200)
+def compute_entropy_per_cell(
+    embedding: np.ndarray, batch_labels: pd.Series
+) -> np.ndarray:
+    """Compute entropy of batch labels in local neighborhoods.
+
+    For each cell, finds nearest neighbors and computes entropy of
+    batch label distribution in that neighborhood.
+
+    Args:
+        embedding: Cell embedding matrix of shape (n_cells, n_features)
+        batch_labels: Series containing batch labels for each cell
+
+    Returns:
+        Array of entropy values for each cell, normalized by log of number of batches
+    """
+    indices, _ = nearest_neighbors_hnsw(embedding, n_neighbors=200)
     unique_batch_labels = np.unique(batch_labels)
     indices_batch = batch_labels[indices]
 
