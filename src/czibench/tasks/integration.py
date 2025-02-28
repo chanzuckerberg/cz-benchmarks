@@ -1,10 +1,11 @@
-from typing import Dict, Set
 import logging
-from .base import BaseTask
+from typing import Dict, Set
+
+
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from .utils import compute_entropy_per_cell
-from scib_metrics import silhouette_batch
+from ..metrics import MetricType, metrics
+from .base import BaseTask
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +62,20 @@ class BatchIntegrationTask(BaseTask):
         Returns:
             Dictionary containing entropy per cell and batch-aware silhouette scores
         """
+
+        entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
+        silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+
         return {
-            "entropy_per_cell": compute_entropy_per_cell(
-                self.embedding, self.batch_labels
+            entropy_per_cell_metric.value: metrics.compute(
+                entropy_per_cell_metric,
+                embedding=self.embedding,
+                batch_labels=self.batch_labels,
             ),
-            "silhouette_score": silhouette_batch(
-                self.embedding, self.labels, self.batch_labels
+            silhouette_batch_metric.value: metrics.compute(
+                silhouette_batch_metric,
+                embedding=self.embedding,
+                labels=self.labels,
+                batch_labels=self.batch_labels,
             ),
         }

@@ -3,7 +3,7 @@ from typing import Dict, Set
 
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+from ..metrics import MetricType, metrics
 from .base import BaseTask
 from .utils import cluster_embedding
 
@@ -64,10 +64,13 @@ class ClusteringTask(BaseTask):
             Dictionary containing ARI and NMI scores
         """
         return {
-            "adjusted_rand_index": adjusted_rand_score(
-                self.input_labels, self.predicted_labels
-            ),
-            "normalized_mutual_info": normalized_mutual_info_score(
-                self.input_labels, self.predicted_labels
-            ),
+            metric_type.value: metrics.compute(
+                metric_type,
+                labels_true=self.input_labels,
+                labels_pred=self.predicted_labels,
+            )
+            for metric_type in [
+                MetricType.ADJUSTED_RAND_INDEX,
+                MetricType.NORMALIZED_MUTUAL_INFO,
+            ]
         }

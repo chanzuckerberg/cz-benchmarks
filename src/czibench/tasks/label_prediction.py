@@ -18,6 +18,7 @@ from sklearn.preprocessing import StandardScaler
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
 from .base import BaseTask
+from .metrics import MetricType, metrics
 from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
@@ -189,28 +190,48 @@ class MetadataLabelPredictionTask(BaseTask):
         """
         logger.info("Computing final metrics...")
         results_df = pd.DataFrame(self.results)
-        metrics = {}
+        metrics_dict = {}
 
-        # Calculate mean metrics across folds and classifiers
-        for metric in ["accuracy", "f1", "precision", "recall"]:
-            metrics[f"mean_{metric}"] = results_df[metric].mean()
-            logger.info(f"Overall mean {metric}: " f"{metrics[f'mean_{metric}']:.3f}")
+        # Calculate overall metrics across all classifiers
+        metrics_dict["mean_accuracy"] = metrics.compute(
+            MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
+        )
+        metrics_dict["mean_f1"] = metrics.compute(
+            MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
+        )
+        metrics_dict["mean_precision"] = metrics.compute(
+            MetricType.MEAN_FOLD_PRECISION, results_df=results_df
+        )
+        metrics_dict["mean_recall"] = metrics.compute(
+            MetricType.MEAN_FOLD_RECALL, results_df=results_df
+        )
 
-            # Add per-classifier means
-            for clf in results_df["classifier"].unique():
-                clf_results = results_df[results_df["classifier"] == clf]
-                metrics[f"{clf}_mean_{metric}"] = clf_results[metric].mean()
-                logger.info(
-                    f"{clf} mean {metric}: " f"{metrics[f'{clf}_mean_{metric}']:.3f}"
-                )
+        # Calculate per-classifier metrics
+        for clf in results_df["classifier"].unique():
+            # Compute accuracy
+            key = f"{clf}_mean_accuracy"
+            metrics_dict[key] = metrics.compute(
+                MetricType.MEAN_FOLD_ACCURACY, results_df=results_df, classifier=clf
+            )
+            # Compute F1
+            key = f"{clf}_mean_f1"
+            metrics_dict[key] = metrics.compute(
+                MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df, classifier=clf
+            )
+            # Compute precision
+            key = f"{clf}_mean_precision"
+            metrics_dict[key] = metrics.compute(
+                MetricType.MEAN_FOLD_PRECISION, results_df=results_df, classifier=clf
+            )
+            # Compute recall
+            key = f"{clf}_mean_recall"
+            metrics_dict[key] = metrics.compute(
+                MetricType.MEAN_FOLD_RECALL, results_df=results_df, classifier=clf
+            )
 
         # Add predictions if generated
         if self.generate_predictions:
             self.predictions_df = pd.DataFrame(self.predictions)
-            metrics["predictions"] = self.predictions_df
-            logger.info(
-                f"Generated predictions for {len(self.predictions_df)} " "samples"
-            )
+            metrics_dict["predictions"] = self.predictions_df
 
-        logger.info("Metrics computation completed")
-        return metrics
+        return metrics_dict
