@@ -9,7 +9,9 @@ from omegaconf import OmegaConf
 
 from czibench.datasets.base import BaseDataset
 from czibench.datasets.types import DataType
-from czibench.models.base import BaseModelImplementation
+from czibench.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
 from czibench.models.validators.uce import UCEValidator
 from czibench.utils import sync_s3_to_local
 
@@ -52,7 +54,8 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"{self.model_weights_dir}/protein_embeddings"
         )
         config.model_config[model_name].model_loc = (
-            f"{self.model_weights_dir}/{config.model_config[model_name].model_filename}"
+            f"{self.model_weights_dir}/"
+            f"{config.model_config[model_name].model_filename}"
         )
         config.model_config[model_name].offset_pkl_path = (
             f"{self.model_weights_dir}/species_offsets.pkl"

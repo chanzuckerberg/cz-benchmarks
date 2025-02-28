@@ -4,12 +4,12 @@ repos:
   - id: lint
     name: Run lint checks
     entry: make lint
-    language: system
+    language: python
     types: [python]
     pass_filenames: false
   - id: lint-fix
     name: Run lint-fix
     entry: make lint-fix
-    language: system
+    language: python
     types: [python]
     pass_filenames: false
