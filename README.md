@@ -4,6 +4,8 @@
 
 **This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support.**
 
+CZ Benchmarks is a package for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. The package provides a modular architecture for running containerized models, executing evaluation tasks, and computing performance metrics.
+
 ## Installation Instructions
 
 ### From Source
@@ -12,6 +14,29 @@
 git clone https://github.com/chanzuckerberg/cz-benchmarks.git
 cd cz-benchmarks
 pip install -e .
+```
+
+## Example Usage
+* Load a dataset, run a model, run several tasks, and compute metrics
+
+```python
+from czibench.datasets.single_cell import SingleCellDataset
+from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
+from czibench.runner import ContainerRunner
+from czibench.datasets.types import Organism
+
+dataset = load_dataset("example")
+runner = ContainerRunner(image="czibench-scvi:latest", gpu=True)
+dataset = runner.run(dataset)
+
+task = ClusteringTask(label_key="cell_type")
+dataset, clustering_results = task.run(dataset)
+
+task = EmbeddingTask(label_key="cell_type")
+dataset, embedding_results = task.run(dataset)
+
+task = MetadataLabelPredictionTask(label_key="cell_type")
+dataset, prediction_results = task.run(dataset)
 ```
 
 ## Architecture Overview
@@ -169,36 +194,15 @@ dataset = SingleCellDataset(
 )
 ```
 
-## Example Usage
-
-```python
-from czibench.datasets.single_cell import SingleCellDataset
-from czibench.datasets.types import Organism
-from czibench.runner import ContainerRunner
-
-from czibench.tasks import ClusteringTask, EmbeddingTask
-
-dataset = SingleCellDataset(
-    "example.h5ad",
-    organism=Organism.HUMAN,
-)
-
-runner = ContainerRunner(
-    image="czibench-scvi:latest",
-    gpu=True,
-)
-
-dataset = runner.run(dataset)
-
-task = ClusteringTask(label_key="cell_type")
-dataset, clustering_results = task.run(dataset)
-
-task = EmbeddingTask(label_key="cell_type")
-dataset, embedding_results = task.run(dataset)
-```
-
 ## Contributing
 This project adheres to the Contributor Covenant code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
 ## Reporting Security Issues
 Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@chanzuckerberg.com.
+
+## License Notice for Dependencies
+This repository is licensed under the MIT License; however, it relies on certain third-party dependencies that are licensed under the GNU General Public License (GPL). Specifically:
+- igraph (v0.11.8) is licensed under the GNU General Public License (GPL).
+- leidenalg (v0.10.2) is licensed under the GNU General Public License v3 or later (GPLv3+).
+
+These libraries are not included in this repository but must be installed separately by users. Please be aware that the GPL license terms apply to these dependencies, and certain uses of GPL-licensed code may have licensing implications for your own software.
