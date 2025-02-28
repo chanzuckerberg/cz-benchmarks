@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Set
 
+from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 from .base import BaseTask
 from .utils import cluster_embedding
 

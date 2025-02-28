@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Set
 
+from sklearn.metrics import silhouette_score
+
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from sklearn.metrics import silhouette_score
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)

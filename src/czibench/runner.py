@@ -1,18 +1,18 @@
 import os
-import tempfile
-import docker
 import pathlib
-from typing import Any, Union, List
+import tempfile
+from typing import Any, List, Union
+
+import docker
 
 from .constants import (
     INPUT_DATA_PATH_DOCKER,
-    OUTPUT_DATA_PATH_DOCKER,
-    MODEL_WEIGHTS_PATH_DOCKER,
-    RAW_INPUT_DIR_PATH_DOCKER,
     MODEL_WEIGHTS_CACHE_PATH,
+    MODEL_WEIGHTS_PATH_DOCKER,
+    OUTPUT_DATA_PATH_DOCKER,
+    RAW_INPUT_DIR_PATH_DOCKER,
     get_numbered_path,
 )
-
 from .datasets.base import BaseDataset
 
 
@@ -72,7 +72,10 @@ class ContainerRunner:
 
             # Add all unique parent directories as volumes
             for parent_dir in orig_parent_dirs:
-                volumes[parent_dir] = {"bind": RAW_INPUT_DIR_PATH_DOCKER, "mode": "ro"}
+                volumes[parent_dir] = {
+                    "bind": RAW_INPUT_DIR_PATH_DOCKER,
+                    "mode": "ro",
+                }
 
             # Run container and process results
             try:
@@ -83,7 +86,8 @@ class ContainerRunner:
                 for i in range(len(datasets)):
                     output_path = get_numbered_path(
                         os.path.join(
-                            output_dir, pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name
+                            output_dir,
+                            pathlib.Path(OUTPUT_DATA_PATH_DOCKER).name,
                         ),
                         i,
                     )

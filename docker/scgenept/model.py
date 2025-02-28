@@ -1,19 +1,22 @@
 import argparse
-import pathlib
-import numpy as np
-from omegaconf import OmegaConf
-from glob import glob
-import torch
-import pandas as pd
-from gears import PertData
 import logging
+import pathlib
+from glob import glob
+
+import numpy as np
+import pandas as pd
+import torch
+from gears import PertData
+from omegaconf import OmegaConf
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.models.validators.scgenept import ScGenePTValidator
-from czibench.models.base import BaseModelImplementation
-from czibench.utils import sync_s3_to_local, download_s3_file
-from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
+from czibench.datasets.types import DataType
+from czibench.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
+from czibench.models.validators.scgenept import ScGenePTValidator
+from czibench.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +107,11 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         )
         pathlib.Path(pert_data_dir).mkdir(parents=True, exist_ok=True)
         pert_data = load_dataloader(
-            dataset_name, pert_data_dir, batch_size, eval_batch_size, split="simulation"
+            dataset_name,
+            pert_data_dir,
+            batch_size,
+            eval_batch_size,
+            split="simulation",
         )
         ref_adata = pert_data.adata
 

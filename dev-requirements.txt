@@ -1,0 +1,6 @@
+# Local dependencies
+black==24.8.0
+flake8==7.0.0
+autoflake==2.2.1
+ruff==0.9.8
+mypy==1.9.0

@@ -1,13 +1,16 @@
+import argparse
 import pathlib
+
 import scgpt as scg
 from omegaconf import OmegaConf
-import argparse
 
-from czibench.models.validators.scgpt import ScGPTValidator
-from czibench.models.base import BaseModelImplementation
-from czibench.utils import sync_s3_to_local
-from czibench.datasets.types import DataType
 from czibench.datasets.base import BaseDataset
+from czibench.datasets.types import DataType
+from czibench.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
+from czibench.models.validators.scgpt import ScGPTValidator
+from czibench.utils import sync_s3_to_local
 
 
 class ScGPT(ScGPTValidator, BaseModelImplementation):
