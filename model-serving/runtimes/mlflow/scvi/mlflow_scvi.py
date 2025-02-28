@@ -62,6 +62,11 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
         hvg_file = context.artifacts[f"hvg_names_{params['organism']}"]
         # Use the full path when loading the model weights
         model_dir = Path(context.artifacts[f"model_weights_{params['organism']}"]).absolute().parent
+        model_file = context.artifacts[f"model_weights_{params['organism']}"]
+        symlink_path = model_dir / "model.pt"
+        if symlink_path.exists():
+            symlink_path.unlink()
+        symlink_path.symlink_to(model_file)
         return MLflowSCVI._predict(adata, hvg_file, model_dir)
 
 
@@ -88,7 +93,7 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
         )
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
-
+        print(f"Latent representation: {qz_m[0:2, 0:2]}")
         return qz_m
     
     @staticmethod

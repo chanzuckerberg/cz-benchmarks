@@ -18,10 +18,10 @@ if __name__ == "__main__":
         parser.error("--experiment-name is required when target is 'databricks'")
     
     artifacts={
-        "model_weights_homo_sapiens": "artifacts/homo_sapiens/model.pt",
-        "model_weights_mus_musculus": "artifacts/mus_musculus/model.pt",
-        "hvg_names_homo_sapiens": "artifacts/homo_sapiens/hvg_names.csv.gz",
-        "hvg_names_mus_musculus": "artifacts/mus_musculus/hvg_names.csv.gz"
+        "model_weights_homo_sapiens": "artifacts/homo_sapiens_model.pt",
+        "model_weights_mus_musculus": "artifacts/mus_musculus_model.pt",
+        "hvg_names_homo_sapiens": "artifacts/homo_sapiens_hvg_names.csv.gz",
+        "hvg_names_mus_musculus": "artifacts/mus_musculus_hvg_names.csv.gz"
     }
     signature=mlflow.models.ModelSignature(
                     inputs=Schema([ColSpec("string")]),
