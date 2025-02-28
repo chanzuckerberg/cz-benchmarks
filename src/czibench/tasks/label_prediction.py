@@ -17,8 +17,8 @@ from sklearn.preprocessing import StandardScaler
 
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
+from ..metrics import MetricType, metrics
 from .base import BaseTask
-from .metrics import MetricType, metrics
 from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
@@ -208,22 +208,22 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Calculate per-classifier metrics
         for clf in results_df["classifier"].unique():
-            # Compute accuracy
+
             key = f"{clf}_mean_accuracy"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_ACCURACY, results_df=results_df, classifier=clf
             )
-            # Compute F1
+
             key = f"{clf}_mean_f1"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df, classifier=clf
             )
-            # Compute precision
+
             key = f"{clf}_mean_precision"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_PRECISION, results_df=results_df, classifier=clf
             )
-            # Compute recall
+
             key = f"{clf}_mean_recall"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_RECALL, results_df=results_df, classifier=clf
