@@ -1,7 +1,7 @@
-from typing import Dict, Set
-import pandas as pd
 import logging
+from typing import Dict, Set
 
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -15,13 +15,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..metrics.clustering import adjusted_rand_index, normalized_mutual_info
-from ..metrics.embedding import silhouette_score, compute_entropy_per_cell
-from .base import BaseTask
-from .utils import cluster_embedding, filter_minimum_class
-from ..datasets.sc import SingleCellDataset
+from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
-from scib_metrics import silhouette_batch
+from .base import BaseTask
+from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +113,21 @@ class BatchIntegrationTask(BaseTask):
             ),
         }
 
-
 class MetadataLabelPredictionTask(BaseTask):
+    """Task for predicting labels from embeddings using cross-validation.
+
+    Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
+    cross-validation. Reports standard classification metrics and optionally
+    generates per-sample predictions.
+
+    Args:
+        label_key: Key to access ground truth labels in metadata
+        n_folds: Number of cross-validation folds
+        seed: Random seed for reproducibility
+        min_class_size: Minimum samples required per class
+        generate_predictions: Whether to store per-sample predictions
+    """
+
     def __init__(
         self,
         label_key: str,
@@ -140,23 +150,41 @@ class MetadataLabelPredictionTask(BaseTask):
 
     @property
     def required_inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set of required input DataTypes (metadata with labels)
+        """
         return {DataType.METADATA}
 
     @property
     def required_outputs(self) -> Set[DataType]:
+        """Required output data types.
+
+        Returns:
+            required output types from models this task to run  (embedding coordinates)
+        """
         return {DataType.EMBEDDING}
 
     def run_baseline(self, data: SingleCellDataset) -> SingleCellDataset:
         pass
 
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
+    def _run_task(self, data: SingleCellDataset):
+        """Runs cross-validation prediction task.
+
+        Evaluates multiple classifiers using k-fold cross-validation on the
+        embedding data. Stores results for metric computation.
+
+        Args:
+            data: Dataset containing embedding and ground truth labels
+        """
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
         # Get embedding and labels
         embeddings = data.get_output(DataType.EMBEDDING)
         labels = data.get_input(DataType.METADATA)[self.label_key]
         logger.info(
-            f"Initial data shape: {embeddings.shape}, labels shape: {labels.shape}"
+            f"Initial data shape: {embeddings.shape}, " f"labels shape: {labels.shape}"
         )
 
         # Filter classes with minimum size requirement
@@ -169,7 +197,7 @@ class MetadataLabelPredictionTask(BaseTask):
         n_classes = len(labels.unique())
         target_type = "binary" if n_classes == 2 else "weighted"
         logger.info(
-            f"Found {n_classes} classes, using {target_type} averaging for metrics"
+            f"Found {n_classes} classes, using {target_type} " "averaging for metrics"
         )
 
         scorers = {
@@ -183,7 +211,9 @@ class MetadataLabelPredictionTask(BaseTask):
         skf = StratifiedKFold(
             n_splits=self.n_folds, shuffle=True, random_state=self.seed
         )
-        logger.info(f"Using {self.n_folds}-fold cross validation with seed {self.seed}")
+        logger.info(
+            f"Using {self.n_folds}-fold cross validation " f"with seed {self.seed}"
+        )
 
         # Create classifiers
         classifiers = {
@@ -240,9 +270,16 @@ class MetadataLabelPredictionTask(BaseTask):
                         )
 
         logger.info("Completed cross-validation for all classifiers")
-        return data
 
     def _compute_metrics(self) -> Dict[str, float]:
+        """Computes classification metrics across all folds.
+
+        Aggregates results from cross-validation and computes mean metrics
+        per classifier and overall.
+
+        Returns:
+            Dictionary containing mean metrics and optionally predictions
+        """
         logger.info("Computing final metrics...")
         results_df = pd.DataFrame(self.results)
         metrics = {}
@@ -250,21 +287,23 @@ class MetadataLabelPredictionTask(BaseTask):
         # Calculate mean metrics across folds and classifiers
         for metric in ["accuracy", "f1", "precision", "recall"]:
             metrics[f"mean_{metric}"] = results_df[metric].mean()
-            logger.info(f"Overall mean {metric}: {metrics[f'mean_{metric}']:.3f}")
+            logger.info(f"Overall mean {metric}: " f"{metrics[f'mean_{metric}']:.3f}")
 
             # Add per-classifier means
             for clf in results_df["classifier"].unique():
                 clf_results = results_df[results_df["classifier"] == clf]
                 metrics[f"{clf}_mean_{metric}"] = clf_results[metric].mean()
                 logger.info(
-                    f"{clf} mean {metric}: {metrics[f'{clf}_mean_{metric}']:.3f}"
+                    f"{clf} mean {metric}: " f"{metrics[f'{clf}_mean_{metric}']:.3f}"
                 )
 
         # Add predictions if generated
         if self.generate_predictions:
             self.predictions_df = pd.DataFrame(self.predictions)
             metrics["predictions"] = self.predictions_df
-            logger.info(f"Generated predictions for {len(self.predictions_df)} samples")
+            logger.info(
+                f"Generated predictions for {len(self.predictions_df)} " "samples"
+            )
 
         logger.info("Metrics computation completed")
         return metrics

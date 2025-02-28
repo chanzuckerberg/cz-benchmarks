@@ -83,7 +83,7 @@ This file MUST:
 Example implementation for a single-cell model:
 """
 
-from czibench.models.sc import BaseYourModel
+from czibench.models.single_cell import BaseYourModel
 
 class ExampleModel(BaseYourModel):
 
@@ -177,7 +177,7 @@ To use your own data:
 2. Load using the appropriate dataset type:
 
 ```python
-from czibench.datasets.sc import SingleCellDataset
+from czibench.datasets.single_cell import SingleCellDataset
 from czibench.datasets.types import Organism
 
 dataset = SingleCellDataset(
@@ -189,10 +189,11 @@ dataset = SingleCellDataset(
 ## Example Usage
 
 ```python
-from czibench.datasets.sc import SingleCellDataset
+from czibench.datasets.single_cell import SingleCellDataset
 from czibench.datasets.types import Organism
 from czibench.runner import ContainerRunner
-from czibench.tasks.sc import ClusteringTask, EmbeddingTask
+
+from czibench.tasks import ClusteringTask, EmbeddingTask
 
 dataset = SingleCellDataset(
     "example.h5ad",

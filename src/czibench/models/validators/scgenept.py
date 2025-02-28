@@ -16,4 +16,7 @@ class ScGenePTValidator(BaseSingleCellValidator):
 
     @property
     def outputs(self) -> Set[DataType]:
-        return {DataType.PERTURBATION}
+        return {
+            DataType.PERTURBATION_PRED,
+            DataType.PERTURBATION_TRUTH,
+        }

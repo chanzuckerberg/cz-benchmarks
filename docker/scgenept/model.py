@@ -129,6 +129,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_pert = args.gene_pert
         chunk_size = args.chunk_size
         all_preds = []
+
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
         for i in range(num_chunks):
             logger.info(f"Predicting perturbations for chunk {i + 1} of {num_chunks}")
@@ -145,12 +146,14 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             all_preds.append(preds)
 
         dataset.set_output(
-            DataType.PERTURBATION,
-            pd.DataFrame(
-                data=np.concatenate(all_preds, axis=0),
-                index=adata.obs_names,
-                columns=gene_names,
-            ),
+            DataType.PERTURBATION_PRED,
+            {
+                gene_pert: pd.DataFrame(
+                    data=np.concatenate(all_preds, axis=0),
+                    index=adata.obs_names,
+                    columns=adata.var_names.to_list(),
+                )
+            },
         )
 
 

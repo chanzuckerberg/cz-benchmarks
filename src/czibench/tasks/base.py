@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Set
+from typing import Dict, Set, Union, List
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
 
@@ -16,6 +16,11 @@ class BaseTask(ABC):
     @abstractmethod
     def required_outputs(self) -> Set[DataType]:
         """Specify what output types from models this task requires"""
+
+    @property
+    def requires_multiple_datasets(self) -> bool:
+        """Whether this task requires multiple datasets"""
+        return False
 
     def validate(self, data: BaseDataset):
         # Check both inputs and outputs are available
@@ -36,7 +41,7 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset) -> BaseDataset:
+    def _run_task(self, data: Union[BaseDataset, List[BaseDataset]]):
         pass
 
     @abstractmethod
@@ -47,9 +52,27 @@ class BaseTask(ABC):
     def run_baseline(self, data: BaseDataset): -> BaseDataset:
         pass
 
-    def run(self, data: BaseDataset) -> BaseDataset:
-        self.validate(data)
+    def run(
+        self, data: Union[BaseDataset, List[BaseDataset]]
+    ) -> Union[Dict[str, float], List[Dict[str, float]]]:
+        if isinstance(data, BaseDataset):
+            self.validate(data)
+        elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):
+            for d in data:
+                self.validate(d)
+        else:
+            raise ValueError(f"Invalid data type: {type(data)}")
 
-        data = self._run_task(data)
-        results = self._compute_metrics()
-        return data, results
+        if self.requires_multiple_datasets and not isinstance(data, list):
+            raise ValueError("This task requires a list of datasets")
+
+        if isinstance(data, list) and not self.requires_multiple_datasets:
+            all_metrics = []
+            for d in data:
+                self._run_task(d)
+                metrics = self._compute_metrics()
+                all_metrics.append(metrics)
+            return all_metrics
+        else:
+            self._run_task(data)
+            return self._compute_metrics()
