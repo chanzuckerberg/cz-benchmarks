@@ -27,10 +27,6 @@ class MetricType(Enum):
     MEAN_FOLD_PRECISION = "mean_fold_precision"
     MEAN_FOLD_RECALL = "mean_fold_recall"
 
-    # Regression metrics
-    MSE = "mse"
-    R2_SCORE = "r2_score"
-
 
 @dataclass
 class MetricInfo:
@@ -49,13 +45,6 @@ class MetricInfo:
     default_params: Dict[str, Any]
     description: Optional[str] = None
     tags: Set[str] = None
-
-    def __post_init__(self):
-        """Validate fields after initialization."""
-        if self.optimization_direction not in ("max", "min"):
-            raise ValueError("optimization_direction must be 'max' or 'min'")
-        if self.tags is None:
-            self.tags = set()
 
 
 class MetricRegistry:
@@ -107,7 +96,6 @@ class MetricRegistry:
 
         Raises:
             ValueError: If metric type unknown or missing required args
-            ValueError: If computed value outside expected range
         """
         if metric_type not in self._metrics:
             raise ValueError(f"Unknown metric type: {metric_type}")
