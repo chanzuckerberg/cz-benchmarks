@@ -15,6 +15,7 @@ class MLflowModelRunner(ModelRunnerBase):
 
     def _run_local(self, dataset: BaseDataset) -> BaseDataset:
         with tempfile.NamedTemporaryFile(mode="w") as output:
+            print(f"Calling MLflow model process (localhost): {self.model_endpoint}")
             prediction = mlflow.models.predict(
                 model_uri=self.model_resource_url, 
                 input_data=dataset.local_path,
@@ -44,7 +45,7 @@ class MLflowModelRunner(ModelRunnerBase):
                 "params": {"organism": str(dataset.get_input(DataType.ORGANISM))},
             }
         )
-
+        print(f"Calling MLflow model endpoint: {self.model_endpoint}")
         response = requests.request(method='POST', headers=headers, url=self.model_endpoint, data=input_data)
         response.raise_for_status()
         

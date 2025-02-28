@@ -41,6 +41,8 @@ def main():
     # Load 
     dataset.load_data()
     print(dataset.get_output(DataType.EMBEDDING))
+    print(dataset.get_output(DataType.EMBEDDING).shape)
+
 
     task = ClusteringTask(label_key="cell_type")
     dataset, clustering_results = task.run(dataset)

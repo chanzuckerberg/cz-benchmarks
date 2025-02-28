@@ -30,7 +30,7 @@ class SageMakerRunner(ModelRunnerBase):
         start_time = time.perf_counter()
 
         runtime = boto3.client("sagemaker-runtime", region_name=REGION)
-
+        print(f"Calling SageMaker endpoint:  {runtime._endpoint.host}/{self.model_endpoint}")
         response = runtime.invoke_endpoint_async(
             EndpointName=self.model_endpoint,
             ContentType="application/json",
@@ -55,8 +55,6 @@ class SageMakerRunner(ModelRunnerBase):
         download_s3_file(output_location, "output.out")
 
         prediction = np.load("output.out")
-        print(prediction)
-        print(prediction.shape)
 
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
