@@ -82,7 +82,7 @@ def _safelog(a: np.ndarray) -> np.ndarray:
     Returns:
         Array with log values, with 0s where input was 0
     """
-    a = a.astype('float')
+    a = a.astype("float")
     return np.log(a, out=np.zeros_like(a), where=(a != 0))
 
 
