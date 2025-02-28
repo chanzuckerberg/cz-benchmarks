@@ -8,14 +8,13 @@ from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
 from .model_runner import ModelRunnerBase
 
+DEFAULT_LOCAL_ENDPOINT = "http://localhost:3000"
 
 class BentomlModelRunner(ModelRunnerBase):
     """Handles model execution logic for an MLflow model"""
 
-    def _run_forward_pass(
-        self, dataset: BaseDataset, local_endpoint: str = "http://localhost:3000"
-    ) -> BaseDataset:
-        client = bentoml.SyncHTTPClient(self.model_endpoint or local_endpoint)
+    def _run_forward_pass(self, dataset: BaseDataset) -> BaseDataset:
+        client = bentoml.SyncHTTPClient(self.model_endpoint or DEFAULT_LOCAL_ENDPOINT)
         task = client.predict.submit(file_path=dataset.source_path)
 
         while task.get_status().value != "success":
