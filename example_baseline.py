@@ -4,7 +4,7 @@ from czibench.datasets.types import DataType
 
 dataset = load_dataset("example", config_path="custom.yaml")
 
-# Here we set the embedding to be the raw counts
+# set embedding to raw counts
 dataset.set_output(DataType.EMBEDDING, dataset.adata.X.toarray())
 
 task = MetadataLabelPredictionTask(label_key="cell_type")
