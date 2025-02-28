@@ -1,7 +1,7 @@
 # -----------------------------
 # File: bentofile.yaml
 # -----------------------------
-service: "service:svc"
+service: "service:SCVIService"
 
 python:
   # Instead of specifying 'packages', we reference an existing requirements.txt
@@ -14,7 +14,6 @@ include:
   - config.yaml
   - requirements.txt
   - artifacts/**
-
 # We can exclude large or unneeded files/directories as needed.
 # exclude:
 #   - some_large_dir
