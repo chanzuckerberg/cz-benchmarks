@@ -1,11 +1,26 @@
 # Model Implementations
 
-This directory contains concrete implementations of models.
+This directory contains the base classes and interfaces for models.
+
+**Concrete model implementations should be added to the `docker/` directory, not here.**
 
 ## Adding New Models
 
-1. **Create Model Implementation**:
+1. **Create a New Directory in `docker/`**:
+```bash
+docker/
+├── your_model/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── config.yaml
+│   ├── implementation.py
+│   └── assets/  # model weights, etc.
+```
+
+2. **Implement Your Model**:
 ```python
+# docker/your_model/implementation.py
+
 from ...models.base_model_implementation import BaseModelImplementation
 from ...models.validators import YourModelValidator
 
@@ -33,15 +48,22 @@ class YourModelImplementation(BaseModelImplementation, YourModelValidator):
         return parser.parse_args()
 ```
 
-2. **Update __init__.py**:
-   - Add your implementation to `implementations/__init__.py`
+3. **Add Required Files**:
+   - `Dockerfile`: Container setup and dependencies
+   - `requirements.txt`: Python package dependencies
+   - `config.yaml`: Model configuration
+   - Any model-specific assets (weights, vocabularies, etc.)
+
+4. **Update Makefile**:
+   - Add a new target for building your model's Docker image
 
 ## Best Practices
 
-- Document implementation requirements clearly
-- Use descriptive variable names
+- Keep all model-specific code and assets in the model's Docker directory
+- Document environment requirements in Dockerfile and requirements.txt
+- Use consistent naming across implementation files
 - Add logging for implementation steps
-- Follow existing imlpementation patterns
+- Follow existing implementation patterns (see `docker/scvi/` for an example)
 
 ## Example Usage
 
