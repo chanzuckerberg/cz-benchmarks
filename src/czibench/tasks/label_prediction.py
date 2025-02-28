@@ -18,7 +18,7 @@ from sklearn.preprocessing import StandardScaler
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
 from .base import BaseTask
-from .metrics import MetricType, metrics
+from ..metrics import MetricType, metrics
 from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
