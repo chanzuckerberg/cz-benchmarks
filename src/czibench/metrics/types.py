@@ -96,7 +96,6 @@ class MetricRegistry:
 
         Raises:
             ValueError: If metric type unknown or missing required args
-            ValueError: If computed value outside expected range
         """
         if metric_type not in self._metrics:
             raise ValueError(f"Unknown metric type: {metric_type}")
