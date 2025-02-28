@@ -1,7 +1,6 @@
 import logging
 from typing import Dict, Set
 
-
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
 from ..metrics import MetricType, metrics
