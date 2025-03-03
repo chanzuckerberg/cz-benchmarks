@@ -1,0 +1,6 @@
+mlserver
+httpx
+mlserver-mlflow
+
+# For MLflow scVI model
+-r ../mlflow/scvi/requirements-model.txt

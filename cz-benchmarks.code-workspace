@@ -1,10 +1,15 @@
 {
 	"folders": [
 		{
+			"name": "cz-benchmarks",
 			"path": "."
 		},
 		{
+			"name": "scvi",
 			"path": "model-serving/runtimes/mlflow/scvi"
+		},
+		{
+			"path": "model-serving/runtimes/mlserver"
 		}
 	],
 	"settings": {}

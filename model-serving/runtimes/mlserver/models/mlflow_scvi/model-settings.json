@@ -1,0 +1,8 @@
+{
+    "name": "scvi",
+    "implementation": "mlserver_mlflow.MLflowRuntime",
+    "parameters": {
+        "uri": "../../../mlflow/scvi/runtime",
+        "version": "0.1.0"
+    }
+}
