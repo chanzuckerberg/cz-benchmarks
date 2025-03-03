@@ -1,5 +1,5 @@
 # MLServer metrics databases
-*.db
+.metrics/*
 
 # MLflow tracking
 mlruns/
