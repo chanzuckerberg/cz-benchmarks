@@ -2,4 +2,8 @@ mlserver
 mlserver-mlflow
 
 # For MLflow scVI model
+# TODO: Not ideal to have to explicitly install a model's requirements.
+#  May be better to try MLServer's support for specifying a Conda environment that setup within a Docker container:
+#  https://mlserver.readthedocs.io/en/stable/examples/conda/README.html
+
 -r ../mlflow/scvi/requirements-model.txt
