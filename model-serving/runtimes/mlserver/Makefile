@@ -31,5 +31,8 @@ predict:
 	-o $$OUTPUT_FILE && \
 	jq . $$OUTPUT_FILE | head -n 30
 
+predict_stress:
+	parallel -n1 -J10 $(MAKE) predict \# ::: {1..100}
+
 stop:
 	pkill -f 'mlserver stop'

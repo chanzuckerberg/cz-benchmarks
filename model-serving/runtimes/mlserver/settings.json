@@ -1,4 +1,6 @@
 {
     "debug": "true",
-    "cache_enabled": "true"
+    "cache_enabled": "false",
+    "parallel_workers": 10,
+    "warm_workers": "true"
 }

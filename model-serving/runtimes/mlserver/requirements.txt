@@ -1,5 +1,4 @@
 mlserver
-httpx
 mlserver-mlflow
 
 # For MLflow scVI model
