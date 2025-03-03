@@ -21,10 +21,16 @@ upload: package
 clean:
 	rm -f $(ARCHIVE_NAME)
 
-sagemaker-deploy: upload
-	python deploy.py
+sagemaker-deploy-remote: upload
+	python remote/deploy.py
 	make clean
 
-sagemaker-test:
-	python test_inference.py
+sagemaker-test-remote:
+	python remote/test_inference.py
 
+sagemaker-deploy-local: package
+	python local/deploy.py
+	make clean
+
+sagemaker-test-local:
+	python local/test_inference.py
