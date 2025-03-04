@@ -5,7 +5,7 @@ import numpy as np
 from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
 from ..base import BaseTask
-from ..metrics import MetricType, metrics
+from ...metrics import MetricType, metrics
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
