@@ -62,12 +62,13 @@ class SingleCellDataset(BaseDataset):
 
 
 class PerturbationSingleCellDataset(SingleCellDataset):
-    """Single cell dataset with perturbation data, containing control and perturbed cells.
+    """Single cell dataset with perturbation data, containing control and
+    perturbed cells.
 
     Input data requirements:
     - H5AD file containing single cell gene expression data
-    - Must have a condition column in adata.obs specifying control ("ctrl") and perturbed
-      conditions
+    - Must have a condition column in adata.obs specifying control ("ctrl") and
+      perturbed conditions.
     - Must have a split column in adata.obs to identify test samples
     """
 

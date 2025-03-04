@@ -56,7 +56,8 @@ class CrossSpeciesIntegrationTask(BaseTask):
         for metric computation.
 
         Args:
-            data: List of datasets containing embeddings and labels from different species
+            data: List of datasets containing embeddings and labels from different
+                  species
         """
         self.embedding = np.vstack([d.get_output(DataType.EMBEDDING) for d in data])
         self.labels = np.concatenate(
