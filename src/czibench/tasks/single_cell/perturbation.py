@@ -42,8 +42,8 @@ class PerturbationTask(BaseTask):
     def _run_task(self, data: PerturbationSingleCellDataset):
         """Runs the perturbation evaluation task.
 
-        Gets predicted perturbation effects, ground truth effects, and control expression
-        from the dataset for metric computation.
+        Gets predicted perturbation effects, ground truth effects, and control
+        expression from the dataset for metric computation.
 
         Args:
             data: Dataset containing perturbation predictions and ground truth
