@@ -1,11 +1,11 @@
-from typing import Dict, Set, List
-import numpy as np
-from scib_metrics import silhouette_batch
+from typing import Dict, List, Set
 
-from ..base import BaseTask
-from ..utils import compute_entropy_per_cell
+import numpy as np
+
 from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
+from ..base import BaseTask
+from ..metrics import MetricType, metrics
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -75,9 +75,20 @@ class CrossSpeciesIntegrationTask(BaseTask):
         Returns:
             Dictionary containing entropy per cell and species-aware silhouette scores
         """
+
+        entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
+        silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+
         return {
-            "entropy_per_cell": compute_entropy_per_cell(self.embedding, self.species),
-            "silhouette_score": silhouette_batch(
-                self.embedding, self.labels, self.species
+            entropy_per_cell_metric.value: metrics.compute(
+                entropy_per_cell_metric,
+                X=self.embedding,
+                labels=self.species,
+            ),
+            silhouette_batch_metric.value: metrics.compute(
+                silhouette_batch_metric,
+                X=self.embedding,
+                labels=self.labels,
+                batch_labels=self.species,
             ),
         }
