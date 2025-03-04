@@ -1,10 +1,9 @@
 import logging
 from typing import Dict, Set
 
-from sklearn.metrics import silhouette_score
-
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
+from ..metrics import MetricType, metrics
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -59,4 +58,9 @@ class EmbeddingTask(BaseTask):
         Returns:
             Dictionary containing silhouette score
         """
-        return {"silhouette_score": silhouette_score(self.embedding, self.input_labels)}
+        metric_type = MetricType.SILHOUETTE_SCORE
+        return {
+            metric_type.value: metrics.compute(
+                metric_type, X=self.embedding, labels=self.input_labels
+            )
+        }
