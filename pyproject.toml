@@ -3,6 +3,6 @@ name = "cz-benchmarks"
 authors = [
     {name = "Chan Zuckerberg Initiative", email = "pypi@chanzuckerberg.com"},
 ]
-version = 0.1.0
+version = "0.1.0"
 description = "Coming soon"
 license = "MIT License"
