@@ -1,5 +1,5 @@
 datasets:
   example:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: ~/cz-benchmarks/example_small.h5ad
+    path: ~/cz_benchmarks/example_small.h5ad

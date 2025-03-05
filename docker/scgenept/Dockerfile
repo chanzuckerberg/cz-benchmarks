@@ -10,7 +10,7 @@ RUN git clone https://github.com/czi-ai/scGenePT.git && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install scgpt    
 
-# Install the czibench package
+# Install the cz_benchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

@@ -32,7 +32,7 @@ RUN git clone https://github.com/giovp/UCE && \
 COPY docker/uce/requirements.txt .
 RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
-# Install the czibench package
+# Install the cz_benchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

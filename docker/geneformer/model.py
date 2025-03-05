@@ -4,13 +4,13 @@ from pathlib import Path
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import (
+from cz_benchmarks.datasets.base import BaseDataset
+from cz_benchmarks.datasets.types import DataType
+from cz_benchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.geneformer import GeneformerValidator
-from czibench.utils import sync_s3_to_local
+from cz_benchmarks.models.validators.geneformer import GeneformerValidator
+from cz_benchmarks.utils import sync_s3_to_local
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):

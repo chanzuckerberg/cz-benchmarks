@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY docker/scgpt/model.py .
 COPY docker/scgpt/config.yaml .
 
-# Install the czibench package
+# Install the cz_benchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

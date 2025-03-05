@@ -10,13 +10,13 @@ from gears import PertData
 from omegaconf import OmegaConf
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import (
+from cz_benchmarks.datasets.base import BaseDataset
+from cz_benchmarks.datasets.types import DataType
+from cz_benchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.scgenept import ScGenePTValidator
-from czibench.utils import download_s3_file, sync_s3_to_local
+from cz_benchmarks.models.validators.scgenept import ScGenePTValidator
+from cz_benchmarks.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 

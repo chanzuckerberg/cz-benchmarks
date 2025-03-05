@@ -5,9 +5,9 @@ INPUT_DATA_PATH_DOCKER = "/app/input/data.dill"
 RAW_INPUT_DIR_PATH_DOCKER = "/app/raw"
 OUTPUT_DATA_PATH_DOCKER = "/app/output/data.dill"
 ARTIFACTS_PATH_DOCKER = "/app/artifacts"
-DATASETS_CACHE_PATH = "~/.cz-benchmarks/datasets"
+DATASETS_CACHE_PATH = "~/.cz_benchmarks/datasets"
 MODEL_WEIGHTS_PATH_DOCKER = "/app/weights"
-MODEL_WEIGHTS_CACHE_PATH = "~/.cz-benchmarks/weights"
+MODEL_WEIGHTS_CACHE_PATH = "~/.cz_benchmarks/weights"
 
 
 # Derived constants

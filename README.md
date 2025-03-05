@@ -12,7 +12,7 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 
 ```bash
 git clone https://github.com/chanzuckerberg/cz-benchmarks.git
-cd cz-benchmarks
+cd cz_benchmarks
 pip install -e .
 ```
 
@@ -20,13 +20,13 @@ pip install -e .
 * Load a dataset, run a model, run several tasks, and compute metrics
 
 ```python
-from czibench.datasets.single_cell import SingleCellDataset
-from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
-from czibench.runner import ContainerRunner
-from czibench.datasets.types import Organism
+from cz_benchmarks.datasets.single_cell import SingleCellDataset
+from cz_benchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
+from cz_benchmarks.runner import ContainerRunner
+from cz_benchmarks.datasets.types import Organism
 
 dataset = load_dataset("example")
-runner = ContainerRunner(image="czibench-scvi:latest", gpu=True)
+runner = ContainerRunner(image="cz_benchmarks-scvi:latest", gpu=True)
 dataset = runner.run(dataset)
 
 task = ClusteringTask(label_key="cell_type")
@@ -47,9 +47,9 @@ This is a benchmarking framework for machine learning models (with a focus on si
 
 #### Base Classes
 
-- `czibench.datasets.base.BaseDataset`: Abstract base class for all datasets
-- `czibench.models.base.BaseModel`: Abstract base class for all models
-- `czibench.tasks.base.BaseTask`: Abstract base class for evaluation tasks
+- `cz_benchmarks.datasets.base.BaseDataset`: Abstract base class for all datasets
+- `cz_benchmarks.models.base.BaseModel`: Abstract base class for all models
+- `cz_benchmarks.tasks.base.BaseTask`: Abstract base class for evaluation tasks
 
 #### Container system
 
@@ -75,7 +75,7 @@ docker/your_model/
 
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
-2. Implement your base model class in `src/czibench/models/`. This should implement the model-specific validator (`_validate_model_requirements`).
+2. Implement your base model class in `src/cz_benchmarks/models/`. This should implement the model-specific validator (`_validate_model_requirements`).
 
 3. Implement the model class in `model.py` (see template):
 
@@ -91,7 +91,7 @@ This file MUST:
 Example implementation for a single-cell model:
 """
 
-from czibench.models.single_cell import BaseYourModel
+from cz_benchmarks.models.single_cell import BaseYourModel
 
 class ExampleModel(BaseYourModel):
 
@@ -130,10 +130,10 @@ def normalized_mutual_info(original_labels, predicted_labels):
 
 ### Adding New Tasks
 
-1. Create a task class inheriting from `czibench.tasks.base.BaseTask`. For example:
+1. Create a task class inheriting from `cz_benchmarks.tasks.base.BaseTask`. For example:
 
 ```python
-from czibench.tasks.base import BaseTask
+from cz_benchmarks.tasks.base import BaseTask
 
 class ClusteringTask(BaseTask):
 
@@ -162,8 +162,8 @@ class ClusteringTask(BaseTask):
 Using the `ContainerRunner`:
 
 ```python
-from czibench.runner import ContainerRunner
-from czibench.datasets.utils import load_dataset
+from cz_benchmarks.runner import ContainerRunner
+from cz_benchmarks.datasets.utils import load_dataset
 
 # Load dataset
 dataset = load_dataset("mouse_brain_atlas")
@@ -185,8 +185,8 @@ To use your own data:
 2. Load using the appropriate dataset type:
 
 ```python
-from czibench.datasets.single_cell import SingleCellDataset
-from czibench.datasets.types import Organism
+from cz_benchmarks.datasets.single_cell import SingleCellDataset
+from cz_benchmarks.datasets.types import Organism
 
 dataset = SingleCellDataset(
     path="path/to/your/data.h5ad",

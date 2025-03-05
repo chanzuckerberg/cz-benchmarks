@@ -9,13 +9,13 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     ]
 
 setup(
-    name="czibench",
+    name="cz-benchmarks",
     version="0.1.0",
     author="Chan Zuckerberg Initiative",
     description=("A framework for benchmarking single-cell machine learning models"),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/chanzuckerberg/benchmarking-prototype",
+    url="https://github.com/chanzuckerberg/cz-benchmarks",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[

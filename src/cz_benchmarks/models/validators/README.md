@@ -43,7 +43,7 @@ class YourModelValidator(BaseSingleCellValidator):
 ## Example Usage
 
 ```python
-from czibench.models.validators import YourModelValidator
+from cz_benchmarks.models.validators import YourModelValidator
 
 validator = YourModelValidator()
 try:

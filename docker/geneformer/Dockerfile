@@ -15,7 +15,7 @@ RUN git clone https://huggingface.co/ctheodoris/Geneformer && \
 COPY docker/geneformer/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the czibench package
+# Install the cz_benchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

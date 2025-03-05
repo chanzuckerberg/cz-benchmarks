@@ -3,45 +3,45 @@ defaults:
 
 datasets:
   adamson:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     path: s3://generate-cross-species/datasets/perturbation/single_cell/adamson.h5ad
 
   norman:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     path: s3://generate-cross-species/datasets/perturbation/single_cell/norman.h5ad
 
   dixit:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     path: s3://generate-cross-species/datasets/perturbation/single_cell/dixit.h5ad
 
   example:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/test/example.h5ad
 
   example_small:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/test/example_small.h5ad
 
   human_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/evo_distance/Homo_sapiens_ERP132584_droplet_based_rev2.h5ad
 
   mouse_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:MOUSE}
     path: s3://generate-cross-species/datasets/evo_distance/Mus_musculus_ERP132577_droplet_based_rev2.h5ad
 
   rhesus_macaque_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: cz_benchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:RHESUS_MACAQUE}
     path: s3://generate-cross-species/datasets/evo_distance/Macaca_mulatta_ERP132582_droplet_based_rev2.h5ad
     

@@ -1,13 +1,13 @@
 import scanpy as sc
 
-from czibench.datasets.utils import load_dataset
-from czibench.runner import ContainerRunner
-from czibench.tasks.sc import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
+from cz_benchmarks.datasets.utils import load_dataset
+from cz_benchmarks.runner import ContainerRunner
+from cz_benchmarks.tasks.sc import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
 if __name__ == "__main__":
     dataset = load_dataset("example", config_path="custom.yaml")
     runner = ContainerRunner(
-        image="czibench-scvi:latest",
+        image="cz_benchmarks-scvi:latest",
         gpu=True,
     )
 
