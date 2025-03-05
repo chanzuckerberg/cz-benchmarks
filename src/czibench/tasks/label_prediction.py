@@ -3,6 +3,8 @@ from typing import Dict, Set
 
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -208,7 +210,6 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Calculate per-classifier metrics
         for clf in results_df["classifier"].unique():
-
             key = f"{clf}_mean_accuracy"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_ACCURACY, results_df=results_df, classifier=clf
@@ -235,3 +236,70 @@ class MetadataLabelPredictionTask(BaseTask):
             metrics_dict["predictions"] = self.predictions_df
 
         return metrics_dict
+
+    def run_baseline(
+        self,
+        data: SingleCellDataset,
+        min_genes=200,
+        min_cells=3,
+        target_sum=1e4,
+        min_mean=0.0125,
+        max_mean=3,
+        min_disp=0.5,
+        n_pcs=50,
+        resolution=0.5,
+        random_state=121,
+        model_name="logistic_regression",  # or random_forest
+        lr_penalty="l1",
+        C=1.0,
+        lr_solver="saga",
+        max_iter=1000,
+        rf_n_estimators=100,
+        label_key="cell_type",
+        n_splits=5,
+    ):
+        import scanpy as sc
+
+        adata = data.get_input(DataType.METDADATA)
+        sc.pp.filter_cells(adata, min_genes=min_genes)
+        sc.pp.filter_cells(adata, min_cells=min_cells)
+        sc.pp.normalize_total(adata, target_sum=target_sum)
+        sc.pp.log1p(adata)
+        sc.pp.normalize_total(adata, target_sum=target_sum)
+        hvg_params = dict(min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
+        sc.pp.highly_variable_genes(adata, **hvg_params)
+        adata = adata[:, adata.var["highly_variable"]]
+        sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
+
+        if model_name == "logistic_regression":
+            clf = LogisticRegression(
+                penalty=lr_penalty,
+                C=C,
+                max_iter=max_iter,
+                solver=lr_solver,
+                random_state=random_state,
+            )
+        elif model_name == "random_forest":
+            clf = RandomForestClassifier(
+                n_estimators=rf_n_estimators, random_state=random_state
+            )
+        else:
+            raise ValueError(f"Unknown model: {model_name}")
+
+        X = adata.obsm["X_pca"]
+        y = adata.obs[label_key]
+
+        skf = StratifiedKFold(
+            n_splits=n_splits, shuffle=True, random_state=random_state
+        )
+
+        y_pred = np.zeros(len(y))
+
+        for fold, (train_idx, test_idx) in enumerate(skf.split(X, y)):
+            X_train, X_test = X[train_idx], X[test_idx]
+            y_train = y.iloc[train_idx]
+
+            clf.fit(X_train, y_train)
+            y_pred[test_idx] = clf.predict(X_test)
+
+        return y_pred

@@ -74,3 +74,31 @@ class ClusteringTask(BaseTask):
                 MetricType.NORMALIZED_MUTUAL_INFO,
             ]
         }
+
+    def run_baseline(
+        self,
+        data: SingleCellDataset,
+        min_genes=200,
+        min_cells=3,
+        target_sum=1e4,
+        min_mean=0.0125,
+        max_mean=3,
+        min_disp=0.5,
+        n_pcs=50,
+        resolution=0.5,
+        random_state=42,
+    ):
+        import scanpy as sc
+
+        adata = data.get_input(DataType.METADATA)
+        sc.pp.filter_cells(adata, min_genes=min_genes)
+        sc.pp.filter_genes(adata, min_cells=min_cells)
+        sc.pp.normalize_total(adata, target_sum=target_sum)
+        sc.pp.log1p(adata)
+        sc.pp.normalize_total(adata, target_sum=target_sum)
+        hvg_params = dict(min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
+        sc.pp.highly_variable_genes(adata, **hvg_params)
+        adata = adata[:, adata.var["highly_variable"]]
+        sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
+        sc.pp.neighbors(adata, use_rep="X_pca")
+        sc.tl.leiden(adata, resolution=resolution, random_state=random_state)
