@@ -155,13 +155,14 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         dataset.set_output(
             self.model_type,
             DataType.PERTURBATION_PRED,
-            {
-                gene_pert: pd.DataFrame(
+            (
+                gene_pert,
+                pd.DataFrame(
                     data=np.concatenate(all_preds, axis=0),
                     index=adata.obs_names,
                     columns=adata.var_names.to_list(),
-                )
-            },
+                ),
+            ),
         )
 
 
