@@ -9,6 +9,7 @@ from ..base import BaseTask
 from ...datasets.single_cell import PerturbationSingleCellDataset
 from ...datasets.types import DataType
 from ...metrics import MetricType
+from ...models.types import ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class PerturbationTask(BaseTask):
         """
         return {DataType.PERTURBATION_PRED}
 
-    def _run_task(self, data: PerturbationSingleCellDataset):
+    def _run_task(self, data: PerturbationSingleCellDataset, model_type: ModelType):
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -49,7 +50,7 @@ class PerturbationTask(BaseTask):
         Args:
             data: Dataset containing perturbation predictions and ground truth
         """
-        self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
+        self.perturbation_pred = data.get_output(model_type, DataType.PERTURBATION_PRED)
         self.perturbation_truth = data.perturbation_truth
         self.perturbation_ctrl = pd.Series(
             data=data.adata.X.mean(0).A.flatten(),

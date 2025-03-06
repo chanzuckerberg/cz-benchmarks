@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.single_cell import SingleCellDataset
+from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
 from ..metrics import MetricType, metrics
+from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
 
@@ -41,7 +42,7 @@ class ClusteringTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset):
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Runs clustering on the embedding data.
 
         Performs clustering and stores results for metric computation.
@@ -51,7 +52,7 @@ class ClusteringTask(BaseTask):
         """
         # Get anndata object and add embedding
         adata = data.adata
-        adata.obsm["emb"] = data.get_output(DataType.EMBEDDING)
+        adata.obsm["emb"] = data.get_output(model_type, DataType.EMBEDDING)
 
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]

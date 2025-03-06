@@ -43,16 +43,23 @@ class BaseTask(ABC):
         return False
 
     def validate(self, data: BaseDataset):
-        # Check both inputs and outputs are available
+        error_msg = []
         missing_inputs = self.required_inputs - set(data.inputs.keys())
-        missing_outputs = self.required_outputs - set(data.outputs.keys())
 
-        if missing_inputs or missing_outputs:
-            error_msg = []
-            if missing_inputs:
-                error_msg.append(f"Missing required inputs: {missing_inputs}")
+        if missing_inputs:
+            error_msg.append(f"Missing required inputs: {missing_inputs}")
+
+        for model_type in data.outputs:
+            missing_outputs = self.required_outputs - set(
+                data.outputs[model_type].keys()
+            )
             if missing_outputs:
-                error_msg.append(f"Missing required outputs: {missing_outputs}")
+                error_msg.append(
+                    "Missing required outputs for model type"
+                    f"{model_type.name}: {missing_outputs}"
+                )
+
+        if error_msg:
             raise ValueError(
                 f"Data validation failed for {self.__class__.__name__}: "
                 f"{' | '.join(error_msg)}"
@@ -61,7 +68,7 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset):
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
@@ -102,7 +109,7 @@ class BaseTask(ABC):
         # Iterate through each model type in the dataset outputs
         for model_type in data.outputs:
             # Run the task implementation for this model
-            self._run_task(data)
+            self._run_task(data, model_type)
 
             # Compute metrics based on task results
             metrics = self._compute_metrics()

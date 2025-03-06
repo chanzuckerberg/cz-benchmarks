@@ -1,7 +1,8 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.single_cell import SingleCellDataset
+from ..datasets.base import BaseDataset
+from ..models.types import ModelType
 from ..datasets.types import DataType
 from ..metrics import MetricType, metrics
 from .base import BaseTask
@@ -42,7 +43,7 @@ class BatchIntegrationTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset):
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Runs the batch integration evaluation task.
 
         Gets embedding coordinates, batch labels and cell type labels from the dataset
@@ -51,7 +52,7 @@ class BatchIntegrationTask(BaseTask):
         Args:
             data: Dataset containing embedding and labels
         """
-        self.embedding = data.get_output(DataType.EMBEDDING)
+        self.embedding = data.get_output(model_type, DataType.EMBEDDING)
         self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
         self.labels = data.get_input(DataType.METADATA)[self.label_key]
 
