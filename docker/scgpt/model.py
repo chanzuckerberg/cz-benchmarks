@@ -49,7 +49,9 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
             gene_col="gene_name",
             batch_size=32,
         )
-        dataset.set_output(DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"])
+        dataset.set_output(
+            self.model_type, DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"]
+        )
 
 
 if __name__ == "__main__":
