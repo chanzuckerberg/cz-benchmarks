@@ -5,6 +5,8 @@ from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
     silhouette_score,
+    r2_score,
+    mean_squared_error,
 )
 
 from ..tasks.utils import compute_entropy_per_cell
@@ -44,7 +46,7 @@ metrics.register(
 metrics.register(
     MetricType.ENTROPY_PER_CELL,
     func=compute_entropy_per_cell,
-    required_args={"embedding", "batch_labels"},
+    required_args={"X", "labels"},
     description=(
         "Computes entropy of batch labels in local neighborhoods. "
         "Higher values indicate better batch mixing."
@@ -55,12 +57,29 @@ metrics.register(
 metrics.register(
     MetricType.BATCH_SILHOUETTE,
     func=silhouette_batch,
-    required_args={"embedding", "labels", "batch_labels"},
+    required_args={"X", "labels", "batch_labels"},
     description=(
         "Batch-aware silhouette score that measures how well cells "
         "cluster across batches."
     ),
     tags={"integration"},
+)
+
+# Perturbation metrics
+metrics.register(
+    MetricType.MEAN_SQUARED_ERROR,
+    func=mean_squared_error,
+    required_args={"y_true", "y_pred"},
+    description="Mean squared error between true and predicted values",
+    tags={"perturbation"},
+)
+
+metrics.register(
+    MetricType.R2_SCORE,
+    func=r2_score,
+    required_args={"y_true", "y_pred"},
+    description="Pearson correlation between true and predicted values",
+    tags={"perturbation"},
 )
 
 

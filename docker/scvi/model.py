@@ -49,7 +49,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         vae_q.is_trained = True
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
 
-        dataset.set_output(DataType.EMBEDDING, qz_m)
+        dataset.set_output(self.model_type, DataType.EMBEDDING, qz_m)
 
 
 if __name__ == "__main__":

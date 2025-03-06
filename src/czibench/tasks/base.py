@@ -3,6 +3,8 @@ from typing import Dict, List, Set, Union
 
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
+from ..models.types import ModelType
+from ..metrics.types import MetricType
 
 
 class BaseTask(ABC):
@@ -59,7 +61,7 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset) -> BaseDataset:
+    def _run_task(self, data: BaseDataset):
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
@@ -73,16 +75,47 @@ class BaseTask(ABC):
         """
 
     @abstractmethod
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Compute evaluation metrics for the task.
 
         Returns:
             Dictionary mapping metric names to their float values
         """
 
-    def run(
-        self, data: Union[BaseDataset, List[BaseDataset]]
-    ) -> Union[Dict[str, float], List[Dict[str, float]]]:
+    def _run_task_for_dataset(
+        self, data: BaseDataset
+    ) -> Dict[ModelType, Dict[MetricType, float]]:
+        """Run task for a single dataset and compute metrics for each model.
+
+        This method iterates through all model outputs in the dataset,
+        runs the task for each model, and computes the corresponding metrics.
+
+        Args:
+            data: Dataset containing required input and output data
+
+        Returns:
+            Dictionary mapping model types to their metric results
+        """
+        # Store metrics for each model in the dataset
+        all_metrics_per_model = {}
+
+        # Iterate through each model type in the dataset outputs
+        for model_type in data.outputs:
+            # Run the task implementation for this model
+            self._run_task(data)
+
+            # Compute metrics based on task results
+            metrics = self._compute_metrics()
+
+            # Store metrics for this model
+            all_metrics_per_model[model_type] = metrics
+
+        return all_metrics_per_model  # Return metrics for all models
+
+    def run(self, data: Union[BaseDataset, List[BaseDataset]]) -> Union[
+        Dict[ModelType, Dict[MetricType, float]],
+        List[Dict[ModelType, Dict[MetricType, float]]],
+    ]:
         """Run the task on input data and compute metrics.
 
         Args:
@@ -90,13 +123,14 @@ class BaseTask(ABC):
                 required input and output data types.
 
         Returns:
-            For single dataset: Dictionary of metric name to value
+            For single dataset: Dictionary of model types to metric results
             For multiple datasets: List of metric dictionaries, one per dataset
 
         Raises:
             ValueError: If data is invalid type or missing required fields
             ValueError: If task requires multiple datasets but single dataset provided
         """
+        # Validate input data type and required fields
         if isinstance(data, BaseDataset):
             self.validate(data)
         elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):
@@ -105,16 +139,17 @@ class BaseTask(ABC):
         else:
             raise ValueError(f"Invalid data type: {type(data)}")
 
+        # Check if task requires multiple datasets
         if self.requires_multiple_datasets and not isinstance(data, list):
             raise ValueError("This task requires a list of datasets")
 
+        # Handle single vs multiple datasets
         if isinstance(data, list) and not self.requires_multiple_datasets:
+            # Process each dataset individually
             all_metrics = []
             for d in data:
-                self._run_task(d)
-                metrics = self._compute_metrics()
-                all_metrics.append(metrics)
+                all_metrics.append(self._run_task_for_dataset(d))
             return all_metrics
         else:
-            self._run_task(data)
-            return self._compute_metrics()
+            # Process single dataset or multiple datasets as required by the task
+            return self._run_task_for_dataset(data)

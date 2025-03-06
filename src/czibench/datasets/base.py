@@ -4,12 +4,13 @@ from typing import Any, Dict, Type
 import dill
 
 from .types import DataType, DataValue
+from ..models.types import ModelType, ModelOutputs
 
 
 class BaseDataset(ABC):
     def __init__(self, path: str, **kwargs: Any):
         self._inputs: Dict[DataType, DataValue] = {}
-        self._outputs: Dict[DataType, DataValue] = {}
+        self._outputs: ModelOutputs = {}
 
         self.path = path
         self.kwargs = kwargs
@@ -23,7 +24,7 @@ class BaseDataset(ABC):
         return self._inputs
 
     @property
-    def outputs(self) -> Dict[DataType, DataValue]:
+    def outputs(self) -> ModelOutputs:
         """Get the outputs dictionary."""
         return self._outputs
 
@@ -82,10 +83,14 @@ class BaseDataset(ABC):
         self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
         self._inputs[data_type] = value
 
-    def set_output(self, data_type: DataType, value: DataValue) -> None:
+    def set_output(
+        self, model_type: ModelType, data_type: DataType, value: DataValue
+    ) -> None:
         """Safely set an output with type checking."""
         self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
-        self._outputs[data_type] = value
+        if model_type not in self._outputs:
+            self._outputs[model_type] = {}
+        self._outputs[model_type][data_type] = value
 
     def get_input(self, data_type: DataType) -> DataValue:
         """Safely get an input with error handling."""
@@ -93,11 +98,15 @@ class BaseDataset(ABC):
             raise KeyError(f"Input {data_type.name} not found")
         return self._inputs[data_type]
 
-    def get_output(self, data_type: DataType) -> DataValue:
+    def get_output(self, model_type: ModelType, data_type: DataType) -> DataValue:
         """Safely get an output with error handling."""
-        if data_type not in self._outputs:
-            raise KeyError(f"Output {data_type.name} not found")
-        return self._outputs[data_type]
+        if model_type not in self._outputs:
+            raise KeyError(f"Outputs for model {model_type.name} not found")
+        if data_type not in self._outputs[model_type]:
+            raise KeyError(
+                f"Output {data_type.name} not found for model {model_type.name}"
+            )
+        return self._outputs[model_type][data_type]
 
     @abstractmethod
     def _validate(self) -> None:

@@ -55,7 +55,7 @@ class BatchIntegrationTask(BaseTask):
         self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
         self.labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes batch integration quality metrics.
 
         Returns:

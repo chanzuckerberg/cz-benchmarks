@@ -8,6 +8,7 @@ from sklearn.metrics import (
 from ..base import BaseTask
 from ...datasets.single_cell import PerturbationSingleCellDataset
 from ...datasets.types import DataType
+from ...metrics import MetricType
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class PerturbationTask(BaseTask):
             name="ctrl",
         )
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes perturbation prediction quality metrics.
 
         For each perturbation, computes:
@@ -69,6 +70,9 @@ class PerturbationTask(BaseTask):
         metrics = {}
 
         avg_perturbation_control = self.perturbation_ctrl
+
+        MetricType.MEAN_SQUARED_ERROR
+        MetricType.R2_SCORE
 
         for key in self.perturbation_pred.keys():
             if key in self.perturbation_truth.keys():

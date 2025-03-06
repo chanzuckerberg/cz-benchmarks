@@ -179,7 +179,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         logger.info("Completed cross-validation for all classifiers")
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics

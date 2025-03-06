@@ -1,9 +1,8 @@
 from typing import Dict, Set, List
 import numpy as np
-from scib_metrics import silhouette_batch
 
 from ..base import BaseTask
-from ..utils import compute_entropy_per_cell
+from ...metrics import MetricType, metrics
 from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
 
@@ -67,17 +66,26 @@ class CrossSpeciesIntegrationTask(BaseTask):
             [[d.organism.name] * d.adata.shape[0] for d in data]
         )
 
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        """Computes cross-species integration quality metrics.
+    def _compute_metrics(self) -> Dict[MetricType, float]:
+        """Computes batch integration quality metrics.
 
         Returns:
-            Dictionary containing entropy per cell and species-aware silhouette scores
+            Dictionary containing entropy per cell and batch-aware silhouette scores
         """
+
+        entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
+        silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+
         return {
-            "entropy_per_cell": compute_entropy_per_cell(self.embedding, self.species),
-            "silhouette_score": silhouette_batch(
-                self.embedding, self.labels, self.species
+            entropy_per_cell_metric.value: metrics.compute(
+                entropy_per_cell_metric,
+                X=self.embedding,
+                labels=self.batch_labels,
+            ),
+            silhouette_batch_metric.value: metrics.compute(
+                silhouette_batch_metric,
+                X=self.embedding,
+                labels=self.labels,
+                batch_labels=self.batch_labels,
             ),
         }

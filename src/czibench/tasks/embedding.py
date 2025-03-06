@@ -52,7 +52,7 @@ class EmbeddingTask(BaseTask):
         self.embedding = data.get_output(DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes embedding quality metrics.
 
         Returns:
