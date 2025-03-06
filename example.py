@@ -16,7 +16,7 @@ def main():
     if args.model_mode == 'local':
         dataset = init_dataset("example-local", config_path="custom.yaml")
         if args.model_runtime == 'sagemaker':
-            raise NotImplementedError("SageMaker local model execution is not implemented yet.")
+            runner = SageMakerRunner(model_resource_url="file://model-serving/runtimes/sagemaker/scvi/scvi_model_code.tar.gz")
         elif args.model_runtime == 'mlflow':
             runner = MLflowModelRunner(model_resource_url="model-serving/runtimes/mlflow/scvi/runtime")
         elif args.model_runtime == 'bentoml':
@@ -27,7 +27,7 @@ def main():
             runner = SageMakerRunner(model_endpoint="scvi-endpoint")
         if args.model_runtime == 'mlflow':
             dataset = init_dataset("example-remote-mlflow", config_path="custom.yaml")
-            runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi4/invocations")
+            runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi5/invocations")
     
     if runner is None:
         raise ValueError(f"Unsupported model runtime type: {args.model_runtime} ({args.model_mode})")
