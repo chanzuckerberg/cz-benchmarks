@@ -10,17 +10,17 @@ from ..datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 
 class YourModelValidator(BaseSingleCellValidator):
-    """Validation requirements for scVI models.
+    """Validation requirements for your model.
 
-    Validates datasets for use with Single-cell Variational Inference models.
+    Validates datasets for use with your model.
     Requires detailed metadata about the dataset, assay, and donor information.
-    Supports both human and mouse data.
+    Supports multiple organisms.
 
     """
 
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = ["cell_type", "batch"]
-    required_var_keys = ["gene_symbol"]
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = ["cell_type", "batch", "donor_id"]
+    required_var_keys = ["gene_symbol", "feature_type"]
 
     @property
     def inputs(self) -> Set[DataType]:
@@ -39,7 +39,6 @@ class YourModelValidator(BaseSingleCellValidator):
             Set containing embedding output type
         """
         return {DataType.EMBEDDING}
-
 ```
 
 2. **Update __init__.py**:
@@ -51,6 +50,9 @@ class YourModelValidator(BaseSingleCellValidator):
 - Use descriptive variable names
 - Add logging for validation steps
 - Follow existing validator patterns
+- Implement comprehensive validation checks
+- Support multiple organisms when possible
+- Include detailed error messages
 
 ## Example Usage
 

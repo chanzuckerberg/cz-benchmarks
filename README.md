@@ -53,14 +53,19 @@ This is a benchmarking framework for machine learning models (with a focus on si
 #### Base Classes
 
 - `czibench.datasets.base.BaseDataset`: Abstract base class for all datasets
-- `czibench.models.base.BaseModel`: Abstract base class for all models
+- `czibench.models.implementations.base_model_implementation.BaseModelImplementation`: Abstract base class for all model implementations
+- `czibench.models.validators.base_model_validator.BaseModelValidator`: Abstract base class for model validation
 - `czibench.tasks.base.BaseTask`: Abstract base class for evaluation tasks
 
 #### Container System
 
 - Uses Docker for model execution
-- Models are packaged as Docker containers
-
+- Models are packaged as Docker containers with standardized interfaces
+- Each model container includes:
+  - Model implementation inheriting from `BaseModelImplementation`
+  - Model-specific validator inheriting from `BaseModelValidator`
+  - Configuration file (config.yaml)
+  - Requirements file (requirements.txt)
 
 ### Available Models
 
@@ -88,37 +93,39 @@ docker/your_model/
 
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
-2. Implement your base model class in `src/czibench/models/`. This should implement the model-specific validator (`_validate_model_requirements`).
+2. Implement your model validator in `src/czibench/models/validators/`. This should inherit from `BaseModelValidator` or `BaseSingleCellValidator` and implement:
+   - Required data type specifications
+   - Model-specific validation rules
+   - Supported organisms and data requirements
 
-3. Implement the model class in `model.py` (see template):
+3. Implement your model class in `model.py` (see template):
 
 ```python
-"""
-REQUIRED MODEL IMPLEMENTATION FILE
+from czibench.models.implementations.base_model_implementation import BaseModelImplementation
+from czibench.models.validators.your_model import YourModelValidator
 
-This file MUST:
-1. Define a model class that inherits from your base model class that you implemented in the benchmarking library (e.g. ScviValidator)
-2. Implement the run_model() method
-3. Create an instance and call run() if used as main
+class YourModel(YourModelValidator, BaseModelImplementation):
+    def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
+        """Specify subdirectory for model weights."""
+        return dataset.organism.name
 
-Example implementation for a single-cell model:
-"""
+    def _download_model_weights(self, dataset: BaseDataset):
+        """Download model weights from your source."""
+        # Implement model weight downloading logic
+        pass
 
-from czibench.models.single_cell import BaseYourModel
+    def run_model(self, dataset: BaseDataset):
+        """Implement your model's inference logic."""
+        # Access input data via dataset.adata
+        # Set output embedding via dataset.set_output()
+        pass
 
-class ExampleModel(BaseYourModel):
-
-    def run_model(self):
-        """
-        Required: Implement your model's inference logic here.
-        Access input data via self.data.adata
-        Set output embedding via self.data.output_embedding
-        """
-        # Add your model implementation here
-        raise NotImplementedError("Model implementation required")
+    def parse_args(self):
+        """Parse model-specific arguments."""
+        pass
 
 if __name__ == "__main__":
-    ExampleModel().run()
+    YourModel().run()
 ```
 
 ### Adding New Tasks
