@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Set
+import scanpy as sc
 
 from ..datasets.single_cell import SingleCellDataset
 from ..datasets.types import DataType
@@ -76,29 +77,26 @@ class ClusteringTask(BaseTask):
         }
 
     def run_baseline(
-        self,
-        data: SingleCellDataset,
-        min_genes=200,
-        min_cells=3,
-        target_sum=1e4,
-        min_mean=0.0125,
-        max_mean=3,
-        min_disp=0.5,
-        n_pcs=50,
-        resolution=0.5,
-        random_state=42,
+        self, data: SingleCellDataset, n_top_genes=3000, n_pcs=50, random_state=42
     ):
-        import scanpy as sc
-
-        adata = data.get_input(DataType.METADATA)
-        sc.pp.filter_cells(adata, min_genes=min_genes)
-        sc.pp.filter_genes(adata, min_cells=min_cells)
-        sc.pp.normalize_total(adata, target_sum=target_sum)
+        adata = data.get_input(DataType.ANNDATA)
+        sc.pp.normalize_total(adata)
         sc.pp.log1p(adata)
-        sc.pp.normalize_total(adata, target_sum=target_sum)
-        hvg_params = dict(min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
-        sc.pp.highly_variable_genes(adata, **hvg_params)
+        sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat_v3")
         adata = adata[:, adata.var["highly_variable"]]
         sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
-        sc.pp.neighbors(adata, use_rep="X_pca")
-        sc.tl.leiden(adata, resolution=resolution, random_state=random_state)
+
+        orig_embedding = None
+        try:
+            orig_embedding = data.get_input(DataType.EMBEDDING)
+        except KeyError:
+            pass
+
+        data.set_input(DataType.EMBEDDING, adata.obsm["X_pca"])
+
+        baseline_metrics = self.run(data)
+
+        if orig_embedding is not None:
+            data.set_input(DataType.EMBEDDING, orig_embedding)
+
+        return baseline_metrics
