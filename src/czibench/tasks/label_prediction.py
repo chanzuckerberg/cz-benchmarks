@@ -249,21 +249,30 @@ class MetadataLabelPredictionTask(BaseTask):
             Dictionary containing baseline classification metrics
         """
 
+        # Store the original embedding if it exists
         orig_embedding = None
         try:
             orig_embedding = data.get_input(DataType.EMBEDDING)
         except KeyError:
+            # No embedding exists yet, which is fine
             pass
 
+        # Get the AnnData object from the dataset
         adata = data.get_input(DataType.ANNDATA)
 
+        # Extract gene expression matrix
         X = adata.X
+        # Convert sparse matrix to dense if needed
         if sp.sparse.issparse(X):
             X = X.toarray()
 
+        # Use raw gene expression as the "embedding" for baseline classification
         data.set_input(DataType.EMBEDDING, X)
 
+        # Run the classification task with gene expression features
         baseline_metrics = self.run(data)
+
+        # Restore the original embedding if it existed
         if orig_embedding is not None:
             data.set_input(DataType.EMBEDDING, orig_embedding)
 
