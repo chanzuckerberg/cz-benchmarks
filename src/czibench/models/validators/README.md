@@ -10,7 +10,13 @@ from ..datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 
 class YourModelValidator(BaseSingleCellValidator):
-    """Validation requirements for your model."""
+    """Validation requirements for scVI models.
+
+    Validates datasets for use with Single-cell Variational Inference models.
+    Requires detailed metadata about the dataset, assay, and donor information.
+    Supports both human and mouse data.
+
+    """
 
     available_organisms = [Organism.HUMAN]
     required_obs_keys = ["cell_type", "batch"]
@@ -18,16 +24,22 @@ class YourModelValidator(BaseSingleCellValidator):
 
     @property
     def inputs(self) -> Set[DataType]:
-        return {DataType.ANNDATA}
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData and metadata requirements
+        """
+        return {DataType.ANNDATA, DataType.METADATA}
 
     @property
     def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
         return {DataType.EMBEDDING}
 
-    def validate_dataset(self, dataset: BaseDataset):
-        """Add custom validation logic here."""
-        if dataset.n_cells < 1000:
-            raise ValueError("Model requires at least 1000 cells")
 ```
 
 2. **Update __init__.py**:
