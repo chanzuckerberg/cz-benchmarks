@@ -120,7 +120,7 @@ class BaseDataset(ABC):
         for data_type, value in self.inputs.items():
             self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
 
-        for _, model_outputs in self.outputs.items():
+        for model_outputs in self.outputs.values():
             for data_type, value in model_outputs.items():
                 self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
 
