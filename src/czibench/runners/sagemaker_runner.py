@@ -166,12 +166,13 @@ def serve_model_locally(model_resource_url):
 
     # Create the PyTorch model for local mode.
     pytorch_model = PyTorchModel(
+        # TODO: Since source_dir is required, passing the tgz file (packaged code) might not be necessary for local mode?
         model_data=model_resource_url,
         role=ROLE,
         framework_version="2.5",
         py_version="py311",
         entry_point="inference.py",
-        source_dir="code/",
+        source_dir="model-serving/runtimes/sagemaker/scvi/code/",
         sagemaker_session=sagemaker_session,
         name=MODEL_NAME,
     )
@@ -179,7 +180,7 @@ def serve_model_locally(model_resource_url):
 
     # Deploy the model locally.
     # Use instance_type="local" (or "local_gpu" if GPU support is available).
-    predictor = pytorch_model.deploy(initial_instance_count=1, instance_type="local_gpu")
+    predictor = pytorch_model.deploy(initial_instance_count=1, instance_type="local8546183748")
     logger.info("Model is deployed locally and ready to accept predictions.")
 
     return predictor
