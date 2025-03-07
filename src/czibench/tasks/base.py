@@ -116,12 +116,12 @@ class BaseTask(ABC):
 
             # Compute metrics based on task results
             metrics = self._compute_metrics()
-            
+
             # Convert numpy floats to python floats where possible
             for metric_name, metric_value in metrics.items():
                 try:
                     metrics[metric_name] = float(metric_value)
-                except:
+                except ValueError:
                     pass
 
             # Store metrics for this model
@@ -129,7 +129,11 @@ class BaseTask(ABC):
 
         return all_metrics_per_model  # Return metrics for all models
 
-    def run(self, data: Union[BaseDataset, List[BaseDataset]], model_types: Optional[List[ModelType]] = None) -> Union[
+    def run(
+        self,
+        data: Union[BaseDataset, List[BaseDataset]],
+        model_types: Optional[List[ModelType]] = None,
+    ) -> Union[
         Dict[ModelType, Dict[MetricType, float]],
         List[Dict[ModelType, Dict[MetricType, float]]],
     ]:

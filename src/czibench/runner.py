@@ -18,40 +18,44 @@ from .constants import (
 from .datasets.base import BaseDataset
 from .models.types import ModelType
 
+
 class ContainerRunner:
-    """Handles Docker container execution logic for running models in isolated environments"""
+    """
+    Handles Docker container execution logic for running models
+    in isolated environments
+    """
 
     def __init__(
-        self, 
+        self,
         model_name: Union[str, ModelType],
-        gpu: bool = False, 
-        interactive: bool = False, 
-        **kwargs: Any
+        gpu: bool = False,
+        interactive: bool = False,
+        **kwargs: Any,
     ):
         """Initialize the ContainerRunner.
-        
+
         Args:
             model_name: Name of model from models.yaml config or ModelType enum
             gpu: Whether to use GPU acceleration for model execution
             interactive: Whether to run in interactive mode with a bash shell
-            kwargs: Additional arguments to pass to the container as command line parameters
+            kwargs: Additional arguments to pass to the container as CLI params
         """
         # Load models config from the default location
         default_config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
             "conf",
-            "models.yaml"
+            "models.yaml",
         )
-        
+
         with open(default_config_path) as f:
             cfg = OmegaConf.create(yaml.safe_load(f))
-            
+
         # Convert string model name to ModelType enum for dataset compatibility
         if isinstance(model_name, str):
             model_type = ModelType[model_name.upper()]
         else:
             model_type = model_name
-            
+
         # Use model type name for config lookup
         model_key = model_type.name
         if model_key not in cfg.models:
@@ -60,7 +64,7 @@ class ContainerRunner:
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
         self.model_type = model_type  # Store model_type for dataset compatibility
-            
+
         self.gpu = gpu
         self.interactive = interactive
         self.cli_args = kwargs
@@ -70,10 +74,10 @@ class ContainerRunner:
         self, datasets: Union[BaseDataset, List[BaseDataset]]
     ) -> Union[BaseDataset, List[BaseDataset]]:
         """Run the model on one or more datasets.
-        
+
         Args:
             datasets: A single dataset or list of datasets to process
-            
+
         Returns:
             The processed dataset(s) with model outputs attached
         """
@@ -145,16 +149,16 @@ class ContainerRunner:
                     )
                     dataset = BaseDataset.deserialize(output_path)
                     dataset.path = orig_paths[i]  # Restore original path
-                    
+
                     # Get new outputs from container
                     new_outputs = dataset.outputs
-                    
+
                     # Restore original outputs but exclude current model
                     dataset._outputs = orig_outputs[i]
-                    
+
                     # Add new outputs from container
                     dataset.outputs[self.model_type] = new_outputs[self.model_type]
-                    
+
                     dataset.load_data()  # Load the dataset back into memory
                     result_datasets.append(dataset)
 
@@ -162,17 +166,19 @@ class ContainerRunner:
 
             except Exception as e:
                 # Restore original paths and outputs on error
-                for dataset, orig_path, orig_output in zip(datasets, orig_paths, orig_outputs):
+                for dataset, orig_path, orig_output in zip(
+                    datasets, orig_paths, orig_outputs
+                ):
                     dataset.path = orig_path
                     dataset._outputs = orig_output
                 raise e
 
     def _run_container(self, volumes: dict):
         """Run the Docker container with the specified volumes.
-        
+
         Args:
             volumes: Dictionary mapping host paths to container mount points
-        
+
         Raises:
             RuntimeError: If the container exits with a non-zero status code
         """
@@ -224,7 +230,7 @@ class ContainerRunner:
 
     def _get_weights_cache_path(self):
         """Get the path to the model weights cache directory.
-        
+
         Returns:
             Path to the model-specific weights cache directory
         """
@@ -232,15 +238,17 @@ class ContainerRunner:
         return os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))
 
 
-def run_inference(model_name: str, dataset: BaseDataset, gpu: bool = True, interactive: bool = False) -> BaseDataset:
+def run_inference(
+    model_name: str, dataset: BaseDataset, gpu: bool = True, interactive: bool = False
+) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
-    
+
     Args:
         model_name: Name of the model to run
         dataset: Dataset to process
         gpu: Whether to use GPU acceleration
         interactive: Whether to run in interactive mode
-        
+
     Returns:
         The processed dataset with model outputs attached
     """

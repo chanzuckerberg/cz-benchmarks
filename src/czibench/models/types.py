@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Dict
 from ..datasets.types import DataType, DataValue
 
+
 class ModelType(Enum):
     BASELINE = "BASELINE"
     SCVI = "SCVI"
@@ -23,6 +24,7 @@ class ModelType(Enum):
 
     def __repr__(self):
         return self.name
+
 
 # Type alias for model outputs
 ModelOutputs = Dict[ModelType, Dict[DataType, DataValue]]

@@ -4,10 +4,10 @@ from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictio
 
 if __name__ == "__main__":
     dataset = load_dataset("example", config_path="custom.yaml")
-    
+
     for model_name in ["SCVI", "SCGPT"]:
         dataset = run_inference(model_name, dataset)
-        
+
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(dataset)
 
