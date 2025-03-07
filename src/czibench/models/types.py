@@ -1,5 +1,7 @@
 from typing import Dict
 from ..datasets.types import DataType, DataValue
+
+
 class ModelType:
     """Registry for model types."""
 
