@@ -44,7 +44,7 @@ metrics.register(
 metrics.register(
     MetricType.ENTROPY_PER_CELL,
     func=compute_entropy_per_cell,
-    required_args={"embedding", "batch_labels"},
+    required_args={"X", "labels"},
     description=(
         "Computes entropy of batch labels in local neighborhoods. "
         "Higher values indicate better batch mixing."
@@ -55,7 +55,7 @@ metrics.register(
 metrics.register(
     MetricType.BATCH_SILHOUETTE,
     func=silhouette_batch,
-    required_args={"embedding", "labels", "batch_labels"},
+    required_args={"X", "labels", "batch_labels"},
     description=(
         "Batch-aware silhouette score that measures how well cells "
         "cluster across batches."
@@ -68,12 +68,21 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     """Compute mean of a metric across folds.
 
     Args:
-        results_df: DataFrame containing cross-validation results
+        results_df: DataFrame containing cross-validation results. Must have columns:
+            - "classifier": Name of the classifier (e.g., "lr", "knn")
+            - One of the following metric columns:
+                - "accuracy": For accuracy scores
+                - "f1": For F1 scores
+                - "precision": For precision scores
+                - "recall": For recall scores
         metric: Name of metric column to average ("accuracy", "f1", etc.)
         classifier: Optional classifier name to filter results
 
     Returns:
         Mean value of the metric across folds
+
+    Raises:
+        KeyError: If the specified metric column is not present in results_df
     """
     if classifier:
         df = results_df[results_df["classifier"] == classifier]
