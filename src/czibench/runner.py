@@ -139,7 +139,7 @@ class ContainerRunner:
 
                 # Load and process results
                 result_datasets = []
-                for i in range(len(datasets)):
+                for i, _ in enumerate(datasets):
                     output_path = get_numbered_path(
                         os.path.join(
                             output_dir,
