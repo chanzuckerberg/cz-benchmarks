@@ -6,6 +6,7 @@ from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
 from ..base import BaseTask
 from ...metrics import MetricType, metrics
+from ...models.types import ModelType
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
