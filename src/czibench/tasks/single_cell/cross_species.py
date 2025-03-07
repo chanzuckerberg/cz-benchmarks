@@ -1,11 +1,11 @@
-from typing import Dict, Set, List
+from typing import Dict, List, Set
+
 import numpy as np
 
-from ..base import BaseTask
-from ...metrics import MetricType, metrics
 from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
-from ...models.types import ModelType
+from ..base import BaseTask
+from ...metrics import MetricType, metrics
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -83,12 +83,12 @@ class CrossSpeciesIntegrationTask(BaseTask):
             entropy_per_cell_metric.value: metrics.compute(
                 entropy_per_cell_metric,
                 X=self.embedding,
-                labels=self.batch_labels,
+                labels=self.species,
             ),
             silhouette_batch_metric.value: metrics.compute(
                 silhouette_batch_metric,
                 X=self.embedding,
                 labels=self.labels,
-                batch_labels=self.batch_labels,
+                batch_labels=self.species,
             ),
         }

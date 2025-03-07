@@ -69,12 +69,12 @@ class BatchIntegrationTask(BaseTask):
         return {
             entropy_per_cell_metric.value: metrics.compute(
                 entropy_per_cell_metric,
-                embedding=self.embedding,
-                batch_labels=self.batch_labels,
+                X=self.embedding,
+                labels=self.batch_labels,
             ),
             silhouette_batch_metric.value: metrics.compute(
                 silhouette_batch_metric,
-                embedding=self.embedding,
+                X=self.embedding,
                 labels=self.labels,
                 batch_labels=self.batch_labels,
             ),
