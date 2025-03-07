@@ -4,6 +4,7 @@ from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 
+
 class ScGPTValidator(BaseSingleCellValidator):
     """Validation requirements for ScGPT models.
 
@@ -34,4 +35,3 @@ class ScGPTValidator(BaseSingleCellValidator):
             Set containing embedding output type
         """
         return {DataType.EMBEDDING}
-

@@ -4,6 +4,7 @@ from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 
+
 class UCEValidator(BaseSingleCellValidator):
     """Validation requirements for UCE models.
 
@@ -25,6 +26,7 @@ class UCEValidator(BaseSingleCellValidator):
     required_obs_keys = []
     required_var_keys = ["gene_symbol"]
     model_type = ModelType.register("UCE")
+
     @property
     def inputs(self) -> Set[DataType]:
         """Required input data types.
@@ -42,4 +44,3 @@ class UCEValidator(BaseSingleCellValidator):
             Set containing embedding output type
         """
         return {DataType.EMBEDDING}
-

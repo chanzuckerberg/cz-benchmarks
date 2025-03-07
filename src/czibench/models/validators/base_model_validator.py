@@ -56,7 +56,6 @@ class BaseModelValidator(ABC):
                 f"Can't instantiate {cls.__name__}"
                 " without dataset_type class variable"
             )
-            
 
     @abstractmethod
     def _validate_dataset(self, dataset: BaseDataset):

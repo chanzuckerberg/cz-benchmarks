@@ -4,6 +4,7 @@ from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 
+
 class GeneformerValidator(BaseSingleCellValidator):
     """Validation requirements for Geneformer models.
 
@@ -15,7 +16,7 @@ class GeneformerValidator(BaseSingleCellValidator):
     required_obs_keys = []
     required_var_keys = ["feature_id"]
     model_type = ModelType.register("GENEFORMER")
-    
+
     @property
     def inputs(self) -> Set[DataType]:
         """Required input data types.

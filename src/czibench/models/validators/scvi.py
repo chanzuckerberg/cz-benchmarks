@@ -18,6 +18,7 @@ class SCVIValidator(BaseSingleCellValidator):
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
     required_var_keys = []
     model_type = ModelType.register("SCVI")
+
     @property
     def inputs(self) -> Set[DataType]:
         """Required input data types.

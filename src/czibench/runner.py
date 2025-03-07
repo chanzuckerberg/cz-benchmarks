@@ -19,7 +19,9 @@ from .datasets.base import BaseDataset
 class ContainerRunner:
     """Handles Docker container execution logic"""
 
-    def __init__(self, image: str, gpu: bool = False, interactive: bool = False, **kwargs: Any):
+    def __init__(
+        self, image: str, gpu: bool = False, interactive: bool = False, **kwargs: Any
+    ):
         self.image = image
         self.gpu = gpu
         self.interactive = interactive
@@ -104,6 +106,7 @@ class ContainerRunner:
                 for dataset, orig_path in zip(datasets, orig_paths):
                     dataset.path = orig_path
                 raise e
+
     def _run_container(self, volumes: dict):
         image_name = self.image.split("/")[-1].split(":")[0]
         model_weights_cache_path = os.path.expanduser(
@@ -125,7 +128,9 @@ class ContainerRunner:
             runtime="nvidia" if self.gpu else None,
             tty=self.interactive,  # Add TTY for interactive mode
             stdin_open=self.interactive,  # Keep STDIN open for interactive mode
-            entrypoint="" if self.interactive else None,  # Override entrypoint for interactive mode
+            entrypoint=(
+                "" if self.interactive else None
+            ),  # Override entrypoint for interactive mode
         )
 
         try:

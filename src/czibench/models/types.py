@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Dict
 
 from ..datasets.types import DataType, DataValue
@@ -6,7 +5,7 @@ from ..datasets.types import DataType, DataValue
 
 class ModelType:
     """Registry for model types."""
-    
+
     _registry = {}
 
     def __init__(self, name: str):
