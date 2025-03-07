@@ -68,9 +68,9 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         Args:
             dataset: Dataset being processed
         """
-        self.model_weights_dir = f"""
-        {MODEL_WEIGHTS_PATH_DOCKER}/{self.get_model_weights_subdir(dataset)}
-        """
+        self.model_weights_dir = (
+            f"{MODEL_WEIGHTS_PATH_DOCKER}/{self.get_model_weights_subdir(dataset)}"
+        )
 
         if not os.path.exists(self.model_weights_dir) or not any(
             os.listdir(self.model_weights_dir)
