@@ -1,8 +1,5 @@
 from typing import Dict
-
 from ..datasets.types import DataType, DataValue
-
-
 class ModelType:
     """Registry for model types."""
 
@@ -41,8 +38,14 @@ class ModelType:
         return self.name
 
 
-# Pre-register baseline
+# Pre-register model types
+# Note: These registrations must match the model_type registrations
+# in the corresponding validator classes
 ModelType.BASELINE = ModelType.register("BASELINE")
+ModelType.SCVI = ModelType.register("SCVI")
+ModelType.SCGPT = ModelType.register("SCGPT")
+ModelType.SCGENEPT = ModelType.register("SCGENEPT")
+ModelType.GENEFORMER = ModelType.register("GENEFORMER")
 
 # Type alias for model outputs
 ModelOutputs = Dict[ModelType, Dict[DataType, DataValue]]

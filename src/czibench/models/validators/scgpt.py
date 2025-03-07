@@ -4,7 +4,6 @@ from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 
-
 class ScGPTValidator(BaseSingleCellValidator):
     """Validation requirements for ScGPT models.
 
@@ -17,7 +16,6 @@ class ScGPTValidator(BaseSingleCellValidator):
     required_obs_keys = []
     required_var_keys = ["gene_symbol"]
     model_type = ModelType.register("SCGPT")
-
     @property
     def inputs(self) -> Set[DataType]:
         """Required input data types.
