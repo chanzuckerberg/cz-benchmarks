@@ -27,6 +27,9 @@ class MetricType(Enum):
     MEAN_FOLD_PRECISION = "mean_fold_precision"
     MEAN_FOLD_RECALL = "mean_fold_recall"
 
+    MEAN_SQUARED_ERROR = "mean_squared_error"
+    R2_SCORE = "r2_score"
+
 
 @dataclass
 class MetricInfo:

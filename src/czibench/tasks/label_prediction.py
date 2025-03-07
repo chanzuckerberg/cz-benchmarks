@@ -15,7 +15,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets.single_cell import SingleCellDataset
+from ..models.types import ModelType
+from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
 from ..metrics import MetricType, metrics
 from .base import BaseTask
@@ -77,7 +78,7 @@ class MetadataLabelPredictionTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset):
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
@@ -89,7 +90,7 @@ class MetadataLabelPredictionTask(BaseTask):
         logger.info(f"Starting prediction task for label key: {self.label_key}")
 
         # Get embedding and labels
-        embeddings = data.get_output(DataType.EMBEDDING)
+        embeddings = data.get_output(model_type, DataType.EMBEDDING)
         labels = data.get_input(DataType.METADATA)[self.label_key]
         logger.info(
             f"Initial data shape: {embeddings.shape}, " f"labels shape: {labels.shape}"
@@ -179,7 +180,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         logger.info("Completed cross-validation for all classifiers")
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics

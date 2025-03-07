@@ -1,13 +1,11 @@
 from typing import Dict, Set
 import pandas as pd
 import logging
-from sklearn.metrics import (
-    r2_score,
-    mean_squared_error,
-)
 from ..base import BaseTask
 from ...datasets.single_cell import PerturbationSingleCellDataset
 from ...datasets.types import DataType
+from ...metrics import MetricType
+from ...models.types import ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +37,7 @@ class PerturbationTask(BaseTask):
         """
         return {DataType.PERTURBATION_PRED}
 
-    def _run_task(self, data: PerturbationSingleCellDataset):
+    def _run_task(self, data: PerturbationSingleCellDataset, model_type: ModelType):
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -48,7 +46,9 @@ class PerturbationTask(BaseTask):
         Args:
             data: Dataset containing perturbation predictions and ground truth
         """
-        self.perturbation_pred = data.get_output(DataType.PERTURBATION_PRED)
+        self.gene_pert, self.perturbation_pred = data.get_output(
+            model_type, DataType.PERTURBATION_PRED
+        )
         self.perturbation_truth = data.perturbation_truth
         self.perturbation_ctrl = pd.Series(
             data=data.adata.X.mean(0).A.flatten(),
@@ -56,7 +56,7 @@ class PerturbationTask(BaseTask):
             name="ctrl",
         )
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes perturbation prediction quality metrics.
 
         For each perturbation, computes:
@@ -70,35 +70,41 @@ class PerturbationTask(BaseTask):
 
         avg_perturbation_control = self.perturbation_ctrl
 
-        for key in self.perturbation_pred.keys():
-            if key in self.perturbation_truth.keys():
-                metrics[key] = {}
+        mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR
+        r2_score_metric = MetricType.R2_SCORE
 
-                avg_perturbation_pred = self.perturbation_pred[key].mean(axis=0)
-                avg_perturbation_truth = self.perturbation_truth[key].mean(axis=0)
+        if self.gene_pert in self.perturbation_truth.keys():
 
-                intersecting_genes = list(
-                    set(avg_perturbation_pred.index)
-                    & set(avg_perturbation_truth.index)
-                    & set(avg_perturbation_control.index)
-                )
+            avg_perturbation_pred = self.perturbation_pred.mean(axis=0)
+            avg_perturbation_truth = self.perturbation_truth[self.gene_pert].mean(
+                axis=0
+            )
 
-                mse = mean_squared_error(
-                    avg_perturbation_pred[intersecting_genes],
-                    avg_perturbation_truth[intersecting_genes],
-                )
-                delta_pearson_corr = r2_score(
-                    avg_perturbation_pred[intersecting_genes]
-                    - avg_perturbation_control[intersecting_genes],
-                    avg_perturbation_truth[intersecting_genes]
-                    - avg_perturbation_control[intersecting_genes],
-                )
-                metrics[key]["mse"] = mse
-                metrics[key]["delta_pearson_corr"] = delta_pearson_corr
-            else:
-                logger.warning(
-                    f"Perturbation {key} is not available in the ground truth "
-                    "test perturbations. Skipping metrics for this perturbation."
-                )
+            intersecting_genes = list(
+                set(avg_perturbation_pred.index)
+                & set(avg_perturbation_truth.index)
+                & set(avg_perturbation_control.index)
+            )
 
-        return metrics
+            mse = metrics.compute(
+                mean_squared_error_metric,
+                y_true=avg_perturbation_truth[intersecting_genes],
+                y_pred=avg_perturbation_pred[intersecting_genes],
+            )
+            delta_pearson_corr = metrics.compute(
+                r2_score_metric,
+                y_true=avg_perturbation_truth[intersecting_genes]
+                - avg_perturbation_control[intersecting_genes],
+                y_pred=avg_perturbation_pred[intersecting_genes]
+                - avg_perturbation_control[intersecting_genes],
+            )
+
+            return {
+                mean_squared_error_metric.value: mse,
+                r2_score_metric.value: delta_pearson_corr,
+            }
+        else:
+            raise ValueError(
+                f"Perturbation {self.gene_pert} is not available in the ground truth "
+                "test perturbations."
+            )

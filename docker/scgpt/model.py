@@ -42,14 +42,16 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
-        adata.var["gene_name"] = adata.var["gene_symbol"]
+        adata.var["gene_name"] = adata.var["feature_name"]
         ref_embed_adata = scg.tasks.embed_data(
             adata,
             model_dir=self.model_weights_dir,
             gene_col="gene_name",
             batch_size=32,
         )
-        dataset.set_output(DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"])
+        dataset.set_output(
+            self.model_type, DataType.EMBEDDING, ref_embed_adata.obsm["X_scGPT"]
+        )
 
 
 if __name__ == "__main__":

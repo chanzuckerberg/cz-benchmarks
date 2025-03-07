@@ -6,6 +6,7 @@ from ...datasets.single_cell import SingleCellDataset
 from ...datasets.types import DataType
 from ..base import BaseTask
 from ...metrics import MetricType, metrics
+from ...models.types import ModelType
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -49,7 +50,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         """
         return True
 
-    def _run_task(self, data: List[SingleCellDataset]):
+    def _run_task(self, data: List[SingleCellDataset], model_type: ModelType):
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
@@ -59,7 +60,9 @@ class CrossSpeciesIntegrationTask(BaseTask):
             data: List of datasets containing embeddings and labels from different
                   species
         """
-        self.embedding = np.vstack([d.get_output(DataType.EMBEDDING) for d in data])
+        self.embedding = np.vstack(
+            [d.get_output(model_type, DataType.EMBEDDING) for d in data]
+        )
         self.labels = np.concatenate(
             [d.get_input(DataType.METADATA)[self.label_key] for d in data]
         )
@@ -67,13 +70,11 @@ class CrossSpeciesIntegrationTask(BaseTask):
             [[d.organism.name] * d.adata.shape[0] for d in data]
         )
 
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        """Computes cross-species integration quality metrics.
+    def _compute_metrics(self) -> Dict[MetricType, float]:
+        """Computes batch integration quality metrics.
 
         Returns:
-            Dictionary containing entropy per cell and species-aware silhouette scores
+            Dictionary containing entropy per cell and batch-aware silhouette scores
         """
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL

@@ -8,20 +8,16 @@ RUN apt-get update && \
 COPY docker/scvi/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY src /app/package/src
+COPY setup.py /app/package/setup.py
+COPY requirements.txt /app/package/requirements.txt
+
+RUN pip install -e /app/package
+
 COPY docker/scvi/model.py .
 COPY docker/scvi/utils.py .
 COPY docker/scvi/config.yaml .
 COPY docker/scvi/hvg_names_homo_sapiens.csv.gz .
 COPY docker/scvi/hvg_names_mus_musculus.csv.gz .
-
-COPY src /app/package/src
-COPY setup.py /app/package/setup.py
-COPY requirements.txt /app/package/requirements.txt
-COPY README.md /app/package/README.md
-
-RUN pip install -e /app/package
-
-ENV INPUT_PATH=/app/input/data.dill
-ENV OUTPUT_PATH=/app/output/data.dill
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"]

@@ -85,7 +85,7 @@ class UCE(UCEValidator, BaseModelImplementation):
             print("Directory does not exist\n")
 
         adata = dataset.adata
-        adata.var_names = pd.Index(list(adata.var["gene_symbol"]))
+        adata.var_names = pd.Index(list(adata.var["feature_name"]))
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_adata_path = f"{tmp_dir}/temp_adata.h5ad"
 
@@ -104,7 +104,9 @@ class UCE(UCEValidator, BaseModelImplementation):
             processor.preprocess_anndata()
             processor.generate_idxs()
             embedding_adata = processor.run_evaluation()
-        dataset.set_output(DataType.EMBEDDING, embedding_adata.obsm["X_uce"])
+        dataset.set_output(
+            self.model_type, DataType.EMBEDDING, embedding_adata.obsm["X_uce"]
+        )
 
 
 if __name__ == "__main__":

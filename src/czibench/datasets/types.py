@@ -91,8 +91,8 @@ class DataType(Enum):
 
     PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
-        dtype=Dict[str, pd.DataFrame],
-        description="Predicted perturbation effects",
+        dtype=tuple[str, pd.DataFrame],
+        description="Tuple of (condition_str, Predicted perturbation effects)",
         is_input=False,
     )
     PERTURBATION_TRUTH = DataTypeSpec(

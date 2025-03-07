@@ -10,24 +10,35 @@ from ..datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 
 class YourModelValidator(BaseSingleCellValidator):
-    """Validation requirements for your model."""
+    """Validation requirements for your model.
 
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = ["cell_type", "batch"]
-    required_var_keys = ["gene_symbol"]
+    Validates datasets for use with your model.
+    Requires detailed metadata about the dataset, assay, and donor information.
+    Supports multiple organisms.
+
+    """
+
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = ["cell_type", "batch", "donor_id"]
+    required_var_keys = ["feature_name", "feature_type"]
 
     @property
     def inputs(self) -> Set[DataType]:
-        return {DataType.ANNDATA}
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData and metadata requirements
+        """
+        return {DataType.ANNDATA, DataType.METADATA}
 
     @property
     def outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
+        """Expected model output types.
 
-    def validate_dataset(self, dataset: BaseDataset):
-        """Add custom validation logic here."""
-        if dataset.n_cells < 1000:
-            raise ValueError("Model requires at least 1000 cells")
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 ```
 
 2. **Update __init__.py**:
@@ -39,6 +50,9 @@ class YourModelValidator(BaseSingleCellValidator):
 - Use descriptive variable names
 - Add logging for validation steps
 - Follow existing validator patterns
+- Implement comprehensive validation checks
+- Support multiple organisms when possible
+- Include detailed error messages
 
 ## Example Usage
 

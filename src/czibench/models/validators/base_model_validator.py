@@ -4,6 +4,7 @@ from typing import ClassVar, Set, Type
 
 from ...datasets.base import BaseDataset
 from ...datasets.types import DataType
+from ..types import ModelType
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -25,25 +26,36 @@ class BaseModelValidator(ABC):
     - Required metadata fields
     - Organism compatibility
     - Feature name formats
+
+    Each validator must:
+    1. Define a dataset_type class variable
+    2. Define a model_type class variable or model_name property
+    3. Implement _validate_dataset, inputs, and outputs
     """
 
-    # Type annotation for class variable
+    # Type annotation for class variables
     dataset_type: ClassVar[Type[BaseDataset]]
+    model_type: ClassVar[ModelType]
 
     def __init_subclass__(cls) -> None:
-        """Validate that subclasses define required class variables.
+        """Validate that subclasses define required class variables and
+        follow naming conventions.
 
         Raises:
-            TypeError: If dataset_type is not defined
+            TypeError: If required class variables are missing or invalid
+            ValueError: If class naming doesn't follow conventions
         """
         super().__init_subclass__()
 
-        if cls.__name__ != "BaseModelImplementation":
-            if not hasattr(cls, "dataset_type"):
-                raise TypeError(
-                    f"Can't instantiate {cls.__name__}"
-                    " without dataset_type class variable"
-                )
+        if cls.__name__ == "BaseModelImplementation":
+            return
+
+        # Check for dataset_type
+        if not hasattr(cls, "dataset_type"):
+            raise TypeError(
+                f"Can't instantiate {cls.__name__}"
+                " without dataset_type class variable"
+            )
 
     @abstractmethod
     def _validate_dataset(self, dataset: BaseDataset):

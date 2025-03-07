@@ -2,6 +2,7 @@ from typing import Set
 
 from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
+from ..types import ModelType
 
 
 class UCEValidator(BaseSingleCellValidator):
@@ -23,7 +24,8 @@ class UCEValidator(BaseSingleCellValidator):
         Organism.RHESUS_MACAQUE,  # Macaca mulatta
     ]
     required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.UCE
 
     @property
     def inputs(self) -> Set[DataType]:

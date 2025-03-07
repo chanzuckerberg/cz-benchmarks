@@ -1,8 +1,9 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.single_cell import SingleCellDataset
+from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
+from ..models.types import ModelType
 from ..metrics import MetricType, metrics
 from .base import BaseTask
 
@@ -40,7 +41,7 @@ class EmbeddingTask(BaseTask):
         """
         return {DataType.EMBEDDING}
 
-    def _run_task(self, data: SingleCellDataset):
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Runs the embedding evaluation task.
 
         Gets embedding coordinates and labels from the dataset for metric computation.
@@ -49,10 +50,10 @@ class EmbeddingTask(BaseTask):
             data: Dataset containing embedding and labels
         """
         # Store embedding and labels for metric computation
-        self.embedding = data.get_output(DataType.EMBEDDING)
+        self.embedding = data.get_output(model_type, DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> Dict[str, float]:
+    def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes embedding quality metrics.
 
         Returns:

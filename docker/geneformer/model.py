@@ -102,7 +102,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
         embs = embs.drop("cell_idx", axis=1)
-        dataset.set_output(DataType.EMBEDDING, embs.values)
+        dataset.set_output(self.model_type, DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()

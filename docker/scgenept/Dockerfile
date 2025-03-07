@@ -14,7 +14,6 @@ RUN git clone https://github.com/czi-ai/scGenePT.git && \
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt
-COPY README.md /app/package/README.md
 RUN pip install -e /app/package
 
 COPY docker/scgenept/model.py .
