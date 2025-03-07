@@ -2,7 +2,7 @@ from typing import Set
 
 from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
-
+from ..types import ModelType
 
 class ScGPTValidator(BaseSingleCellValidator):
     """Validation requirements for ScGPT models.
@@ -15,6 +15,7 @@ class ScGPTValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["gene_symbol"]
+    model_type = ModelType.register("SCGPT")
 
     @property
     def inputs(self) -> Set[DataType]:
@@ -33,3 +34,4 @@ class ScGPTValidator(BaseSingleCellValidator):
             Set containing embedding output type
         """
         return {DataType.EMBEDDING}
+

@@ -4,36 +4,46 @@ from typing import Dict
 from ..datasets.types import DataType, DataValue
 
 
-class ModelType(Enum):
-    """Registry for model types.
+class ModelType:
+    """Registry for model types."""
+    
+    _registry = {}
 
-    This enum serves as a registry for all model types in the system.
-    Each model validator should register itself by adding a new enum value.
-    """
-
-    BASELINE = "baseline"
+    def __init__(self, name: str):
+        self.name = name
 
     @classmethod
     def register(cls, name: str) -> "ModelType":
-        """Register a new model type.
+        """Register a new model type."""
+        if name in cls._registry:
+            return cls._registry[name]
+        model_type = cls(name)
+        cls._registry[name] = model_type
+        return model_type
 
-        Args:
-            name: Name of the model type to register
+    @classmethod
+    def __getattr__(cls, name: str) -> "ModelType":
+        """Allow access to registered types via dot notation."""
+        if name.isupper():
+            if name in cls._registry:
+                return cls._registry[name]
+            raise AttributeError(f"Model type '{name}' is not registered")
+        raise AttributeError(f"'{cls.__name__}' has no attribute '{name}'")
 
-        Returns:
-            The newly created ModelType enum value
-        """
-        if name in cls.__members__:
-            return cls[name]
-        return cls._value2member_map_.setdefault(
-            len(cls._value2member_map_) + 1,
-            cls._member_class_(
-                cls,
-                name,
-                len(cls._value2member_map_) + 1,
-            ),
-        )
+    def __eq__(self, other):
+        if isinstance(other, ModelType):
+            return self.name == other.name
+        return False
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def __str__(self):
+        return self.name
+
+
+# Pre-register baseline
+ModelType.BASELINE = ModelType.register("BASELINE")
 
 # Type alias for model outputs
 ModelOutputs = Dict[ModelType, Dict[DataType, DataValue]]

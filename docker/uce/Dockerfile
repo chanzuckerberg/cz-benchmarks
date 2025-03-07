@@ -28,25 +28,18 @@ RUN git clone https://github.com/giovp/UCE && \
     /opt/conda/envs/uce/bin/pip install . && \
     cd ..
 
-# Install base requirements
-COPY docker/uce/requirements.txt .
-RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
-
 # Install the czibench package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt
-COPY README.md /app/package/README.md
 RUN /opt/conda/envs/uce/bin/pip install -e /app/package
 
 # Copy model files
 COPY docker/uce/uce_model.py .
 COPY docker/uce/config.yaml .
-COPY docker/uce/model_files/new_species_protein_embeddings.csv model_files/new_species_protein_embeddings.csv
 
-# Set environment variables for data paths
-ENV INPUT_PATH=/app/input/data.dill
-ENV OUTPUT_PATH=/app/output/data.dill
-ENV ARTIFACTS_PATH=/app/artifacts
+# Install base requirements
+COPY docker/uce/requirements.txt .
+RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
 ENTRYPOINT ["/opt/conda/envs/uce/bin/python", "-u", "/app/uce_model.py"]

@@ -50,52 +50,13 @@ class BaseModelValidator(ABC):
         if cls.__name__ == "BaseModelImplementation":
             return
 
-        # Validate class name follows convention
-        if not cls.__name__.endswith("Validator"):
-            raise ValueError(
-                f"Validator class {cls.__name__} must end with 'Validator'"
-            )
-
         # Check for dataset_type
         if not hasattr(cls, "dataset_type"):
             raise TypeError(
                 f"Can't instantiate {cls.__name__}"
                 " without dataset_type class variable"
             )
-
-        # Handle model type registration
-        if hasattr(cls, "model_type"):
-            # If model_type is explicitly defined, use it
-            if not isinstance(cls.model_type, ModelType):
-                raise TypeError(
-                    f"model_type in {cls.__name__} must be a ModelType enum value"
-                )
-        elif hasattr(cls, "model_name"):
-            # If model_name property is defined, use it for registration
-            model_name = cls.model_name
-            if not isinstance(model_name, str):
-                raise TypeError(f"model_name in {cls.__name__} must be a string")
-            cls.model_type = ModelType.register(model_name.upper())
-        else:
-            # Try to derive from class name as fallback
-            model_name = cls.__name__.replace("Validator", "")
-            if not model_name:
-                raise ValueError(
-                    f"Could not derive model name from class {cls.__name__}"
-                )
-            cls.model_type = ModelType.register(model_name.upper())
-
-    @property
-    def model_name(self) -> str:
-        """Get the model name for registration.
-
-        This property can be overridden by subclasses to provide a custom model name.
-        By default, it derives the name from the class name.
-
-        Returns:
-            The model name to use for registration
-        """
-        return self.__class__.__name__.replace("Validator", "")
+            
 
     @abstractmethod
     def _validate_dataset(self, dataset: BaseDataset):

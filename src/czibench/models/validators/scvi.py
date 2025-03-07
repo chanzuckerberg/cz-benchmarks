@@ -2,6 +2,7 @@ from typing import Set
 
 from ...datasets.types import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
+from ..types import ModelType
 
 
 class SCVIValidator(BaseSingleCellValidator):
@@ -16,7 +17,7 @@ class SCVIValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
     required_var_keys = []
-
+    model_type = ModelType.register("SCVI")
     @property
     def inputs(self) -> Set[DataType]:
         """Required input data types.
