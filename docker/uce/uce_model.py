@@ -85,7 +85,7 @@ class UCE(UCEValidator, BaseModelImplementation):
             print("Directory does not exist\n")
 
         adata = dataset.adata
-        adata.var_names = pd.Index(list(adata.var["gene_symbol"]))
+        adata.var_names = pd.Index(list(adata.var["feature_name"]))
         with tempfile.TemporaryDirectory() as tmp_dir:
             temp_adata_path = f"{tmp_dir}/temp_adata.h5ad"
 

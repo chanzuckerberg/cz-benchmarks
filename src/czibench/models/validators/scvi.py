@@ -17,7 +17,7 @@ class SCVIValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
     required_var_keys = []
-    model_type = ModelType.register("SCVI")
+    model_type = ModelType.SCVI
 
     @property
     def inputs(self) -> Set[DataType]:

@@ -15,8 +15,8 @@ class ScGPTValidator(BaseSingleCellValidator):
 
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
-    model_type = ModelType.register("SCGPT")
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.SCGPT
 
     @property
     def inputs(self) -> Set[DataType]:

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
@@ -90,7 +90,7 @@ class BaseTask(ABC):
         """
 
     def _run_task_for_dataset(
-        self, data: BaseDataset
+        self, data: BaseDataset, model_types: Optional[List[ModelType]] = None
     ) -> Dict[ModelType, Dict[MetricType, float]]:
         """Run task for a single dataset and compute metrics for each model.
 
@@ -106,20 +106,30 @@ class BaseTask(ABC):
         # Store metrics for each model in the dataset
         all_metrics_per_model = {}
 
+        if model_types is None:
+            model_types = list(data.outputs.keys())
+
         # Iterate through each model type in the dataset outputs
-        for model_type in data.outputs:
+        for model_type in model_types:
             # Run the task implementation for this model
             self._run_task(data, model_type)
 
             # Compute metrics based on task results
             metrics = self._compute_metrics()
+            
+            # Convert numpy floats to python floats where possible
+            for metric_name, metric_value in metrics.items():
+                try:
+                    metrics[metric_name] = float(metric_value)
+                except:
+                    pass
 
             # Store metrics for this model
             all_metrics_per_model[model_type] = metrics
 
         return all_metrics_per_model  # Return metrics for all models
 
-    def run(self, data: Union[BaseDataset, List[BaseDataset]]) -> Union[
+    def run(self, data: Union[BaseDataset, List[BaseDataset]], model_types: Optional[List[ModelType]] = None) -> Union[
         Dict[ModelType, Dict[MetricType, float]],
         List[Dict[ModelType, Dict[MetricType, float]]],
     ]:
@@ -155,8 +165,8 @@ class BaseTask(ABC):
             # Process each dataset individually
             all_metrics = []
             for d in data:
-                all_metrics.append(self._run_task_for_dataset(d))
+                all_metrics.append(self._run_task_for_dataset(d, model_types))
             return all_metrics
         else:
             # Process single dataset or multiple datasets as required by the task
-            return self._run_task_for_dataset(data)
+            return self._run_task_for_dataset(data, model_types)

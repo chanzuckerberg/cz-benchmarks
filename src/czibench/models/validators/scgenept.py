@@ -15,8 +15,8 @@ class ScGenePTValidator(BaseSingleCellValidator):
 
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
-    model_type = ModelType.register("SCGENEPT")
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.SCGENEPT
 
     @property
     def inputs(self) -> Set[DataType]:

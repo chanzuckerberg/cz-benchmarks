@@ -1,16 +1,13 @@
 from czibench.datasets.utils import load_dataset
-from czibench.runner import ContainerRunner
+from czibench.runner import run_inference
 from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
 if __name__ == "__main__":
     dataset = load_dataset("example", config_path="custom.yaml")
-    runner = ContainerRunner(
-        image="czibench-scvi:latest",
-        gpu=True,
-    )
-
-    dataset = runner.run(dataset)
-
+    
+    for model_name in ["SCVI", "SCGPT"]:
+        dataset = run_inference(model_name, dataset)
+        
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(dataset)
 

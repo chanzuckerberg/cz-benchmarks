@@ -20,7 +20,7 @@ class YourModelValidator(BaseSingleCellValidator):
 
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = ["cell_type", "batch", "donor_id"]
-    required_var_keys = ["gene_symbol", "feature_type"]
+    required_var_keys = ["feature_name", "feature_type"]
 
     @property
     def inputs(self) -> Set[DataType]:

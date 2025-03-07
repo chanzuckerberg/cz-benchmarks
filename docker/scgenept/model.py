@@ -95,7 +95,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
-        adata.var["gene_name"] = adata.var["gene_symbol"]
+        adata.var["gene_name"] = adata.var["feature_name"]
 
         args = self.parse_args()
         dataset_name = args.dataset_name

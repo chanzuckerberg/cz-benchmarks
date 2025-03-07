@@ -15,7 +15,7 @@ class GeneformerValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["feature_id"]
-    model_type = ModelType.register("GENEFORMER")
+    model_type = ModelType.GENEFORMER
 
     @property
     def inputs(self) -> Set[DataType]:

@@ -42,7 +42,7 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
-        adata.var["gene_name"] = adata.var["gene_symbol"]
+        adata.var["gene_name"] = adata.var["feature_name"]
         ref_embed_adata = scg.tasks.embed_data(
             adata,
             model_dir=self.model_weights_dir,

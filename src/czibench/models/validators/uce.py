@@ -24,8 +24,8 @@ class UCEValidator(BaseSingleCellValidator):
         Organism.RHESUS_MACAQUE,  # Macaca mulatta
     ]
     required_obs_keys = []
-    required_var_keys = ["gene_symbol"]
-    model_type = ModelType.register("UCE")
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.UCE
 
     @property
     def inputs(self) -> Set[DataType]:
