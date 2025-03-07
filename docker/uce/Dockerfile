@@ -34,12 +34,16 @@ COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt
 RUN /opt/conda/envs/uce/bin/pip install -e /app/package
 
-# Copy model files
-COPY docker/uce/uce_model.py .
-COPY docker/uce/config.yaml .
+# Create model_files directory and empty CSV file for species protein embeddings
+RUN mkdir -p /app/model_files && \
+    echo "species,path" > /app/model_files/new_species_protein_embeddings.csv
 
 # Install base requirements
 COPY docker/uce/requirements.txt .
 RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
+
+# Copy model files
+COPY docker/uce/uce_model.py .
+COPY docker/uce/config.yaml .
 
 ENTRYPOINT ["/opt/conda/envs/uce/bin/python", "-u", "/app/uce_model.py"]
