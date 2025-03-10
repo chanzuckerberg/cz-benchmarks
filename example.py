@@ -1,6 +1,10 @@
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.runner import run_inference
-from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
+from czbenchmarks.tasks import (
+    ClusteringTask,
+    EmbeddingTask,
+    MetadataLabelPredictionTask,
+)
 
 if __name__ == "__main__":
     dataset = load_dataset("example", config_path="custom.yaml")
