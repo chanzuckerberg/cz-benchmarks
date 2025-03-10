@@ -10,6 +10,7 @@ import requests
 import logging
 from sagemaker.local import LocalSession
 from sagemaker.pytorch import PyTorchModel
+from io import BytesIO
 
 
 
@@ -52,9 +53,11 @@ class SageMakerRunner(ModelRunnerBase):
         logger.info("Received response from local endpoint")
         # Convert the binary response into a numpy array (assuming the endpoint returns an x-npy content)
         result_bytes = response.content
-        npy_array = np.frombuffer(result_bytes, dtype=np.float32)
+        npy_array = np.load(BytesIO(result_bytes))
         logger.info("Inference output: %s", npy_array)
         dataset.set_output(DataType.EMBEDDING,  npy_array)
+        
+        # TODO: stop docker container
 
         return dataset
 
@@ -180,7 +183,7 @@ def serve_model_locally(model_resource_url):
 
     # Deploy the model locally.
     # Use instance_type="local" (or "local_gpu" if GPU support is available).
-    predictor = pytorch_model.deploy(initial_instance_count=1, instance_type="local8546183748")
+    predictor = pytorch_model.deploy(initial_instance_count=1, instance_type="local")
     logger.info("Model is deployed locally and ready to accept predictions.")
 
     return predictor
