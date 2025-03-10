@@ -106,11 +106,14 @@ class BaseTask(ABC):
         # Store metrics for each model in the dataset
         all_metrics_per_model = {}
 
+        # Iterate through each model type in the dataset outputs
         if model_types is None:
             model_types = list(data.outputs.keys())
 
-        # Iterate through each model type in the dataset outputs
         for model_type in model_types:
+            if model_type not in data.outputs:
+                raise ValueError(f"Model type {model_type} not found in dataset")
+
             # Run the task implementation for this model
             self._run_task(data, model_type)
 

@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Set
 
 import pandas as pd
+import scipy as sp
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
@@ -238,3 +239,36 @@ class MetadataLabelPredictionTask(BaseTask):
             metrics_dict["predictions"] = self.predictions_df
 
         return metrics_dict
+
+    def run_baseline(self, data: BaseDataset):
+        """Run a baseline classification using raw gene expression.
+
+        Instead of using embeddings, this method uses the raw gene expression matrix
+        as features for classification. This provides a baseline performance to compare
+        against embedding-based classification.
+
+        Args:
+            data: SingleCellDataset containing AnnData with gene expression and metadata
+
+        Returns:
+            Dictionary containing baseline classification metrics
+        """
+
+        # Get the AnnData object from the dataset
+        adata = data.get_input(DataType.ANNDATA)
+
+        # Extract gene expression matrix
+        X = adata.X
+        # Convert sparse matrix to dense if needed
+        if sp.sparse.issparse(X):
+            X = X.toarray()
+
+        # Use raw gene expression as the "embedding" for baseline classification
+        data.set_output(ModelType.BASELINE, DataType.EMBEDDING, X)
+
+        # Run the classification task with gene expression features
+        baseline_metrics = self.run(data, model_types=[ModelType.BASELINE])[
+            ModelType.BASELINE
+        ]
+
+        return baseline_metrics

@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Set
+import scanpy as sc
 
 from ..datasets.base import BaseDataset
 from ..datasets.types import DataType
@@ -75,3 +76,49 @@ class ClusteringTask(BaseTask):
                 MetricType.NORMALIZED_MUTUAL_INFO,
             ]
         }
+
+    def run_baseline(
+        self, data: BaseDataset, n_top_genes=3000, n_pcs=50, random_state=42
+    ):
+        """Run a baseline clustering using PCA on gene expression.
+
+        Instead of using embeddings from a model, this method performs standard
+        preprocessing on the raw gene expression data and uses PCA for dimensionality
+        reduction before clustering. This provides a baseline performance to compare
+        against model-generated embeddings.
+
+        Args:
+            data: SingleCellDataset containing AnnData with gene expression and metadata
+            n_top_genes: Number of highly variable genes to select
+            n_pcs: Number of principal components to use
+            random_state: Random seed for reproducibility
+
+        Returns:
+            Dictionary containing baseline clustering metrics
+        """
+
+        # Get the AnnData object from the dataset
+        adata = data.get_input(DataType.ANNDATA)
+
+        # Standard preprocessing steps for single-cell data
+        sc.pp.normalize_total(adata)  # Normalize counts per cell
+        sc.pp.log1p(adata)  # Log-transform the data
+
+        # Identify highly variable genes using Seurat v3 method
+        sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat_v3")
+
+        # Subset to only highly variable genes to reduce noise
+        adata = adata[:, adata.var["highly_variable"]]
+
+        # Run PCA for dimensionality reduction
+        sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
+
+        # Use PCA result as the embedding for clustering
+        data.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.obsm["X_pca"])
+
+        # Run the clustering task with the PCA embedding
+        baseline_metrics = self.run(data, model_types=[ModelType.BASELINE])[
+            ModelType.BASELINE
+        ]
+
+        return baseline_metrics
