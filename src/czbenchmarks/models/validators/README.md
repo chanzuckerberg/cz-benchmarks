@@ -57,7 +57,7 @@ class YourModelValidator(BaseSingleCellValidator):
 ## Example Usage
 
 ```python
-from czibench.models.validators import YourModelValidator
+from czbenchmarks.models.validators import YourModelValidator
 
 validator = YourModelValidator()
 try:

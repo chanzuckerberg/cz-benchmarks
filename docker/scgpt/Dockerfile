@@ -8,7 +8,7 @@ RUN apt-get update && \
 COPY docker/scgpt/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the czibench package
+# Install the czbenchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

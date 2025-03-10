@@ -6,11 +6,11 @@ import scvi
 from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
-from czibench.datasets import BaseDataset, DataType
-from czibench.models.implementations.base_model_implementation import (
+from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.scvi import SCVIValidator
+from czbenchmarks.models.validators.scvi import SCVIValidator
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
