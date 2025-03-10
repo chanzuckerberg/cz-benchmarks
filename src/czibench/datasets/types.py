@@ -16,6 +16,12 @@ class Organism(Enum):
     WILD_BOAR = ("sus_scrofa", "ENSSSCG")
     CRAB_EATING_MACAQUE = ("macaca_fascicularis", "ENSMFAG")
     RHESUS_MACAQUE = ("macaca_mulatta", "ENSMMUG")
+    PLATYPUS = ("ornithorhynchus_anatinus", "ENSOANG")
+    OPOSSUM = ("monodelphis_domestica", "ENSMODG")
+    GORILLA = ("gorilla_gorilla", "ENSGGOG")
+    CHIMPANZEE = ("pan_troglodytes", "ENSPTRG")
+    MARMOSET = ("callithrix_jacchus", "ENSCJAG")
+    CHICKEN = ("gallus_gallus", "ENSGALG")
 
     # Todo: add other organisms
     def __init__(self, name: str, prefix: str):
