@@ -16,8 +16,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from ..models.types import ModelType
-from ..datasets import BaseDataset
-from ..datasets import DataType
+from ..datasets import BaseDataset, DataType
 from ..metrics import MetricType, metrics
 from .base import BaseTask
 from .utils import filter_minimum_class
