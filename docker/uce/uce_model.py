@@ -7,12 +7,12 @@ import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czibench.datasets import BaseDataset, DataType
-from czibench.models.implementations.base_model_implementation import (
+from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.uce import UCEValidator
-from czibench.utils import sync_s3_to_local
+from czbenchmarks.models.validators.uce import UCEValidator
+from czbenchmarks.utils import sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 

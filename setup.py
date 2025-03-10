@@ -7,7 +7,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     ]
 
 setup(
-    name="czibench",
+    name="cz-benchmarks",
     version="0.1.0",
     author="Chan Zuckerberg Initiative",
     description=("A framework for benchmarking single-cell machine learning models"),

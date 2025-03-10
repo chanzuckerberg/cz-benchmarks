@@ -28,7 +28,7 @@ RUN git clone https://github.com/giovp/UCE && \
     /opt/conda/envs/uce/bin/pip install . && \
     cd ..
 
-# Install the czibench package
+# Install the czbenchmarks package
 COPY src /app/package/src
 COPY setup.py /app/package/setup.py
 COPY requirements.txt /app/package/requirements.txt

@@ -19,16 +19,16 @@ pip install -e .
 ## Example Usage
 
 ```python
-from czibench.datasets.utils import load_dataset
-from czibench.runner import ContainerRunner
-from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
+from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.runner import ContainerRunner
+from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
 # Load dataset with custom configuration
 dataset = load_dataset("example", config_path="custom.yaml")
 
 # Run model
 runner = ContainerRunner(
-    image="czibench-scvi:latest",
+    image="czbenchmarks-scvi:latest",
     gpu=True,
 )
 dataset = runner.run(dataset)
@@ -52,10 +52,10 @@ This is a benchmarking framework for machine learning models (with a focus on si
 
 #### Base Classes
 
-- `czibench.datasets.base.BaseDataset`: Abstract base class for all datasets
-- `czibench.models.implementations.base_model_implementation.BaseModelImplementation`: Abstract base class for all model implementations
-- `czibench.models.validators.base_model_validator.BaseModelValidator`: Abstract base class for model validation
-- `czibench.tasks.base.BaseTask`: Abstract base class for evaluation tasks
+- `czbenchmarks.datasets.base.BaseDataset`: Abstract base class for all datasets
+- `czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation`: Abstract base class for all model implementations
+- `czbenchmarks.models.validators.base_model_validator.BaseModelValidator`: Abstract base class for model validation
+- `czbenchmarks.tasks.base.BaseTask`: Abstract base class for evaluation tasks
 
 #### Container System
 
@@ -93,7 +93,7 @@ docker/your_model/
 
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
-2. Implement your model validator in `src/czibench/models/validators/`. This should inherit from `BaseModelValidator` or `BaseSingleCellValidator` and implement:
+2. Implement your model validator in `src/czbenchmarks/models/validators/`. This should inherit from `BaseModelValidator` or `BaseSingleCellValidator` and implement:
    - Required data type specifications
    - Model-specific validation rules
    - Supported organisms and data requirements
@@ -101,8 +101,8 @@ Refer to the template docker directory as a starting point (`docker/template/`)!
 3. Implement your model class in `model.py` (see template):
 
 ```python
-from czibench.models.implementations.base_model_implementation import BaseModelImplementation
-from czibench.models.validators.your_model import YourModelValidator
+from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+from czbenchmarks.models.validators.your_model import YourModelValidator
 
 class YourModel(YourModelValidator, BaseModelImplementation):
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
@@ -130,10 +130,10 @@ if __name__ == "__main__":
 
 ### Adding New Tasks
 
-1. Create a task class inheriting from `czibench.tasks.base.BaseTask`. For example:
+1. Create a task class inheriting from `czbenchmarks.tasks.base.BaseTask`. For example:
 
 ```python
-from czibench.tasks.base import BaseTask
+from czbenchmarks.tasks.base import BaseTask
 
 class ClusteringTask(BaseTask):
 
@@ -166,7 +166,7 @@ To use your own data:
 3. Load using the appropriate dataset type:
 
 ```python
-from czibench.datasets.utils import load_dataset
+from czbenchmarks.datasets.utils import load_dataset
 
 dataset = load_dataset("your_dataset", config_path="custom.yaml")
 ```

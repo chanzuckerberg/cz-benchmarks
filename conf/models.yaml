@@ -1,15 +1,15 @@
 models:
   SCGPT:
-    model_image_uri: czibench-scgpt:latest
+    model_image_uri: czbenchmarks-scgpt:latest
 
   SCVI:
-    model_image_uri: czibench-scvi:latest
+    model_image_uri: czbenchmarks-scvi:latest
 
   GENEFORMER:
-    model_image_uri: czibench-geneformer:latest
+    model_image_uri: czbenchmarks-geneformer:latest
 
   SCGENEPT:
-    model_image_uri: czibench-scgenept:latest 
+    model_image_uri: czbenchmarks-scgenept:latest 
 
   UCE:
-    model_image_uri: czibench-uce:latest
+    model_image_uri: czbenchmarks-uce:latest

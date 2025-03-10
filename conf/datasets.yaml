@@ -3,226 +3,226 @@ defaults:
 
 datasets:
   adamson_perturb:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://generate-cross-species/datasets/perturb/single_cell/adamson.h5ad
 
   norman_perturb:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://generate-cross-species/datasets/perturb/single_cell/norman.h5ad
 
   dixit_perturb:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://generate-cross-species/datasets/perturb/single_cell/dixit.h5ad
 
   replogle_k562_perturb:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://generate-cross-species/datasets/perturb/single_cell/replogle_k562_essential_perturbation.h5ad
 
   replogle_rpe1_perturb:
-    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://generate-cross-species/datasets/perturb/single_cell/replogle_rpe1_essential_perturbation.h5ad
 
   example:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/test/example.h5ad
 
   example_small:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/test/example_small.h5ad
 
   human_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/evo/Homo_sapiens_ERP132584_droplet_based_curated.h5ad
 
   mouse_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:MOUSE}
     path: s3://generate-cross-species/datasets/evo/Mus_musculus_ERP132577_droplet_based_curated.h5ad
 
   rhesus_macaque_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:RHESUS_MACAQUE}
     path: s3://generate-cross-species/datasets/evo/Macaca_mulatta_ERP132582_droplet_based_curated.h5ad
 
   gorilla_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:GORILLA}
     path: s3://generate-cross-species/datasets/evo/Gorilla_gorilla_ERP132581_droplet_based_curated.h5ad
 
   chimpanzee_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:CHIMPANZEE}
     path: s3://generate-cross-species/datasets/evo/Pan_troglodytes_ERP139683_droplet_based_curated.h5ad
 
   marmoset_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:MARMOSET}
     path: s3://generate-cross-species/datasets/evo/Callithrix_jacchus_ERP132588_droplet_based_curated.h5ad
 
   chicken_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:CHICKEN}
     path: s3://generate-cross-species/datasets/evo/Gallus_gallus_ERP132576_droplet_based_curated.h5ad
 
   opossum_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:OPOSSUM}
     path: s3://generate-cross-species/datasets/evo/Monodelphis_domestica_ERP132579_droplet_based_curated.h5ad
 
   platypus_spermatogenesis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:PLATYPUS}
     path: s3://generate-cross-species/datasets/evo/Ornithorhynchus_anatinus_ERP132578_droplet_based_curated.h5ad
 
   tsv2_bladder:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Bladder_v2_curated.h5ad
 
   tsv2_blood:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Blood_v2_curated.h5ad
 
   tsv2_bone_marrow:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Bone_Marrow_v2_curated.h5ad
 
   tsv2_ear:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Ear_v2_curated.h5ad
 
   tsv2_eye:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Eye_v2_curated.h5ad
 
   tsv2_fat:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad
 
   tsv2_heart:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Heart_v2_curated.h5ad
 
   tsv2_large_intestine:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Large_Intestine_v2_curated.h5ad
 
   tsv2_liver:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Liver_v2_curated.h5ad
 
   tsv2_lung:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lung_v2_curated.h5ad
 
   tsv2_lymph_node:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad
 
   tsv2_mammary:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Mammary_v2_curated.h5ad
 
   tsv2_muscle:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Muscle_v2_curated.h5ad
 
   tsv2_ovary:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Ovary_v2_curated.h5ad
 
   tsv2_pancreas:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Pancreas_v2_curated.h5ad
 
   tsv2_prostate:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Prostate_v2_curated.h5ad
 
   tsv2_salivary_gland:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Salivary_Gland_v2_curated.h5ad
 
   tsv2_skin:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Skin_v2_curated.h5ad
 
   tsv2_small_intestine:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Small_Intestine_v2_curated.h5ad
 
   tsv2_spleen:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Spleen_v2_curated.h5ad
 
   tsv2_stomach:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Stomach_v2_curated.h5ad
 
   tsv2_testis:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Testis_v2_curated.h5ad
 
   tsv2_thymus:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Thymus_v2_curated.h5ad
 
   tsv2_tongue:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Tongue_v2_curated.h5ad
 
   tsv2_trachea:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Trachea_v2_curated.h5ad
 
   tsv2_uterus:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Uterus_v2_curated.h5ad
 
   tsv2_vasculature:
-    _target_: czibench.datasets.single_cell.SingleCellDataset
+    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
