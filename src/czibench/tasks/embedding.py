@@ -1,8 +1,8 @@
 import logging
 from typing import Dict, Set
 
-from ..datasets.base import BaseDataset
-from ..datasets.types import DataType
+from ..datasets import BaseDataset
+from ..datasets import DataType
 from ..models.types import ModelType
 from ..metrics import MetricType, metrics
 from .base import BaseTask

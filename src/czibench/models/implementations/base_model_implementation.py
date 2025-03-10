@@ -12,7 +12,7 @@ from ...constants import (
     get_base_name,
     get_numbered_path,
 )
-from ...datasets.base import BaseDataset
+from ...datasets import BaseDataset
 from ..validators.base_model_validator import BaseModelValidator
 
 # Configure logging to output to stdout
