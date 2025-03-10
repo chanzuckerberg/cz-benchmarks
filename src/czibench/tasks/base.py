@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Set, Union
 
-from ..datasets.base import BaseDataset
-from ..datasets.types import DataType
+from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
-from ..metrics.types import MetricType
+from ..metrics import MetricType
 
 
 class BaseTask(ABC):

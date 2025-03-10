@@ -2,8 +2,7 @@ from typing import Dict, List, Set
 
 import numpy as np
 
-from ...datasets.single_cell import SingleCellDataset
-from ...datasets.types import DataType
+from ...datasets import SingleCellDataset, DataType
 from ..base import BaseTask
 from ...metrics import MetricType, metrics
 from ...models.types import ModelType

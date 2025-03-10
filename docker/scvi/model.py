@@ -6,8 +6,7 @@ import scvi
 from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
+from czibench.datasets import BaseDataset, DataType
 from czibench.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )

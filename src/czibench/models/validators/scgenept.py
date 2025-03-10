@@ -1,6 +1,6 @@
 from typing import Set
 
-from ...datasets.types import DataType, Organism
+from ...datasets import DataType, Organism
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 

@@ -2,8 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import ClassVar, Set, Type
 
-from ...datasets.base import BaseDataset
-from ...datasets.types import DataType
+from ...datasets import BaseDataset, DataType
 from ..types import ModelType
 
 # Configure logging to output to stdout

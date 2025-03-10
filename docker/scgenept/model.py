@@ -10,8 +10,7 @@ from gears import PertData
 from omegaconf import OmegaConf
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
+from czibench.datasets import BaseDataset, DataType
 from czibench.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )

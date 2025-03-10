@@ -4,8 +4,7 @@ from pathlib import Path
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
+from czibench.datasets import BaseDataset, DataType
 from czibench.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )

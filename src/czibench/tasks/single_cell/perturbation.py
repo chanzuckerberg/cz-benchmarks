@@ -2,8 +2,7 @@ from typing import Dict, Set
 import pandas as pd
 import logging
 from ..base import BaseTask
-from ...datasets.single_cell import PerturbationSingleCellDataset
-from ...datasets.types import DataType
+from ...datasets import PerturbationSingleCellDataset, DataType
 from ...metrics import MetricType
 from ...models.types import ModelType
 

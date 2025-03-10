@@ -15,7 +15,7 @@ from .constants import (
     RAW_INPUT_DIR_PATH_DOCKER,
     get_numbered_path,
 )
-from .datasets.base import BaseDataset
+from .datasets import BaseDataset
 from .models.types import ModelType
 
 

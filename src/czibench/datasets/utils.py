@@ -2,7 +2,7 @@ import os
 import hydra
 from hydra.utils import instantiate
 import boto3
-from typing import Optional
+from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
 from ..constants import DATASETS_CACHE_PATH
@@ -103,3 +103,24 @@ def load_dataset(
     dataset.path = os.path.expanduser(dataset.path)
 
     return dataset
+
+
+def list_available_datasets() -> List[str]:
+    """
+    Lists all available datasets defined in the datasets.yaml configuration file.
+
+    Returns:
+        list: A sorted list of dataset names available in the configuration.
+    """
+    # Load the datasets configuration
+    cfg = OmegaConf.to_container(
+        OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
+    )
+
+    # Extract dataset names
+    dataset_names = list(cfg.get("datasets", {}).keys())
+
+    # Sort alphabetically for easier reading
+    dataset_names.sort()
+
+    return dataset_names
