@@ -2,23 +2,40 @@ defaults:
   - _self_
 
 datasets:
-  adamson:
+  adamson_perturb:
     _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
-    path: s3://generate-cross-species/datasets/perturbation/single_cell/adamson.h5ad
+    split_key: split
+    path: s3://generate-cross-species/datasets/perturb/single_cell/adamson.h5ad
 
-  norman:
+  norman_perturb:
     _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
-    path: s3://generate-cross-species/datasets/perturbation/single_cell/norman.h5ad
+    split_key: split
+    path: s3://generate-cross-species/datasets/perturb/single_cell/norman.h5ad
 
-  dixit:
+  dixit_perturb:
     _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
-    path: s3://generate-cross-species/datasets/perturbation/single_cell/dixit.h5ad
+    split_key: split
+    path: s3://generate-cross-species/datasets/perturb/single_cell/dixit.h5ad
+
+  replogle_k562_perturb:
+    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    split_key: split
+    path: s3://generate-cross-species/datasets/perturb/single_cell/replogle_k562_essential_perturbation.h5ad
+
+  replogle_rpe1_perturb:
+    _target_: czibench.datasets.single_cell.PerturbationSingleCellDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    split_key: split
+    path: s3://generate-cross-species/datasets/perturb/single_cell/replogle_rpe1_essential_perturbation.h5ad
 
   example:
     _target_: czibench.datasets.single_cell.SingleCellDataset
