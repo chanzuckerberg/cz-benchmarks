@@ -82,12 +82,14 @@ def input_fn(request_body, request_content_type):
     if not s3_input or not organism:
         raise ValueError("JSON must contain 's3_input' and 'organism' keys.")
 
+    # TODO: Support local file usage also 
+    
     # Download input file from S3
-    logger.info(f"Downloading input file from S3")
+    logger.info("Downloading input file from S3")
     local_path = download_from_s3(s3_input)
 
     # Load the input file as an AnnData object
-    logger.info(f"Loading input file as AnnData object")
+    logger.info("Loading input file as AnnData object")
     adata = read_h5ad(local_path)
 
     return {"adata": adata, "organism": organism}

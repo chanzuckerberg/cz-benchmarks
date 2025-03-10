@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Any, Optional
+import time
 
 from ..datasets.base import BaseDataset
 
@@ -22,12 +23,19 @@ class ModelRunnerBase:
         
     def run(self, dataset: BaseDataset) -> BaseDataset:
         """Run the model locally or remotely, depending on the ModelRunner's configuration."""
+        start_time = time.perf_counter()
+        
+        
         if self.model_endpoint:
             dataset = self._run_remote(dataset)
         else:
             assert self.model_resource_url
             dataset = self._run_local(dataset)
                     
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        print(f"Execution Time: {elapsed_time:.2f} seconds")
+        
         return dataset
 
     @abstractmethod

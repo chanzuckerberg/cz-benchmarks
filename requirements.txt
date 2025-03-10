@@ -11,6 +11,7 @@ h5py>=3.8.0
 mlflow
 uv
 bentoml
+sagemaker
 
 # Optional but recommended
 typing-extensions>=4.5.0

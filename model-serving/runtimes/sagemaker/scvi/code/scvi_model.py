@@ -26,23 +26,24 @@ class SCVI:
             with open(config_path, "r") as f:
                 artifacts = yaml.safe_load(f)
         self.artifacts = artifacts
+        logger.info("Artifacts loaded: %s", artifacts)
 
     def predict(self, adata: AnnData, hvg_file_path: str, reference_model_path: Path):
         batch_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
 
         # Filter input anndata by HVGs
-        logger.info(f"Filtering adata by HVGs")
+        logger.info("Filtering adata by HVGs")
         adata = self._filter_adata_by_hvg(adata, hvg_file_path)
 
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
 
-        logger.info(f"Preparing query anndata")
+        logger.info("Preparing query anndata")
         scvi.model.SCVI.prepare_query_anndata(
             adata, str(reference_model_path), return_reference_var_names=True
         )
-        logger.info(f"Loading query data")
+        logger.info("Loading query data")
         vae_q = scvi.model.SCVI.load_query_data(
             adata,
             str(reference_model_path),
@@ -50,9 +51,9 @@ class SCVI:
         vae_q.is_trained = True
 
         # Get latent representation
-        logger.info(f"Getting latent representation")
+        logger.info("Getting latent representation")
         qz_m, _ = vae_q.get_latent_representation(return_dist=True)
-        logger.info(f"Latent representation shape: {qz_m.shape}")
+        logger.info("Latent representation shape: %s", qz_m.shape)
         return qz_m
 
     def _filter_adata_by_hvg(self, adata: ad.AnnData, hvg_file_path: str) -> ad.AnnData:
@@ -109,7 +110,7 @@ class SCVI:
         """
         os.makedirs(destination_dir, exist_ok=True)
         hvg_val = self.artifacts.get(organism, {}).get("hvg_names")
-        logger.info(f"Downloading HVG names for {organism} from {hvg_val}")
+        logger.info("Downloading HVG names for %s from %s", organism, hvg_val)
 
         if hvg_val and isinstance(hvg_val, str) and hvg_val.startswith("s3://"):
             local_path = os.path.join(destination_dir, os.path.basename(hvg_val))
@@ -126,7 +127,7 @@ class SCVI:
         """
         os.makedirs(destination_dir, exist_ok=True)
         mw_val = self.artifacts.get(organism, {}).get("model_weights")
-        logger.info(f"Downloading model weights for {organism} from {mw_val}")
+        logger.info("Downloading model weights for %s from %s", organism, mw_val)
 
         if mw_val and isinstance(mw_val, str) and mw_val.startswith("s3://"):
             local_path = os.path.join(destination_dir, os.path.basename(mw_val))

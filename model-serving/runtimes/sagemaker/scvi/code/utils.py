@@ -7,7 +7,6 @@ import logging
 import boto3
 import base64
 import numpy as np
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +19,7 @@ def download_from_s3(s3_path: str, local_path: str = None) -> str:
     :param local_path: Optional local path to save the file. Defaults to /tmp/<filename>.
     :return: Local file path.
     """
+    logger.info("S3 path: %s", s3_path)
     if local_path is None:
         local_path = os.path.join("/tmp", os.path.basename(s3_path))
     try:

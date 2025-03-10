@@ -6,15 +6,61 @@ import time
 from czibench.runners.model_runner import ModelRunnerBase
 import uuid
 from urllib.parse import urlparse
+import requests
+import logging
+from sagemaker.local import LocalSession
+from sagemaker.pytorch import PyTorchModel
+from io import BytesIO
+
+
 
 REGION = "us-west-2"
 S3_BUCKET = "omar-data"
 
+ROLE = "OmarSageMakerRole"
+
+# If your local model artifact is stored locally, use file:// prefix.
+LOCAL_MODEL_ARTIFACT = "file://scvi_model_code.tar.gz"
+MODEL_NAME = "scvi-local"
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+
 class SageMakerRunner(ModelRunnerBase):
     """Handles model execution logic for a SageMaker model"""
-
     def _run_local(self, dataset):
-        raise NotImplementedError("Local mode is not supported for SageMaker models.")
+        serve_model_locally(self.model_resource_url)
+        endpoint_url = "http://localhost:8080/invocations"
+        
+        payload = json.dumps(
+            {
+                "s3_input": dataset.source_path,
+                "organism": str(dataset.get_input(DataType.ORGANISM)),
+            }
+        )
+
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/x-npy"
+        }
+        logger.info(f"Sending payload to local endpoint at: {endpoint_url}")
+        response = requests.post(endpoint_url, data=payload, headers=headers)
+        
+        if response.status_code != 200:
+            raise Exception(f"Request failed with status code {response.status_code}:\n{response.text}")
+        
+        logger.info("Received response from local endpoint")
+        # Convert the binary response into a numpy array (assuming the endpoint returns an x-npy content)
+        result_bytes = response.content
+        npy_array = np.load(BytesIO(result_bytes))
+        logger.info("Inference output: %s", npy_array)
+        dataset.set_output(DataType.EMBEDDING,  npy_array)
+        
+        # TODO: stop docker container
+
+        return dataset
+
 
     def _run_remote(self, dataset):
         payload = json.dumps(
@@ -24,13 +70,11 @@ class SageMakerRunner(ModelRunnerBase):
             }
         )
         inference_id, s3_uri = upload_to_s3(payload)
-        print(f"Inference ID: {inference_id}")
-        print(f"Input Location: {s3_uri}")
-
-        start_time = time.perf_counter()
+        logger.info(f"Inference ID: {inference_id}")
+        logger.info(f"Input Location: {s3_uri}")
 
         runtime = boto3.client("sagemaker-runtime", region_name=REGION)
-        print(f"Calling SageMaker endpoint:  {runtime._endpoint.host}/{self.model_endpoint}")
+        logger.info(f"Calling SageMaker endpoint:  {runtime._endpoint.host}/{self.model_endpoint}")
         response = runtime.invoke_endpoint_async(
             EndpointName=self.model_endpoint,
             ContentType="application/json",
@@ -38,8 +82,8 @@ class SageMakerRunner(ModelRunnerBase):
             InferenceId=inference_id,
             Accept="application/x-npy",
         )
-        print(f"Inference ID: {response['InferenceId']}")
-        print(f"Output Location: {response['OutputLocation']}")
+        logger.info(f"Inference ID: {response['InferenceId']}")
+        logger.info(f"Output Location: {response['OutputLocation']}")
         output_location = response["OutputLocation"]
         
 
@@ -49,18 +93,13 @@ class SageMakerRunner(ModelRunnerBase):
                 output_location, timeout=3600, interval=1
             )  # Wait up to 1 hour, check every second
         except TimeoutError as e:
-            print(str(e))
+            logger.info(str(e))
             exit(1)
 
         download_s3_file(output_location, "output.out")
 
         prediction = np.load("output.out")
 
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        # Takes around 7 seconds for the example-small.h5ad dataset
-        print(f"Execution Time: {elapsed_time:.2f} seconds")
-        
         dataset.set_output(DataType.EMBEDDING, prediction)
         
         return dataset
@@ -104,7 +143,7 @@ def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
     while True:
         try:
             s3.head_object(Bucket=bucket, Key=key)
-            print(f"File {s3_uri} is now available.")
+            logger.info(f"File {s3_uri} is now available.")
             break
         except boto3.exceptions.botocore.client.ClientError as e:
             if e.response["Error"]["Code"] == "404":
@@ -113,9 +152,39 @@ def wait_for_s3_file(s3_uri, timeout=3600, interval=300):
                     raise TimeoutError(
                         f"Timeout: {s3_uri} not available after {timeout} seconds."
                     )
-                print(
+                logger.info(
                     f"File {s3_uri} not found. Waiting for {interval} seconds before retrying..."
                 )
                 time.sleep(interval)
             else:
                 raise
+
+def serve_model_locally(model_resource_url):
+    """
+    Serve the model locally using SageMaker Local Mode.
+    """
+    # set_credentials()
+    sagemaker_session = LocalSession()
+    sagemaker_session.config = {'local': {'local_code': True}}
+
+    # Create the PyTorch model for local mode.
+    pytorch_model = PyTorchModel(
+        # TODO: Since source_dir is required, passing the tgz file (packaged code) might not be necessary for local mode?
+        model_data=model_resource_url,
+        role=ROLE,
+        framework_version="2.5",
+        py_version="py311",
+        entry_point="inference.py",
+        source_dir="model-serving/runtimes/sagemaker/scvi/code/",
+        sagemaker_session=sagemaker_session,
+        name=MODEL_NAME,
+    )
+    logger.info(f"Local model '{MODEL_NAME}' has been created.")
+
+    # Deploy the model locally.
+    # Use instance_type="local" (or "local_gpu" if GPU support is available).
+    predictor = pytorch_model.deploy(initial_instance_count=1, instance_type="local")
+    logger.info("Model is deployed locally and ready to accept predictions.")
+
+    return predictor
+
