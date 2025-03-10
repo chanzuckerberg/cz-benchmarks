@@ -3,6 +3,7 @@ from typing import Dict, Set
 
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -132,6 +133,7 @@ class MetadataLabelPredictionTask(BaseTask):
             "knn": Pipeline(
                 [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
             ),
+            "rf": Pipeline([("rf", RandomForestClassifier())]),
         }
         logger.info(f"Created classifiers: {list(classifiers.keys())}")
 
@@ -178,7 +180,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             }
                         )
 
-        logger.info("Completed cross-validation for all classifiers")
+        logger.info(f"Completed cross-validation for {self.classifier} classifier")
 
     def _compute_metrics(self) -> Dict[MetricType, float]:
         """Computes classification metrics across all folds.
