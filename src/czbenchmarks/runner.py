@@ -239,7 +239,7 @@ class ContainerRunner:
 
 
 def run_inference(
-    model_name: str, dataset: BaseDataset, gpu: bool = True, interactive: bool = False
+    model_name: str, dataset: BaseDataset, gpu: bool = True, interactive: bool = False, **kwargs
 ) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
 
@@ -248,9 +248,10 @@ def run_inference(
         dataset: Dataset to process
         gpu: Whether to use GPU acceleration
         interactive: Whether to run in interactive mode
+        **kwargs: Additional arguments to pass to the container as CLI params
 
     Returns:
         The processed dataset with model outputs attached
     """
-    runner = ContainerRunner(model_name, gpu, interactive)
+    runner = ContainerRunner(model_name, gpu, interactive, **kwargs)
     return runner.run(dataset)

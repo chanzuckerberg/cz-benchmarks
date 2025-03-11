@@ -30,7 +30,7 @@ class MetricType(Enum):
 
     MEAN_SQUARED_ERROR = "mean_squared_error"
     R2_SCORE = "r2_score"
-
+    JACCARD = "jaccard"
 
 @dataclass
 class MetricInfo:

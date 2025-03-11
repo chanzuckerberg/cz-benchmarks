@@ -6,7 +6,7 @@ import numpy as np
 import logging
 from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset, DataType
-from ...metrics import MetricType
+from ...metrics import MetricType, metrics
 from ...models.types import ModelType
 
 logger = logging.getLogger(__name__)
@@ -69,12 +69,12 @@ class PerturbationTask(BaseTask):
         Returns:
             Dictionary containing MSE and correlation metrics per perturbation
         """
-        metrics = {}
-
+        
         avg_perturbation_control = self.avg_perturbation_ctrl
 
         mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR
         r2_score_metric = MetricType.R2_SCORE
+        jaccard_metric = MetricType.JACCARD
 
         if self.gene_pert in self.perturbation_truth.keys():
             # Run differential expression analysis between control and predicted/truth
@@ -218,9 +218,11 @@ class PerturbationTask(BaseTask):
                 .tolist()
             )
 
-            jaccard_top20 = len(
-                top20_pred_de_genes.intersection(top20_truth_de_genes)
-            ) / len(top20_pred_de_genes.union(top20_truth_de_genes))
+            jaccard_top20 = metrics.compute(
+                jaccard_metric,
+                y_true=top20_truth_de_genes,
+                y_pred=top20_pred_de_genes,
+            )
 
             top100_pred_de_genes = set(
                 self.de_results_pred.sort_values("scores", ascending=False)
@@ -233,19 +235,21 @@ class PerturbationTask(BaseTask):
                 .tolist()
             )
 
-            jaccard_top100 = len(
-                top100_pred_de_genes.intersection(top100_truth_de_genes)
-            ) / len(top100_pred_de_genes.union(top100_truth_de_genes))
+            jaccard_top100 = metrics.compute(
+                jaccard_metric,
+                y_true=top100_truth_de_genes,
+                y_pred=top100_pred_de_genes,
+            )
 
             return {
-                mean_squared_error_metric.value: mse_all,
-                r2_score_metric.value: delta_pearson_corr_all,
-                "mse_top20": mse_top20,
-                "r2_top20": delta_pearson_corr_top20,
-                "mse_top100": mse_top100,
-                "r2_top100": delta_pearson_corr_top100,
-                "jaccard_top20": jaccard_top20,
-                "jaccard_top100": jaccard_top100,
+                f"{mean_squared_error_metric.value}_all": mse_all,
+                f"{r2_score_metric.value}_all": delta_pearson_corr_all,
+                f"{mean_squared_error_metric.value}_top20": mse_top20,
+                f"{r2_score_metric.value}_top20": delta_pearson_corr_top20,
+                f"{mean_squared_error_metric.value}_top100": mse_top100,
+                f"{r2_score_metric.value}_top100": delta_pearson_corr_top100,
+                f"{jaccard_metric.value}_top20": jaccard_top20,
+                f"{jaccard_metric.value}_top100": jaccard_top100,
             }
         else:
             raise ValueError(
