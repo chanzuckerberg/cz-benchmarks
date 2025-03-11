@@ -73,7 +73,6 @@ class PerturbationTask(BaseTask):
         r2_score_metric = MetricType.R2_SCORE
 
         if self.gene_pert in self.perturbation_truth.keys():
-
             avg_perturbation_pred = self.perturbation_pred.mean(axis=0)
             avg_perturbation_truth = self.perturbation_truth[self.gene_pert].mean(
                 axis=0

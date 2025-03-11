@@ -11,6 +11,7 @@ from sklearn.metrics import (
     make_scorer,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.neighbors import KNeighborsClassifier
@@ -115,6 +116,9 @@ class MetadataLabelPredictionTask(BaseTask):
             "f1": make_scorer(f1_score, average=target_type),
             "precision": make_scorer(precision_score, average=target_type),
             "recall": make_scorer(recall_score, average=target_type),
+            "auroc": make_scorer(
+                roc_auc_score, average=target_type, multi_class="ovr", needs_proba=True
+            ),
         }
 
         # Setup cross validation
@@ -208,10 +212,12 @@ class MetadataLabelPredictionTask(BaseTask):
         metrics_dict["mean_recall"] = metrics.compute(
             MetricType.MEAN_FOLD_RECALL, results_df=results_df
         )
+        metrics_dict["mean_auroc"] = metrics.compute(
+            MetricType.MEAN_FOLD_AUROC, results_df=results_df
+        )
 
         # Calculate per-classifier metrics
         for clf in results_df["classifier"].unique():
-
             key = f"{clf}_mean_accuracy"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_ACCURACY, results_df=results_df, classifier=clf
@@ -230,6 +236,11 @@ class MetadataLabelPredictionTask(BaseTask):
             key = f"{clf}_mean_recall"
             metrics_dict[key] = metrics.compute(
                 MetricType.MEAN_FOLD_RECALL, results_df=results_df, classifier=clf
+            )
+
+            key = f"{clf}_mean_auroc"
+            metrics_dict[key] = metrics.compute(
+                MetricType.MEAN_FOLD_AUROC, results_df=results_df, classifier=clf
             )
 
         # Add predictions if generated
