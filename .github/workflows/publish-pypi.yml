@@ -35,14 +35,7 @@ jobs:
         run: pip install build wheel setuptools twine
       
       - name: Build package
-        working-directory: czbenchmarks
         run: python -m build
-
-      - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: czbenchmarks-distributions
-          path: czbenchmarks/dist/
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
