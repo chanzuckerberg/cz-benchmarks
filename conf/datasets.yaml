@@ -7,21 +7,21 @@ datasets:
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
-    path: s3://generate-cross-species/datasets/perturb/single_cell/adamson.h5ad
+    path: s3://generate-cross-species/datasets/perturb/single_cell/adamson_perturbation.h5ad
 
   norman_perturb:
     _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
-    path: s3://generate-cross-species/datasets/perturb/single_cell/norman.h5ad
+    path: s3://generate-cross-species/datasets/perturb/single_cell/norman_perturbation.h5ad
 
   dixit_perturb:
     _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
-    path: s3://generate-cross-species/datasets/perturb/single_cell/dixit.h5ad
+    path: s3://generate-cross-species/datasets/perturb/single_cell/dixit_perturbation.h5ad
 
   replogle_k562_perturb:
     _target_: czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset

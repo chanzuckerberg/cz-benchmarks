@@ -99,8 +99,11 @@ class BaseModelValidator(ABC):
         Raises:
             ValueError: If validation fails
         """
-        if not isinstance(dataset, self.dataset_type):
-            raise ValueError("Dataset type mismatch")
+        if type(dataset) is not self.dataset_type:
+            raise ValueError(
+                f"Dataset type mismatch. Expected {self.dataset_type.__name__}, "
+                f"got {type(dataset).__name__}"
+            )
 
         # Validate required inputs are available
         missing_inputs = self.inputs - set(dataset.inputs.keys())
