@@ -1,3 +1,5 @@
+name: release-please
+
 on:
   push:
     branches:
@@ -5,10 +7,13 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-name: release-please
+
 jobs:
   release-please:
     runs-on: ARM64
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       # See https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
       # For why we need to generate a token and not use the default
@@ -24,3 +29,4 @@ jobs:
         id: release
         with:
           token: ${{ steps.generate_token.outputs.token }}
+          release-type: python
