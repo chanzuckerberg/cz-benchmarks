@@ -25,6 +25,18 @@
             ]
         },
         {
+            "name": "Deploy Model: sagemaker-local",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/deploy.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--target", "sagemaker-local",
+                "${input:forceOption}"
+            ],
+        },
+        {
             "name": "Deploy Model: sagemaker",
             "type": "debugpy",
             "request": "launch",

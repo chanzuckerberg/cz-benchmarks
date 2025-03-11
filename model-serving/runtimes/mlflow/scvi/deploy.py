@@ -1,32 +1,32 @@
-from datetime import datetime
-import json
 from pathlib import Path
 import shutil
 import mlflow
 import mlflow.models
 import mlflow.pyfunc
 from mlflow.types import Schema, ColSpec, ParamSchema, ParamSpec, DataType
+import numpy as np
 
 from mlflow_scvi import MLflowSCVI
 import argparse
 
-def log_model_locally():
-        if not Path(mlflow_model_path).exists() or args.force_package_build:
-            shutil.rmtree(mlflow_model_path)
-            
-            mlflow.pyfunc.save_model(
-                path=mlflow_model_path, 
-                python_model=MLflowSCVI(),
-                code_paths=code_paths,
-                signature=signature,
-                artifacts=artifacts,
-                extra_pip_requirements="requirements-model.txt"
-            )
-            print(f"Model saved locally to {mlflow_model_path}")
+def save_mlflow_model_locally():
+    if not Path(mlflow_model_path).exists() or args.force_package_build:
+        shutil.rmtree(mlflow_model_path)
+        
+        mlflow.pyfunc.save_model(
+            path=mlflow_model_path, 
+            python_model=MLflowSCVI(),
+            code_paths=code_paths,
+            signature=signature,
+            artifacts=artifacts,
+            extra_pip_requirements="requirements-model.txt"
+        )
+        print(f"Model saved locally to {mlflow_model_path}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Save and log MLflow model")
-    parser.add_argument("--target", choices=["local", "databricks", "sagemaker"], default="local", required=True, help="Target to save the model: 'local' or 'databricks'")
+    parser.add_argument("--target", choices=["local", "databricks", "sagemaker", "sagemaker-local"], default="local", required=True, help="Target to save the model: 'local' or 'databricks'")
     parser.add_argument("--experiment-name", type=str, required=False, help="Name of the MLflow experiment")
     parser.add_argument("--force-package-build", action="store_true", help="Force recreate the MLflow model even if it exists")
     parser.add_argument("--use-existing-package", action="store_false", dest="force", default=True, help="Do not force recreate the MLflow model if it exists")
@@ -47,10 +47,10 @@ if __name__ == "__main__":
                 )
     code_paths = ["mlflow_scvi.py"]
     mlflow_model_path = "runtime"
-    
- 
+
+
     if args.target == "local":
-        log_model_locally()
+        save_mlflow_model_locally()
 
     elif args.target == "databricks":
         # Create an MLflow experiment in Databricks. 
@@ -86,37 +86,33 @@ if __name__ == "__main__":
             
             # TODO: Serve the model (this can be done via the Databricks web console as well)
 
-    elif args.target == "sagemaker":
+    elif args.target in ["sagemaker", "sagemaker-local"]:
         from sagemaker.serve import ModelBuilder
         from sagemaker.serve.mode.function_pointers import Mode
         from sagemaker.serve import SchemaBuilder
-        from sagemaker import config
+        
+        if args.target.endswith("local"):
+            sm_deploy_mode = Mode.LOCAL_CONTAINER
+            sm_instance_type = "local"            
+        else:
+            sm_deploy_mode = Mode.SAGEMAKER_ENDPOINT
+            sm_instance_type = "ml.g4dn.xlarge"
 
-        log_model_locally()
-        
-        sample_payload = json.dumps(
-            {"inputs": [["s3://path/input.h5ad"]],
-             "params": {"organism": "human"}
-             })
-        
-        sample_output = "{'predictions': [[0.0020090353209525347, 0.000620177364908158]]}"
+        save_mlflow_model_locally()
                                     
         model_schema = SchemaBuilder(
-            sample_input=sample_payload,
-            sample_output=sample_output
+            sample_input="s3://path/input.h5ad",
+            sample_output=np.array([[0.0020090353209525347, 0.000620177364908158]])
         )
-        
-        instance_type = "ml.g4dn.xlarge"
-        instance_type = "local"
         
         # Note: Requires AWS_PROFILE or AWS_DEFAULT_REGION environment variable is set
         # Note: To ensure use of GPU Docker base image, must specify instance_type
         # TODO: How do we specify async endpoint?
         model_builder = ModelBuilder(
             name="scvi-mlflow",
-            mode=Mode.LOCAL_CONTAINER,
+            mode=sm_deploy_mode,
             # mode=Mode.SAGEMAKER_ENDPOINT,
-            instance_type=instance_type,
+            instance_type=sm_instance_type,
             # FIXME: A schema is required to avoid failing with "cannot serialize" error; 
             # however, the model is actually being invoked on deploy with the schema's sample inputs--why!?
             schema_builder=model_schema,
@@ -134,6 +130,5 @@ if __name__ == "__main__":
         # This creates both the model and model endpoint.
         # TODO: If we just want to perform batch transform, how can we skip creating the endpoint?
         # See https://github.com/aws/sagemaker-python-sdk/issues/49
-        predictor = model.deploy(initial_instance_count=1, instance_type=instance_type)
+        predictor = model.deploy(initial_instance_count=1, instance_type=sm_instance_type)
 
-        
