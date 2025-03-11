@@ -25,8 +25,8 @@ jobs:
       - name: Install cz-benchmark with pytest dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+          pip install .
+          pip install -e ".[dev]"
 
       - name: Pytest
         run: |
