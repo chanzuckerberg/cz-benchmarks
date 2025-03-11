@@ -1,3 +1,4 @@
 mlflow==2.20.0
 uv
+sagemaker[local]==2.240.0
 -r requirements-model.txt

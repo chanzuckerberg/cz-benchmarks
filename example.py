@@ -25,7 +25,7 @@ def main():
     else: # remote
         if args.model_runtime == 'sagemaker':
             dataset = init_dataset("example-remote-sagemaker", config_path="custom.yaml")
-            runner = SageMakerRunner(model_endpoint="scvi-endpoint")
+            runner = SageMakerRunner(model_endpoint="scvi-mlflow-2025-03-11-14-55-59-646")
         if args.model_runtime == 'mlflow':
             dataset = init_dataset("example-remote-mlflow", config_path="custom.yaml")
             runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi5/invocations")
