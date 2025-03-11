@@ -13,7 +13,7 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 ```bash
 git clone https://github.com/chanzuckerberg/cz-benchmarks.git
 cd cz-benchmarks
-pip install -e .
+pip install .
 ```
 
 ## Example Usage
