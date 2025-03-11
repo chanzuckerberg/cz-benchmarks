@@ -1,9 +1,10 @@
 import logging
-from typing import Dict, Set
+from typing import Dict, Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
 from ..metrics import MetricType, metrics
+from ..metrics.types import MetricResult
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -55,26 +56,32 @@ class BatchIntegrationTask(BaseTask):
         self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
         self.labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Returns:
-            Dictionary containing entropy per cell and batch-aware silhouette scores
+            List of MetricResult objects containing entropy per cell and batch-aware silhouette scores
         """
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
 
-        return {
-            entropy_per_cell_metric.value: metrics.compute(
-                entropy_per_cell_metric,
-                X=self.embedding,
-                labels=self.batch_labels,
+        return [
+            MetricResult(
+                metric_type=entropy_per_cell_metric,
+                value=metrics.compute(
+                    entropy_per_cell_metric,
+                    X=self.embedding,
+                    labels=self.batch_labels,
+                ),
             ),
-            silhouette_batch_metric.value: metrics.compute(
-                silhouette_batch_metric,
-                X=self.embedding,
-                labels=self.labels,
-                batch_labels=self.batch_labels,
+            MetricResult(
+                metric_type=silhouette_batch_metric,
+                value=metrics.compute(
+                    silhouette_batch_metric,
+                    X=self.embedding,
+                    labels=self.labels,
+                    batch_labels=self.batch_labels,
+                ),
             ),
-        }
+        ]

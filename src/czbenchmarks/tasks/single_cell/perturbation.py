@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, Set, List
 import pandas as pd
 import scanpy as sc
 import anndata as ad
@@ -8,6 +8,7 @@ from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset, DataType
 from ...metrics import MetricType, metrics
 from ...models.types import ModelType
+from ...metrics.types import MetricResult
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class PerturbationTask(BaseTask):
             name="ctrl",
         )
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
 
         For each perturbation, computes:
@@ -67,7 +68,7 @@ class PerturbationTask(BaseTask):
         - Correlation between predicted and true expression changes from control
 
         Returns:
-            Dictionary containing MSE and correlation metrics per perturbation
+            List of MetricResult objects containing metric values and metadata
         """
 
         avg_perturbation_control = self.avg_perturbation_ctrl
@@ -241,16 +242,48 @@ class PerturbationTask(BaseTask):
                 y_pred=top100_pred_de_genes,
             )
 
-            return {
-                f"{mean_squared_error_metric.value}_all": mse_all,
-                f"{r2_score_metric.value}_all": delta_pearson_corr_all,
-                f"{mean_squared_error_metric.value}_top20": mse_top20,
-                f"{r2_score_metric.value}_top20": delta_pearson_corr_top20,
-                f"{mean_squared_error_metric.value}_top100": mse_top100,
-                f"{r2_score_metric.value}_top100": delta_pearson_corr_top100,
-                f"{jaccard_metric.value}_top20": jaccard_top20,
-                f"{jaccard_metric.value}_top100": jaccard_top100,
-            }
+            return [
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_all,
+                    params={"subset": "all"}
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_all,
+                    params={"subset": "all"}
+                ),
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_top20,
+                    params={"subset": "top20"}
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_top20,
+                    params={"subset": "top20"}
+                ),
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_top100,
+                    params={"subset": "top100"}
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_top100,
+                    params={"subset": "top100"}
+                ),
+                MetricResult(
+                    metric_type=jaccard_metric,
+                    value=jaccard_top20,
+                    params={"subset": "top20"}
+                ),
+                MetricResult(
+                    metric_type=jaccard_metric,
+                    value=jaccard_top100,
+                    params={"subset": "top100"}
+                ),
+            ]
         else:
             raise ValueError(
                 f"Perturbation {self.gene_pert} is not available in the ground truth "

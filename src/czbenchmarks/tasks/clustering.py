@@ -1,9 +1,10 @@
 import logging
-from typing import Dict, Set
+from typing import Dict, Set, List
 import scanpy as sc
 
 from ..datasets import BaseDataset, DataType
 from ..metrics import MetricType, metrics
+from ..metrics.types import MetricResult
 from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
@@ -58,23 +59,26 @@ class ClusteringTask(BaseTask):
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
 
         Returns:
-            Dictionary containing ARI and NMI scores
+            List of MetricResult objects containing ARI and NMI scores
         """
-        return {
-            metric_type.value: metrics.compute(
-                metric_type,
-                labels_true=self.input_labels,
-                labels_pred=self.predicted_labels,
+        return [
+            MetricResult(
+                metric_type=metric_type,
+                value=metrics.compute(
+                    metric_type,
+                    labels_true=self.input_labels,
+                    labels_pred=self.predicted_labels,
+                ),
             )
             for metric_type in [
                 MetricType.ADJUSTED_RAND_INDEX,
                 MetricType.NORMALIZED_MUTUAL_INFO,
             ]
-        }
+        ]
 
     def run_baseline(
         self, data: BaseDataset, n_top_genes=3000, n_pcs=50, random_state=42
