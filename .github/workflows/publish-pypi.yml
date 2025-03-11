@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ARM64
+    runs-on: ubuntu-latest
     # TODO: Once the repo is public, uncomment the following and remove the test token
     # environment: pypi
     # permissions:
