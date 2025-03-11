@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set, Union
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
 from ..metrics import MetricType
+from .utils import run_standard_scrna_workflow
 
 
 class BaseTask(ABC):
@@ -130,6 +131,40 @@ class BaseTask(ABC):
             all_metrics_per_model[model_type] = metrics
 
         return all_metrics_per_model  # Return metrics for all models
+
+    def run_baseline(self, data: BaseDataset, **kwargs) -> Dict[MetricType, float]:
+        """Run a baseline clustering using PCA on gene expression.
+
+        Instead of using embeddings from a model, this method performs standard
+        preprocessing on the raw gene expression data and uses PCA for dimensionality
+        reduction before clustering. This provides a baseline performance to compare
+        against model-generated embeddings.
+
+        Args:
+            data: BaseDataset containing AnnData with gene expression and metadata
+            **kwargs: Additional arguments passed to run_standard_scrna_workflow
+
+        Returns:
+            Dictionary containing baseline clustering metrics (ARI and NMI)
+        """
+
+        # Get the AnnData object from the dataset
+        adata = data.get_input(DataType.ANNDATA)
+
+        # Run the standard preprocessing workflow
+        adata_baseline = run_standard_scrna_workflow(adata, **kwargs)
+
+        # Use PCA result as the embedding for clustering
+        data.set_output(
+            ModelType.BASELINE, DataType.EMBEDDING, adata_baseline.obsm["X_pca"]
+        )
+
+        # Run the clustering task with the PCA embedding
+        baseline_metrics = self.run(data, model_types=[ModelType.BASELINE])[
+            ModelType.BASELINE
+        ]
+
+        return baseline_metrics
 
     def run(
         self,

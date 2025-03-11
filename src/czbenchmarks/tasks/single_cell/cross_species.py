@@ -92,3 +92,26 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 batch_labels=self.species,
             ),
         }
+
+    def run_baseline(
+        self, data: List[SingleCellDataset], **kwargs
+    ) -> Dict[MetricType, float]:
+        """Run a baseline for cross-species integration.
+
+        This method is not implemented for cross-species integration tasks
+        as standard preprocessing workflows are not directly applicable
+        across different species.
+
+        Args:
+            data: List of SingleCellDataset objects from different species
+            **kwargs: Additional arguments (not used)
+
+        Returns:
+            Dictionary of baseline metrics (not implemented)
+
+        Raises:
+            NotImplementedError: Always raised as baseline is not implemented
+        """
+        raise NotImplementedError(
+            "Baseline not implemented for cross-species integration"
+        )
