@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+
 def _safelog(a: np.ndarray) -> np.ndarray:
     """Compute safe log that handles zeros by returning 0.
 
