@@ -289,3 +289,24 @@ class PerturbationTask(BaseTask):
                 f"Perturbation {self.gene_pert} is not available in the ground truth "
                 "test perturbations."
             )
+
+    def run_baseline(
+        self, data: PerturbationSingleCellDataset, **kwargs
+    ) -> List[MetricResult]:
+        """Run a baseline for perturbation prediction.
+
+        This method is not implemented for perturbation prediction tasks yet.
+
+        Args:
+            data: PerturbationSingleCellDataset containing control and perturbed data
+            **kwargs: Additional arguments (not used)
+
+        Returns:
+            Dictionary of baseline metrics (not implemented)
+
+        Raises:
+            NotImplementedError: Always raised as baseline is not implemented
+        """
+        raise NotImplementedError(
+            "Baseline not implemented for perturbation prediction"
+        )

@@ -21,3 +21,4 @@ hnswlib>=0.8.0  # May need to also run this to resolve any ImportErrors: # cp /u
 scib-metrics==0.5.1
 
 pydantic>=2.0.0
+scikit-misc==0.5.1

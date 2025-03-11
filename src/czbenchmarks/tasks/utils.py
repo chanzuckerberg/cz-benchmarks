@@ -71,3 +71,39 @@ def filter_minimum_class(
     labels_filtered = labels[valid_indices]
 
     return features_filtered, pd.Categorical(labels_filtered)
+
+
+def run_standard_scrna_workflow(
+    adata: AnnData, n_top_genes: int = 3000, n_pcs: int = 50, random_state: int = 42
+) -> AnnData:
+    """Run a standard preprocessing workflow for single-cell RNA-seq data.
+
+
+    This function performs common preprocessing steps for scRNA-seq analysis:
+    1. Normalization of counts per cell
+    2. Log transformation
+    3. Identification of highly variable genes
+    4. Subsetting to highly variable genes
+    5. Principal component analysis
+
+    Args:
+        adata: AnnData object containing the raw count data
+        n_top_genes: Number of highly variable genes to select
+        n_pcs: Number of principal components to compute
+        random_state: Random seed for reproducibility
+    """
+    adata = adata.copy()
+    # Standard preprocessing steps for single-cell data
+    sc.pp.normalize_total(adata)  # Normalize counts per cell
+    sc.pp.log1p(adata)  # Log-transform the data
+
+    # Identify highly variable genes using Seurat v3 method
+    sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat_v3")
+
+    # Subset to only highly variable genes to reduce noise
+    adata = adata[:, adata.var["highly_variable"]]
+
+    # Run PCA for dimensionality reduction
+    sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
+
+    return adata

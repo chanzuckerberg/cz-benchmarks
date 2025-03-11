@@ -273,15 +273,18 @@ class MetadataLabelPredictionTask(BaseTask):
     def run_baseline(self, data: BaseDataset):
         """Run a baseline classification using raw gene expression.
 
-        Instead of using embeddings, this method uses the raw gene expression matrix
-        as features for classification. This provides a baseline performance to compare
-        against embedding-based classification.
+        Instead of using embeddings from a model, this method uses the raw gene
+        expression matrix as features for classification. This provides a baseline
+        performance to compare against model-generated embeddings for classification
+        tasks.
 
         Args:
-            data: SingleCellDataset containing AnnData with gene expression and metadata
+            data: BaseDataset containing AnnData with gene expression and metadata
+            **kwargs: Additional arguments (not used in this implementation)
 
         Returns:
             Dictionary containing baseline classification metrics
+            (accuracy, F1, precision, recall, AUROC)
         """
 
         # Get the AnnData object from the dataset
