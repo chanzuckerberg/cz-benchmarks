@@ -1,4 +1,4 @@
-name: Publish Python Package
+name: Publish to PyPi
 
 on:
   release:
@@ -7,19 +7,46 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write # to authenticate as Trusted Publisher to pypi.org
+    # TODO: Once the repo is public, uncomment the following and remove the test token
+    # environment: pypi
+    # permissions:
+    #   id-token: write # to authenticate as Trusted Publisher to pypi.org
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get the version 
+        id: get_version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Display version being published
+        run: |
+          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
-      - run: pip install build
-      - run: python -m build
-      - uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Install dependencies
+        run: pip install build wheel setuptools twine
+      
+      - name: Build package
+        working-directory: czbenchmarks
+        run: python -m build
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: czbenchmarks-distributions
+          path: czbenchmarks/dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           # TODO: Once the repo is public, switch to publishing via Trusted Publisher and remove the test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
-          repository-url: https://testpypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: czbenchmarks/dist/
