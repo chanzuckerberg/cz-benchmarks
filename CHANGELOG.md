@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.0...v0.1.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* add new trigger ([#76](https://github.com/chanzuckerberg/cz-benchmarks/issues/76)) ([fc5cc3f](https://github.com/chanzuckerberg/cz-benchmarks/commit/fc5cc3f7d8216103c45c503338e6da9090f7263b))
+
 ## 0.1.0 (2025-03-11)
 
 
