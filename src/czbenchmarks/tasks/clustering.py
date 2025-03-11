@@ -1,6 +1,5 @@
 import logging
 from typing import Set, List
-import scanpy as sc
 
 from ..datasets import BaseDataset, DataType
 from ..metrics import metrics_registry

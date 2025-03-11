@@ -292,7 +292,7 @@ class PerturbationTask(BaseTask):
 
     def run_baseline(
         self, data: PerturbationSingleCellDataset, **kwargs
-    ) -> Dict[MetricType, float]:
+    ) -> List[MetricResult]:
         """Run a baseline for perturbation prediction.
 
         This method is not implemented for perturbation prediction tasks yet.

@@ -72,6 +72,7 @@ def filter_minimum_class(
 
     return features_filtered, pd.Categorical(labels_filtered)
 
+
 def run_standard_scrna_workflow(
     adata: AnnData, n_top_genes: int = 3000, n_pcs: int = 50, random_state: int = 42
 ) -> AnnData:
