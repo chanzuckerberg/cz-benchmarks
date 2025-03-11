@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.1...v0.1.2) (2025-03-11)
+
+
+### Bug Fixes
+
+* pypy build ([#78](https://github.com/chanzuckerberg/cz-benchmarks/issues/78)) ([8461a23](https://github.com/chanzuckerberg/cz-benchmarks/commit/8461a239efee7050de1cda6e36f480aaab159aaf))
+
 ## [0.1.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.0...v0.1.1) (2025-03-11)
 
 
