@@ -117,7 +117,10 @@ class MetadataLabelPredictionTask(BaseTask):
             "precision": make_scorer(precision_score, average=target_type),
             "recall": make_scorer(recall_score, average=target_type),
             "auroc": make_scorer(
-                roc_auc_score, average="weighted", multi_class="ovr", response_method="predict_proba"
+                roc_auc_score,
+                average="weighted",
+                multi_class="ovr",
+                response_method="predict_proba",
             ),
         }
 
