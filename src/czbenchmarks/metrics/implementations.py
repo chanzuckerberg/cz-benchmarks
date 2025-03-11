@@ -8,15 +8,16 @@ from sklearn.metrics import (
     r2_score,
     mean_squared_error,
 )
+from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 
-from ..tasks.utils import compute_entropy_per_cell
 from .types import MetricRegistry, MetricType
 
+
 # Create the global metric registry
-metrics = MetricRegistry()
+metrics_registry = MetricRegistry()
 
 # Register clustering metrics
-metrics.register(
+metrics_registry.register(
     MetricType.ADJUSTED_RAND_INDEX,
     func=adjusted_rand_score,
     required_args={"labels_true", "labels_pred"},
@@ -24,7 +25,7 @@ metrics.register(
     tags={"clustering"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.NORMALIZED_MUTUAL_INFO,
     func=normalized_mutual_info_score,
     required_args={"labels_true", "labels_pred"},
@@ -33,7 +34,7 @@ metrics.register(
 )
 
 # Register embedding quality metrics
-metrics.register(
+metrics_registry.register(
     MetricType.SILHOUETTE_SCORE,
     func=silhouette_score,
     required_args={"X", "labels"},
@@ -43,7 +44,7 @@ metrics.register(
 )
 
 # Register integration metrics
-metrics.register(
+metrics_registry.register(
     MetricType.ENTROPY_PER_CELL,
     func=compute_entropy_per_cell,
     required_args={"X", "labels"},
@@ -54,7 +55,7 @@ metrics.register(
     tags={"integration"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.BATCH_SILHOUETTE,
     func=silhouette_batch,
     required_args={"X", "labels", "batch_labels"},
@@ -66,7 +67,7 @@ metrics.register(
 )
 
 # Perturbation metrics
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_SQUARED_ERROR,
     func=mean_squared_error,
     required_args={"y_true", "y_pred"},
@@ -74,7 +75,7 @@ metrics.register(
     tags={"perturbation"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.R2_SCORE,
     func=r2_score,
     required_args={"y_true", "y_pred"},
@@ -82,18 +83,7 @@ metrics.register(
     tags={"perturbation"},
 )
 
-
-def jaccard_score(y_true: set[str], y_pred: set[str]):
-    """Compute Jaccard similarity between true and predicted values.
-
-    Args:
-        y_true: True values
-        y_pred: Predicted values
-    """
-    return len(y_true.intersection(y_pred)) / len(y_true.union(y_pred))
-
-
-metrics.register(
+metrics_registry.register(
     MetricType.JACCARD,
     func=jaccard_score,
     required_args={"y_true", "y_pred"},
@@ -101,36 +91,8 @@ metrics.register(
     tags={"perturbation"},
 )
 
-
-def mean_fold_metric(results_df, metric="accuracy", classifier=None):
-    """Compute mean of a metric across folds.
-
-    Args:
-        results_df: DataFrame containing cross-validation results. Must have columns:
-            - "classifier": Name of the classifier (e.g., "lr", "knn")
-            - One of the following metric columns:
-                - "accuracy": For accuracy scores
-                - "f1": For F1 scores
-                - "precision": For precision scores
-                - "recall": For recall scores
-        metric: Name of metric column to average ("accuracy", "f1", etc.)
-        classifier: Optional classifier name to filter results
-
-    Returns:
-        Mean value of the metric across folds
-
-    Raises:
-        KeyError: If the specified metric column is not present in results_df
-    """
-    if classifier:
-        df = results_df[results_df["classifier"] == classifier]
-    else:
-        df = results_df
-    return df[metric].mean()
-
-
 # Register cross-validation classification metrics
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_FOLD_ACCURACY,
     func=mean_fold_metric,
     required_args={"results_df"},
@@ -138,7 +100,7 @@ metrics.register(
     tags={"label_prediction"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_FOLD_F1_SCORE,
     func=mean_fold_metric,
     required_args={"results_df"},
@@ -146,7 +108,7 @@ metrics.register(
     tags={"label_prediction"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_FOLD_PRECISION,
     func=mean_fold_metric,
     required_args={"results_df"},
@@ -154,7 +116,7 @@ metrics.register(
     tags={"label_prediction"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_FOLD_RECALL,
     func=mean_fold_metric,
     required_args={"results_df"},
@@ -162,7 +124,7 @@ metrics.register(
     tags={"label_prediction"},
 )
 
-metrics.register(
+metrics_registry.register(
     MetricType.MEAN_FOLD_AUROC,
     func=mean_fold_metric,
     required_args={"results_df"},

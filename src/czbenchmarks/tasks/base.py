@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Set, Union
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
-from ..metrics import MetricType
+from ..metrics.types import MetricResult
 
 
 class BaseTask(ABC):
@@ -81,16 +81,16 @@ class BaseTask(ABC):
         """
 
     @abstractmethod
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 
         Returns:
-            Dictionary mapping metric names to their float values
+            List of MetricResult objects containing metric values and metadata
         """
 
     def _run_task_for_dataset(
         self, data: BaseDataset, model_types: Optional[List[ModelType]] = None
-    ) -> Dict[ModelType, Dict[MetricType, float]]:
+    ) -> Dict[ModelType, List[MetricResult]]:
         """Run task for a single dataset and compute metrics for each model.
 
         This method iterates through all model outputs in the dataset,
@@ -98,9 +98,10 @@ class BaseTask(ABC):
 
         Args:
             data: Dataset containing required input and output data
+            model_types: Optional list of specific model types to evaluate
 
         Returns:
-            Dictionary mapping model types to their metric results
+            Dictionary mapping model types to their list of MetricResult objects
         """
         # Store metrics for each model in the dataset
         all_metrics_per_model = {}
@@ -119,25 +120,18 @@ class BaseTask(ABC):
             # Compute metrics based on task results
             metrics = self._compute_metrics()
 
-            # Convert numpy floats to python floats where possible
-            for metric_name, metric_value in metrics.items():
-                try:
-                    metrics[metric_name] = float(metric_value)
-                except ValueError:
-                    pass
-
             # Store metrics for this model
             all_metrics_per_model[model_type] = metrics
 
-        return all_metrics_per_model  # Return metrics for all models
+        return all_metrics_per_model
 
     def run(
         self,
         data: Union[BaseDataset, List[BaseDataset]],
         model_types: Optional[List[ModelType]] = None,
     ) -> Union[
-        Dict[ModelType, Dict[MetricType, float]],
-        List[Dict[ModelType, Dict[MetricType, float]]],
+        Dict[ModelType, List[MetricResult]],
+        List[Dict[ModelType, List[MetricResult]]],
     ]:
         """Run the task on input data and compute metrics.
 

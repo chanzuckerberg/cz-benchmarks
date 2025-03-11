@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Set, List
 import pandas as pd
 import scanpy as sc
 import anndata as ad
@@ -6,7 +6,8 @@ import numpy as np
 import logging
 from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset, DataType
-from ...metrics import MetricType, metrics
+from ...metrics import metrics_registry
+from ...metrics.types import MetricResult, MetricType
 from ...models.types import ModelType
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ class PerturbationTask(BaseTask):
             name="ctrl",
         )
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
 
         For each perturbation, computes:
@@ -67,7 +68,7 @@ class PerturbationTask(BaseTask):
         - Correlation between predicted and true expression changes from control
 
         Returns:
-            Dictionary containing MSE and correlation metrics per perturbation
+            List of MetricResult objects containing metric values and metadata
         """
 
         avg_perturbation_control = self.avg_perturbation_ctrl
@@ -147,12 +148,12 @@ class PerturbationTask(BaseTask):
             )
 
             # 1. Calculate metrics for all genes
-            mse_all = metrics.compute(
+            mse_all = metrics_registry.compute(
                 mean_squared_error_metric,
                 y_true=avg_perturbation_truth[intersecting_genes],
                 y_pred=avg_perturbation_pred[intersecting_genes],
             )
-            delta_pearson_corr_all = metrics.compute(
+            delta_pearson_corr_all = metrics_registry.compute(
                 r2_score_metric,
                 y_true=avg_perturbation_truth[intersecting_genes]
                 - avg_perturbation_control[intersecting_genes],
@@ -170,12 +171,12 @@ class PerturbationTask(BaseTask):
                 gene for gene in top20_de_genes if gene in intersecting_genes
             ]
 
-            mse_top20 = metrics.compute(
+            mse_top20 = metrics_registry.compute(
                 mean_squared_error_metric,
                 y_true=avg_perturbation_truth[top20_de_genes],
                 y_pred=avg_perturbation_pred[top20_de_genes],
             )
-            delta_pearson_corr_top20 = metrics.compute(
+            delta_pearson_corr_top20 = metrics_registry.compute(
                 r2_score_metric,
                 y_true=avg_perturbation_truth[top20_de_genes]
                 - avg_perturbation_control[top20_de_genes],
@@ -193,12 +194,12 @@ class PerturbationTask(BaseTask):
                 gene for gene in top100_de_genes if gene in intersecting_genes
             ]
 
-            mse_top100 = metrics.compute(
+            mse_top100 = metrics_registry.compute(
                 mean_squared_error_metric,
                 y_true=avg_perturbation_truth[top100_de_genes],
                 y_pred=avg_perturbation_pred[top100_de_genes],
             )
-            delta_pearson_corr_top100 = metrics.compute(
+            delta_pearson_corr_top100 = metrics_registry.compute(
                 r2_score_metric,
                 y_true=avg_perturbation_truth[top100_de_genes]
                 - avg_perturbation_control[top100_de_genes],
@@ -218,7 +219,7 @@ class PerturbationTask(BaseTask):
                 .tolist()
             )
 
-            jaccard_top20 = metrics.compute(
+            jaccard_top20 = metrics_registry.compute(
                 jaccard_metric,
                 y_true=top20_truth_de_genes,
                 y_pred=top20_pred_de_genes,
@@ -235,22 +236,54 @@ class PerturbationTask(BaseTask):
                 .tolist()
             )
 
-            jaccard_top100 = metrics.compute(
+            jaccard_top100 = metrics_registry.compute(
                 jaccard_metric,
                 y_true=top100_truth_de_genes,
                 y_pred=top100_pred_de_genes,
             )
 
-            return {
-                f"{mean_squared_error_metric.value}_all": mse_all,
-                f"{r2_score_metric.value}_all": delta_pearson_corr_all,
-                f"{mean_squared_error_metric.value}_top20": mse_top20,
-                f"{r2_score_metric.value}_top20": delta_pearson_corr_top20,
-                f"{mean_squared_error_metric.value}_top100": mse_top100,
-                f"{r2_score_metric.value}_top100": delta_pearson_corr_top100,
-                f"{jaccard_metric.value}_top20": jaccard_top20,
-                f"{jaccard_metric.value}_top100": jaccard_top100,
-            }
+            return [
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_all,
+                    params={"subset": "all"},
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_all,
+                    params={"subset": "all"},
+                ),
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_top20,
+                    params={"subset": "top20"},
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_top20,
+                    params={"subset": "top20"},
+                ),
+                MetricResult(
+                    metric_type=mean_squared_error_metric,
+                    value=mse_top100,
+                    params={"subset": "top100"},
+                ),
+                MetricResult(
+                    metric_type=r2_score_metric,
+                    value=delta_pearson_corr_top100,
+                    params={"subset": "top100"},
+                ),
+                MetricResult(
+                    metric_type=jaccard_metric,
+                    value=jaccard_top20,
+                    params={"subset": "top20"},
+                ),
+                MetricResult(
+                    metric_type=jaccard_metric,
+                    value=jaccard_top100,
+                    params={"subset": "top100"},
+                ),
+            ]
         else:
             raise ValueError(
                 f"Perturbation {self.gene_pert} is not available in the ground truth "

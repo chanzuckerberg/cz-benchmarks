@@ -1,9 +1,10 @@
 import logging
-from typing import Dict, Set
+from typing import Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
-from ..metrics import MetricType, metrics
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -52,15 +53,20 @@ class EmbeddingTask(BaseTask):
         self.embedding = data.get_output(model_type, DataType.EMBEDDING)
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes embedding quality metrics.
 
         Returns:
-            Dictionary containing silhouette score
+            List of MetricResult objects containing silhouette score
         """
         metric_type = MetricType.SILHOUETTE_SCORE
-        return {
-            metric_type.value: metrics.compute(
-                metric_type, X=self.embedding, labels=self.input_labels
+        return [
+            MetricResult(
+                metric_type=metric_type,
+                value=metrics_registry.compute(
+                    metric_type,
+                    X=self.embedding,
+                    labels=self.input_labels,
+                ),
             )
-        }
+        ]

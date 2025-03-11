@@ -1,10 +1,11 @@
-from typing import Dict, List, Set
+from typing import List, Set
 
 import numpy as np
 
 from ...datasets import SingleCellDataset, DataType
 from ..base import BaseTask
-from ...metrics import MetricType, metrics
+from ...metrics import metrics_registry
+from ...metrics.types import MetricResult, MetricType
 from ...models.types import ModelType
 
 
@@ -69,26 +70,33 @@ class CrossSpeciesIntegrationTask(BaseTask):
             [[d.organism.name] * d.adata.shape[0] for d in data]
         )
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Returns:
-            Dictionary containing entropy per cell and batch-aware silhouette scores
+            List of MetricResult objects containing entropy per cell and
+            batch-aware silhouette scores
         """
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
 
-        return {
-            entropy_per_cell_metric.value: metrics.compute(
-                entropy_per_cell_metric,
-                X=self.embedding,
-                labels=self.species,
+        return [
+            MetricResult(
+                metric_type=entropy_per_cell_metric,
+                value=metrics_registry.compute(
+                    entropy_per_cell_metric,
+                    X=self.embedding,
+                    labels=self.species,
+                ),
             ),
-            silhouette_batch_metric.value: metrics.compute(
-                silhouette_batch_metric,
-                X=self.embedding,
-                labels=self.labels,
-                batch_labels=self.species,
+            MetricResult(
+                metric_type=silhouette_batch_metric,
+                value=metrics_registry.compute(
+                    silhouette_batch_metric,
+                    X=self.embedding,
+                    labels=self.labels,
+                    batch_labels=self.species,
+                ),
             ),
-        }
+        ]
