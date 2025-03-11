@@ -1,6 +1,6 @@
 from typing import Set
 
-from ...datasets import DataType, Organism
+from ...datasets import DataType, Organism, PerturbationSingleCellDataset
 from .base_single_cell_model_validator import BaseSingleCellValidator
 from ..types import ModelType
 
@@ -13,6 +13,8 @@ class ScGenePTValidator(BaseSingleCellValidator):
     Used for perturbation prediction tasks.
     """
 
+    # Override dataset_type in BaseSingleCellValidator
+    dataset_type = PerturbationSingleCellDataset
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["feature_name"]

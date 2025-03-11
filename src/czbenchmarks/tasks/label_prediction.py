@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set
+from typing import Set, List
 
 import pandas as pd
 import scipy as sp
@@ -20,7 +20,8 @@ from sklearn.preprocessing import StandardScaler
 
 from ..models.types import ModelType
 from ..datasets import BaseDataset, DataType
-from ..metrics import MetricType, metrics
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import filter_minimum_class
 
@@ -31,15 +32,13 @@ class MetadataLabelPredictionTask(BaseTask):
     """Task for predicting labels from embeddings using cross-validation.
 
     Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
-    cross-validation. Reports standard classification metrics and optionally
-    generates per-sample predictions.
+    cross-validation. Reports standard classification metrics.
 
     Args:
         label_key: Key to access ground truth labels in metadata
         n_folds: Number of cross-validation folds
         seed: Random seed for reproducibility
         min_class_size: Minimum samples required per class
-        generate_predictions: Whether to store per-sample predictions
     """
 
     def __init__(
@@ -48,18 +47,15 @@ class MetadataLabelPredictionTask(BaseTask):
         n_folds: int = 5,
         seed: int = 42,
         min_class_size: int = 10,
-        generate_predictions: bool = False,
     ):
         self.label_key = label_key
         self.n_folds = n_folds
         self.seed = seed
         self.min_class_size = min_class_size
-        self.generate_predictions = generate_predictions
         logger.info(
             "Initialized MetadataLabelPredictionTask with: "
             f"label_key='{label_key}', n_folds={n_folds}, "
             f"min_class_size={min_class_size}, "
-            f"generate_predictions={generate_predictions}"
         )
 
     @property
@@ -168,90 +164,111 @@ class MetadataLabelPredictionTask(BaseTask):
                 self.results.append(fold_results)
                 logger.debug(f"{name} fold {fold} results: {fold_results}")
 
-            if self.generate_predictions:
-                logger.info(f"Generating per-sample predictions for {name}...")
-                for fold, (train_idx, test_idx) in enumerate(
-                    skf.split(embeddings, labels)
-                ):
-                    clf.fit(embeddings[train_idx], labels.codes[train_idx])
-                    y_pred = clf.predict(embeddings[test_idx])
-                    y_true = labels.codes[test_idx]
-                    for i, idx in enumerate(test_idx):
-                        self.predictions.append(
-                            {
-                                "classifier": name,
-                                "split": fold,
-                                "sample_idx": idx,
-                                "y_true": labels.categories[y_true[i]],
-                                "y_pred": labels.categories[y_pred[i]],
-                            }
-                        )
-
         logger.info("Completed cross-validation for all classifiers")
 
-    def _compute_metrics(self) -> Dict[MetricType, float]:
+    def _compute_metrics(self) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics
         per classifier and overall.
 
         Returns:
-            Dictionary containing mean metrics and optionally predictions
+            List of MetricResult objects containing mean metrics across all classifiers
+            and per-classifier metrics
         """
         logger.info("Computing final metrics...")
         results_df = pd.DataFrame(self.results)
-        metrics_dict = {}
+        metrics_list = []
 
         # Calculate overall metrics across all classifiers
-        metrics_dict["mean_accuracy"] = metrics.compute(
-            MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
-        )
-        metrics_dict["mean_f1"] = metrics.compute(
-            MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
-        )
-        metrics_dict["mean_precision"] = metrics.compute(
-            MetricType.MEAN_FOLD_PRECISION, results_df=results_df
-        )
-        metrics_dict["mean_recall"] = metrics.compute(
-            MetricType.MEAN_FOLD_RECALL, results_df=results_df
-        )
-        metrics_dict["mean_auroc"] = metrics.compute(
-            MetricType.MEAN_FOLD_AUROC, results_df=results_df
+        metrics_list.extend(
+            [
+                MetricResult(
+                    metric_type=MetricType.MEAN_FOLD_ACCURACY,
+                    value=metrics_registry.compute(
+                        MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
+                    ),
+                ),
+                MetricResult(
+                    metric_type=MetricType.MEAN_FOLD_F1_SCORE,
+                    value=metrics_registry.compute(
+                        MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
+                    ),
+                ),
+                MetricResult(
+                    metric_type=MetricType.MEAN_FOLD_PRECISION,
+                    value=metrics_registry.compute(
+                        MetricType.MEAN_FOLD_PRECISION, results_df=results_df
+                    ),
+                ),
+                MetricResult(
+                    metric_type=MetricType.MEAN_FOLD_RECALL,
+                    value=metrics_registry.compute(
+                        MetricType.MEAN_FOLD_RECALL, results_df=results_df
+                    ),
+                ),
+                MetricResult(
+                    metric_type=MetricType.MEAN_FOLD_AUROC,
+                    value=metrics_registry.compute(
+                        MetricType.MEAN_FOLD_AUROC, results_df=results_df
+                    ),
+                ),
+            ]
         )
 
         # Calculate per-classifier metrics
         for clf in results_df["classifier"].unique():
-            key = f"{clf}_mean_accuracy"
-            metrics_dict[key] = metrics.compute(
-                MetricType.MEAN_FOLD_ACCURACY, results_df=results_df, classifier=clf
+            metrics_list.extend(
+                [
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_ACCURACY,
+                        value=metrics_registry.compute(
+                            MetricType.MEAN_FOLD_ACCURACY,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_F1_SCORE,
+                        value=metrics_registry.compute(
+                            MetricType.MEAN_FOLD_F1_SCORE,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_PRECISION,
+                        value=metrics_registry.compute(
+                            MetricType.MEAN_FOLD_PRECISION,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_RECALL,
+                        value=metrics_registry.compute(
+                            MetricType.MEAN_FOLD_RECALL,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_AUROC,
+                        value=metrics_registry.compute(
+                            MetricType.MEAN_FOLD_AUROC,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                ]
             )
 
-            key = f"{clf}_mean_f1"
-            metrics_dict[key] = metrics.compute(
-                MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df, classifier=clf
-            )
-
-            key = f"{clf}_mean_precision"
-            metrics_dict[key] = metrics.compute(
-                MetricType.MEAN_FOLD_PRECISION, results_df=results_df, classifier=clf
-            )
-
-            key = f"{clf}_mean_recall"
-            metrics_dict[key] = metrics.compute(
-                MetricType.MEAN_FOLD_RECALL, results_df=results_df, classifier=clf
-            )
-
-            key = f"{clf}_mean_auroc"
-            metrics_dict[key] = metrics.compute(
-                MetricType.MEAN_FOLD_AUROC, results_df=results_df, classifier=clf
-            )
-
-        # Add predictions if generated
-        if self.generate_predictions:
-            self.predictions_df = pd.DataFrame(self.predictions)
-            metrics_dict["predictions"] = self.predictions_df
-
-        return metrics_dict
+        return metrics_list
 
     def run_baseline(self, data: BaseDataset):
         """Run a baseline classification using raw gene expression.

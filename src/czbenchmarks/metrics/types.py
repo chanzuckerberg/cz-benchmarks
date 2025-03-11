@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Set
+from pydantic import BaseModel
 
 
 class MetricType(Enum):
@@ -30,6 +31,7 @@ class MetricType(Enum):
 
     MEAN_SQUARED_ERROR = "mean_squared_error"
     R2_SCORE = "r2_score"
+    JACCARD = "jaccard"
 
 
 @dataclass
@@ -150,3 +152,9 @@ class MetricRegistry:
             for metric_type, info in self._metrics.items()
             if tags.issubset(info.tags)
         }
+
+
+class MetricResult(BaseModel):
+    metric_type: MetricType
+    value: float
+    params: Optional[Dict[str, Any]] = {}
