@@ -99,7 +99,9 @@ class ContainerRunner:
 
             # Store original paths and outputs for restoration after processing
             orig_paths = [os.path.expanduser(d.path) for d in datasets]
-            orig_parent_dirs = {str(pathlib.Path(p).absolute().parent) for p in orig_paths}
+            orig_parent_dirs = {
+                str(pathlib.Path(p).absolute().parent) for p in orig_paths
+            }
             orig_outputs = [d.outputs for d in datasets]
 
             # Update dataset paths to Docker paths and serialize to temp directory
