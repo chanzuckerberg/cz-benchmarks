@@ -92,6 +92,7 @@ def jaccard_score(y_true: set[str], y_pred: set[str]):
     """
     return len(y_true.intersection(y_pred)) / len(y_true.union(y_pred))
 
+
 metrics.register(
     MetricType.JACCARD,
     func=jaccard_score,
@@ -99,6 +100,7 @@ metrics.register(
     description="Jaccard similarity between true and predicted values",
     tags={"perturbation"},
 )
+
 
 def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     """Compute mean of a metric across folds.

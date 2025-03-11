@@ -69,7 +69,7 @@ class PerturbationTask(BaseTask):
         Returns:
             Dictionary containing MSE and correlation metrics per perturbation
         """
-        
+
         avg_perturbation_control = self.avg_perturbation_ctrl
 
         mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR

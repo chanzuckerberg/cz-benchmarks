@@ -32,6 +32,7 @@ class MetricType(Enum):
     R2_SCORE = "r2_score"
     JACCARD = "jaccard"
 
+
 @dataclass
 class MetricInfo:
     """Stores metadata about a metric.

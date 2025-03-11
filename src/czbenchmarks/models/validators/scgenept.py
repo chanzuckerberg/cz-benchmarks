@@ -12,8 +12,9 @@ class ScGenePTValidator(BaseSingleCellValidator):
     Requires gene symbols and currently only supports human data.
     Used for perturbation prediction tasks.
     """
+
     # Override dataset_type in BaseSingleCellValidator
-    dataset_type = PerturbationSingleCellDataset  
+    dataset_type = PerturbationSingleCellDataset
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["feature_name"]

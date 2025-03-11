@@ -239,7 +239,11 @@ class ContainerRunner:
 
 
 def run_inference(
-    model_name: str, dataset: BaseDataset, gpu: bool = True, interactive: bool = False, **kwargs
+    model_name: str,
+    dataset: BaseDataset,
+    gpu: bool = True,
+    interactive: bool = False,
+    **kwargs,
 ) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
 
