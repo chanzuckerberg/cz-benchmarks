@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install the czbenchmarks package
 COPY src /app/package/src
-COPY setup.py /app/package/setup.py
-COPY requirements.txt /app/package/requirements.txt
+COPY pyproject.toml /app/package/pyproject.toml
+COPY README.md /app/package/README.md
 RUN pip install -e /app/package
 
 COPY docker/geneformer/model.py .

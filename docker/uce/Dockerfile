@@ -30,8 +30,8 @@ RUN git clone https://github.com/giovp/UCE && \
 
 # Install the czbenchmarks package
 COPY src /app/package/src
-COPY setup.py /app/package/setup.py
-COPY requirements.txt /app/package/requirements.txt
+COPY pyproject.toml /app/package/pyproject.toml
+COPY README.md /app/package/README.md
 RUN /opt/conda/envs/uce/bin/pip install -e /app/package
 
 # Create model_files directory and empty CSV file for species protein embeddings
