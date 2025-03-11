@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Dict
-from ..datasets import DataType, DataValue
+from ..datasets.types import DataType, DataValue
 
 
 class ModelType(Enum):

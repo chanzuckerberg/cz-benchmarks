@@ -142,3 +142,11 @@ metrics.register(
     default_params={"metric": "recall", "classifier": None},
     tags={"label_prediction"},
 )
+
+metrics.register(
+    MetricType.MEAN_FOLD_AUROC,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "auroc", "classifier": None},
+    tags={"label_prediction"},
+)
