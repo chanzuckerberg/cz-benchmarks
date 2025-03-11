@@ -20,7 +20,8 @@ from sklearn.preprocessing import StandardScaler
 
 from ..models.types import ModelType
 from ..datasets import BaseDataset, DataType
-from ..metrics import MetricType, metrics, MetricResult
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import filter_minimum_class
 
@@ -184,31 +185,31 @@ class MetadataLabelPredictionTask(BaseTask):
             [
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_ACCURACY,
-                    value=metrics.compute(
+                    value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
                     ),
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_F1_SCORE,
-                    value=metrics.compute(
+                    value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
                     ),
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_PRECISION,
-                    value=metrics.compute(
+                    value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_PRECISION, results_df=results_df
                     ),
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_RECALL,
-                    value=metrics.compute(
+                    value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_RECALL, results_df=results_df
                     ),
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_AUROC,
-                    value=metrics.compute(
+                    value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_AUROC, results_df=results_df
                     ),
                 ),
@@ -221,7 +222,7 @@ class MetadataLabelPredictionTask(BaseTask):
                 [
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_ACCURACY,
-                        value=metrics.compute(
+                        value=metrics_registry.compute(
                             MetricType.MEAN_FOLD_ACCURACY,
                             results_df=results_df,
                             classifier=clf,
@@ -230,7 +231,7 @@ class MetadataLabelPredictionTask(BaseTask):
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_F1_SCORE,
-                        value=metrics.compute(
+                        value=metrics_registry.compute(
                             MetricType.MEAN_FOLD_F1_SCORE,
                             results_df=results_df,
                             classifier=clf,
@@ -239,7 +240,7 @@ class MetadataLabelPredictionTask(BaseTask):
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_PRECISION,
-                        value=metrics.compute(
+                        value=metrics_registry.compute(
                             MetricType.MEAN_FOLD_PRECISION,
                             results_df=results_df,
                             classifier=clf,
@@ -248,7 +249,7 @@ class MetadataLabelPredictionTask(BaseTask):
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_RECALL,
-                        value=metrics.compute(
+                        value=metrics_registry.compute(
                             MetricType.MEAN_FOLD_RECALL,
                             results_df=results_df,
                             classifier=clf,
@@ -257,7 +258,7 @@ class MetadataLabelPredictionTask(BaseTask):
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_AUROC,
-                        value=metrics.compute(
+                        value=metrics_registry.compute(
                             MetricType.MEAN_FOLD_AUROC,
                             results_df=results_df,
                             classifier=clf,

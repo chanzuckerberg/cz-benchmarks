@@ -3,8 +3,8 @@ from typing import Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
-from ..metrics import MetricType, metrics
-from ..metrics.types import MetricResult
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class BatchIntegrationTask(BaseTask):
         return [
             MetricResult(
                 metric_type=entropy_per_cell_metric,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     entropy_per_cell_metric,
                     X=self.embedding,
                     labels=self.batch_labels,
@@ -78,7 +78,7 @@ class BatchIntegrationTask(BaseTask):
             ),
             MetricResult(
                 metric_type=silhouette_batch_metric,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     silhouette_batch_metric,
                     X=self.embedding,
                     labels=self.labels,

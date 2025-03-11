@@ -3,8 +3,8 @@ from typing import Set, List
 import scanpy as sc
 
 from ..datasets import BaseDataset, DataType
-from ..metrics import MetricType, metrics
-from ..metrics.types import MetricResult
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
@@ -68,7 +68,7 @@ class ClusteringTask(BaseTask):
         return [
             MetricResult(
                 metric_type=metric_type,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     metric_type,
                     labels_true=self.input_labels,
                     labels_pred=self.predicted_labels,

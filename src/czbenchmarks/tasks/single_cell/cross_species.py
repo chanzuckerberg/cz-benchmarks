@@ -4,8 +4,8 @@ import numpy as np
 
 from ...datasets import SingleCellDataset, DataType
 from ..base import BaseTask
-from ...metrics import MetricType, metrics
-from ...metrics.types import MetricResult
+from ...metrics import metrics_registry
+from ...metrics.types import MetricResult, MetricType
 from ...models.types import ModelType
 
 
@@ -84,7 +84,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         return [
             MetricResult(
                 metric_type=entropy_per_cell_metric,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     entropy_per_cell_metric,
                     X=self.embedding,
                     labels=self.species,
@@ -92,7 +92,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
             ),
             MetricResult(
                 metric_type=silhouette_batch_metric,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     silhouette_batch_metric,
                     X=self.embedding,
                     labels=self.labels,

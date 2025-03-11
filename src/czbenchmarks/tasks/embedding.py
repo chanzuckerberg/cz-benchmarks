@@ -3,8 +3,8 @@ from typing import Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
-from ..metrics import MetricType, metrics
-from ..metrics.types import MetricResult
+from ..metrics import metrics_registry
+from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class EmbeddingTask(BaseTask):
         return [
             MetricResult(
                 metric_type=metric_type,
-                value=metrics.compute(
+                value=metrics_registry.compute(
                     metric_type,
                     X=self.embedding,
                     labels=self.input_labels,
