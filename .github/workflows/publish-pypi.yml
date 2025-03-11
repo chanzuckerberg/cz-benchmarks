@@ -43,4 +43,3 @@ jobs:
           # TODO: Once the repo is public, switch to publishing via Trusted Publisher and remove the test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
-          packages-dir: czbenchmarks/dist/
