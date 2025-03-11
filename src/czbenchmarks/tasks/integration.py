@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set, List
+from typing import Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
@@ -60,7 +60,8 @@ class BatchIntegrationTask(BaseTask):
         """Computes batch integration quality metrics.
 
         Returns:
-            List of MetricResult objects containing entropy per cell and batch-aware silhouette scores
+            List of MetricResult objects containing entropy per cell and
+            batch-aware silhouette scores
         """
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL

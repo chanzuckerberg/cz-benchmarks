@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set, List
+from typing import Set, List
 
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType

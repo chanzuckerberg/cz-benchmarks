@@ -1,4 +1,4 @@
-from typing import Dict, Set, List
+from typing import Set, List
 import pandas as pd
 import scanpy as sc
 import anndata as ad
@@ -246,42 +246,42 @@ class PerturbationTask(BaseTask):
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_all,
-                    params={"subset": "all"}
+                    params={"subset": "all"},
                 ),
                 MetricResult(
                     metric_type=r2_score_metric,
                     value=delta_pearson_corr_all,
-                    params={"subset": "all"}
+                    params={"subset": "all"},
                 ),
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top20,
-                    params={"subset": "top20"}
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=r2_score_metric,
                     value=delta_pearson_corr_top20,
-                    params={"subset": "top20"}
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top100,
-                    params={"subset": "top100"}
+                    params={"subset": "top100"},
                 ),
                 MetricResult(
                     metric_type=r2_score_metric,
                     value=delta_pearson_corr_top100,
-                    params={"subset": "top100"}
+                    params={"subset": "top100"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top20,
-                    params={"subset": "top20"}
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top100,
-                    params={"subset": "top100"}
+                    params={"subset": "top100"},
                 ),
             ]
         else:

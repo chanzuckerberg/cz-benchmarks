@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set, List
+from typing import Set, List
 import scanpy as sc
 
 from ..datasets import BaseDataset, DataType

@@ -1,4 +1,4 @@
-from typing import Dict, List, Set
+from typing import List, Set
 
 import numpy as np
 
@@ -74,7 +74,8 @@ class CrossSpeciesIntegrationTask(BaseTask):
         """Computes batch integration quality metrics.
 
         Returns:
-            List of MetricResult objects containing entropy per cell and batch-aware silhouette scores
+            List of MetricResult objects containing entropy per cell and
+            batch-aware silhouette scores
         """
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL

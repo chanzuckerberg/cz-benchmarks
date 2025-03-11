@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set, List
+from typing import Set, List
 
 import pandas as pd
 import scipy as sp
@@ -163,8 +163,6 @@ class MetadataLabelPredictionTask(BaseTask):
                 self.results.append(fold_results)
                 logger.debug(f"{name} fold {fold} results: {fold_results}")
 
-
-
         logger.info("Completed cross-validation for all classifiers")
 
     def _compute_metrics(self) -> List[MetricResult]:
@@ -182,78 +180,92 @@ class MetadataLabelPredictionTask(BaseTask):
         metrics_list = []
 
         # Calculate overall metrics across all classifiers
-        metrics_list.extend([
-            MetricResult(
-                metric_type=MetricType.MEAN_FOLD_ACCURACY,
-                value=metrics.compute(MetricType.MEAN_FOLD_ACCURACY, results_df=results_df),
-            ),
-            MetricResult(
-                metric_type=MetricType.MEAN_FOLD_F1_SCORE,
-                value=metrics.compute(MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df),
-            ),
-            MetricResult(
-                metric_type=MetricType.MEAN_FOLD_PRECISION,
-                value=metrics.compute(MetricType.MEAN_FOLD_PRECISION, results_df=results_df),
-            ),
-            MetricResult(
-                metric_type=MetricType.MEAN_FOLD_RECALL,
-                value=metrics.compute(MetricType.MEAN_FOLD_RECALL, results_df=results_df),
-            ),
-            MetricResult(
-                metric_type=MetricType.MEAN_FOLD_AUROC,
-                value=metrics.compute(MetricType.MEAN_FOLD_AUROC, results_df=results_df),
-            ),
-        ])
-
-        # Calculate per-classifier metrics
-        for clf in results_df["classifier"].unique():
-            metrics_list.extend([
+        metrics_list.extend(
+            [
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_ACCURACY,
                     value=metrics.compute(
-                        MetricType.MEAN_FOLD_ACCURACY,
-                        results_df=results_df,
-                        classifier=clf
+                        MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
                     ),
-                    params={"classifier": clf}
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_F1_SCORE,
                     value=metrics.compute(
-                        MetricType.MEAN_FOLD_F1_SCORE,
-                        results_df=results_df,
-                        classifier=clf
+                        MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
                     ),
-                    params={"classifier": clf}
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_PRECISION,
                     value=metrics.compute(
-                        MetricType.MEAN_FOLD_PRECISION,
-                        results_df=results_df,
-                        classifier=clf
+                        MetricType.MEAN_FOLD_PRECISION, results_df=results_df
                     ),
-                    params={"classifier": clf}
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_RECALL,
                     value=metrics.compute(
-                        MetricType.MEAN_FOLD_RECALL,
-                        results_df=results_df,
-                        classifier=clf
+                        MetricType.MEAN_FOLD_RECALL, results_df=results_df
                     ),
-                    params={"classifier": clf}
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_AUROC,
                     value=metrics.compute(
-                        MetricType.MEAN_FOLD_AUROC,
-                        results_df=results_df,
-                        classifier=clf
+                        MetricType.MEAN_FOLD_AUROC, results_df=results_df
                     ),
-                    params={"classifier": clf}
                 ),
-            ])
+            ]
+        )
+
+        # Calculate per-classifier metrics
+        for clf in results_df["classifier"].unique():
+            metrics_list.extend(
+                [
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_ACCURACY,
+                        value=metrics.compute(
+                            MetricType.MEAN_FOLD_ACCURACY,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_F1_SCORE,
+                        value=metrics.compute(
+                            MetricType.MEAN_FOLD_F1_SCORE,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_PRECISION,
+                        value=metrics.compute(
+                            MetricType.MEAN_FOLD_PRECISION,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_RECALL,
+                        value=metrics.compute(
+                            MetricType.MEAN_FOLD_RECALL,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                    MetricResult(
+                        metric_type=MetricType.MEAN_FOLD_AUROC,
+                        value=metrics.compute(
+                            MetricType.MEAN_FOLD_AUROC,
+                            results_df=results_df,
+                            classifier=clf,
+                        ),
+                        params={"classifier": clf},
+                    ),
+                ]
+            )
 
         return metrics_list
 
