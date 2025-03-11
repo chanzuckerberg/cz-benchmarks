@@ -4,13 +4,12 @@ from pathlib import Path
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import (
+from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.geneformer import GeneformerValidator
-from czibench.utils import sync_s3_to_local
+from czbenchmarks.models.validators.geneformer import GeneformerValidator
+from czbenchmarks.utils import sync_s3_to_local
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -102,7 +101,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
         embs = embs.drop("cell_idx", axis=1)
-        dataset.set_output(DataType.EMBEDDING, embs.values)
+        dataset.set_output(self.model_type, DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()

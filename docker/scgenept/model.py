@@ -10,13 +10,12 @@ from gears import PertData
 from omegaconf import OmegaConf
 from utils.data_loading import load_trained_scgenept_model
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import (
+from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.scgenept import ScGenePTValidator
-from czibench.utils import download_s3_file, sync_s3_to_local
+from czbenchmarks.models.validators.scgenept import ScGenePTValidator
+from czbenchmarks.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +94,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
-        adata.var["gene_name"] = adata.var["gene_symbol"]
+        adata.var["gene_name"] = adata.var["feature_name"]
 
         args = self.parse_args()
         dataset_name = args.dataset_name
@@ -153,14 +152,16 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
             all_preds.append(preds)
 
         dataset.set_output(
+            self.model_type,
             DataType.PERTURBATION_PRED,
-            {
-                gene_pert: pd.DataFrame(
+            (
+                gene_pert,
+                pd.DataFrame(
                     data=np.concatenate(all_preds, axis=0),
                     index=adata.obs_names,
                     columns=adata.var_names.to_list(),
-                )
-            },
+                ),
+            ),
         )
 
 

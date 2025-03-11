@@ -17,51 +17,69 @@ pip install -e .
 ```
 
 ## Example Usage
-* Load a dataset, run a model, run several tasks, and compute metrics
 
 ```python
-from czibench.datasets.single_cell import SingleCellDataset
-from czibench.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
-from czibench.runner import ContainerRunner
-from czibench.datasets.types import Organism
+from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.runner import ContainerRunner
+from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
-dataset = load_dataset("example")
-runner = ContainerRunner(image="czibench-scvi:latest", gpu=True)
+# Load dataset with custom configuration
+dataset = load_dataset("example", config_path="custom.yaml")
+
+# Run model
+runner = ContainerRunner(
+    image="czbenchmarks-scvi:latest",
+    gpu=True,
+)
 dataset = runner.run(dataset)
 
+# Run evaluation tasks
 task = ClusteringTask(label_key="cell_type")
-dataset, clustering_results = task.run(dataset)
+clustering_results = task.run(dataset)
 
 task = EmbeddingTask(label_key="cell_type")
-dataset, embedding_results = task.run(dataset)
+embedding_results = task.run(dataset)
 
 task = MetadataLabelPredictionTask(label_key="cell_type")
-dataset, prediction_results = task.run(dataset)
+prediction_results = task.run(dataset)
 ```
 
 ## Architecture Overview
 
 This is a benchmarking framework for machine learning models (with a focus on single-cell data), built around Docker containers and a modular architecture. Here are the key components:
 
-### Core components
+### Core Components
 
 #### Base Classes
 
-- `czibench.datasets.base.BaseDataset`: Abstract base class for all datasets
-- `czibench.models.base.BaseModel`: Abstract base class for all models
-- `czibench.tasks.base.BaseTask`: Abstract base class for evaluation tasks
+- `czbenchmarks.datasets.base.BaseDataset`: Abstract base class for all datasets
+- `czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation`: Abstract base class for all model implementations
+- `czbenchmarks.models.validators.base_model_validator.BaseModelValidator`: Abstract base class for model validation
+- `czbenchmarks.tasks.base.BaseTask`: Abstract base class for evaluation tasks
 
-#### Container system
+#### Container System
 
 - Uses Docker for model execution
-- Models are packaged as Docker containers
-- Standard I/O paths for data exchange:
-  - Input: `/app/input/data.dill`
-  - Output: `/app/output/data.dill`
+- Models are packaged as Docker containers with standardized interfaces
+- Each model container includes:
+  - Model implementation inheriting from `BaseModelImplementation`
+  - Model-specific validator inheriting from `BaseModelValidator`
+  - Configuration file (config.yaml)
+  - Requirements file (requirements.txt)
+
+### Available Models
+
+The framework currently supports the following models:
+
+- scVI: Variational inference for single-cell RNA-seq data
+- scGPT: Single-cell GPT model for transcriptomics
+- Geneformer: Transformer model for gene expression
+- scGenePT: Single-cell Gene Prediction Transformer
+- UCE: Universal Cell Embedding model
 
 ## Contributing New Components
 
-### Adding a new model
+### Adding a New Model
 
 1. Create a new directory under `docker/your_model/` with:
 
@@ -75,65 +93,47 @@ docker/your_model/
 
 Refer to the template docker directory as a starting point (`docker/template/`)!
 
-2. Implement your base model class in `src/czibench/models/`. This should implement the model-specific validator (`_validate_model_requirements`).
+2. Implement your model validator in `src/czbenchmarks/models/validators/`. This should inherit from `BaseModelValidator` or `BaseSingleCellValidator` and implement:
+   - Required data type specifications
+   - Model-specific validation rules
+   - Supported organisms and data requirements
 
-3. Implement the model class in `model.py` (see template):
+3. Implement your model class in `model.py` (see template):
 
 ```python
-"""
-REQUIRED MODEL IMPLEMENTATION FILE
+from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+from czbenchmarks.models.validators.your_model import YourModelValidator
 
-This file MUST:
-1. Define a model class that inherits from your base model class that you implemented in the benchmarking library (e.g. ScviValidator)
-2. Implement the run_model() method
-3. Create an instance and call run() if used as main
+class YourModel(YourModelValidator, BaseModelImplementation):
+    def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
+        """Specify subdirectory for model weights."""
+        return dataset.organism.name
 
-Example implementation for a single-cell model:
-"""
+    def _download_model_weights(self, dataset: BaseDataset):
+        """Download model weights from your source."""
+        # Implement model weight downloading logic
+        pass
 
-from czibench.models.single_cell import BaseYourModel
+    def run_model(self, dataset: BaseDataset):
+        """Implement your model's inference logic."""
+        # Access input data via dataset.adata
+        # Set output embedding via dataset.set_output()
+        pass
 
-class ExampleModel(BaseYourModel):
-
-    def run_model(self):
-        """
-        Required: Implement your model's inference logic here.
-        Access input data via self.data.adata
-        Set output embedding via self.data.output_embedding
-        """
-        # Add your model implementation here
-        raise NotImplementedError("Model implementation required")
+    def parse_args(self):
+        """Parse model-specific arguments."""
+        pass
 
 if __name__ == "__main__":
-    ExampleModel().run()
-```
-
-### Adding new metrics
-
-1. Create a new function that outputs a score given some input. Below are a couple example clustering metrics in `metrics/`.
-
-```python
-from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
-
-def adjusted_rand_index(original_labels, predicted_labels):
-    return adjusted_rand_score(
-        original_labels,
-        predicted_labels
-    )
-
-def normalized_mutual_info(original_labels, predicted_labels):
-    return adjusted_mutual_info_score(
-        original_labels,
-        predicted_labels
-    )
+    YourModel().run()
 ```
 
 ### Adding New Tasks
 
-1. Create a task class inheriting from `czibench.tasks.base.BaseTask`. For example:
+1. Create a task class inheriting from `czbenchmarks.tasks.base.BaseTask`. For example:
 
 ```python
-from czibench.tasks.base import BaseTask
+from czbenchmarks.tasks.base import BaseTask
 
 class ClusteringTask(BaseTask):
 
@@ -157,41 +157,18 @@ class ClusteringTask(BaseTask):
         }
 ```
 
-## Running Models
-
-Using the `ContainerRunner`:
-
-```python
-from czibench.runner import ContainerRunner
-from czibench.datasets.utils import load_dataset
-
-# Load dataset
-dataset = load_dataset("mouse_brain_atlas")
-
-# Run model
-runner = ContainerRunner(
-    image="your-model-image:latest",
-    gpu=True,  # Optional GPU support
-    memory="8g"  # Optional memory limit
-)
-result = runner.run(dataset)
-```
-
 ## Using Custom Data
 
 To use your own data:
 
 1. Prepare your data in a compatible format (AnnData for single-cell)
-2. Load using the appropriate dataset type:
+2. Create a custom configuration file (e.g., `custom.yaml`)
+3. Load using the appropriate dataset type:
 
 ```python
-from czibench.datasets.single_cell import SingleCellDataset
-from czibench.datasets.types import Organism
+from czbenchmarks.datasets.utils import load_dataset
 
-dataset = SingleCellDataset(
-    path="path/to/your/data.h5ad",
-    organism=Organism.HUMAN
-)
+dataset = load_dataset("your_dataset", config_path="custom.yaml")
 ```
 
 ## Contributing
