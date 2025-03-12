@@ -26,7 +26,7 @@ dependencies = [
     "boto3>=1.28.0",
 
     # Data handling
-    "anndata>=0.9.0",
+    "anndata",
     "h5py>=3.8.0",
 
     "dill>=0.3.6",
