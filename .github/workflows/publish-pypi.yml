@@ -25,6 +25,14 @@ jobs:
         run: |
           echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
