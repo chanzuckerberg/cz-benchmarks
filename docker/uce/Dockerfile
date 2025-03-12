@@ -43,7 +43,7 @@ COPY docker/uce/requirements.txt .
 RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
 # Copy model files
-COPY docker/uce/uce_model.py .
+COPY docker/uce/model.py .
 COPY docker/uce/config.yaml .
 
-ENTRYPOINT ["/opt/conda/envs/uce/bin/python", "-u", "/app/uce_model.py"]
+ENTRYPOINT ["/opt/conda/envs/uce/bin/python", "-u", "/app/model.py"]
