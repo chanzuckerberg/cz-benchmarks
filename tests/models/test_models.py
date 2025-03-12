@@ -15,7 +15,8 @@ from czbenchmarks.models.validators.uce import UCEValidator
 from tests.utils import create_dummy_anndata, DummyDataset
 
 
-# For all fully implemented single‑cell validators, dataset validation passes on a valid benchmarking dataset fixture.
+# For all fully implemented single‑cell validators, dataset validation should pass
+# on a valid benchmarking dataset fixture.
 @pytest.mark.parametrize(
     "validator_class, obs_columns, var_columns, dataset_class",
     [
@@ -134,7 +135,7 @@ def test_missing_required_obs_keys():
 # 5. For a single‑cell model: Dataset validation fails when required var keys are missing.
 def test_missing_required_var_keys():
     validator = GeneformerValidator()  # Requires var key: "feature_id".
-    # Create AnnData that does not include "feature_id" (e.g. a different var column name).
+    # Create AnnData that does not include "feature_id"
     ann = create_dummy_anndata(var_columns=["some_other_feature"])
     dataset = SingleCellDataset("dummy_path", organism=Organism.HUMAN)
     dataset.set_input(DataType.ANNDATA, ann)
