@@ -17,7 +17,7 @@ MODEL_NAME = "scvi-local"
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def run_local_batch_transform(input_file_path, output_path, instance_type="local"):
+def run_local_batch_transform(input_file_uri, output_dir_uri, instance_type="local"):
     """
     Runs a local batch transform job. input_file_path should be a local text file
     containing JSON lines. Each line has "s3_input" + "organism".
@@ -42,12 +42,12 @@ def run_local_batch_transform(input_file_path, output_path, instance_type="local
     transformer = pytorch_model.transformer(
         instance_count=1,
         instance_type=instance_type,  # "local" or "local_gpu"
-        output_path=output_path,      # local path -> "file:///home/ec2-user/batch_output"
+        output_path=output_dir_uri,      # local path -> "file:///home/ssm-user/batch_transform_test/batch_output"
     )
 
     # 4. Transform job
     transformer.transform(
-        data=input_file_path,   # Must be local in local mode
+        data=input_file_uri,   # local path -> "file:///home/ssm-user/batch_transform_test/batch_input.jsonl"
         content_type="application/json",
         split_type="Line",      # Each line is one record for input_fn
         # accept="application/json", # TRY THIS LATER: "application/x-npy"
@@ -78,14 +78,16 @@ def test_batch_transform():
             f.write(json.dumps(record) + "\n")
 
     # 2. Set output path (can be a directory in your home directory)
-    output_path = "file:///home/ssm-user/batch_transform_test/batch_output"
-    os.makedirs("/home/ssm-user/batch_transform_test/batch_output", exist_ok=True)
+    output_dir = "//home/ssm-user/batch_transform_test/batch_output"
+    os.makedirs(output_dir, exist_ok=True)
 
     start_time = time.perf_counter()
     # 3. Run local batch transform
+    input_file_uri = f"file://{input_filename}"
+    output_dir_uri = f"file://{output_dir}"
     run_local_batch_transform(
-        input_file_path=input_filename,
-        output_path=output_path,
+        input_file_uri=input_file_uri,
+        output_dir_uri=output_dir_uri,
         instance_type="local_gpu"    # or "local" if you don't want GPU
     )
 
