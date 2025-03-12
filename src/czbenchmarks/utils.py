@@ -10,6 +10,25 @@ logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
+def get_aws_credentials(profile="default"):
+    """
+    Get AWS credentials from the specified profile.
+
+    :param profile: AWS profile name (default: 'default')
+    :return: Dictionary containing AWS credentials
+    """
+    # Create a session with the specified profile
+    session = boto3.Session(profile_name=profile)
+
+    # Get credentials from the session
+    credentials = session.get_credentials()
+
+    return {
+        "AWS_ACCESS_KEY_ID": credentials.access_key,
+        "AWS_SECRET_ACCESS_KEY": credentials.secret_key,
+    }
+
+
 def download_s3_file(bucket, key, local_path):
     """
     Downloads a single file from S3 to a local path.
