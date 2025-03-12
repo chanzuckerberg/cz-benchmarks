@@ -8,6 +8,8 @@ import pandas as pd
 import torch
 from gears import PertData
 from omegaconf import OmegaConf
+
+# utils.data_loading is a function in https://github.com/czi-ai/scGenePT/tree/main
 from utils.data_loading import load_trained_scgenept_model
 
 from czbenchmarks.datasets import BaseDataset, DataType
