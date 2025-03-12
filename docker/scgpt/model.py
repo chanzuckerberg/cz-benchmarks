@@ -15,21 +15,21 @@ from czbenchmarks.utils import sync_s3_to_local
 class ScGPT(ScGPTValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_name", type=str, default="human")
+        parser.add_argument("--model_variant", type=str, default="human")
         args = parser.parse_args()
         return args
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
-        selected_model = config.models[args.model_name]
-        model_name = selected_model.model_name
-        return model_name
+        selected_model = config.models[args.model_variant]
+        model_variant = selected_model.model_variant
+        return model_variant
 
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
-        selected_model = config.models[args.model_name]
+        selected_model = config.models[args.model_variant]
         model_uri = selected_model.model_uri
 
         pathlib.Path(self.model_weights_dir).mkdir(exist_ok=True)
