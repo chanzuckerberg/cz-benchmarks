@@ -296,7 +296,8 @@ class PerturbationTask(BaseTask):
         """Run a baseline for perturbation prediction.
 
         Creates baseline predictions using simple statistical methods (median and mean)
-        applied to the control data, and evaluates these predictions against ground truth.
+        applied to the control data, and evaluates these predictions against ground
+        truth.
 
         Args:
             data: PerturbationSingleCellDataset containing control and perturbed data
@@ -309,40 +310,42 @@ class PerturbationTask(BaseTask):
         """
         # Initialize empty list to store metrics from all baseline methods
         baseline_metrics = []
-        
+
         # Iterate through different statistical baseline functions (median and mean)
         for baseline_func in [np.median, np.mean]:
-            # Create baseline prediction by replicating the median/mean expression values
+            # Create baseline prediction by replicating the aggregated expression values
             # across all cells in the dataset.
             perturb_baseline_pred = pd.DataFrame(
                 np.tile(
                     np.median(data.adata.X.toarray(), axis=0), (data.adata.shape[0], 1)
                 ),
                 columns=data.adata.var_names,  # Use gene names from the dataset
-                index=data.adata.obs_names,    # Use cell names from the dataset
+                index=data.adata.obs_names,  # Use cell names from the dataset
             )
-            
+
             # Store the baseline prediction in the dataset for evaluation
             data.set_output(
                 ModelType.BASELINE,
                 DataType.PERTURBATION_PRED,
                 (gene_pert, perturb_baseline_pred),
             )
-            
+
             # Run the task with baseline model and get metrics
-            metrics = self.run(data, model_types=[ModelType.BASELINE])[ModelType.BASELINE]
-            
+            metrics = self.run(data, model_types=[ModelType.BASELINE])[
+                ModelType.BASELINE
+            ]
+
             # Add the baseline method name to each metric's parameters
             # to distinguish between different baseline approaches
             metrics = [
                 MetricResult(
                     metric_type=metric.metric_type,
                     value=metric.value,
-                    params={**metric.params, "method": baseline_func.__name__}
+                    params={**metric.params, "method": baseline_func.__name__},
                 )
                 for metric in metrics
             ]
-            
+
             # Add this baseline method's metrics to the overall results
             baseline_metrics.extend(metrics)
 

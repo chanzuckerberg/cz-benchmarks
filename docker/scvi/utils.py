@@ -13,7 +13,7 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     adata = adata.copy()
 
     hvg = pd.read_csv(hvg_path)
-    adata.var["feature_id"] = adata.var["feature_id"].astype(str)
+    adata.var["feature_id"] = adata.var_names.astype(str)
     hvg["feature_id"] = hvg["feature_id"].astype(str)
 
     # Filter adata by only genes that are present in hvg.feature_id
