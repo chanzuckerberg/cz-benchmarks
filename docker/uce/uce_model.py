@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class UCE(UCEValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_name", type=str, default="4l")
+        parser.add_argument("--model_variant", type=str, default="4l")
         return parser.parse_args()
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
@@ -41,34 +41,34 @@ class UCE(UCEValidator, BaseModelImplementation):
         from evaluate import AnndataProcessor
 
         args = self.parse_args()
-        model_name = args.model_name
+        model_variant = args.model_variant
 
         config = OmegaConf.load("config.yaml")
-        assert model_name in config.model_config, (
-            f"Model {model_name} not found in config.yaml. "
+        assert model_variant in config.model_config, (
+            f"Model {model_variant} not found in config.yaml. "
             f"Valid models are: {list(config.model_config.keys())}"
         )
 
-        config.model_config[model_name].protein_embeddings_dir = (
+        config.model_config[model_variant].protein_embeddings_dir = (
             f"{self.model_weights_dir}/protein_embeddings"
         )
-        config.model_config[model_name].model_loc = (
+        config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
-            f"{config.model_config[model_name].model_filename}"
+            f"{config.model_config[model_variant].model_filename}"
         )
-        config.model_config[model_name].offset_pkl_path = (
+        config.model_config[model_variant].offset_pkl_path = (
             f"{self.model_weights_dir}/species_offsets.pkl"
         )
-        config.model_config[model_name].token_file = (
+        config.model_config[model_variant].token_file = (
             f"{self.model_weights_dir}/all_tokens.torch"
         )
-        config.model_config[model_name].spec_chrom_csv_path = (
+        config.model_config[model_variant].spec_chrom_csv_path = (
             f"{self.model_weights_dir}/species_chrom.csv"
         )
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(
-            config.model_config[model_name].protein_embeddings_dir
+            config.model_config[model_variant].protein_embeddings_dir
         )
         protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
         protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
@@ -91,12 +91,12 @@ class UCE(UCEValidator, BaseModelImplementation):
             # Save adata to tempdir
             adata.write_h5ad(temp_adata_path)
 
-            config.model_config[model_name].adata_path = str(temp_adata_path)
-            config.model_config[model_name].dir = tmp_dir
+            config.model_config[model_variant].adata_path = str(temp_adata_path)
+            config.model_config[model_variant].dir = tmp_dir
             # where the embeddings are saved
             accelerator = Accelerator(project_dir=tmp_dir)
             config_dict = OmegaConf.to_container(
-                config.model_config[model_name], resolve=True
+                config.model_config[model_variant], resolve=True
             )
             args = argparse.Namespace(**config_dict)
             processor = AnndataProcessor(args, accelerator)
