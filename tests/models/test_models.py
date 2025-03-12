@@ -11,23 +11,18 @@ from czbenchmarks.models.validators.scgenept import ScGenePTValidator
 from czbenchmarks.models.validators.scgpt import ScGPTValidator
 from czbenchmarks.models.validators.geneformer import GeneformerValidator
 from czbenchmarks.models.validators.uce import UCEValidator
-from ..utils import create_dummy_anndata, DummyDataset
+from tests.utils import create_dummy_anndata, DummyDataset
 
 
 # For all fully implemented single‑cell validators, dataset validation passes on a valid benchmarking dataset fixture.
 @pytest.mark.parametrize(
     "validator_class, obs_columns, var_columns, dataset_class",
     [
-        # SCVIValidator requires certain obs keys and no required var keys.
-        (SCVIValidator, ["dataset_id", "assay", "suspension_type", "donor_id"], [], SingleCellDataset),
-        # ScGenePTValidator requires a var key "feature_name" and its dataset type is PerturbationSingleCellDataset.
-        (ScGenePTValidator, [], ["feature_name"], PerturbationSingleCellDataset),
-        # ScGPTValidator requires a var key "feature_name"
-        (ScGPTValidator, [], ["feature_name"], SingleCellDataset),
-        # GeneformerValidator requires a var key "feature_id"
-        (GeneformerValidator, [], ["feature_id"], SingleCellDataset),
-        # UCEValidator requires a var key "feature_name"
-        (UCEValidator, [], ["feature_name"], SingleCellDataset),
+        (SCVIValidator, SCVIValidator.required_obs_keys, SCVIValidator.required_var_keys, SingleCellDataset),
+        (ScGenePTValidator, ScGenePTValidator.required_obs_keys, ScGenePTValidator.required_var_keys, PerturbationSingleCellDataset),
+        (ScGPTValidator, ScGPTValidator.required_obs_keys, ScGPTValidator.required_var_keys, SingleCellDataset),
+        (GeneformerValidator, GeneformerValidator.required_obs_keys, GeneformerValidator.required_var_keys, SingleCellDataset),
+        (UCEValidator, UCEValidator.required_obs_keys, UCEValidator.required_var_keys, SingleCellDataset),
     ],
 )
 def test_valid_dataset(validator_class, obs_columns, var_columns, dataset_class):
