@@ -29,10 +29,20 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=czbenchmarks --cov-report=html tests/
+          pytest --cov=czbenchmarks --cov-report=term-missing tests/ | tee coverage.txt
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: htmlcov
+          path: coverage.txt
+
+      - name: Output full coverage report to GitHub summary
+        run: |
+          {
+            echo "## Code Coverage Report";
+            echo "";
+            echo '```';
+            cat coverage.txt;
+            echo '```';
+          } >> $GITHUB_STEP_SUMMARY
