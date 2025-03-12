@@ -35,7 +35,8 @@ def load_dataloader(
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_variant", type=str, default="scgenept_go_c")
+        parser.add_argument("--model_variant", type=str,
+                            default="scgenept_go_c_gpt_concat")
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
         parser.add_argument("--dataset_name", type=str, default="adamson")
         parser.add_argument("--chunk_size", type=int, default=512)
@@ -127,7 +128,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model, gene_ids = load_trained_scgenept_model(
             ref_adata,
-            f"{args.model_variant}_gpt_concat",
+            args.model_variant,
             str(pathlib.Path(self.model_weights_dir).parent.parent) + "/",
             model_filename,
             device,
