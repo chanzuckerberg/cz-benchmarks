@@ -23,6 +23,13 @@ def get_aws_credentials(profile="default"):
     # Get credentials from the session
     credentials = session.get_credentials()
 
+    if not (hasattr(credentials, "access_key") and hasattr(credentials, "secret_key")):
+        raise ValueError(
+            f"AWS credentials not found for profile {profile}."
+            " Entries for aws_access_key_id and aws_secret_access_key"
+            " must be present in the profile."
+        )
+
     return {
         "AWS_ACCESS_KEY_ID": credentials.access_key,
         "AWS_SECRET_ACCESS_KEY": credentials.secret_key,
