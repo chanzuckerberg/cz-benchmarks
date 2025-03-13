@@ -10,15 +10,15 @@ RUN apt-get update && \
 # Install Geneformer and its dependencies
 RUN git clone https://huggingface.co/ctheodoris/Geneformer && \
     cd Geneformer && \
+    git checkout 69e6887 && \
     pip install .
 
 COPY docker/geneformer/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the czibench package
+# Install the czbenchmarks package
 COPY src /app/package/src
-COPY setup.py /app/package/setup.py
-COPY requirements.txt /app/package/requirements.txt
+COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
 RUN pip install -e /app/package
 

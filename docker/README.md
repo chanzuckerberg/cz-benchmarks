@@ -38,7 +38,7 @@ class YourModelImplementation(BaseModelImplementation, YourModelValidator):
     def run_model(self, dataset: BaseDataset):
         """Run model inference."""
         embeddings = self.model.encode(dataset.adata)
-        dataset.set_output(DataType.EMBEDDING, embeddings)
+        dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
 
     def parse_args(self):
         """Parse model-specific arguments."""

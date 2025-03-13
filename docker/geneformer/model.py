@@ -4,19 +4,18 @@ from pathlib import Path
 from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 
-from czibench.datasets.base import BaseDataset
-from czibench.datasets.types import DataType
-from czibench.models.implementations.base_model_implementation import (
+from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czibench.models.validators.geneformer import GeneformerValidator
-from czibench.utils import sync_s3_to_local
+from czbenchmarks.models.validators.geneformer import GeneformerValidator
+from czbenchmarks.utils import sync_s3_to_local
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_name", type=str, default="gf_12L_30M")
+        parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
         args = parser.parse_args()
         return args
 
@@ -24,14 +23,14 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         assert (
-            f"{args.model_name}" in config.models
-        ), f"Model {args.model_name} not found in config"
-        return args.model_name
+            f"{args.model_variant}" in config.models
+        ), f"Model {args.model_variant} not found in config"
+        return args.model_variant
 
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
-        selected_model = config.models[args.model_name]
+        selected_model = config.models[args.model_variant]
         model_uri = selected_model.model_uri
 
         Path(self.model_weights_dir).mkdir(exist_ok=True)
@@ -44,7 +43,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
     def run_model(self, dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
-        selected_model = config.models[args.model_name]
+        selected_model = config.models[args.model_variant]
         token_config = selected_model.token_config
         seq_len = token_config.input_size
 
@@ -102,7 +101,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Sort embeddings by cell_idx to restore original order
         embs = embs.sort_values("cell_idx")
         embs = embs.drop("cell_idx", axis=1)
-        dataset.set_output(DataType.EMBEDDING, embs.values)
+        dataset.set_output(self.model_type, DataType.EMBEDDING, embs.values)
 
         # Cleanup
         temp_path.unlink()
