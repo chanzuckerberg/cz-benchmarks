@@ -63,7 +63,7 @@ def test_batch_transform():
     input_filename = "/home/ssm-user/batch_transform_test/batch_input.jsonl"
     records = [
         {
-            "s3_input": "s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Stomach_v2_curated.h5ad",
+            "s3_input": "s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Mammary_v2_curated.h5ad",
             "organism": "homo_sapiens"
         },
         # add more lines if you want multiple files or multiple invocations

@@ -34,14 +34,14 @@ def serve_model_locally():
 
     # Deploy the model locally.
     # Use instance_type="local" (or "local_gpu" if GPU support is available).
-    env_config = {
-        "TS_MAX_RESPONSE_SIZE": "2000000000",
-        "TS_MAX_REQUEST_SIZE": "2000000000"
-    }
+    # env_config = {
+    #     "TS_MAX_RESPONSE_SIZE": "2000000000",
+    #     "TS_MAX_REQUEST_SIZE": "2000000000"
+    # }
     predictor = pytorch_model.deploy(
         initial_instance_count=1,
         instance_type="local_gpu",
-        env=env_config
+        # env=env_config
         )
     logger.info("Model is deployed locally and ready to accept predictions.")
 
