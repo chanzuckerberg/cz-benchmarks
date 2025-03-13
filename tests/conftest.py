@@ -6,28 +6,19 @@ import anndata as ad
 from tests.utils import create_dummy_anndata, DummyDataset
 from czbenchmarks.datasets.types import DataType
 
-# Define fixtures and other configuration options 
+# Define fixtures and other configuration options
 # that can be shared across multiple test files
-
-
-# Creates a dummy AnnData object with specified characteristics
-@pytest.fixture
-def create_dummy_anndata_fixture():
-    def _make_data(n_cells=5, n_genes=3, obs_columns=None, var_columns=None):
-        return create_dummy_anndata(
-            n_cells=n_cells,
-            n_genes=n_genes,
-            obs_columns=obs_columns,
-            var_columns=var_columns,
-        )
-
-    return _make_data
 
 
 # Creates a dummy AnnData object with default characteristics.
 @pytest.fixture
-def dummy_anndata_fixture(create_dummy_anndata_fixture):
-    return create_dummy_anndata_fixture(n_cells=5, n_genes=3)
+def dummy_anndata_fixture():
+    return create_dummy_anndata(
+        n_cells=5,
+        n_genes=3,
+        obs_columns=None,
+        var_columns=None,
+    )
 
 
 # Creates a dummy dataset with AnnData and metadata inputs.
@@ -62,7 +53,7 @@ def dummy_human_anndata(tmp_path):
     return str(file_path)
 
 
-# Creates a dummy AnnData object with invalid gene name prefixes 
+# Creates a dummy AnnData object with invalid gene name prefixes
 # and saves it to a temporary file.
 @pytest.fixture
 def dummy_human_anndata_wrong_prefix(tmp_path):
