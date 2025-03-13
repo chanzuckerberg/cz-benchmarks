@@ -23,7 +23,7 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         selected_model = config.models[args.model_variant]
-        model_variant = selected_model.model_variant
+        model_variant = selected_model.model_name
         return model_variant
 
     def _download_model_weights(self, _dataset: BaseDataset):

@@ -5,15 +5,13 @@ from czbenchmarks.tasks import (
     EmbeddingTask,
     MetadataLabelPredictionTask,
 )
-from czbenchmarks.utils import get_aws_credentials
 
 if __name__ == "__main__":
-    aws_credentials = get_aws_credentials(profile="default")
 
     dataset = load_dataset("example", config_path="custom.yaml")
 
     for model_name in ["SCVI", "SCGPT"]:
-        dataset = run_inference(model_name, dataset, environment=aws_credentials)
+        dataset = run_inference(model_name, dataset)
 
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(dataset)
