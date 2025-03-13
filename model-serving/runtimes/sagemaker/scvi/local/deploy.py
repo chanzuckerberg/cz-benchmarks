@@ -21,6 +21,14 @@ def serve_model_locally():
     sagemaker_session.config = {'local': {'local_code': True}}
 
     # Create the PyTorch model for local mode.
+    env_config = {
+        'TS_MAX_RESPONSE_SIZE': '2147483647', # 2GB
+        'TS_MAX_REQUEST_SIZE': '2147483647',
+        # NOTE: The timeout hasn't been an issue in testing -
+        # We've only tested files of size up to 2.4GB. But the timeout
+        # might be an issue for larger files or larger models
+        #'SAGEMAKER_MODEL_SERVER_TIMEOUT':'3600'
+    }
     pytorch_model = PyTorchModel(
         model_data=LOCAL_MODEL_ARTIFACT,
         role=ROLE,
@@ -29,19 +37,15 @@ def serve_model_locally():
         entry_point="inference.py",
         source_dir="code/",
         sagemaker_session=sagemaker_session,
-        name=MODEL_NAME)
+        name=MODEL_NAME,
+        env=env_config)
     logger.info(f"Local model '{MODEL_NAME}' has been created.")
 
     # Deploy the model locally.
     # Use instance_type="local" (or "local_gpu" if GPU support is available).
-    # env_config = {
-    #     "TS_MAX_RESPONSE_SIZE": "2000000000",
-    #     "TS_MAX_REQUEST_SIZE": "2000000000"
-    # }
     predictor = pytorch_model.deploy(
         initial_instance_count=1,
         instance_type="local_gpu",
-        # env=env_config
         )
     logger.info("Model is deployed locally and ready to accept predictions.")
 
