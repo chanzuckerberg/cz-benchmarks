@@ -49,6 +49,10 @@ class SingleCellDataset(BaseDataset):
 
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
+        # Validate that adata.X contains raw counts (integers)
+        if not np.issubdtype(self.adata.X.dtype, np.integer):
+            raise ValueError("Dataset X matrix must have integer dtype (raw counts)")
+        
         if not var:
             if "ensembl_id" in self.adata.var.columns:
                 self.adata.var_names = pd.Index(list(self.adata.var["ensembl_id"]))
