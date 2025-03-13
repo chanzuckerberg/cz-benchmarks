@@ -20,15 +20,16 @@ def serve_model_locally():
     sagemaker_session = LocalSession()
     sagemaker_session.config = {'local': {'local_code': True}}
 
-    # Create the PyTorch model for local mode.
+    # Increase the limit for response size to 2GB to accommodate models
+    # or input datasets that generate results too large to fit into
+    # the default size of the response size which is ~ 6.5MB
+    # NOTE: There are several other variables that can be configured
+    # including 'TS_MAX_REQUEST_SIZE', 'SAGEMAKER_MODEL_SERVER_TIMEOUT'
     env_config = {
         'TS_MAX_RESPONSE_SIZE': '2147483647', # 2GB
-        'TS_MAX_REQUEST_SIZE': '2147483647',
-        # NOTE: The timeout hasn't been an issue in testing -
-        # We've only tested files of size up to 2.4GB. But the timeout
-        # might be an issue for larger files or larger models
-        #'SAGEMAKER_MODEL_SERVER_TIMEOUT':'3600'
     }
+    # Create the PyTorch model for local mode.
+    
     pytorch_model = PyTorchModel(
         model_data=LOCAL_MODEL_ARTIFACT,
         role=ROLE,
