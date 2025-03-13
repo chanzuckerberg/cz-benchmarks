@@ -10,6 +10,7 @@ RUN apt-get update && \
 # Install Geneformer and its dependencies
 RUN git clone https://huggingface.co/ctheodoris/Geneformer && \
     cd Geneformer && \
+    git checkout 69e6887 && \
     pip install .
 
 COPY docker/geneformer/requirements.txt .
