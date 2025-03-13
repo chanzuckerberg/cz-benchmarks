@@ -28,14 +28,16 @@ def _download_dataset(uri: str, output_path: str):
     s3_client = boto3.client("s3")
     s3_client.download_file(bucket, key, output_path)
 
-def initialize_hydra(config_path = "../../../conf"):
+
+def initialize_hydra(config_path="../../../conf"):
     if hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.core.global_hydra.GlobalHydra.instance().clear()
-    
+
     hydra.initialize(
         config_path=config_path,
         version_base=None,
     )
+
 
 def load_dataset(
     dataset_name: str,
@@ -116,10 +118,7 @@ def list_available_datasets() -> List[str]:
     initialize_hydra()
 
     # Load the datasets configuration
-    cfg = OmegaConf.to_container(
-        hydra.compose(config_name="datasets"), 
-        resolve=True
-    )
+    cfg = OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
 
     # Extract dataset names
     dataset_names = list(cfg.get("datasets", {}).keys())
