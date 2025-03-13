@@ -43,7 +43,7 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
         # Delete varm from adata_filtered to avoid AnnData bug
         # concat does not work with outer join for varm matrices.
         del adata_filtered.varm
-        
+
         # Concatenate the filtered adata with the missing genes adata
         adata_concat = ad.concat(
             [adata_filtered, adata_missing],
