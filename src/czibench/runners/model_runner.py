@@ -34,7 +34,7 @@ class ModelRunnerBase:
                     
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
-        print(f"Execution Time: {elapsed_time:.2f} seconds")
+        print(f"ModelRunner Execution Time: {elapsed_time:.2f} seconds")
         
         return dataset
 

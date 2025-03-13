@@ -21,17 +21,15 @@ if __name__ == "__main__":
     # The local endpoint URL is typically hosted on port 8080 in local mode.
     endpoint_url = "http://localhost:8080/invocations"
     """
-    TOO LARGE:
+    Some files that have been confirmed to work:
     
-    WORKS:
-    
-    766MB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Mammary_v2_curated.h5ad
-    1GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Stomach_v2_curated.h5ad
-    2GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad
-    2.4GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad
+    1.9 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Mammary_v2_curated.h5ad
+    2.5 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Stomach_v2_curated.h5ad
+    5.0 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad
+    6.0 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad
     """
     payload = json.dumps({
-        "s3_input": "s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad",
+        "s3_input": "s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad",
         "organism": "homo_sapiens",
     })
 
