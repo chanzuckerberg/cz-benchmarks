@@ -51,7 +51,7 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
             join="outer",
             merge="first",
         )
-        
+
     else:
         adata_concat = adata_filtered
 
