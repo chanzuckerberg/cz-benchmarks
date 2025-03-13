@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.0...v0.2.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* test release ([#98](https://github.com/chanzuckerberg/cz-benchmarks/issues/98)) ([d710766](https://github.com/chanzuckerberg/cz-benchmarks/commit/d7107664203d12c144d928176971a8ca9a542ba3))
+
 ## [0.2.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.2...v0.2.0) (2025-03-13)
 
 
