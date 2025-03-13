@@ -8,6 +8,8 @@ import pandas as pd
 import torch
 from gears import PertData
 from omegaconf import OmegaConf
+
+# utils.data_loading is a function in https://github.com/czi-ai/scGenePT/tree/main
 from utils.data_loading import load_trained_scgenept_model
 
 from czbenchmarks.datasets import BaseDataset, DataType
@@ -33,7 +35,7 @@ def load_dataloader(
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_name", type=str, default="scgenept_go_c")
+        parser.add_argument("--model_variant", type=str, default="scgenept_go_c")
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
         parser.add_argument("--dataset_name", type=str, default="adamson")
         parser.add_argument("--chunk_size", type=int, default=512)
@@ -44,16 +46,16 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
         assert (
-            f"{args.model_name}__{args.dataset_name}" in config.models
-        ), f"Model {args.model_name}__{args.dataset_name} not found in config"
-        return f"{args.model_name}/{args.dataset_name}"
+            f"{args.model_variant}__{args.dataset_name}" in config.models
+        ), f"Model {args.model_variant}__{args.dataset_name} not found in config"
+        return f"{args.model_variant}/{args.dataset_name}"
 
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
 
         # Sync the finetuned model weights from S3 to the local model weights directory
-        model_uri = config.models[f"{args.model_name}__{args.dataset_name}"]
+        model_uri = config.models[f"{args.model_variant}__{args.dataset_name}"]
 
         # Create all parent directories
         pathlib.Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
@@ -125,7 +127,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model, gene_ids = load_trained_scgenept_model(
             ref_adata,
-            f"{args.model_name}_gpt_concat",
+            f"{args.model_variant}_gpt_concat",
             str(pathlib.Path(self.model_weights_dir).parent.parent) + "/",
             model_filename,
             device,
