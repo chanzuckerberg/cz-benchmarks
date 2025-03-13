@@ -53,6 +53,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
       - name: Confirm publish to Test PyPI
+        # Check if the package is available on TestPyPI
         uses: nick-fields/retry@v3
         with:
           max_attempts: 15
