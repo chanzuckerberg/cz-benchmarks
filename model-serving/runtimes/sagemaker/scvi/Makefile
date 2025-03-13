@@ -34,3 +34,6 @@ sagemaker-deploy-local: package
 
 sagemaker-test-local:
 	python local/test_inference.py
+
+sagemaker-test-local-batch-transform:
+	python local/test_batch_transform.py
