@@ -35,8 +35,9 @@ def load_dataloader(
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_variant", type=str,
-                            default="scgenept_go_c_gpt_concat")
+        parser.add_argument(
+            "--model_variant", type=str, default="scgenept_go_c_gpt_concat"
+        )
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
         parser.add_argument("--dataset_name", type=str, default="adamson")
         parser.add_argument("--chunk_size", type=int, default=512)
