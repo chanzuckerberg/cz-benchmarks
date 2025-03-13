@@ -19,7 +19,7 @@ jobs:
       - name: Get the version 
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Display version being published
         run: |
@@ -53,7 +53,6 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
       - name: Confirm publish to Test PyPI
-        # Check if the package is available on TestPyPI
         uses: nick-fields/retry@v3
         with:
           max_attempts: 15
