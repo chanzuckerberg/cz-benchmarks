@@ -57,7 +57,8 @@ class SingleCellDataset(BaseDataset):
         if not var:
             raise ValueError(
                 "Dataset does not contain valid gene names. Gene names must"
-                f" start with {self.organism.prefix}"
+                f" start with {self.organism.prefix} and be stored in either"
+                f" adata.var_names or adata.var['ensembl_id']."
             )
 
 
