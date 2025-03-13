@@ -13,14 +13,14 @@ def filter_adata_by_hvg(adata: ad.AnnData, hvg_path: str) -> ad.AnnData:
     adata = adata.copy()
 
     hvg = pd.read_csv(hvg_path)
-    adata.var["feature_id"] = adata.var_names.astype(str)
+    adata.var_names = adata.var_names.astype(str)
     hvg["feature_id"] = hvg["feature_id"].astype(str)
 
     # Filter adata by only genes that are present in hvg.feature_id
-    adata_filtered = adata[:, adata.var.feature_id.isin(hvg.feature_id)].copy()
+    adata_filtered = adata[:, adata.var_names.isin(hvg.feature_id)].copy()
 
     # Check which features are missing from hvg.feature_id
-    missing_features = set(hvg.feature_id) - set(adata.var.feature_id)
+    missing_features = set(hvg.feature_id) - set(adata.var_names)
 
     if missing_features:
         logger.info(
