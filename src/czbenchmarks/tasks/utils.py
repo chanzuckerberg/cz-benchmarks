@@ -97,7 +97,7 @@ def run_standard_scrna_workflow(
     sc.pp.normalize_total(adata)  # Normalize counts per cell
     sc.pp.log1p(adata)  # Log-transform the data
 
-    # Identify highly variable genes using Seurat v3 method
+    # Identify highly variable genes using Seurat method
     sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
 
     # Subset to only highly variable genes to reduce noise
