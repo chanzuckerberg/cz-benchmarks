@@ -1,6 +1,7 @@
 from czibench.datasets.types import DataType
 from czibench.runners.mlflow_runner import MLflowModelRunner
 from czibench.runners.bentoml_runner import BentomlModelRunner
+from czibench.runners.sagemaker_mlflow_runner import SageMakerMLflowRunner
 from czibench.runners.sagemaker_runner import SageMakerRunner
 from czibench.tasks.sc import ClusteringTask, EmbeddingTask
 from czibench.datasets.utils import init_dataset
@@ -9,7 +10,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description="Run scvi model on dataset")
-    parser.add_argument('--model-runtime', choices=['mlflow', 'sagemaker', 'bentoml'], default='mlflow', help='Model runtime type (default: mlflow)')
+    parser.add_argument('--model-runtime', choices=['mlflow', 'sagemaker', 'sagemaker-mlflow', 'bentoml'], default='mlflow', help='Model runtime type (default: mlflow)')
     parser.add_argument('--model-mode', choices=['local', 'remote'], default='local', help='Mode to run the model (default: local)')
     args = parser.parse_args()
 
@@ -25,7 +26,10 @@ def main():
     else: # remote
         if args.model_runtime == 'sagemaker':
             dataset = init_dataset("example-remote-sagemaker", config_path="custom.yaml")
-            runner = SageMakerRunner(model_endpoint="scvi-mlflow-20250314140011")
+            runner = SageMakerRunner(model_endpoint="scvi-mlflow")
+        if args.model_runtime == 'sagemaker-mlflow':
+            dataset = init_dataset("example-remote-sagemaker", config_path="custom.yaml")
+            runner = SageMakerMLflowRunner(model_endpoint="scvi-mlflow-20250314140011")
         if args.model_runtime == 'mlflow':
             dataset = init_dataset("example-remote-mlflow", config_path="custom.yaml")
             runner = MLflowModelRunner(model_endpoint="https://czi-virtual-cells-dev-databricks-workspace.cloud.databricks.com/serving-endpoints/scvi5/invocations")

@@ -64,7 +64,7 @@
             "id": "modelRuntime",
             "type": "pickString",
             "description": "Select the model runtime",
-            "options": ["mlflow", "sagemaker"]
+            "options": ["mlflow", "sagemaker", "sagemaker-mlflow", "bentoml"],
         },        
         {
             "id": "modelMode",
