@@ -10,6 +10,9 @@ from czbenchmarks.models.implementations.base_model_implementation import (
 )
 from czbenchmarks.models.validators.geneformer import GeneformerValidator
 from czbenchmarks.utils import sync_s3_to_local
+from datasets import load_from_disk
+import numpy as np
+from datasets import Sequence, Value
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -76,6 +79,27 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Tokenize data
         tk.tokenize_data(".", str(dataset_dir), "tokenized_dataset", file_format="h5ad")
 
+        # After tokenization
+        tokenized_dataset = load_from_disk(str(dataset_dir / "tokenized_dataset.dataset"))
+        print("Before conversion:", tokenized_dataset['input_ids'][:2])
+        print("Initial dtype:", np.array(tokenized_dataset['input_ids'][0]).dtype)
+
+        # Convert input_ids to integers using cast
+        new_features = tokenized_dataset.features.copy()
+        new_features["input_ids"] = Sequence(Value("int64"))
+        tokenized_dataset = tokenized_dataset.cast(new_features)
+
+        print("After conversion:", tokenized_dataset['input_ids'][:2])
+        print("New dtype:", np.array(tokenized_dataset['input_ids'][0]).dtype)
+
+        # Save the converted dataset
+        tokenized_dataset.save_to_disk(str(dataset_dir / "tokenized_dataset_int.dataset"))
+
+        # Load the converted dataset and check the dtype
+        tokenized_dataset_int = load_from_disk(str(dataset_dir / "tokenized_dataset_int.dataset"))
+        sample_array = np.array(tokenized_dataset_int['input_ids'])
+        print("Numpy array dtype for tokenized_dataset_int:", sample_array.dtype)
+
         # Extract embeddings with cell_idx label
         embex = EmbExtractor(
             model_type="Pretrained",
@@ -91,7 +115,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Get embeddings
         embs = embex.extract_embs(
             model_directory=self.model_weights_dir,
-            input_data_file=str(dataset_dir / "tokenized_dataset.dataset"),
+            input_data_file=str(dataset_dir / "tokenized_dataset_int.dataset"),
             output_directory=".",
             output_prefix="geneformer",
             cell_state=None,
