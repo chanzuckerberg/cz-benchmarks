@@ -129,7 +129,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             emb_array = np.nan_to_num(emb_array, nan=0.0)
 
         # Verify no NaN values remain
-        assert not np.isnan(emb_array).any(), "NaN values still present in embeddings after handling"
+        assert not np.isnan(
+            emb_array
+        ).any(), "NaN values still present in embeddings after handling"
 
         dataset.set_output(self.model_type, DataType.EMBEDDING, emb_array)
 
