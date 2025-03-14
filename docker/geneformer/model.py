@@ -121,7 +121,17 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
         # Sort embeddings and store output
         embs = embs.sort_values("cell_idx").drop(columns=["cell_idx"])
-        dataset.set_output(self.model_type, DataType.EMBEDDING, embs.to_numpy())
+
+        # Convert to numpy array and handle NaN values
+        emb_array = embs.to_numpy()
+        if np.isnan(emb_array).any():
+            print("Warning: Found NaN values in embeddings. Filling with zeros...")
+            emb_array = np.nan_to_num(emb_array, nan=0.0)
+
+        # Verify no NaN values remain
+        assert not np.isnan(emb_array).any(), "NaN values still present in embeddings after handling"
+
+        dataset.set_output(self.model_type, DataType.EMBEDDING, emb_array)
 
         # Cleanup
         temp_path.unlink(missing_ok=True)
