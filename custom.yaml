@@ -10,7 +10,7 @@ datasets:
   example-local-sagemaker:
     _target_: czibench.datasets.sc.SingleCellDataset
     organism: ${organism:HUMAN}
-    source_path: s3://generate-cross-species/datasets/test/example_small.h5ad
+    source_path: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad
   example-remote-mlflow:
     _target_: czibench.datasets.sc.SingleCellDataset
     organism: ${organism:HUMAN}

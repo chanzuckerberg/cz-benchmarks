@@ -86,6 +86,12 @@ class SCVI:
             adata_missing = ad.AnnData(
                 X=missing_X, var=missing_var, obs=adata_filtered.obs.copy()
             )
+            # FIXME: Removing `varm` to avoid the ValueError
+            # exception thrown by anndata if shape of `varm`
+            # is not the shape of `var`. This is a HACK!
+            # We should address this properly.
+            del adata_filtered.varm
+            
             adata_concat = ad.concat(
                 [adata_filtered, adata_missing], axis=1, join="outer", merge="first"
             )
