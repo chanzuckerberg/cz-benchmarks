@@ -3,13 +3,21 @@ import numpy as np
 import tempfile
 import os
 from typing import List, Set
+import pandas as pd
 
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
-from czbenchmarks.datasets import BaseDataset, DataType, SingleCellDataset
+from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
+from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks.datasets import (
+    BaseDataset,
+    DataType,
+    SingleCellDataset,
+    PerturbationSingleCellDataset,
+)
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.metrics.types import MetricResult, MetricType
@@ -235,3 +243,146 @@ def test_task_execution(task_class, task_kwargs, dummy_single_cell_dataset):
 
     except Exception as e:
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
+
+
+@pytest.fixture
+def dummy_cross_species_datasets(n_cells: int = 500):
+    """Create dummy datasets from different organisms for cross-species testing."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        datasets = []
+        # Create one dataset for each organism
+        for organism in [Organism.HUMAN, Organism.MOUSE]:
+            tmp_file = os.path.join(tmp_dir, f"dummy_{organism.name.lower()}.h5ad")
+            dataset = SingleCellDataset(tmp_file, organism=organism)
+
+            # Create dummy data
+            adata = create_dummy_anndata(
+                n_cells=n_cells,
+                n_genes=200,
+                obs_columns=["cell_type"],
+                organism=organism,
+            )
+            adata.write_h5ad(tmp_file)
+
+            # Set inputs and outputs
+            dataset.set_input(DataType.ANNDATA, adata)
+            dataset.set_input(DataType.METADATA, adata.obs)
+
+            # Create random embedding
+            embedding = np.random.normal(size=(n_cells, 32))
+            dataset.set_output(ModelType.UCE, DataType.EMBEDDING, embedding)
+
+            datasets.append(dataset)
+
+        yield datasets
+
+
+def test_cross_species_task(dummy_cross_species_datasets):
+    """Test that CrossSpeciesIntegrationTask executes without errors."""
+    task = CrossSpeciesIntegrationTask(label_key="cell_type")
+
+    try:
+        # Test regular task execution
+        results = task.run(dummy_cross_species_datasets)
+
+        # Verify results structure
+        assert isinstance(results, dict)
+        assert ModelType.UCE in results
+        assert isinstance(results[ModelType.UCE], list)
+        assert all(isinstance(m, MetricResult) for m in results[ModelType.UCE])
+        assert (
+            len(results[ModelType.UCE]) == 2
+        )  # Should have entropy and silhouette metrics
+
+        # Test that baseline raises NotImplementedError
+        with pytest.raises(NotImplementedError):
+            task.set_baseline(dummy_cross_species_datasets)
+
+    except Exception as e:
+        pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
+
+
+@pytest.fixture
+def dummy_perturbation_dataset(n_cells: int = 500):
+    """Create a dummy perturbation dataset with control and perturbed cells."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_file = os.path.join(tmp_dir, "dummy_perturbation.h5ad")
+        dataset = PerturbationSingleCellDataset(
+            tmp_file,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            split_key="split",
+        )
+
+        # Create dummy data with control and perturbed cells
+        n_genes = 200
+        n_ctrl = n_cells // 2
+        n_pert = n_cells - n_ctrl
+
+        # Create base anndata with all cells
+        adata = create_dummy_anndata(
+            n_cells=n_cells,
+            n_genes=n_genes,
+            obs_columns=["condition", "split"],
+            organism=Organism.HUMAN,
+        )
+
+        # Set condition and split annotations
+        adata.obs["condition"] = ["ctrl"] * n_ctrl + ["ENSG00000123456+ctrl"] * n_pert
+        adata.obs["split"] = ["train"] * n_ctrl + ["test"] * n_pert
+
+        adata.write_h5ad(tmp_file)
+
+        # Load the dataset which will process the control/perturbed data
+        dataset.load_data()
+
+        # Create and set predicted perturbation effect
+        pert_pred = pd.DataFrame(
+            data=np.random.normal(size=(n_ctrl, n_genes)),
+            columns=adata.var_names,
+            index=adata[adata.obs["condition"] == "ctrl"].obs_names,
+        )
+
+        dataset.set_output(
+            ModelType.SCGENEPT,
+            DataType.PERTURBATION_PRED,
+            ("ENSG00000123456+ctrl", pert_pred),
+        )
+
+        yield dataset
+
+
+def test_perturbation_task(dummy_perturbation_dataset):
+    """Test that PerturbationTask executes without errors."""
+    task = PerturbationTask()
+
+    try:
+        # Test regular task execution
+        results = task.run(dummy_perturbation_dataset)
+
+        # Verify results structure
+        assert isinstance(results, dict)
+        assert ModelType.SCGENEPT in results
+        assert isinstance(results[ModelType.SCGENEPT], list)
+        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCGENEPT])
+
+        # Should have 8 metrics: MSE and R2 for all/top20/top100 genes,
+        # plus Jaccard for top20/100
+        assert len(results[ModelType.SCGENEPT]) == 8
+
+        # Test baseline with both mean and median
+        for baseline_type in ["mean", "median"]:
+            task.set_baseline(
+                dummy_perturbation_dataset,
+                gene_pert="ENSG00000123456+ctrl",
+                baseline_type=baseline_type,
+            )
+            baseline_results = task.run(
+                dummy_perturbation_dataset, model_types=[ModelType.BASELINE]
+            )
+            assert ModelType.BASELINE in baseline_results
+            assert isinstance(baseline_results[ModelType.BASELINE], list)
+            assert len(baseline_results[ModelType.BASELINE]) == 8
+
+    except Exception as e:
+        pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
