@@ -18,14 +18,10 @@ pip install .
 
 ### macOS Development Setup
 
-When developing on macOS, first install some key dependencies via conda to avoid binary compatibility issues:
+When developing on macOS, first install hnswlib from conda-forge:
 
 ```bash
-conda install -c conda-forge \
-    numpy \
-    h5py \
-    anndata \
-    hnswlib
+conda install -c conda-forge hnswlib
 ```
 
 Then proceed with the regular installation. For development, include the dev dependencies:
