@@ -9,7 +9,9 @@ from omegaconf import OmegaConf
 from datasets import load_from_disk, Sequence, Value
 
 from czbenchmarks.datasets import BaseDataset, DataType
-from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+from czbenchmarks.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
 from czbenchmarks.models.validators.geneformer import GeneformerValidator
 from czbenchmarks.utils import sync_s3_to_local
 
@@ -28,7 +30,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         return parser.parse_args()
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
-        assert self.args.model_variant in self.config.models, f"Model {self.args.model_variant} not found in config"
+        assert (
+            self.args.model_variant in self.config.models
+        ), f"Model {self.args.model_variant} not found in config"
         return self.args.model_variant
 
     def _download_model_weights(self, _dataset: BaseDataset):
@@ -44,7 +48,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         # Add necessary metadata
         dataset.adata.obs["cell_idx"] = np.arange(len(dataset.adata.obs))
         if "n_counts" not in dataset.adata.obs.columns:
-            dataset.adata.obs["n_counts"] = np.asarray(dataset.adata.X.sum(axis=1)).flatten()
+            dataset.adata.obs["n_counts"] = np.asarray(
+                dataset.adata.X.sum(axis=1)
+            ).flatten()
 
         # Save dataset to a temporary file
         with tempfile.NamedTemporaryFile(suffix=".h5ad", delete=False) as tmp_file:
@@ -65,7 +71,12 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         )
 
         # Use the correct directory where the temp file is saved
-        tk.tokenize_data(str(temp_path.parent), str(dataset_dir), "tokenized_dataset", file_format="h5ad")
+        tk.tokenize_data(
+            str(temp_path.parent),
+            str(dataset_dir),
+            "tokenized_dataset",
+            file_format="h5ad",
+        )
 
         # Set dataset name to default
         dataset_name = "tokenized_dataset.dataset"
