@@ -19,7 +19,7 @@ jobs:
       - name: Get the version 
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Display version being published
         run: |

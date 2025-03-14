@@ -97,11 +97,11 @@ def run_standard_scrna_workflow(
     sc.pp.normalize_total(adata)  # Normalize counts per cell
     sc.pp.log1p(adata)  # Log-transform the data
 
-    # Identify highly variable genes using Seurat v3 method
-    sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat_v3")
+    # Identify highly variable genes using Seurat method
+    sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
 
     # Subset to only highly variable genes to reduce noise
-    adata = adata[:, adata.var["highly_variable"]]
+    adata = adata[:, adata.var["highly_variable"]].copy()
 
     # Run PCA for dimensionality reduction
     sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
