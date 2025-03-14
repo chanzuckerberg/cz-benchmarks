@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 import pandas as pd
 
@@ -50,7 +51,7 @@ def nearest_neighbors_hnsw(
 
 
 def compute_entropy_per_cell(
-    embedding: np.ndarray, batch_labels: pd.Series
+    X: np.ndarray, labels: Union[pd.Categorical, pd.Series, np.ndarray]
 ) -> np.ndarray:
     """Compute entropy of batch labels in local neighborhoods.
 
@@ -58,15 +59,16 @@ def compute_entropy_per_cell(
     batch label distribution in that neighborhood.
 
     Args:
-        embedding: Cell embedding matrix of shape (n_cells, n_features)
-        batch_labels: Series containing batch labels for each cell
+        X: Cell embedding matrix of shape (n_cells, n_features)
+        labels: Series containing batch labels for each cell
 
     Returns:
         Array of entropy values for each cell, normalized by log of number of batches
     """
-    indices, _ = nearest_neighbors_hnsw(embedding, n_neighbors=200)
-    unique_batch_labels = np.unique(batch_labels)
-    indices_batch = batch_labels[indices]
+    indices, _ = nearest_neighbors_hnsw(X, n_neighbors=200)
+    labels = np.array(list(labels))
+    unique_batch_labels = np.unique(labels)
+    indices_batch = labels[indices]
 
     label_counts_per_cell = np.vstack(
         [(indices_batch == label).sum(1) for label in unique_batch_labels]
@@ -76,7 +78,7 @@ def compute_entropy_per_cell(
     )
     return (
         (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(1)
-        / _safelog(len(unique_batch_labels))
+        / _safelog(np.array([len(unique_batch_labels)]))
     ).mean()
 
 

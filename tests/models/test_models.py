@@ -53,6 +53,7 @@ from tests.utils import create_dummy_anndata, DummyDataset
     ],
 )
 def test_valid_dataset(validator_class, obs_columns, var_columns, dataset_class):
+    """Test that validation passes for valid datasets with all required components."""
     validator = validator_class()
     ann = create_dummy_anndata(obs_columns=obs_columns, var_columns=var_columns)
 
@@ -76,8 +77,8 @@ def test_valid_dataset(validator_class, obs_columns, var_columns, dataset_class)
         pytest.fail(f"Validation failed unexpectedly: {e}")
 
 
-# 1. Dataset validation fails when the dataset_type is incompatible.
 def test_invalid_dataset_type():
+    """Test that validation fails when the dataset_type is incompatible."""
     validator = SCVIValidator()  # Expects a SingleCellDataset (exact type match)
     dummy_ds = DummyDataset("dummy_path")
     # Provide required inputs to bypass missing-input errors.
@@ -91,8 +92,8 @@ def test_invalid_dataset_type():
         validator.validate_dataset(dummy_ds)
 
 
-# 2. Dataset validation fails when required inputs are missing.
 def test_missing_required_inputs():
+    """Test that validation fails when required inputs are missing."""
     validator = SCVIValidator()  # Expects both ANNDATA and METADATA as inputs.
     dataset = SingleCellDataset("dummy_path", organism=Organism.HUMAN)
     ann = create_dummy_anndata(
@@ -104,9 +105,8 @@ def test_missing_required_inputs():
         validator.validate_dataset(dataset)
 
 
-# 3. For a single‑cell model: Dataset validation fails when
-# the organism is incompatible.
 def test_incompatible_organism():
+    """Test that validation fails when the organism is incompatible."""
     validator = SCVIValidator()  # SCVIValidator supports HUMAN and MOUSE only.
     # Use an organism that is not supported.
     dataset = SingleCellDataset("dummy_path", organism=Organism.CHIMPANZEE)
@@ -119,9 +119,8 @@ def test_incompatible_organism():
         validator.validate_dataset(dataset)
 
 
-# 4. For a single‑cell model: Dataset validation fails when
-# required obs keys are missing.
 def test_missing_required_obs_keys():
+    """Test that validation fails when required obs keys are missing."""
     validator = (
         SCVIValidator()
     )  # Requires obs keys: dataset_id, assay, suspension_type, donor_id.
@@ -134,9 +133,8 @@ def test_missing_required_obs_keys():
         validator.validate_dataset(dataset)
 
 
-# 5. For a single‑cell model: Dataset validation fails when
-# required var keys are missing.
 def test_missing_required_var_keys():
+    """Test that validation fails when required var keys are missing."""
     validator = GeneformerValidator()  # Requires var key: "feature_id".
     # Create AnnData that does not include "feature_id"
     ann = create_dummy_anndata(var_columns=["some_other_feature"])

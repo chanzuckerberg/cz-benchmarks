@@ -49,15 +49,19 @@ class BaseTask(ABC):
         if missing_inputs:
             error_msg.append(f"Missing required inputs: {missing_inputs}")
 
-        for model_type in data.outputs:
-            missing_outputs = self.required_outputs - set(
-                data.outputs[model_type].keys()
-            )
-            if missing_outputs:
-                error_msg.append(
-                    "Missing required outputs for model type"
-                    f"{model_type.name}: {missing_outputs}"
+        # Check if there are any model outputs at all
+        if not data.outputs:
+            error_msg.append("No model outputs available")
+        else:
+            for model_type in data.outputs:
+                missing_outputs = self.required_outputs - set(
+                    data.outputs[model_type].keys()
                 )
+                if missing_outputs:
+                    error_msg.append(
+                        "Missing required outputs for model type "
+                        f"{model_type.name}: {missing_outputs}"
+                    )
 
         if error_msg:
             raise ValueError(
@@ -90,56 +94,81 @@ class BaseTask(ABC):
         """
 
     def _run_task_for_dataset(
-        self, data: BaseDataset, model_types: Optional[List[ModelType]] = None
+        self,
+        data: Union[BaseDataset, List[BaseDataset]],
+        model_types: Optional[List[ModelType]] = None,
     ) -> Dict[ModelType, List[MetricResult]]:
-        """Run task for a single dataset and compute metrics for each model.
+        """Run task for a dataset or list of datasets and compute metrics for each model.
 
-        This method iterates through all model outputs in the dataset,
-        runs the task for each model, and computes the corresponding metrics.
+        This method determines which model types to evaluate, validates their
+        availability, runs the task implementation for each model type, and
+        computes the corresponding metrics.
 
         Args:
-            data: Dataset containing required input and output data
-            model_types: Optional list of specific model types to evaluate
+            data: Single dataset or list of datasets containing required input and
+                  output data
+            model_types: Optional list of specific model types to evaluate. If None,
+                         will use all available model types common across datasets.
 
         Returns:
             Dictionary mapping model types to their list of MetricResult objects
+
+        Raises:
+            ValueError: If no common model types found across datasets or
+                       if a specified model type is not available in a dataset
         """
-        # Store metrics for each model in the dataset
+        # Dictionary to store metrics for each model type
         all_metrics_per_model = {}
 
-        # Iterate through each model type in the dataset outputs
+        # Determine which model types to evaluate if not explicitly provided
         if model_types is None:
-            model_types = list(data.outputs.keys())
+            if isinstance(data, list):
+                # For multiple datasets, find model types available in all datasets
+                model_types = set.intersection(
+                    *[set(dataset.outputs.keys()) for dataset in data]
+                )
+                if not model_types:
+                    raise ValueError("No common model types found across all datasets")
+            else:
+                # For single dataset, use all available model types
+                model_types = list(data.outputs.keys())
 
+        # Validate that all requested model types are available in all datasets
         for model_type in model_types:
-            if model_type not in data.outputs:
-                raise ValueError(f"Model type {model_type} not found in dataset")
+            if isinstance(data, list):
+                for dataset in data:
+                    if model_type not in dataset.outputs:
+                        raise ValueError(
+                            f"Model type {model_type} not found in dataset"
+                        )
+            else:
+                if model_type not in data.outputs:
+                    raise ValueError(f"Model type {model_type} not found in dataset")
 
+        # Process each model type
+        for model_type in model_types:
             # Run the task implementation for this model
             self._run_task(data, model_type)
 
             # Compute metrics based on task results
             metrics = self._compute_metrics()
 
-            # Store metrics for this model
+            # Store metrics for this model type
             all_metrics_per_model[model_type] = metrics
 
         return all_metrics_per_model
 
-    def run_baseline(self, data: BaseDataset, **kwargs) -> List[MetricResult]:
-        """Run a baseline clustering using PCA on gene expression.
+    def set_baseline(self, data: BaseDataset, **kwargs):
+        """Set a baseline embedding using PCA on gene expression data.
 
-        Instead of using embeddings from a model, this method performs standard
-        preprocessing on the raw gene expression data and uses PCA for dimensionality
-        reduction before clustering. This provides a baseline performance to compare
-        against model-generated embeddings.
+        This method performs standard preprocessing on the raw gene expression data
+        and uses PCA for dimensionality reduction. It then sets the PCA embedding
+        as the BASELINE model output in the dataset, which can be used for comparison
+        with other model embeddings.
 
         Args:
-            data: BaseDataset containing AnnData with gene expression and metadata
+            data: BaseDataset containing AnnData with gene expression data
             **kwargs: Additional arguments passed to run_standard_scrna_workflow
-
-        Returns:
-            Dictionary containing baseline clustering metrics (ARI and NMI)
         """
 
         # Get the AnnData object from the dataset
@@ -152,13 +181,6 @@ class BaseTask(ABC):
         data.set_output(
             ModelType.BASELINE, DataType.EMBEDDING, adata_baseline.obsm["X_pca"]
         )
-
-        # Run the clustering task with the PCA embedding
-        baseline_metrics = self.run(data, model_types=[ModelType.BASELINE])[
-            ModelType.BASELINE
-        ]
-
-        return baseline_metrics
 
     def run(
         self,

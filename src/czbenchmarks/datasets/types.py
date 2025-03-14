@@ -128,5 +128,19 @@ class DataType(Enum):
     def is_output(self) -> bool:
         return not self.value.is_input
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        return super().__eq__(other)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
 
 DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]

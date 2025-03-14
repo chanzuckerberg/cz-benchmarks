@@ -82,7 +82,7 @@ class BatchIntegrationTask(BaseTask):
                     silhouette_batch_metric,
                     X=self.embedding,
                     labels=self.labels,
-                    batch_labels=self.batch_labels,
+                    batch=self.batch_labels,
                 ),
             ),
         ]
