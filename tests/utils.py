@@ -1,15 +1,25 @@
 import numpy as np
 import pandas as pd
 import anndata as ad
+import scipy.sparse as sp
 
 from czbenchmarks.datasets.base import BaseDataset
+from czbenchmarks.datasets.types import Organism
 
 
-def create_dummy_anndata(n_cells=5, n_genes=3, obs_columns=None, var_columns=None):
+def create_dummy_anndata(
+    n_cells=5,
+    n_genes=3,
+    obs_columns=None,
+    var_columns=None,
+    organism: Organism = Organism.HUMAN,
+):
     obs_columns = obs_columns or []
     var_columns = var_columns or []
-    # Create a dummy data matrix with random values
-    X = np.random.lognormal(mean=1, sigma=0.5, size=(n_cells, n_genes))
+    # Create a dummy data matrix with random integer values (counts)
+    X = sp.csr_matrix(
+        np.random.poisson(lam=5, size=(n_cells, n_genes)).astype(np.int32)
+    )
 
     # Create obs dataframe with specified columns
     obs_data = {}
@@ -30,8 +40,10 @@ def create_dummy_anndata(n_cells=5, n_genes=3, obs_columns=None, var_columns=Non
             obs_data[col] = [f"{col}_{i}" for i in range(n_cells)]
     obs_df = pd.DataFrame(obs_data, index=[f"cell_{i}" for i in range(n_cells)])
 
-    # Create var dataframe with specified columns, using gene names as data
-    genes = [f"gene_{j}" for j in range(n_genes)]
+    # Create var dataframe with specified columns, using Ensembl IDs as gene names
+    genes = [
+        f"{organism.prefix}{str(j).zfill(11)}" for j in range(n_genes)
+    ]  # Ensembl IDs are 11 digits
     var_data = {}
     for col in var_columns:
         var_data[col] = genes
@@ -40,8 +52,15 @@ def create_dummy_anndata(n_cells=5, n_genes=3, obs_columns=None, var_columns=Non
 
 
 class DummyDataset(BaseDataset):
+    """A dummy dataset implementation for testing that skips file validation."""
+
     def _validate(self):
+        # Skip validation for testing
         pass
+
+    def validate(self):
+        # Only validate inputs/outputs, skip file validation
+        self._validate()
 
     def load_data(self):
         pass

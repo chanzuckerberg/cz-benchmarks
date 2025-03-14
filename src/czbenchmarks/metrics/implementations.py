@@ -58,7 +58,7 @@ metrics_registry.register(
 metrics_registry.register(
     MetricType.BATCH_SILHOUETTE,
     func=silhouette_batch,
-    required_args={"X", "labels", "batch_labels"},
+    required_args={"X", "labels", "batch"},
     description=(
         "Batch-aware silhouette score that measures how well cells "
         "cluster across batches."

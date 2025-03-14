@@ -24,19 +24,23 @@ if __name__ == "__main__":
 
         task = ClusteringTask(label_key="cell_type")
         clustering_results = task.run(dataset)
-        clustering_results_baseline = task.run_baseline(dataset)
+        task.set_baseline(dataset)
+        clustering_results_baseline = task.run(dataset)
 
         task = EmbeddingTask(label_key="cell_type")
         embedding_results = task.run(dataset)
-        embedding_results_baseline = task.run_baseline(dataset)
+        task.set_baseline(dataset)
+        embedding_results_baseline = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="cell_type")
         metadata_results_cell_type = task.run(dataset)
-        metadata_results_cell_type_baseline = task.run_baseline(dataset)
+        task.set_baseline(dataset)
+        metadata_results_cell_type_baseline = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="sex")
         metadata_results_sex = task.run(dataset)
-        metadata_results_sex_baseline = task.run_baseline(dataset)
+        task.set_baseline(dataset)
+        metadata_results_sex_baseline = task.run(dataset)
 
         all_results[dataset_name] = {
             "clustering_results": clustering_results,

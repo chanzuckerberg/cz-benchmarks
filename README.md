@@ -16,6 +16,23 @@ cd cz-benchmarks
 pip install .
 ```
 
+### macOS Development Setup
+
+When developing on macOS, first install some key dependencies via conda to avoid binary compatibility issues:
+
+```bash
+conda install -c conda-forge \
+    numpy \
+    h5py \
+    anndata \
+    hnswlib
+```
+
+Then proceed with the regular installation. For development, include the dev dependencies:
+```bash
+pip install -e ".[dev]"
+```
+
 ## Example Usage
 
 ```python
