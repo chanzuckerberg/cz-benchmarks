@@ -12,7 +12,6 @@
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src",
-                "AWS_PROFILE": "virtual-cells-dev"
             },
             "envFile": "${workspaceFolder}/model-serving/runtimes/mlflow/scvi/.env",
             "args": ["--model-runtime", "${input:modelRuntime}",
