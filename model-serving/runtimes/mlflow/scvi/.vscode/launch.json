@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/deploy.py",
             "console": "integratedTerminal",
-            "args": ["--target", "local"]
+            "args": [
+                "--target", "local",
+                "--force-package-build"]
         },
         {
             "name": "Deploy Model: databricks",
@@ -45,7 +47,7 @@
             "envFile": "${workspaceFolder}/.env",
             "args": [
                 "--target", "sagemaker",
-                "${input:forceOption}"
+                "--initial-sagemaker-step", "${input:initialSageMakerStep}"
             ],
             "justMyCode": false
         },
@@ -84,10 +86,10 @@
             "description": "Enter the input data URL"
         },
         {
-            "id": "forceOption",
+            "id": "initialSageMakerStep",
             "type": "pickString",
-            "description": "Force MLflow package build",
-            "options": ["--use-existing-package", "--force-package-build"]
+            "description": "The initial step for the SageMaker remote deployment",
+            "options": ["mlflow-package", "sagemaker-model-create", "sagemaker-endpoint"]
         }
     ]
 
