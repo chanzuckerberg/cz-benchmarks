@@ -23,34 +23,26 @@ if __name__ == "__main__":
             dataset = run_inference(model_name, dataset)
 
         task = ClusteringTask(label_key="cell_type")
-        clustering_results = task.run(dataset)
         task.set_baseline(dataset)
-        clustering_results_baseline = task.run(dataset)
+        clustering_results = task.run(dataset)
 
         task = EmbeddingTask(label_key="cell_type")
-        embedding_results = task.run(dataset)
         task.set_baseline(dataset)
-        embedding_results_baseline = task.run(dataset)
+        embedding_results = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="cell_type")
-        metadata_results_cell_type = task.run(dataset)
         task.set_baseline(dataset)
-        metadata_results_cell_type_baseline = task.run(dataset)
+        metadata_results_cell_type = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="sex")
-        metadata_results_sex = task.run(dataset)
         task.set_baseline(dataset)
-        metadata_results_sex_baseline = task.run(dataset)
+        metadata_results_sex = task.run(dataset)
 
         all_results[dataset_name] = {
             "clustering_results": clustering_results,
             "embedding_results": embedding_results,
             "metadata_results_cell_type": metadata_results_cell_type,
             "metadata_results_sex": metadata_results_sex,
-            "clustering_results_baseline": clustering_results_baseline,
-            "embedding_results_baseline": embedding_results_baseline,
-            "metadata_results_cell_type_baseline": metadata_results_cell_type_baseline,
-            "metadata_results_sex_baseline": metadata_results_sex_baseline,
         }
 
         pickle.dump(all_results, open("all_results.pkl", "wb"))
