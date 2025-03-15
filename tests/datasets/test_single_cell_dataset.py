@@ -1,75 +1,67 @@
 import pytest
-import numpy as np
-import anndata as ad
 from czbenchmarks.datasets.types import Organism, DataType
 from czbenchmarks.datasets.single_cell import SingleCellDataset
-from tests.utils import create_dummy_anndata
 
 
 def test_single_cell_dataset_init_load_unload(dummy_human_anndata):
     """Tests the initialization, loading, and unloading of a single-cell dataset."""
-    ds = SingleCellDataset(dummy_human_anndata, Organism.HUMAN)
-    ds.load_data()
-    # We should have ANNDATA stored
-    assert ds.get_input(DataType.ANNDATA) is not None
-    ds.unload_data()
+    # Dataset is already loaded, so test unload first
+    dummy_human_anndata.unload_data()
     with pytest.raises(KeyError):
-        ds.get_input(DataType.ANNDATA)
+        dummy_human_anndata.get_input(DataType.ANNDATA)
 
-
-def test_single_cell_dataset_validate_no_anndata(tmp_path):
-    """Tests that dataset validation fails when the dataset does not contain an AnnData object."""
-    path = tmp_path / "empty.h5ad"
-    adata = ad.AnnData(X=np.empty((0, 0)))
-    adata.write_h5ad(path)
-
-    ds = SingleCellDataset(str(path), Organism.HUMAN)
-    ds.load_data()
-    with pytest.raises(ValueError, match="Dataset does not contain anndata object"):
-        ds.validate()
+    # Now test loading
+    dummy_human_anndata.load_data()
+    assert dummy_human_anndata.get_input(DataType.ANNDATA) is not None
 
 
 def test_single_cell_dataset_validate_wrong_organism_type(dummy_human_anndata):
     """Tests that dataset validation fails when the organism type is invalid."""
     with pytest.raises(TypeError):
-        SingleCellDataset(dummy_human_anndata, "not_an_organism")
+        SingleCellDataset(dummy_human_anndata.path, "not_an_organism")
 
 
 def test_single_cell_dataset_validate_wrong_gene_prefix(
     dummy_human_anndata_wrong_prefix,
 ):
     """Tests that dataset validation fails when gene prefixes don't match organism."""
-    ds = SingleCellDataset(dummy_human_anndata_wrong_prefix, Organism.HUMAN)
-    ds.load_data()
     with pytest.raises(ValueError, match="Dataset does not contain valid gene names"):
-        ds.validate()
-
-
-def test_single_cell_dataset_validate_non_integer_x(tmp_path):
-    """Tests that dataset validation fails when X matrix is not integer type."""
-    path = tmp_path / "float_counts.h5ad"
-    # Create data with float counts instead of integers
-    adata = create_dummy_anndata(n_cells=5, n_genes=3, organism=Organism.HUMAN)
-    adata.X = np.ones((5, 3), dtype=np.float32)  # Override X to be float
-    adata.write_h5ad(path)
-
-    ds = SingleCellDataset(str(path), Organism.HUMAN)
-    ds.load_data()
-    with pytest.raises(ValueError, match="Dataset X matrix must have integer dtype"):
-        ds.validate()
+        dummy_human_anndata_wrong_prefix.validate()
 
 
 def test_single_cell_dataset_validate_without_load(dummy_human_anndata):
     """Tests that dataset validation fails when load_data is not called."""
-    ds = SingleCellDataset(dummy_human_anndata, Organism.HUMAN)
+    # First unload the data since fixture provides loaded dataset
+    dummy_human_anndata.unload_data()
     with pytest.raises(ValueError, match="Dataset does not contain anndata object"):
-        ds.validate()
+        dummy_human_anndata.validate()
 
 
 def test_single_cell_dataset_properties(dummy_human_anndata):
-    """Tests the properties of the SingleCellDataset class."""
-    ds = SingleCellDataset(dummy_human_anndata, Organism.HUMAN)
-    ds.load_data()
-    assert ds.organism == ds.get_input(DataType.ORGANISM)
-    assert ds.adata is ds.get_input(DataType.ANNDATA)
-    assert ds.adata.shape == (5, 3)
+    """Test that SingleCellDataset properties are correct."""
+    assert dummy_human_anndata.n_cells == 5
+    assert dummy_human_anndata.n_genes == 3
+    assert dummy_human_anndata.organism == Organism.HUMAN
+
+
+def test_single_cell_dataset_validate_empty(empty_anndata):
+    """Test that SingleCellDataset validation fails with empty AnnData."""
+    with pytest.raises(ValueError, match="AnnData object is empty"):
+        empty_anndata.validate()
+
+
+def test_single_cell_dataset_validate_float_counts(float_counts_anndata):
+    """Test that SingleCellDataset validation fails with float counts."""
+    with pytest.raises(ValueError, match="X matrix must contain integer values"):
+        float_counts_anndata.validate()
+
+
+def test_single_cell_dataset_validate_wrong_prefix(dummy_human_anndata_wrong_prefix):
+    """Test that SingleCellDataset validation fails with wrong gene name prefixes."""
+    with pytest.raises(ValueError, match="Gene names must start with"):
+        dummy_human_anndata_wrong_prefix.validate()
+
+
+def test_single_cell_dataset_validate_success(dummy_human_anndata):
+    """Test that SingleCellDataset validation succeeds with valid data."""
+    dummy_human_anndata.validate()  # Should not raise any exceptions
