@@ -25,8 +25,18 @@ def run_local_batch_transform(input_file_uri, output_dir_uri, instance_type="loc
     # 1. Local session
     sagemaker_session = LocalSession()
     sagemaker_session.config = {'local': {'local_code': True}}
-
+    
     # 2. PyTorchModel referencing your inference.py that has input_fn, etc.
+    
+    # Increase the limit for response size to 2GB to accommodate models
+    # or input datasets that generate results too large to fit into
+    # the default size of the response size which is ~ 6.5MB
+    # NOTE: There are several other variables that can be configured
+    # including 'TS_MAX_REQUEST_SIZE', 'SAGEMAKER_MODEL_SERVER_TIMEOUT'
+    env_config = {
+        'TS_MAX_RESPONSE_SIZE': '2147483647', # 2GB
+    }
+    
     pytorch_model = PyTorchModel(
         name=MODEL_NAME,
         model_data=LOCAL_MODEL_ARTIFACT,
@@ -35,7 +45,8 @@ def run_local_batch_transform(input_file_uri, output_dir_uri, instance_type="loc
         py_version="py311",
         entry_point="inference.py",  # see the example above
         source_dir="code/",
-        sagemaker_session=sagemaker_session
+        sagemaker_session=sagemaker_session,
+        env=env_config
     )
 
     # 3. Create a transformer
