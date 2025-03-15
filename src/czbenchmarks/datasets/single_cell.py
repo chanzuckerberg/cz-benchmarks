@@ -75,6 +75,10 @@ class PerturbationSingleCellDataset(SingleCellDataset):
     - Must have a condition column in adata.obs specifying control ("ctrl") and
       perturbed conditions.
     - Must have a split column in adata.obs to identify test samples
+    - Condition format must be one of:
+      - "ctrl" for control samples
+      - "{gene}+ctrl" for single gene perturbations
+      - "{gene1}+{gene2}" for combinatorial perturbations
     """
 
     def __init__(
@@ -93,6 +97,9 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         assert (
             self.condition_key in self.adata.obs.columns
         ), f"Condition key {self.condition_key} not found in adata.obs"
+        assert (
+            self.split_key in self.adata.obs.columns
+        ), f"Split key {self.split_key} not found in adata.obs"
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
@@ -136,3 +143,44 @@ class PerturbationSingleCellDataset(SingleCellDataset):
     @property
     def split_key(self) -> str:
         return self.get_input(DataType.SPLIT_KEY)
+
+    def _validate(self) -> None:
+        super()._validate()
+
+        # Validate split values
+        valid_splits = {"train", "test", "val"}
+        splits = set(self.adata.obs[self.split_key])
+        invalid_splits = splits - valid_splits
+        if invalid_splits:
+            raise ValueError(f"Invalid split value(s): {invalid_splits}")
+
+        # Validate condition format
+        conditions = set(self.adata.obs[self.condition_key])
+        for condition in conditions:
+            if condition == "ctrl":
+                continue
+
+            parts = condition.split("+")
+            if len(parts) != 2:
+                raise ValueError(
+                    f"Invalid perturbation condition format: {condition}. "
+                    "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
+                )
+
+            # For {gene}+ctrl format
+            if parts[1] == "ctrl":
+                if not parts[0].startswith(self.organism.prefix):
+                    raise ValueError(
+                        f"Invalid gene prefix in condition {condition}. "
+                        f"Must start with {self.organism.prefix}"
+                    )
+            # For {gene1}+{gene2} format
+            else:
+                if not (
+                    parts[0].startswith(self.organism.prefix)
+                    and parts[1].startswith(self.organism.prefix)
+                ):
+                    raise ValueError(
+                        f"Invalid gene prefix in condition {condition}. "
+                        f"Both genes must start with {self.organism.prefix}"
+                    )

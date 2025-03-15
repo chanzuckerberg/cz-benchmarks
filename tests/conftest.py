@@ -6,6 +6,9 @@ import anndata as ad
 from tests.utils import create_dummy_anndata, DummyDataset
 from czbenchmarks.datasets.types import DataType
 
+# Define global pytest configuration and fixtures that are not specific to any domain
+# For dataset-specific fixtures, see tests/datasets/fixtures.py
+
 # Define fixtures and other configuration options
 # that can be shared across multiple test files
 

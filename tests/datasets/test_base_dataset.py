@@ -3,6 +3,7 @@ import pandas as pd
 from czbenchmarks.datasets.types import DataType, Organism
 from czbenchmarks.models.types import ModelType
 from tests.utils import DummyDataset
+import numpy as np
 
 
 # Tests setting an input for the dataset.
@@ -73,6 +74,27 @@ def test_validate_input_type_with_dict():
         ds.set_input(DataType.PERTURBATION_TRUTH, {"test": "not_dataframe"})
     with pytest.raises(TypeError):
         ds.set_input(DataType.PERTURBATION_TRUTH, {1: pd.DataFrame()})
+
+
+# Tests that setting an input with an output type raises an error.
+def test_set_input_with_output_type():
+    ds = DummyDataset("dummy_path")
+    with pytest.raises(ValueError, match="Cannot set output type as input"):
+        ds.set_input(DataType.EMBEDDING, np.array([1, 2, 3]))
+
+
+# Tests that setting an output with an input type raises an error.
+def test_set_output_with_input_type():
+    ds = DummyDataset("dummy_path")
+    with pytest.raises(ValueError, match="Cannot set input type as output"):
+        ds.set_output(ModelType.BASELINE, DataType.ORGANISM, Organism.HUMAN)
+
+
+# Tests that setting an output with wrong value type raises an error.
+def test_set_output_wrong_value_type():
+    ds = DummyDataset("dummy_path")
+    with pytest.raises(TypeError):
+        ds.set_output(ModelType.BASELINE, DataType.EMBEDDING, "not_an_array")
 
 
 # Tests the serialization and deserialization of the dataset.
