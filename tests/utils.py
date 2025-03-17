@@ -3,8 +3,15 @@ import pandas as pd
 import anndata as ad
 import scipy.sparse as sp
 
-from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks.datasets.types import Organism
+from typing import List, Set
+from czbenchmarks.tasks.base import BaseTask
+from czbenchmarks.datasets import (
+    BaseDataset,
+    DataType,
+)
+from czbenchmarks.models.types import ModelType
+from czbenchmarks.metrics.types import MetricResult, MetricType
 
 
 def create_dummy_anndata(
@@ -67,3 +74,34 @@ class DummyDataset(BaseDataset):
 
     def unload_data(self):
         pass
+
+
+class DummyTask(BaseTask):
+    """A dummy task implementation for testing."""
+
+    def __init__(self, requires_multiple: bool = False):
+        self._requires_multiple = requires_multiple
+
+    @property
+    def required_inputs(self) -> Set[DataType]:
+        return {DataType.ANNDATA, DataType.METADATA}
+
+    @property
+    def required_outputs(self) -> Set[DataType]:
+        return {DataType.EMBEDDING}
+
+    @property
+    def requires_multiple_datasets(self) -> bool:
+        return self._requires_multiple
+
+    def _run_task(self, data: BaseDataset, model_type: ModelType):
+        # Dummy implementation that does nothing
+        pass
+
+    def _compute_metrics(self) -> List[MetricResult]:
+        # Return a dummy metric result
+        return [
+            MetricResult(
+                name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
+            )
+        ]
