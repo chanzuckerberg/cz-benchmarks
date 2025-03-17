@@ -20,7 +20,29 @@ logger = logging.getLogger(__name__)
 
 class MLflowSCVI(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
-        pass
+        # Create a temporary directory for storing model files, organized by organism
+        # MLflow artifacts must be a flat directory, but the scVI model specifically requires a file called model.pt, 
+        # so the organism-specific model.pt files must be in separate directory
+        self.artifact_root_dir = Path("/tmp/mlflow_scvi/")
+        for organism in ["homo_sapiens", "mus_musculus"]:
+            model_organism_dir = (self.artifact_root_dir / organism)
+            model_organism_dir.mkdir(parents=True, exist_ok=True)
+
+            model_file = context.artifacts[f"model_weights_{organism}"]
+            symlink_path = model_organism_dir / "model.pt"
+            if symlink_path.exists():
+                symlink_path.unlink()
+            symlink_path.symlink_to(model_file)
+            print(f"Model file: {model_file} symlinked to {symlink_path}")
+
+            hvg_names_file = context.artifacts[f"hvg_names_{organism}"]
+            symlink_path = model_organism_dir / "hvg_names.csv.gz"
+            if symlink_path.exists():
+                symlink_path.unlink()
+            symlink_path.symlink_to(hvg_names_file)
+            print(f"HVG Names file: {hvg_names_file} symlinked to {symlink_path}")
+
+
 
     def predict(self, context, model_input, params={"organism": "homo_sapiens"}):
         """MLflow prediction entrypoint. Handles input and config."""
@@ -31,6 +53,8 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
         
         # adata = pickle.loads(model_input.iloc[0, 0])
         adata_url = str(model_input.iloc[0, 0])
+        print(adata_url)
+        
         if adata_url.startswith("dbfs:/"):
             # FIXME: This does not work (locally, at least). dbfs.copy() simply does not write to /tmp!?
             if not all(env_var in os.environ for env_var in ["DATABRICKS_HOST", "DATABRICKS_TOKEN"]):
@@ -59,14 +83,8 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
             
         adata = read_h5ad(local_path)
 
-        hvg_file = context.artifacts[f"hvg_names_{params['organism']}"]
-        # Use the full path when loading the model weights
-        model_dir = Path(context.artifacts[f"model_weights_{params['organism']}"]).absolute().parent
-        model_file = context.artifacts[f"model_weights_{params['organism']}"]
-        symlink_path = model_dir / "model.pt"
-        if symlink_path.exists():
-            symlink_path.unlink()
-        symlink_path.symlink_to(model_file)
+        model_dir = self.artifact_root_dir / params["organism"]
+        hvg_file = self.artifact_root_dir / params["organism"] / "hvg_names.csv.gz"
         return MLflowSCVI._predict(adata, hvg_file, model_dir)
 
 
@@ -130,6 +148,8 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
                 obs=adata_filtered.obs.copy()  # Make sure to copy the obs
             )
 
+            del adata_filtered.varm
+            
             # Concatenate the filtered adata with the missing genes adata
             adata_concat = ad.concat(
                 [adata_filtered, adata_missing],
@@ -151,5 +171,4 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
             obs=adata_concat.obs.copy(),
             var=adata_concat.var.loc[hvg_unique.feature_id].copy()
         )
-        return adata_reordered
-            
+        return adata_reordered            

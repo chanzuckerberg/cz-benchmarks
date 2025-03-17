@@ -5,24 +5,50 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Package Model: local",
+            "name": "Deploy Model: local",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/package.py",
+            "program": "${workspaceFolder}/deploy.py",
             "console": "integratedTerminal",
-            "args": ["--target", "local"]
+            "args": [
+                "--target", "local",
+                "--force-package-build"]
         },
         {
-            "name": "Package Model: databricks",
+            "name": "Deploy Model: databricks",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/package.py",
+            "program": "${workspaceFolder}/deploy.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
             "args": [
                 "--target", "databricks",
                 "--experiment-name", "/Users/atolopko@chanzuckerberg.com/model-serving-poc/experiments/scvi"
             ]
+        },
+        {
+            "name": "Deploy Model: sagemaker-local",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/deploy.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--target", "sagemaker-local"
+            ],
+        },
+        {
+            "name": "Deploy Model: sagemaker",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/deploy.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--target", "sagemaker",
+                "--initial-sagemaker-step", "${input:initialSageMakerStep}"
+            ],
+            "justMyCode": false
         },
         {
             "name": "Run Model: mlflow",
@@ -57,6 +83,12 @@
             "id": "inputDataUrl",
             "type": "promptString",
             "description": "Enter the input data URL"
+        },
+        {
+            "id": "initialSageMakerStep",
+            "type": "pickString",
+            "description": "The initial step for the SageMaker remote deployment",
+            "options": ["mlflow-package", "sagemaker-model-create", "sagemaker-endpoint"]
         }
     ]
 
