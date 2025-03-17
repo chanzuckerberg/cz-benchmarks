@@ -63,7 +63,7 @@ def test_validate_input_type():
 
 
 def test_validate_input_type_with_dict():
-    """Tests that setting an input fails when the input type in a dictionary is invalid."""
+    """Tests that setting an input fails when the input type is invalid."""
     ds = DummyDataset("dummy_path")
     valid_dict = {"test": pd.DataFrame()}
     ds.set_input(DataType.PERTURBATION_TRUTH, valid_dict)

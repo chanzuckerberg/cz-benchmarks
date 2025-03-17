@@ -13,7 +13,8 @@ from tests.utils import create_dummy_anndata
 def dummy_single_cell_dataset(tmp_path):
     """Creates a SingleCellDataset with all required fields for model validation."""
     file_path = tmp_path / "dummy.h5ad"
-    # Create anndata with all possible required obs/var columns that any validator might need
+    # Create anndata with all possible required obs/var columns that
+    # any validator might need
     obs_columns = [
         "dataset_id",
         "assay",
@@ -41,7 +42,8 @@ def dummy_single_cell_dataset(tmp_path):
 
 @pytest.fixture
 def dummy_perturbation_dataset(tmp_path):
-    """Creates a PerturbationSingleCellDataset with all required fields for model validation."""
+    """Creates a PerturbationSingleCellDataset with required fields for model
+    validation."""
     file_path = tmp_path / "dummy_perturbation.h5ad"
 
     # Create anndata with all possible required obs/var columns

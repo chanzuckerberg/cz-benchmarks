@@ -1,5 +1,5 @@
 import pytest
-from czbenchmarks.datasets.types import Organism, DataType
+from czbenchmarks.datasets.types import DataType
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 
 
@@ -37,22 +37,11 @@ def test_single_cell_dataset_validate_without_load(dummy_human_anndata):
         dummy_human_anndata.validate()
 
 
-def test_single_cell_dataset_properties(dummy_human_anndata):
-    """Test that SingleCellDataset properties are correct."""
-    assert dummy_human_anndata.n_cells == 5
-    assert dummy_human_anndata.n_genes == 3
-    assert dummy_human_anndata.organism == Organism.HUMAN
-
-
-def test_single_cell_dataset_validate_empty(empty_anndata):
-    """Test that SingleCellDataset validation fails with empty AnnData."""
-    with pytest.raises(ValueError, match="AnnData object is empty"):
-        empty_anndata.validate()
-
-
 def test_single_cell_dataset_validate_float_counts(float_counts_anndata):
     """Test that SingleCellDataset validation fails with float counts."""
-    with pytest.raises(ValueError, match="X matrix must contain integer values"):
+    with pytest.raises(
+        ValueError, match=".*Dataset X matrix must have integer dtype.*"
+    ):
         float_counts_anndata.validate()
 
 

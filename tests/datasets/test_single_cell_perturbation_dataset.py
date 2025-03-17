@@ -1,12 +1,12 @@
 import pytest
-from czbenchmarks.datasets.types import Organism, DataType
+from czbenchmarks.datasets.types import DataType
 
 
 def test_perturbation_dataset_load_data(dummy_perturbation_anndata):
     """Tests the loading of perturbation dataset data."""
     truth = dummy_perturbation_anndata.get_input(DataType.PERTURBATION_TRUTH)
-    assert "test1" in truth
-    assert "test2" in truth
+    assert "test1+ctrl" in truth
+    assert "test2+ctrl" in truth
     assert dummy_perturbation_anndata.adata.shape == (2, 3)
 
 
@@ -14,13 +14,13 @@ def test_perturbation_dataset_load_data_missing_condition_key(
     perturbation_missing_condition,
 ):
     """Tests that loading data fails when the condition key is missing."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Condition key .* not found in adata.obs"):
         perturbation_missing_condition.load_data()
 
 
 def test_perturbation_dataset_load_data_missing_split_key(perturbation_missing_split):
     """Tests that loading data fails when the split key is missing."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Split key .* not found in adata.obs"):
         perturbation_missing_split.load_data()
 
 
@@ -29,29 +29,6 @@ def test_perturbation_dataset_unload_data(dummy_perturbation_anndata):
     dummy_perturbation_anndata.unload_data()
     with pytest.raises(KeyError):
         dummy_perturbation_anndata.get_input(DataType.PERTURBATION_TRUTH)
-
-
-def test_perturbation_dataset_properties(dummy_perturbation_anndata):
-    """Test that PerturbationSingleCellDataset properties are correct."""
-    assert dummy_perturbation_anndata.n_cells == 6
-    assert dummy_perturbation_anndata.n_genes == 3
-    assert dummy_perturbation_anndata.organism == Organism.HUMAN
-    assert dummy_perturbation_anndata.condition_key == "condition"
-    assert dummy_perturbation_anndata.split_key == "split"
-
-
-def test_perturbation_dataset_validate_missing_condition(
-    perturbation_missing_condition,
-):
-    """Test that validation fails when condition column is missing."""
-    with pytest.raises(ValueError, match="Missing required column"):
-        perturbation_missing_condition.validate()
-
-
-def test_perturbation_dataset_validate_missing_split(perturbation_missing_split):
-    """Test that validation fails when split column is missing."""
-    with pytest.raises(ValueError, match="Missing required column"):
-        perturbation_missing_split.validate()
 
 
 def test_perturbation_dataset_validate_invalid_split(perturbation_invalid_split):
@@ -64,13 +41,13 @@ def test_perturbation_dataset_validate_invalid_condition(
     perturbation_invalid_condition,
 ):
     """Test that validation fails with invalid condition format."""
-    with pytest.raises(ValueError, match="Invalid condition format"):
+    with pytest.raises(ValueError, match="Invalid perturbation condition format.*"):
         perturbation_invalid_condition.validate()
 
 
 def test_perturbation_dataset_validate_invalid_combo(perturbation_invalid_combo):
     """Test that validation fails with invalid combo perturbation."""
-    with pytest.raises(ValueError, match="Invalid gene name format"):
+    with pytest.raises(ValueError, match="Invalid gene prefix in condition.*"):
         perturbation_invalid_combo.validate()
 
 

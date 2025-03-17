@@ -1,4 +1,5 @@
 import pytest
+import pandas as pd
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
@@ -37,7 +38,9 @@ def test_missing_required_inputs_outputs():
         task.validate(dataset)
 
     # Set inputs and model type but missing required outputs
-    dataset.set_output(ModelType.BASELINE, DataType.ANNDATA, adata)
+    dataset.set_output(
+        ModelType.BASELINE, DataType.PERTURBATION_PRED, ("", pd.DataFrame())
+    )
     with pytest.raises(
         ValueError,
         match=".*Missing required outputs for model type BASELINE.*",

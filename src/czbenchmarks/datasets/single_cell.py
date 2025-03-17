@@ -38,10 +38,10 @@ class SingleCellDataset(BaseDataset):
         return self.get_input(DataType.ANNDATA)
 
     def _validate(self) -> None:
-        if not self.adata:
+        if DataType.ANNDATA not in self._inputs:
             raise ValueError("Dataset does not contain anndata object")
 
-        if not self.organism:
+        if DataType.ORGANISM not in self._inputs:
             raise ValueError("Organism is not specified")
 
         if not isinstance(self.organism, Organism):
@@ -94,12 +94,12 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
     def load_data(self) -> None:
         super().load_data()
-        assert (
-            self.condition_key in self.adata.obs.columns
-        ), f"Condition key {self.condition_key} not found in adata.obs"
-        assert (
-            self.split_key in self.adata.obs.columns
-        ), f"Split key {self.split_key} not found in adata.obs"
+        if self.condition_key not in self.adata.obs.columns:
+            raise ValueError(
+                f"Condition key {self.condition_key} not found in adata.obs"
+            )
+        if self.split_key not in self.adata.obs.columns:
+            raise ValueError(f"Split key {self.split_key} not found in adata.obs")
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
@@ -155,7 +155,11 @@ class PerturbationSingleCellDataset(SingleCellDataset):
             raise ValueError(f"Invalid split value(s): {invalid_splits}")
 
         # Validate condition format
-        conditions = set(self.adata.obs[self.condition_key])
+        conditions = set(
+            list(self.adata.obs[self.condition_key])
+            + list(self.perturbation_truth.keys())
+        )
+
         for condition in conditions:
             if condition == "ctrl":
                 continue

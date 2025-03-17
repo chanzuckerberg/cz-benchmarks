@@ -3,7 +3,6 @@ import pandas as pd
 import anndata as ad
 import scipy.sparse as sp
 
-from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks.datasets.types import Organism
 from typing import List, Set
 from czbenchmarks.tasks.base import BaseTask

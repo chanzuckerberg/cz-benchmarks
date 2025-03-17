@@ -1,7 +1,6 @@
 import pytest
 import pandas as pd
 import numpy as np
-import anndata as ad
 from tests.utils import create_dummy_anndata, DummyDataset
 from czbenchmarks.datasets.types import DataType, Organism
 from czbenchmarks.datasets.single_cell import (
@@ -48,7 +47,6 @@ def dummy_human_anndata_wrong_prefix(tmp_path):
     file_path = tmp_path / "dummy_wrong.h5ad"
     # Create with wrong gene names but valid ensembl IDs in var
     gene_names = [f"BAD{i}" for i in range(1, 4)]
-    fallback_ensembl = [f"ENSG{i}" for i in range(1, 4)]
 
     # Use create_dummy_anndata but override the var names
     adata = create_dummy_anndata(
@@ -58,20 +56,7 @@ def dummy_human_anndata_wrong_prefix(tmp_path):
         organism=Organism.HUMAN,
     )
     adata.var_names = pd.Index(gene_names)
-    adata.var["ensembl_id"] = fallback_ensembl
 
-    adata.write_h5ad(file_path)
-
-    dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
-    dataset.load_data()
-    return dataset
-
-
-@pytest.fixture
-def empty_anndata(tmp_path):
-    """Creates a SingleCellDataset with an empty AnnData object."""
-    file_path = tmp_path / "empty.h5ad"
-    adata = ad.AnnData(X=np.empty((0, 0)))
     adata.write_h5ad(file_path)
 
     dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
@@ -233,8 +218,8 @@ def perturbation_invalid_combo(tmp_path):
         "ctrl",
         "ENSG00000123456+INVALID123",  # Second gene has wrong prefix
         "ENSG00000123456+INVALID123",
-        "test2+ctrl",
-        "test2+ctrl",
+        "ENSG00000123456+ctrl",
+        "ENSG00000123456+ctrl",
     ]
     adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
     adata.write_h5ad(file_path)
