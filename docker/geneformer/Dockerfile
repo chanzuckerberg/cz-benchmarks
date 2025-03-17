@@ -24,7 +24,6 @@ RUN pip install -e /app/package
 
 COPY docker/geneformer/model.py .
 COPY docker/geneformer/config.yaml .
-COPY docker/geneformer/gene_dictionaries /app/gene_dictionaries
 
 # Add memory management environment variables
 ENV PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True

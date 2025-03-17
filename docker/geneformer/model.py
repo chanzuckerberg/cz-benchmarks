@@ -40,6 +40,14 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
+        model_weights_dir_parent = Path(self.model_weights_dir).parent
+
+        vocabs_bucket = config.geneformer_vocabs_uri.split("/")[2]
+        prefix = "/".join(config.geneformer_vocabs_uri.split("/")[3:])
+        sync_s3_to_local(
+            vocabs_bucket, prefix, f"{model_weights_dir_parent}/gene_dictionaries/"
+        )
+
     def run_model(self, dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
@@ -58,13 +66,20 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         temp_path = Path("temp_dataset.h5ad")
         dataset.adata.write_h5ad(temp_path)
 
+        model_weights_dir_parent = Path(self.model_weights_dir).parent
         # Initialize tokenizer with cell_idx tracking
         tk = TranscriptomeTokenizer(
             custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
-            gene_median_file=str(Path(token_config.gene_median_file)),
-            token_dictionary_file=str(Path(token_config.token_dictionary_file)),
-            gene_mapping_file=str(Path(token_config.ensembl_mapping_file)),
+            gene_median_file=str(
+                Path(f"{model_weights_dir_parent}/{token_config.gene_median_file}")
+            ),
+            token_dictionary_file=str(
+                Path(f"{model_weights_dir_parent}/{token_config.token_dictionary_file}")
+            ),
+            gene_mapping_file=str(
+                Path(f"{model_weights_dir_parent}/{token_config.ensembl_mapping_file}")
+            ),
             special_token=(seq_len != 2048),
             model_input_size=seq_len,
         )
@@ -83,7 +98,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             emb_mode="cell",
             forward_batch_size=32,
             nproc=4,
-            token_dictionary_file=str(Path(token_config.token_dictionary_file)),
+            token_dictionary_file=str(
+                Path(f"{model_weights_dir_parent}/{token_config.token_dictionary_file}")
+            ),
             max_ncells=None,
             emb_label=["cell_idx"],
         )
