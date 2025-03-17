@@ -1,11 +1,5 @@
 import pytest
-import numpy as np
-import pandas as pd
 
-from czbenchmarks.datasets.single_cell import (
-    SingleCellDataset,
-    PerturbationSingleCellDataset,
-)
 from czbenchmarks.datasets.types import Organism, DataType
 from czbenchmarks.models.validators.scvi import SCVIValidator
 from czbenchmarks.models.validators.scgenept import ScGenePTValidator
@@ -18,66 +12,27 @@ from tests.utils import create_dummy_anndata, DummyDataset
 # For all fully implemented single‑cell validators, dataset validation should pass
 # on a valid benchmarking dataset fixture.
 @pytest.mark.parametrize(
-    "validator_class, obs_columns, var_columns, dataset_class",
+    "validator_class, dataset",
     [
-        (
-            SCVIValidator,
-            SCVIValidator.required_obs_keys,
-            SCVIValidator.required_var_keys,
-            SingleCellDataset,
-        ),
-        (
-            ScGenePTValidator,
-            ScGenePTValidator.required_obs_keys,
-            ScGenePTValidator.required_var_keys,
-            PerturbationSingleCellDataset,
-        ),
-        (
-            ScGPTValidator,
-            ScGPTValidator.required_obs_keys,
-            ScGPTValidator.required_var_keys,
-            SingleCellDataset,
-        ),
-        (
-            GeneformerValidator,
-            GeneformerValidator.required_obs_keys,
-            GeneformerValidator.required_var_keys,
-            SingleCellDataset,
-        ),
-        (
-            UCEValidator,
-            UCEValidator.required_obs_keys,
-            UCEValidator.required_var_keys,
-            SingleCellDataset,
-        ),
+        (SCVIValidator, "dummy_single_cell_dataset"),
+        (ScGenePTValidator, "dummy_perturbation_dataset"),
+        (ScGPTValidator, "dummy_single_cell_dataset"),
+        (GeneformerValidator, "dummy_single_cell_dataset"),
+        (UCEValidator, "dummy_single_cell_dataset"),
     ],
 )
-def test_valid_dataset(validator_class, obs_columns, var_columns, dataset_class):
+def test_valid_dataset(validator_class, dataset, request):
+    """Test that validation passes for valid datasets with all required components."""
     validator = validator_class()
-    ann = create_dummy_anndata(obs_columns=obs_columns, var_columns=var_columns)
-
-    # Instantiate a valid dataset with the correct organism
-    dataset = dataset_class("dummy_path", organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, ann)
-    dataset.set_input(DataType.METADATA, ann.obs)
-
-    # For perturbation datasets, also set the required perturbation truth input.
-    if dataset_class == PerturbationSingleCellDataset:
-        dummy_truth = {
-            "ctrl": pd.DataFrame(
-                np.ones((ann.n_obs, ann.n_vars)), columns=ann.var_names
-            )
-        }
-        dataset.set_input(DataType.PERTURBATION_TRUTH, dummy_truth)
-
+    dataset = request.getfixturevalue(dataset)
     try:
         validator.validate_dataset(dataset)
     except Exception as e:
         pytest.fail(f"Validation failed unexpectedly: {e}")
 
 
-# 1. Dataset validation fails when the dataset_type is incompatible.
-def test_invalid_dataset_type():
+def test_invalid_dataset_type(dummy_single_cell_dataset):
+    """Test that validation fails when the dataset_type is incompatible."""
     validator = SCVIValidator()  # Expects a SingleCellDataset (exact type match)
     dummy_ds = DummyDataset("dummy_path")
     # Provide required inputs to bypass missing-input errors.
@@ -91,57 +46,43 @@ def test_invalid_dataset_type():
         validator.validate_dataset(dummy_ds)
 
 
-# 2. Dataset validation fails when required inputs are missing.
-def test_missing_required_inputs():
+def test_missing_required_inputs(dummy_single_cell_dataset):
+    """Test that validation fails when required inputs are missing."""
     validator = SCVIValidator()  # Expects both ANNDATA and METADATA as inputs.
-    dataset = SingleCellDataset("dummy_path", organism=Organism.HUMAN)
-    ann = create_dummy_anndata(
-        obs_columns=["dataset_id", "assay", "suspension_type", "donor_id"]
-    )
-    dataset.set_input(DataType.ANNDATA, ann)
-    # Intentionally do not set METADATA.
+    # First unload the data to test missing inputs
+    dummy_single_cell_dataset.unload_data()
     with pytest.raises(ValueError, match="Missing required inputs"):
-        validator.validate_dataset(dataset)
+        validator.validate_dataset(dummy_single_cell_dataset)
 
 
-# 3. For a single‑cell model: Dataset validation fails when
-# the organism is incompatible.
-def test_incompatible_organism():
+def test_incompatible_organism(dummy_mouse_dataset):
+    """Test that validation fails when the organism is incompatible."""
     validator = SCVIValidator()  # SCVIValidator supports HUMAN and MOUSE only.
-    # Use an organism that is not supported.
-    dataset = SingleCellDataset("dummy_path", organism=Organism.CHIMPANZEE)
-    ann = create_dummy_anndata(
-        obs_columns=["dataset_id", "assay", "suspension_type", "donor_id"]
-    )
-    dataset.set_input(DataType.ANNDATA, ann)
-    dataset.set_input(DataType.METADATA, ann.obs)
+    # Change organism to an unsupported one
+    dummy_mouse_dataset.set_input(DataType.ORGANISM, Organism.CHIMPANZEE)
     with pytest.raises(ValueError, match="Dataset organism"):
-        validator.validate_dataset(dataset)
+        validator.validate_dataset(dummy_mouse_dataset)
 
 
-# 4. For a single‑cell model: Dataset validation fails when
-# required obs keys are missing.
-def test_missing_required_obs_keys():
+def test_missing_required_obs_keys(dummy_single_cell_dataset):
+    """Test that validation fails when required obs keys are missing."""
     validator = (
         SCVIValidator()
     )  # Requires obs keys: dataset_id, assay, suspension_type, donor_id.
-    # Create AnnData missing one required obs key (e.g. "donor_id").
+    # Create new anndata missing one required obs key
     ann = create_dummy_anndata(obs_columns=["dataset_id", "assay", "suspension_type"])
-    dataset = SingleCellDataset("dummy_path", organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, ann)
-    dataset.set_input(DataType.METADATA, ann.obs)
+    dummy_single_cell_dataset.set_input(DataType.ANNDATA, ann)
+    dummy_single_cell_dataset.set_input(DataType.METADATA, ann.obs)
     with pytest.raises(ValueError, match="Missing required obs keys"):
-        validator.validate_dataset(dataset)
+        validator.validate_dataset(dummy_single_cell_dataset)
 
 
-# 5. For a single‑cell model: Dataset validation fails when
-# required var keys are missing.
-def test_missing_required_var_keys():
+def test_missing_required_var_keys(dummy_single_cell_dataset):
+    """Test that validation fails when required var keys are missing."""
     validator = GeneformerValidator()  # Requires var key: "feature_id".
-    # Create AnnData that does not include "feature_id"
+    # Create new anndata without feature_id
     ann = create_dummy_anndata(var_columns=["some_other_feature"])
-    dataset = SingleCellDataset("dummy_path", organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, ann)
-    dataset.set_input(DataType.METADATA, ann.obs)
+    dummy_single_cell_dataset.set_input(DataType.ANNDATA, ann)
+    dummy_single_cell_dataset.set_input(DataType.METADATA, ann.obs)
     with pytest.raises(ValueError, match="Missing required var keys"):
-        validator.validate_dataset(dataset)
+        validator.validate_dataset(dummy_single_cell_dataset)

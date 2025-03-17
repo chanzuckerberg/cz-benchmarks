@@ -270,8 +270,8 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def run_baseline(self, data: BaseDataset):
-        """Run a baseline classification using raw gene expression.
+    def set_baseline(self, data: BaseDataset):
+        """Set a baseline embedding using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene
         expression matrix as features for classification. This provides a baseline
@@ -280,11 +280,6 @@ class MetadataLabelPredictionTask(BaseTask):
 
         Args:
             data: BaseDataset containing AnnData with gene expression and metadata
-            **kwargs: Additional arguments (not used in this implementation)
-
-        Returns:
-            Dictionary containing baseline classification metrics
-            (accuracy, F1, precision, recall, AUROC)
         """
 
         # Get the AnnData object from the dataset
@@ -298,10 +293,3 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Use raw gene expression as the "embedding" for baseline classification
         data.set_output(ModelType.BASELINE, DataType.EMBEDDING, X)
-
-        # Run the classification task with gene expression features
-        baseline_metrics = self.run(data, model_types=[ModelType.BASELINE])[
-            ModelType.BASELINE
-        ]
-
-        return baseline_metrics

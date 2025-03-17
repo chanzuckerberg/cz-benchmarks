@@ -1,4 +1,4 @@
-from typing import Set, List
+from typing import Literal, Set, List
 import pandas as pd
 import scanpy as sc
 import anndata as ad
@@ -290,10 +290,14 @@ class PerturbationTask(BaseTask):
                 "test perturbations."
             )
 
-    def run_baseline(
-        self, data: PerturbationSingleCellDataset, gene_pert: str, **kwargs
-    ) -> List[MetricResult]:
-        """Run a baseline for perturbation prediction.
+    def set_baseline(
+        self,
+        data: PerturbationSingleCellDataset,
+        gene_pert: str,
+        baseline_type: Literal["median", "mean"] = "median",
+        **kwargs,
+    ):
+        """Set a baseline embedding for perturbation prediction.
 
         Creates baseline predictions using simple statistical methods (median and mean)
         applied to the control data, and evaluates these predictions against ground
@@ -302,52 +306,31 @@ class PerturbationTask(BaseTask):
         Args:
             data: PerturbationSingleCellDataset containing control and perturbed data
             gene_pert: The perturbation gene to evaluate
+            baseline_type: The statistical method to use for baseline prediction
+                (median or mean)
             **kwargs: Additional arguments passed to the evaluation
 
         Returns:
             List of MetricResult objects containing baseline performance metrics
             for different statistical methods (median, mean)
         """
-        # Initialize empty list to store metrics from all baseline methods
-        baseline_metrics = []
 
         # Iterate through different statistical baseline functions (median and mean)
-        for baseline_func in [np.median, np.mean]:
-            # Create baseline prediction by replicating the aggregated expression values
-            # across all cells in the dataset.
-            perturb_baseline_pred = pd.DataFrame(
-                np.tile(
-                    np.median(data.adata.X.toarray(), axis=0), (data.adata.shape[0], 1)
-                ),
-                columns=data.adata.var_names,  # Use gene names from the dataset
-                index=data.adata.obs_names,  # Use cell names from the dataset
-            )
 
-            # Store the baseline prediction in the dataset for evaluation
-            data.set_output(
-                ModelType.BASELINE,
-                DataType.PERTURBATION_PRED,
-                (gene_pert, perturb_baseline_pred),
-            )
+        # Create baseline prediction by replicating the aggregated expression values
+        # across all cells in the dataset.
+        baseline_func = np.median if baseline_type == "median" else np.mean
+        perturb_baseline_pred = pd.DataFrame(
+            np.tile(
+                baseline_func(data.adata.X.toarray(), axis=0), (data.adata.shape[0], 1)
+            ),
+            columns=data.adata.var_names,  # Use gene names from the dataset
+            index=data.adata.obs_names,  # Use cell names from the dataset
+        )
 
-            # Run the task with baseline model and get metrics
-            metrics = self.run(data, model_types=[ModelType.BASELINE])[
-                ModelType.BASELINE
-            ]
-
-            # Add the baseline method name to each metric's parameters
-            # to distinguish between different baseline approaches
-            metrics = [
-                MetricResult(
-                    metric_type=metric.metric_type,
-                    value=metric.value,
-                    params={**metric.params, "method": baseline_func.__name__},
-                )
-                for metric in metrics
-            ]
-
-            # Add this baseline method's metrics to the overall results
-            baseline_metrics.extend(metrics)
-
-        # Return all baseline metrics for comparison with model predictions
-        return baseline_metrics
+        # Store the baseline prediction in the dataset for evaluation
+        data.set_output(
+            ModelType.BASELINE,
+            DataType.PERTURBATION_PRED,
+            (gene_pert, perturb_baseline_pred),
+        )
