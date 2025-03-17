@@ -43,7 +43,8 @@ class Organism(Enum):
 
 
 # Register Organism resolver
-OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
+if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
+    OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
 
 
 @dataclass(frozen=True)
