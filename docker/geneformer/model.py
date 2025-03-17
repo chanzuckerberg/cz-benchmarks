@@ -34,8 +34,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         self.selected_model = self.config.models[self.args.model_variant]
         self.token_config = self.selected_model.token_config
 
-    @staticmethod
-    def parse_args():
+    def parse_args(self):
         parser = argparse.ArgumentParser(
             description="Run Geneformer model on input dataset."
         )
