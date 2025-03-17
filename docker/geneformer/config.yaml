@@ -22,7 +22,7 @@ training_args:
   num_train_epochs: 16
   bf16: true
 
-geneformer_vocabs_uri: s3://generate-cross-species/models/geneformer/vocabs
+geneformer_vocabs_uri: s3://generate-cross-species/models/geneformer/vocabs/gene_dictionaries/
 
 # Model configurations
 models:

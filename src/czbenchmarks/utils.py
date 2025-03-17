@@ -93,7 +93,6 @@ def sync_s3_to_local(bucket, prefix, local_dir):
     # Prefix is a directory, proceed with original logic
     paginator = s3.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
-
     for page in pages:
         if "Contents" not in page:
             continue
