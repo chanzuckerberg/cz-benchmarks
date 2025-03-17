@@ -48,23 +48,28 @@ def main():
     
     # Load 
     dataset.load_data()
-    print(dataset.get_output(DataType.EMBEDDING))
-    print(dataset.get_output(DataType.EMBEDDING).shape)
-
-
+    print(f"Shape of embedding attached to benchmarking dataset: {dataset.get_output(DataType.EMBEDDING).shape}")
+    print(f"Embedding attached to benchmarking dataset: {dataset.get_output(DataType.EMBEDDING)}")
+    
+    print(f"Running ClusteringTask...")
     task = ClusteringTask(label_key="cell_type")
     dataset, clustering_results = task.run(dataset)
-    print(clustering_results)
+    print(f"ClusteringTask results: {clustering_results}")
 
+    print(f"Running EmbeddingTask...")
     task = EmbeddingTask(label_key="cell_type")
     dataset, embedding_results = task.run(dataset)
-    print(embedding_results)
-
+    print(f"EmbeddingTask results: {embedding_results}")
+    
+    print("About to display umap...")
     sc.tl.umap(dataset.adata)
     sc.pl.umap(dataset.adata, color="cell_type")
-
+    print("Finished displaying umap...")
+    
+    print("Unloading benchmarking dataset from memory and serializing to disk...")
     dataset.unload_data()
     dataset.serialize("data.dill")
+    print("Finished unloading benchmarking dataset and serializing to disk")
 
 if __name__ == "__main__":
     main()

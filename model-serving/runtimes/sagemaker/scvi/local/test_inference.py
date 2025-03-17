@@ -20,10 +20,17 @@ def test_local_endpoint(endpoint_url, payload):
 if __name__ == "__main__":
     # The local endpoint URL is typically hosted on port 8080 in local mode.
     endpoint_url = "http://localhost:8080/invocations"
+    """
+    Some files that have been confirmed to work:
     
+    1.9 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Mammary_v2_curated.h5ad
+    2.5 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Stomach_v2_curated.h5ad
+    5.0 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad
+    6.0 GB: s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Fat_v2_curated.h5ad
+    """
     payload = json.dumps({
-        "s3_input": "s3://generate-cross-species/datasets/test/example_small.h5ad",
-        "organism": "mus_musculus",
+        "s3_input": "s3://generate-cross-species/datasets/tsv2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Lymph_Node_v2_curated.h5ad",
+        "organism": "homo_sapiens",
     })
 
     start_time = time.perf_counter()
@@ -33,6 +40,7 @@ if __name__ == "__main__":
         # Convert the binary response into a numpy array (assuming the endpoint returns an x-npy content)
         npy_array = np.frombuffer(result_bytes, dtype=np.float32)
         print("Inference output:", npy_array)
+        print(f"Inference output numpy array shape: {npy_array.shape}")
     except Exception as e:
         print("Error during inference:", e)
         exit(1)

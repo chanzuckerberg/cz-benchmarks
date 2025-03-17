@@ -44,7 +44,7 @@ class SageMakerRunner(ModelRunnerBase):
             "Content-Type": "application/json",
             "Accept": "application/x-npy"
         }
-        logger.info(f"Sending payload to local endpoint at: {endpoint_url}")
+        logger.info(f"Sending payload: {payload} to local endpoint at: {endpoint_url}")
         response = requests.post(endpoint_url, data=payload, headers=headers)
         
         if response.status_code != 200:
@@ -54,7 +54,7 @@ class SageMakerRunner(ModelRunnerBase):
         # Convert the binary response into a numpy array (assuming the endpoint returns an x-npy content)
         result_bytes = response.content
         npy_array = np.load(BytesIO(result_bytes))
-        logger.info("Inference output: %s", npy_array)
+        logger.info("Local Inference output: %s", npy_array)
         dataset.set_output(DataType.EMBEDDING,  npy_array)
         
         # TODO: stop docker container
@@ -167,6 +167,15 @@ def serve_model_locally(model_resource_url):
     sagemaker_session = LocalSession()
     sagemaker_session.config = {'local': {'local_code': True}}
 
+    # Increase the limit for response size to 2GB to accommodate models
+    # or input datasets that generate results too large to fit into
+    # the default size of the response size which is ~ 6.5MB
+    # NOTE: There are several other variables that can be configured
+    # including 'TS_MAX_REQUEST_SIZE', 'SAGEMAKER_MODEL_SERVER_TIMEOUT'
+    env_config = {
+        'TS_MAX_RESPONSE_SIZE': '2147483647', # 2GB
+    }
+    
     # Create the PyTorch model for local mode.
     pytorch_model = PyTorchModel(
         # TODO: Since source_dir is required, passing the tgz file (packaged code) might not be necessary for local mode?
@@ -178,6 +187,7 @@ def serve_model_locally(model_resource_url):
         source_dir="model-serving/runtimes/sagemaker/scvi/code/",
         sagemaker_session=sagemaker_session,
         name=MODEL_NAME,
+        env=env_config,
     )
     logger.info(f"Local model '{MODEL_NAME}' has been created.")
 

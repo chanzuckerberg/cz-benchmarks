@@ -148,6 +148,8 @@ class MLflowSCVI(mlflow.pyfunc.PythonModel):
                 obs=adata_filtered.obs.copy()  # Make sure to copy the obs
             )
 
+            del adata_filtered.varm
+            
             # Concatenate the filtered adata with the missing genes adata
             adata_concat = ad.concat(
                 [adata_filtered, adata_missing],

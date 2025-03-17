@@ -34,8 +34,7 @@
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
             "args": [
-                "--target", "sagemaker-local",
-                "${input:forceOption}"
+                "--target", "sagemaker-local"
             ],
         },
         {

@@ -257,12 +257,15 @@ if __name__ == "__main__":
         else:   
             model_name, time_stamp = find_existing_sagemaker_model(sm_client, model_name_prefix)
             
-        create_sagemaker_endpoint(
-            sm_client,
-            model_name,
-            timestamp,
-            sm_instance_type
-        )
+        if args.target == "sagemaker-local":
+            predictor = model.deploy(initial_instance_count=1, instance_type=sm_instance_type)
+        else:
+            create_sagemaker_endpoint(
+                sm_client,
+                model_name,
+                timestamp,
+                sm_instance_type
+            )
             
         # # This creates both the model and model endpoint.
         # # TODO: If we just want to perform batch transform, how can we skip creating the endpoint?
