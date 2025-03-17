@@ -46,7 +46,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         """Get the model weights subdirectory for the selected model."""
         return self.args.model_variant
 
-    def download_model_weights(self, _dataset: BaseDataset):
+    def _download_model_weights(self, _dataset: BaseDataset):
         """Download model weights for the selected model."""
         model_uri = self.selected_model.model_uri
         # Ensure model weights directory exists
