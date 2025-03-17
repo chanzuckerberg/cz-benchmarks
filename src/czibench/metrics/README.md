@@ -37,6 +37,28 @@ lr_accuracy = metrics.compute(
 )
 ```
 
+## Adding New Metrics
+
+1. **Define the Metric Type**:
+```python
+# In types.py
+class MetricType(Enum):
+    YOUR_NEW_METRIC = "your_new_metric"
+```
+
+2. **Register the Metric**:
+```python
+# In implementations.py
+metrics.register(
+    MetricType.YOUR_NEW_METRIC,
+    func=your_metric_function,
+    required_args={"arg1", "arg2"},
+    default_params={"param1": "default"},
+    description="Description of your metric",
+    tags={"category"}
+)
+```
+
 ## Filtering Metrics by Tags
 
 Metrics can be filtered by their associated tags to find related metrics:
@@ -59,28 +81,6 @@ Common tag categories:
 - `embedding`: Embedding quality metrics
 - `integration`: Integration quality metrics
 - `label_prediction`: Cross-validation metrics
-
-## Adding New Metrics
-
-1. **Define the Metric Type**:
-```python
-# In types.py
-class MetricType(Enum):
-    YOUR_NEW_METRIC = "your_new_metric"
-```
-
-2. **Register the Metric**:
-```python
-# In implementations.py
-metrics.register(
-    MetricType.YOUR_NEW_METRIC,
-    func=your_metric_function,
-    required_args={"arg1", "arg2"},
-    default_params={"param1": "default"},
-    description="Description of your metric",
-    tags={"category"}
-)
-```
 
 ## Metric Categories
 
