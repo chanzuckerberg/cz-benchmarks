@@ -55,7 +55,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         bucket, key = model_uri.split("/")[2], "/".join(model_uri.split("/")[3:])
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
-        logging.info(f"Downloaded model weights from {model_uri} to {self.model_weights_dir}")
+        logging.info(
+            f"Downloaded model weights from {model_uri} to {self.model_weights_dir}"
+        )
 
     def _validate_input_data(self, dataset: BaseDataset):
         """Check for NaN values in input data."""
