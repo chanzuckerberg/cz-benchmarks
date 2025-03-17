@@ -96,15 +96,13 @@ class CrossSpeciesIntegrationTask(BaseTask):
                     silhouette_batch_metric,
                     X=self.embedding,
                     labels=self.labels,
-                    batch_labels=self.species,
+                    batch=self.species,
                 ),
             ),
         ]
 
-    def run_baseline(
-        self, data: List[SingleCellDataset], **kwargs
-    ) -> List[MetricResult]:
-        """Run a baseline for cross-species integration.
+    def set_baseline(self, data: List[SingleCellDataset], **kwargs):
+        """Set a baseline embedding for cross-species integration.
 
         This method is not implemented for cross-species integration tasks
         as standard preprocessing workflows are not directly applicable
@@ -112,10 +110,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
         Args:
             data: List of SingleCellDataset objects from different species
-            **kwargs: Additional arguments (not used)
-
-        Returns:
-            Dictionary of baseline metrics (not implemented)
+            **kwargs: Additional arguments passed to run_standard_scrna_workflow
 
         Raises:
             NotImplementedError: Always raised as baseline is not implemented

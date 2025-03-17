@@ -38,16 +38,20 @@ class SingleCellDataset(BaseDataset):
         return self.get_input(DataType.ANNDATA)
 
     def _validate(self) -> None:
-        if not self.adata:
+        if DataType.ANNDATA not in self._inputs:
             raise ValueError("Dataset does not contain anndata object")
 
-        if not self.organism:
+        if DataType.ORGANISM not in self._inputs:
             raise ValueError("Organism is not specified")
 
         if not isinstance(self.organism, Organism):
             raise ValueError("Organism is not a valid Organism enum")
 
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
+
+        # Validate that adata.X contains raw counts (integers)
+        if not np.issubdtype(self.adata.X.dtype, np.integer):
+            raise ValueError("Dataset X matrix must have integer dtype (raw counts)")
 
         if not var:
             if "ensembl_id" in self.adata.var.columns:
@@ -71,6 +75,10 @@ class PerturbationSingleCellDataset(SingleCellDataset):
     - Must have a condition column in adata.obs specifying control ("ctrl") and
       perturbed conditions.
     - Must have a split column in adata.obs to identify test samples
+    - Condition format must be one of:
+      - "ctrl" for control samples
+      - "{gene}+ctrl" for single gene perturbations
+      - "{gene1}+{gene2}" for combinatorial perturbations
     """
 
     def __init__(
@@ -86,9 +94,12 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
     def load_data(self) -> None:
         super().load_data()
-        assert (
-            self.condition_key in self.adata.obs.columns
-        ), f"Condition key {self.condition_key} not found in adata.obs"
+        if self.condition_key not in self.adata.obs.columns:
+            raise ValueError(
+                f"Condition key {self.condition_key} not found in adata.obs"
+            )
+        if self.split_key not in self.adata.obs.columns:
+            raise ValueError(f"Split key {self.split_key} not found in adata.obs")
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
@@ -132,3 +143,48 @@ class PerturbationSingleCellDataset(SingleCellDataset):
     @property
     def split_key(self) -> str:
         return self.get_input(DataType.SPLIT_KEY)
+
+    def _validate(self) -> None:
+        super()._validate()
+
+        # Validate split values
+        valid_splits = {"train", "test", "val"}
+        splits = set(self.adata.obs[self.split_key])
+        invalid_splits = splits - valid_splits
+        if invalid_splits:
+            raise ValueError(f"Invalid split value(s): {invalid_splits}")
+
+        # Validate condition format
+        conditions = set(
+            list(self.adata.obs[self.condition_key])
+            + list(self.perturbation_truth.keys())
+        )
+
+        for condition in conditions:
+            if condition == "ctrl":
+                continue
+
+            parts = condition.split("+")
+            if len(parts) != 2:
+                raise ValueError(
+                    f"Invalid perturbation condition format: {condition}. "
+                    "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
+                )
+
+            # For {gene}+ctrl format
+            if parts[1] == "ctrl":
+                if not parts[0].startswith(self.organism.prefix):
+                    raise ValueError(
+                        f"Invalid gene prefix in condition {condition}. "
+                        f"Must start with {self.organism.prefix}"
+                    )
+            # For {gene1}+{gene2} format
+            else:
+                if not (
+                    parts[0].startswith(self.organism.prefix)
+                    and parts[1].startswith(self.organism.prefix)
+                ):
+                    raise ValueError(
+                        f"Invalid gene prefix in condition {condition}. "
+                        f"Both genes must start with {self.organism.prefix}"
+                    )

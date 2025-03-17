@@ -19,7 +19,7 @@ jobs:
       - name: Get the version 
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Display version being published
         run: |
@@ -61,6 +61,9 @@ jobs:
           command: pip index versions --index-url https://test.pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
 
       - name: Install and Test Package from Test PyPI
+        # Add PyPi index to the pip install command so that any dependencies not on TestPyPI are installed from PyPI
+        # For example, anndata >= 0.9.0 is not on TestPyPI, so it is installed from PyPI
         run: |
-          pip install --index-url https://test.pypi.org/simple/ cz-benchmarks
+          pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
           python -c "import czbenchmarks"
+          pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"

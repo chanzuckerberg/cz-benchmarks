@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.0...v0.2.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* test release ([#98](https://github.com/chanzuckerberg/cz-benchmarks/issues/98)) ([d710766](https://github.com/chanzuckerberg/cz-benchmarks/commit/d7107664203d12c144d928176971a8ca9a542ba3))
+
+## [0.2.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.2...v0.2.0) (2025-03-13)
+
+
+### Features
+
+* perturb baselines ([#86](https://github.com/chanzuckerberg/cz-benchmarks/issues/86)) ([9fe91be](https://github.com/chanzuckerberg/cz-benchmarks/commit/9fe91be296396530af3bb668d2531af94a8174a5))
+
+
+### Bug Fixes
+
+* Improve error message for var_names and SCVI dataset validation ([#83](https://github.com/chanzuckerberg/cz-benchmarks/issues/83)) ([ac048b0](https://github.com/chanzuckerberg/cz-benchmarks/commit/ac048b04bdfc78d4ad1dc05dab0795f646188c8e))
+* model_name to model_variant kwarg for model classes ([#92](https://github.com/chanzuckerberg/cz-benchmarks/issues/92)) ([23b525a](https://github.com/chanzuckerberg/cz-benchmarks/commit/23b525a2431169a24fc4a55dc41cfbc31057ae35))
+* Pass AWS credentials to container ([#85](https://github.com/chanzuckerberg/cz-benchmarks/issues/85)) ([e631c70](https://github.com/chanzuckerberg/cz-benchmarks/commit/e631c701df99f71f41f5c24c072e4e7eaf4edd46))
+* path expansion when dataset stored in local repo ([#80](https://github.com/chanzuckerberg/cz-benchmarks/issues/80)) ([5f3333a](https://github.com/chanzuckerberg/cz-benchmarks/commit/5f3333ad5b585b9dbbd68729fb888de9e846e065))
+* update pip index version command in publish-pypi.yml ([#82](https://github.com/chanzuckerberg/cz-benchmarks/issues/82)) ([68b63d9](https://github.com/chanzuckerberg/cz-benchmarks/commit/68b63d99f08ce3fcef006eb256682cb67ed86671))
+* update scgenept model config to use full model variant name ([#94](https://github.com/chanzuckerberg/cz-benchmarks/issues/94)) ([04057f8](https://github.com/chanzuckerberg/cz-benchmarks/commit/04057f8614f6348cd8d8df6748e2426197fdb60a))
+
 ## [0.1.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.1...v0.1.2) (2025-03-11)
 
 

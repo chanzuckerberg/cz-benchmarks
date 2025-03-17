@@ -80,6 +80,8 @@ class BaseDataset(ABC):
 
     def set_input(self, data_type: DataType, value: DataValue) -> None:
         """Safely set an input with type checking."""
+        if not data_type.is_input:
+            raise ValueError(f"Cannot set output type as input: {data_type.name}")
         self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
         self._inputs[data_type] = value
 
@@ -87,6 +89,8 @@ class BaseDataset(ABC):
         self, model_type: ModelType, data_type: DataType, value: DataValue
     ) -> None:
         """Safely set an output with type checking."""
+        if data_type.is_input:
+            raise ValueError(f"Cannot set input type as output: {data_type.name}")
         self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
         if model_type not in self._outputs:
             self._outputs[model_type] = {}
@@ -114,7 +118,7 @@ class BaseDataset(ABC):
 
     def validate(self) -> None:
         if not os.path.exists(self.path):
-            raise ValueError(f"Dataset {self.path} is not valid")
+            raise ValueError("Dataset path does not exist")
 
         """Validate that all inputs and outputs match their expected types"""
         for data_type, value in self.inputs.items():
