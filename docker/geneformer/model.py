@@ -1,5 +1,4 @@
 import argparse
-import pickle
 import shutil
 import tempfile
 import logging
@@ -12,11 +11,14 @@ from omegaconf import OmegaConf
 from datasets import load_from_disk, Sequence, Value
 
 from czbenchmarks.datasets import BaseDataset, DataType
-from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+from czbenchmarks.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
 from czbenchmarks.models.validators.geneformer import GeneformerValidator
-from czbenchmarks.utils import sync_s3_to_local
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -34,7 +36,9 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
     @staticmethod
     def parse_args():
-        parser = argparse.ArgumentParser(description="Run Geneformer model on input dataset.")
+        parser = argparse.ArgumentParser(
+            description="Run Geneformer model on input dataset."
+        )
         parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
         return parser.parse_args()
 
@@ -42,9 +46,14 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         """Check for NaN values in input data."""
         X = dataset.adata.X
         if scipy.sparse.issparse(X):
-            logging.info("Input is a sparse matrix; checking non-zero elements for NaN...")
+            logging.info(
+                "Input is a sparse matrix; checking non-zero elements for NaN..."
+            )
             if np.isnan(X.data).any():
-                logging.warning(f"Input data contains {np.isnan(X.data).sum()} NaN values in non-zero elements.")
+                logging.warning(
+                    f"Input data contains {np.isnan(X.data).sum()} "
+                    "NaN values in non-zero elements."
+                )
         else:
             if np.isnan(X).any():
                 logging.warning("Input data contains NaN values.")
@@ -55,12 +64,16 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         dataset.adata.obs["cell_idx"] = np.arange(len(dataset.adata.obs))
 
         if "n_counts" not in dataset.adata.obs.columns:
-            dataset.adata.obs["n_counts"] = np.asarray(dataset.adata.X.sum(axis=1)).flatten()
+            dataset.adata.obs["n_counts"] = np.asarray(
+                dataset.adata.X.sum(axis=1)
+            ).flatten()
             if np.isnan(dataset.adata.obs["n_counts"]).any():
                 logging.warning("NaN values detected in 'n_counts' calculation.")
 
         # Remove version numbers from ensembl_id column
-        dataset.adata.var["ensembl_id"] = dataset.adata.var["ensembl_id"].str.split('.').str[0]
+        dataset.adata.var["ensembl_id"] = (
+            dataset.adata.var["ensembl_id"].str.split(".").str[0]
+        )
 
     def _save_dataset_temp(self, dataset: BaseDataset) -> Path:
         """Save dataset to a temporary file."""
@@ -85,7 +98,12 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             model_input_size=self.token_config.input_size,
         )
 
-        tk.tokenize_data(str(temp_path.parent), str(dataset_dir), "tokenized_dataset", file_format="h5ad")
+        tk.tokenize_data(
+            str(temp_path.parent),
+            str(dataset_dir),
+            "tokenized_dataset",
+            file_format="h5ad",
+        )
         return dataset_dir / "tokenized_dataset.dataset"
 
     def _load_tokenized_dataset(self, tokenized_dataset_path: Path):
@@ -99,9 +117,15 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             logging.warning(f"Unexpected input_ids shape: {input_ids.shape}")
         logging.info(f"Actual sequence length: {input_ids.shape}")
 
-        if len(input_ids) < 10:
-            logging.error(f"Tokenized sequences are too short (length={len(input_ids)}).")
-            raise ValueError(f"Tokenized sequences are too short (length={len(input_ids)}).")
+        # Validate sequence length
+        # minimum length of 2 to catch empty or single-token sequences
+        if len(input_ids) < 2:
+            logging.error(
+                f"Tokenized sequences are too short (length={len(input_ids)})."
+            )
+            raise ValueError(
+                f"Tokenized sequences are too short (length={len(input_ids)})."
+            )
 
     def _ensure_correct_dtype(self, tokenized_dataset, tokenized_dataset_path: Path):
         """Ensure tokenized dataset has the correct dtype for `input_ids`."""
@@ -140,7 +164,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         embs = embs.sort_values("cell_idx").drop(columns=["cell_idx"])
         emb_array = embs.to_numpy()
         if np.isnan(emb_array).any():
-            logging.warning(f"Found NaN values in embeddings. Replacing with 0.0")
+            logging.warning("Found NaN values in embeddings. Replacing with 0.0")
             emb_array = np.nan_to_num(emb_array, nan=0.0)
 
         dataset.set_output(self.model_type, DataType.EMBEDDING, emb_array)
