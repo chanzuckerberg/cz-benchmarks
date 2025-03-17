@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Set
 from pydantic import BaseModel
@@ -34,8 +33,7 @@ class MetricType(Enum):
     JACCARD = "jaccard"
 
 
-@dataclass
-class MetricInfo:
+class MetricInfo(BaseModel):
     """Stores metadata about a metric.
 
     Attributes:
@@ -81,6 +79,11 @@ class MetricRegistry:
             description: Documentation string
             tags: Set of tags for grouping metrics
         """
+
+        if not isinstance(metric_type, MetricType):
+            raise TypeError(
+                f"Invalid metric type: {metric_type}. Must be a MetricType enum."
+            )
 
         self._metrics[metric_type] = MetricInfo(
             func=func,
