@@ -1,7 +1,5 @@
-census_version: "2024-02-12"
-
 homo_sapiens:
-  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/homo_sapiens/model.pt
+  model_dir: s3://generate-cross-species/models/scvi/homo_sapiens/
 
 mus_musculus:
-  model_weights: s3://cellxgene-contrib-public/models/scvi/${census_version}/mus_musculus/model.pt
+  model_dir: s3://generate-cross-species/models/scvi/mus_musculus/

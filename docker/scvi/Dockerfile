@@ -17,7 +17,5 @@ RUN pip install -e /app/package
 COPY docker/scvi/model.py .
 COPY docker/scvi/utils.py .
 COPY docker/scvi/config.yaml .
-COPY docker/scvi/hvg_names_homo_sapiens.csv.gz .
-COPY docker/scvi/hvg_names_mus_musculus.csv.gz .
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"]
