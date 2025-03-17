@@ -1,7 +1,6 @@
 import functools
 import pathlib
 
-import boto3
 import scvi
 from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
@@ -11,6 +10,7 @@ from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
 from czbenchmarks.models.validators.scvi import SCVIValidator
+from czbenchmarks.utils import sync_s3_to_local
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
@@ -21,22 +21,21 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         return dataset.organism.name
 
     def _download_model_weights(self, dataset: BaseDataset):
-        s3 = boto3.client("s3")
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
-        model_filename = model_dir / "model.pt"
 
         config = OmegaConf.load("config.yaml")
-        s3_path = config[dataset.organism.name]["model_weights"]
+        s3_path = config[dataset.organism.name]["model_dir"]
         bucket = s3_path.split("/")[2]
-        key = "/".join(s3_path.split("/")[3:])
-
-        s3.download_file(bucket, key, str(model_filename))
+        path = "/".join(s3_path.split("/")[3:])
+        sync_s3_to_local(bucket, path, str(model_dir))
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
         batch_keys = self.required_obs_keys
-        adata = filter_adata_by_hvg(adata, f"hvg_names_{dataset.organism.name}.csv.gz")
+        adata = filter_adata_by_hvg(
+            adata, f"{self.model_weights_dir}/hvg_names_{dataset.organism.name}.csv.gz"
+        )
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
         )
