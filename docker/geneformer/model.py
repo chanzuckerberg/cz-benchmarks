@@ -40,6 +40,8 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
 
+        sync_s3_to_local(bucket, config.geneformer_vocabs_uri, "gene_dictionaries/")
+
     def run_model(self, dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
         args = self.parse_args()
