@@ -49,7 +49,6 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
     def _download_model_weights(self, _dataset: BaseDataset):
         """Download model weights for the selected model."""
         model_uri = self.selected_model.model_uri
-        # Ensure model weights directory exists
         Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
 
         bucket, key = model_uri.split("/")[2], "/".join(model_uri.split("/")[3:])
