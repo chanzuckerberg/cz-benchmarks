@@ -15,6 +15,7 @@ from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
 from czbenchmarks.models.validators.geneformer import GeneformerValidator
+from czbenchmarks.utils import sync_s3_to_local
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -40,6 +41,21 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         )
         parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
         return parser.parse_args()
+
+    def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
+        """Get the model weights subdirectory for the selected model."""
+        return self.args.model_variant
+
+    def download_model_weights(self, _dataset: BaseDataset):
+        """Download model weights for the selected model."""
+        model_uri = self.selected_model.model_uri
+        # Ensure model weights directory exists
+        Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
+
+        bucket, key = model_uri.split("/")[2], "/".join(model_uri.split("/")[3:])
+        sync_s3_to_local(bucket, key, self.model_weights_dir)
+
+        logging.info(f"Downloaded model weights from {model_uri} to {self.model_weights_dir}")
 
     def _validate_input_data(self, dataset: BaseDataset):
         """Check for NaN values in input data."""
