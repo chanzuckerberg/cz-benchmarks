@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.1...v0.2.2) (2025-03-18)
+
+
+### Bug Fixes
+
+* geneformer model updates ([#103](https://github.com/chanzuckerberg/cz-benchmarks/issues/103)) ([5fdfdff](https://github.com/chanzuckerberg/cz-benchmarks/commit/5fdfdffa326c0f29fccc5fe89311cdefc7bc6e08))
+
 ## [0.2.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.0...v0.2.1) (2025-03-13)
 
 
