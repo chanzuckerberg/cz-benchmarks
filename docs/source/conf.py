@@ -61,15 +61,15 @@ autodoc_type_aliases = {
     "Organism": "czbenchmarks.datasets.types.Organism",
 }
 
-nitpick_ignore = [
-    ("py:class", "BaseDataset"),
-    ("py:class", "Organism"),
-    ("py:class", "czbenchmarks.metrics.types.MetricInfo.func"),
-    ("py:class", "czbenchmarks.metrics.types.MetricInfo.required_args"),
-    ("py:class", "czbenchmarks.metrics.types.MetricInfo.default_params"),
-    ("py:class", "czbenchmarks.metrics.types.MetricInfo.description"),
-    ("py:class", "czbenchmarks.metrics.types.MetricInfo.tags"),
-]
+# nitpick_ignore = [
+#     ("py:class", "BaseDataset"),
+#     ("py:class", "Organism"),
+#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.func"),
+#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.required_args"),
+#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.default_params"),
+#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.description"),
+#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.tags"),
+# ]
 
 
 inheritance_graph_attrs = dict(
