@@ -30,6 +30,7 @@ class ContainerRunner:
         model_name: Union[str, ModelType],
         gpu: bool = False,
         interactive: bool = False,
+        app_mount_dir: Optional[str] = None,
         environment: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ):
@@ -39,6 +40,7 @@ class ContainerRunner:
             model_name: Name of model from models.yaml config or ModelType enum
             gpu: Whether to use GPU acceleration for model execution
             interactive: Whether to run in interactive mode with a bash shell
+            app_mount_dir: Optional directory to mount to /app in the container
             environment: Dictionary of environment variables to pass to the container
             kwargs: Additional arguments to pass to the container as CLI params
         """
@@ -66,9 +68,11 @@ class ContainerRunner:
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
         self.model_type = model_type  # Store model_type for dataset compatibility
+        self.app_mount_dir = app_mount_dir
 
         self.gpu = gpu
         self.interactive = interactive
+
         self.cli_args = kwargs
         self.environment = environment or {}  # Store environment variables
         self.client = docker.from_env()
@@ -138,6 +142,16 @@ class ContainerRunner:
                     "mode": "ro",
                 }
 
+            # Add app mount if specified
+            if self.app_mount_dir:
+                expanded_path = os.path.abspath(os.path.expanduser(self.app_mount_dir))
+                if not os.path.exists(expanded_path):
+                    raise ValueError(f"Mount directory does not exist: {expanded_path}")
+                volumes[expanded_path] = {
+                    "bind": "/app",
+                    "mode": "rw",
+                }
+
             # Run container and process results
             try:
                 self._run_container(volumes)
@@ -194,10 +208,8 @@ class ContainerRunner:
         os.makedirs(model_weights_cache_path, exist_ok=True)
 
         # Prepare command based on mode (interactive or CLI args)
-        command = []
-        if self.interactive:
-            command = ["bash"]
-        elif self.cli_args:
+        command = None
+        if self.cli_args and not self.interactive:
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
@@ -211,8 +223,8 @@ class ContainerRunner:
             tty=self.interactive,  # Add TTY for interactive mode
             stdin_open=self.interactive,  # Keep STDIN open for interactive mode
             entrypoint=(
-                command if self.interactive else None
-            ),  # Override entrypoint for interactive mode
+                ["/bin/bash"] if self.interactive else None
+            )  # Override entrypoint for interactive mode
         )
 
         try:
@@ -249,6 +261,7 @@ def run_inference(
     dataset: BaseDataset,
     gpu: bool = True,
     interactive: bool = False,
+    app_mount_dir: Optional[str] = None,
     environment: Optional[Dict[str, str]] = None,
     **kwargs,
 ) -> BaseDataset:
@@ -265,5 +278,11 @@ def run_inference(
     Returns:
         The processed dataset with model outputs attached
     """
-    runner = ContainerRunner(model_name, gpu, interactive, environment, **kwargs)
+    runner = ContainerRunner(
+        model_name,
+        gpu,
+        interactive=interactive,
+        app_mount_dir=app_mount_dir,
+        environment=environment,
+        **kwargs)
     return runner.run(dataset)
