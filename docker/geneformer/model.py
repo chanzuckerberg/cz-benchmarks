@@ -111,25 +111,25 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         """Tokenize dataset and return the tokenized dataset path."""
         dataset_dir = Path("dataset")
         dataset_dir.mkdir(parents=True, exist_ok=True)
-
+        model_weights_dir_parent = Path(self.model_weights_dir).parent
         tk = TranscriptomeTokenizer(
             custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
             gene_median_file=str(
                 Path(
-                    f"{self.model_weights_dir_parent}/"
+                    f"{model_weights_dir_parent}/"
                     f"{self.token_config.gene_median_file}"
                 )
             ),
             token_dictionary_file=str(
                 Path(
-                    f"{self.model_weights_dir_parent}/"
+                    f"{model_weights_dir_parent}/"
                     f"{self.token_config.token_dictionary_file}"
                 )
             ),
             gene_mapping_file=str(
                 Path(
-                    f"{self.model_weights_dir_parent}/"
+                    f"{model_weights_dir_parent}/"
                     f"{self.token_config.ensembl_mapping_file}"
                 )
             ),
@@ -179,6 +179,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
     def _extract_embeddings(self, tokenized_dataset_path: Path, dataset: BaseDataset):
         """Extract embeddings from tokenized dataset."""
+        model_weights_dir_parent = Path(self.model_weights_dir).parent
         embex = EmbExtractor(
             model_type="Pretrained",
             emb_layer=-1,
@@ -187,7 +188,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             nproc=4,
             token_dictionary_file=str(
                 Path(
-                    f"{self.model_weights_dir_parent}/"
+                    f"{model_weights_dir_parent}/"
                     f"{self.token_config.token_dictionary_file}"
                 )
             ),
