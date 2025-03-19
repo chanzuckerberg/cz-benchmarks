@@ -1,12 +1,12 @@
 import pathlib
 
 # Base paths
-INPUT_DATA_PATH_DOCKER = "/app/input/data.dill"
-RAW_INPUT_DIR_PATH_DOCKER = "/app/raw"
-OUTPUT_DATA_PATH_DOCKER = "/app/output/data.dill"
-ARTIFACTS_PATH_DOCKER = "/app/artifacts"
+INPUT_DATA_PATH_DOCKER = "/input/data.dill"
+RAW_INPUT_DIR_PATH_DOCKER = "/raw"
+OUTPUT_DATA_PATH_DOCKER = "/output/data.dill"
+ARTIFACTS_PATH_DOCKER = "/artifacts"
 DATASETS_CACHE_PATH = "~/.cz-benchmarks/datasets"
-MODEL_WEIGHTS_PATH_DOCKER = "/app/weights"
+MODEL_WEIGHTS_PATH_DOCKER = "/weights"
 MODEL_WEIGHTS_CACHE_PATH = "~/.cz-benchmarks/weights"
 
 
