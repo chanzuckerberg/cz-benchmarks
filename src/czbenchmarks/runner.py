@@ -30,6 +30,7 @@ class ContainerRunner:
         model_name: Union[str, ModelType],
         gpu: bool = False,
         environment: Optional[Dict[str, str]] = None,
+        interactive: bool = False,
         **kwargs: Any,
     ):
         """Initialize the ContainerRunner.
@@ -37,8 +38,8 @@ class ContainerRunner:
         Args:
             model_name: Name of model from models.yaml config or ModelType enum
             gpu: Whether to use GPU acceleration for model execution
-            interactive: Whether to run in interactive mode with a bash shell
             environment: Dictionary of environment variables to pass to the container
+            interactive: Whether to run in interactive mode with a bash shell            
             kwargs: Additional arguments to pass to the container as CLI params
         """
         # Load models config from the default location
@@ -69,6 +70,7 @@ class ContainerRunner:
         self.gpu = gpu
         self.cli_args = kwargs
         self.environment = environment or {}  # Store environment variables
+        self.interactive = interactive
         self.client = docker.from_env()
 
     def run(
@@ -191,9 +193,11 @@ class ContainerRunner:
         )
         os.makedirs(model_weights_cache_path, exist_ok=True)
 
-        # Prepare command with CLI args if provided
+        # Prepare command based on mode (interactive or CLI args)
         command = []
-        if self.cli_args:
+        if self.interactive:
+            command.append("bash")
+        elif self.cli_args:
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
@@ -203,6 +207,9 @@ class ContainerRunner:
             command=command,
             volumes=volumes,
             environment=self.environment,  # Pass environment variables
+            tty=self.interactive,
+            stdin_open=self.interactive,
+            entrypoint = ["bash"] if self.interactive else None,
             runtime="nvidia" if self.gpu else None,
         )
 
@@ -240,6 +247,7 @@ def run_inference(
     dataset: BaseDataset,
     gpu: bool = True,
     environment: Optional[Dict[str, str]] = None,
+    interactive: bool = False,
     **kwargs,
 ) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
@@ -249,10 +257,11 @@ def run_inference(
         dataset: Dataset to process
         gpu: Whether to use GPU acceleration
         environment: Dictionary of environment variables to pass to the container
+        interactive: Whether to run in interactive mode with a bash shell
         **kwargs: Additional arguments to pass to the container as CLI params
 
     Returns:
         The processed dataset with model outputs attached
     """
-    runner = ContainerRunner(model_name, gpu, environment, **kwargs)
+    runner = ContainerRunner(model_name, gpu, environment, interactive, **kwargs)
     return runner.run(dataset)
