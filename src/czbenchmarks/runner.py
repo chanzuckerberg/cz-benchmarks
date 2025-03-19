@@ -40,7 +40,8 @@ class ContainerRunner:
             model_name: Name of model from models.yaml config or ModelType enum
             gpu: Whether to use GPU acceleration for model execution
             interactive: Whether to run in interactive mode with a bash shell
-            app_mount_dir: Optional directory to mount to /app (this will override the default /app mount from the docker build!)
+            app_mount_dir: Optional directory to mount to /app (this will override the
+                default /app mount from the docker build!)
             environment: Dictionary of environment variables to pass to the container
             kwargs: Additional arguments to pass to the container as CLI params
         """
@@ -272,7 +273,8 @@ def run_inference(
         dataset: Dataset to process
         gpu: Whether to use GPU acceleration
         interactive: Whether to run in interactive mode
-        app_mount_dir: Optional directory to mount to /app in the container (this will override the default /app mount from the docker build!)
+        app_mount_dir: Optional directory to mount to /app in the container
+            (this will override the default /app mount from the docker build!)
         environment: Dictionary of environment variables to pass to the container
         **kwargs: Additional arguments to pass to the container as CLI params
 
