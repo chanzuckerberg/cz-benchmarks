@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.2...v0.3.0) (2025-03-19)
+
+
+### Features
+
+* add back interactive mode and file mounting for container debugging ([#114](https://github.com/chanzuckerberg/cz-benchmarks/issues/114)) ([ba317e5](https://github.com/chanzuckerberg/cz-benchmarks/commit/ba317e5952bfff8a4502788e5b5d0d48bb4ed086))
+
+
+### Bug Fixes
+
+* move metrics readme to the correct dir ([#112](https://github.com/chanzuckerberg/cz-benchmarks/issues/112)) ([1dcd620](https://github.com/chanzuckerberg/cz-benchmarks/commit/1dcd6209617e1ccf06bcfdb1542871bdf55440d0))
+
 ## [0.2.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.1...v0.2.2) (2025-03-18)
 
 
