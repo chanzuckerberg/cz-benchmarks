@@ -211,6 +211,7 @@ class ContainerRunner:
         # Prepare command based on mode (interactive or CLI args)
         command = None
         if self.cli_args and not self.interactive:
+            command = []
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
