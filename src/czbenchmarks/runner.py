@@ -39,7 +39,7 @@ class ContainerRunner:
             model_name: Name of model from models.yaml config or ModelType enum
             gpu: Whether to use GPU acceleration for model execution
             environment: Dictionary of environment variables to pass to the container
-            interactive: Whether to run in interactive mode with a bash shell            
+            interactive: Whether to run in interactive mode with a bash shell
             kwargs: Additional arguments to pass to the container as CLI params
         """
         # Load models config from the default location
@@ -209,7 +209,7 @@ class ContainerRunner:
             environment=self.environment,  # Pass environment variables
             tty=self.interactive,
             stdin_open=self.interactive,
-            entrypoint = ["bash"] if self.interactive else None,
+            entrypoint=["bash"] if self.interactive else None,
             runtime="nvidia" if self.gpu else None,
         )
 
