@@ -197,7 +197,7 @@ class ContainerRunner:
         command = []
         if self.interactive:
             command = ["bash"]
-        if self.cli_args:
+        elif self.cli_args:
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
