@@ -63,6 +63,16 @@ def setup_sagemaker_session(region: str):
 
 def create_pytorch_model(sm_session, role: str) -> PyTorchModel:
     """Create or update the PyTorch model in SageMaker."""
+    
+    # Increase the limit for response size to 2GB to accommodate models
+    # or input datasets that generate results too large to fit into
+    # the default size of the response size which is ~ 6.5MB
+    # NOTE: There are several other variables that can be configured
+    # including 'TS_MAX_REQUEST_SIZE', 'SAGEMAKER_MODEL_SERVER_TIMEOUT'
+    env_config = {
+        'TS_MAX_RESPONSE_SIZE': '2147483647', # 2GB
+    }
+    
     # Under the hood, the model is using AWS managed image: 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-inference:2.5-gpu-py311
     pytorch_model = PyTorchModel(
         model_data=f"s3://{BUCKET}/scvi/scvi_model_code.tar.gz",
@@ -73,6 +83,7 @@ def create_pytorch_model(sm_session, role: str) -> PyTorchModel:
         source_dir="code/",
         sagemaker_session=sm_session,
         name=MODEL_NAME,
+        env=env_config
     )
     # pytorch_model.create(instance_type="ml.g4dn.xlarge")
     logger.info(f"Model '{MODEL_NAME}' has been created or updated.")

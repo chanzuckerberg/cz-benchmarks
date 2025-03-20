@@ -44,7 +44,7 @@ class SageMakerRunner(ModelRunnerBase):
             "Content-Type": "application/json",
             "Accept": "application/x-npy"
         }
-        logger.info(f"Sending payload: {payload} to local endpoint at: {endpoint_url}")
+        logger.info(f"Sending payload: {payload} to Sagemaker local endpoint: {endpoint_url}")
         response = requests.post(endpoint_url, data=payload, headers=headers)
         
         if response.status_code != 200:
@@ -70,11 +70,11 @@ class SageMakerRunner(ModelRunnerBase):
             }
         )
         inference_id, s3_uri = upload_to_s3(payload)
-        logger.info(f"Inference ID: {inference_id}")
-        logger.info(f"Input Location: {s3_uri}")
+        logger.info(f"Sagemaker Payload Inference ID: {inference_id}")
+        logger.info(f"Sagemaker Input Location: {s3_uri}")
 
         runtime = boto3.client("sagemaker-runtime", region_name=REGION)
-        logger.info(f"Calling SageMaker endpoint:  {runtime._endpoint.host}/{self.model_endpoint}")
+        logger.info(f"Sending payload: {payload} to SageMaker remote endpoint:  {runtime._endpoint.host}/{self.model_endpoint}")
         response = runtime.invoke_endpoint_async(
             EndpointName=self.model_endpoint,
             ContentType="application/json",
@@ -82,8 +82,8 @@ class SageMakerRunner(ModelRunnerBase):
             InferenceId=inference_id,
             Accept="application/x-npy",
         )
-        logger.info(f"Inference ID: {response['InferenceId']}")
-        logger.info(f"Output Location: {response['OutputLocation']}")
+        logger.info(f"Sagemaker Endpoint Inference ID: {response['InferenceId']}")
+        logger.info(f"Sagemaker Output Location: {response['OutputLocation']}")
         output_location = response["OutputLocation"]
         
 

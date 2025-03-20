@@ -15,7 +15,7 @@ package:
 
 # Upload the archive to the specified S3 bucket
 upload: package
-	aws s3 cp $(ARCHIVE_NAME) s3://$(S3_BUCKET)/$(MODEL_NAME)/$(ARCHIVE_NAME) --profile virtual-cells-dev
+	aws s3 cp $(ARCHIVE_NAME) s3://$(S3_BUCKET)/$(MODEL_NAME)/$(ARCHIVE_NAME)
 
 # Clean up the archive file
 clean:
