@@ -16,6 +16,18 @@ from scvi_model import SCVI
 
 logger = logging.getLogger(__name__)
 
+def _get_config_path(model_dir):
+    config_path = os.path.join(model_dir, "config.yaml")
+
+    if os.path.exists(config_path):
+        return config_path
+    
+    config_path = os.path.join(model_dir, "code/config.yaml")
+    
+    if os.path.exists(config_path):
+        return config_path
+    else:
+        raise FileNotFoundError(f"Config file not found in model_dir: {config_file}")
 
 def model_fn(model_dir):
     """
@@ -36,7 +48,36 @@ def model_fn(model_dir):
     """
     logger.info(f"Model directory: {model_dir}")
     logger.info(f"Contents of model_dir: {os.listdir(model_dir)}")
-    config_file = os.path.join(model_dir, "code/config.yaml")
+    
+    # HACK: FIXME: There is a strange difference in the structure
+    # of the file path in `model_dir` between local deployment
+    # and remote deployment.
+    # 1. In remote deployment, `model_dir` has a path like this:
+    # `/tmp/models/26ea3aab2d734200956989c49ed5684e/code` as
+    # seen on on CloudWatch logs WHERE AS
+    # 2. In local deployment, `model_dir` has a path like this:
+    # `/tmp/models/e8178110ee07410ab8e75df2fe06efd3/model` as seen
+    # in the container logs.
+    # NOTE: the file path in remote mode ends with `code` where as the
+    # the file path in local mode ends in `model`.
+    #
+    # Moreover:
+    # 1. In remote mode, the contents of `/tmp/.../code` is:
+    # `['requirements.txt', 'inference.py', 
+    # 'utils.py', 'scvi_model.py', 'config.yaml']` WHERE AS
+    # 2. In local mode, the contents of `/tmp/.../model` is:
+    # `['utils.py', 'scvi_model_code.tar.gz', 'local',
+    # '._code', 'Makefile', 'remote', 'dev-requirements.txt', 
+    # '__pycache__', 'code', 'README.md']`.
+    # NOTE: The local mode deployment somehow REPACKAGES the current
+    # directory in which the `make sagemaker-deploy-local` was invoked.
+    #
+    # The problem is that the construction of the path to `config.yaml`
+    # is different based on the deployment. The correct fix is to have
+    # local mode and remote mode `model_dir` resolve to the same file path
+    # structure but that currently is elusive.
+    # This HACK checks 2 paths for `config.yaml`.
+    config_file = _get_config_path(model_dir) 
 
     if not os.path.exists(config_file):
         raise FileNotFoundError(f"Config file not found in model_dir: {config_file}")
