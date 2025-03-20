@@ -1,0 +1,12 @@
+species,path,chrom_token_offset
+marmoset,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Callithrix_jacchus.MARMOSET.pep.all.gene_symbol_to_embedding_ESM2.pt,15469
+fly,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Drosophila_melanogaster.BDGP6.46.pep.all.gene_symbol_to_embedding_ESM2.pt,13990
+chicken,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Gallus_gallus.bGalGal1.mat.broiler.GRCg7b.pep.all.gene_symbol_to_embedding_ESM2.pt,12669
+chimpanzee,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Pan_troglodytes_ESM2.pt,17372
+platypus,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Ornithorhynchus_anatinus_ESM2.pt,11285
+gorilla,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/gorilla_gorilla_ESM2.pt,15545
+opossum,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Monodelphis_domestica_ESM2.pt,11648
+lamprey,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Petromyzon_marinus_ESM_filtered.pt,3622
+coral,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Stylophora_pistillata_ESM2.pt,17
+zfish,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Danio_rerio.GRCz11.gene_symbol_to_embedding_ESM_filtered.pt,18197
+rat,/mnt/czi-sci-ai/generate-cross-species-secondary/eval/baselines/uce/33l_8ep_1024t_1280/model_files/protein_embeddings/Rattus_norvegicus_ESM_filtered.pt,21067

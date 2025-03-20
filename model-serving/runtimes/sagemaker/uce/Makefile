@@ -1,0 +1,39 @@
+# Makefile for packaging and uploading model code to S3 for SageMaker
+
+# Variables
+S3_BUCKET ?= omar-data
+MODEL_NAME ?= uce
+ARCHIVE_NAME ?= model.tar.gz
+SOURCE_DIR ?= code/
+
+.PHONY: all package upload clean
+
+
+# Create a tar.gz archive of the source directory
+package:
+	tar -czvf $(ARCHIVE_NAME) $(SOURCE_DIR)
+
+# Upload the archive to the specified S3 bucket
+upload: package
+	aws s3 cp $(ARCHIVE_NAME) s3://$(S3_BUCKET)/$(MODEL_NAME) --profile virtual-cells-dev
+
+# Clean up the archive file
+clean:
+	rm -f $(ARCHIVE_NAME)
+
+sagemaker-deploy-remote: upload
+	python remote/deploy.py
+	make clean
+
+sagemaker-test-remote:
+	python remote/test_inference.py
+
+sagemaker-deploy-local: package
+	python local/deploy.py
+	make clean
+
+sagemaker-test-local:
+	python local/test_inference.py
+
+sagemaker-test-local-batch-transform:
+	python local/test_batch_transform.py
