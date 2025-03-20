@@ -51,11 +51,8 @@ model_config:
     d_hid: 5120
     token_dim: 5120
     multi_gpu: false
-    spec_chrom_csv_path: null #${paths.model_uri}/species_chrom.csv
-    token_file: null #${paths.model_uri}/all_tokens.torch
-    protein_embeddings_dir: null #${paths.embedding_dir}
-    offset_pkl_path: null #${paths.model_uri}/species_offsets.pkl
-    model_loc: null #${paths.model_uri}/${model_filename}
-
-
-{'model_name': '33l_8ep_1024t_1280', 'adata_path': None, 'dir': '.', 'species': 'human', 'filter': True, 'skip': True, 'model_filename': '33l_8ep_1024t_1280.torch', 'batch_size': 40, 'pad_length': 1536, 'pad_token_idx': 0, 'chrom_token_left_idx': 1, 'chrom_token_right_idx': 2, 'cls_token_idx': 3, 'CHROM_TOKEN_OFFSET': 143574, 'sample_size': 1024, 'CXG': True, 'nlayers': 33, 'output_dim': 1280, 'd_hid': 5120, 'token_dim': 5120, 'multi_gpu': False, 'spec_chrom_csv_path': 's3://generate-cross-species/models/uce/species_chrom.csv', 'token_file': 's3://generate-cross-species/models/uce/all_tokens.torch', 'protein_embeddings_dir': 's3://generate-cross-species/models/uce/protein_embeddings/', 'offset_pkl_path': 's3://generate-cross-species/models/uce/species_offsets.pkl', 'model_loc': 's3://generate-cross-species/models/uce/33l_8ep_1024t_1280.torch'}
+    spec_chrom_csv_path: species_chrom.csv
+    token_file: all_tokens.torch
+    protein_embeddings_dir: protein_embeddings/
+    offset_pkl_path: species_offsets.pkl
+    model_loc: 4layer_model.torch
