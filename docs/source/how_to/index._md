@@ -1,0 +1,7 @@
+# How-To Guides
+
+- [Installation](installation.md)
+- [Usage Guide](usage_guide.md)
+- [How to use custom dataset?](custom_data.md)
+- [How to add a new model?](add_model.md)
+- [How to add a new task?](add_tasks.md)
