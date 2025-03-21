@@ -5,10 +5,10 @@ import toml
 
 sys.path.insert(0, os.path.abspath("../../src"))
 
-with open('../../pyproject.toml', 'r') as f:
+with open("../../pyproject.toml", "r") as f:
     config = toml.load(f)
 
-latest_version = config['project']['version']
+latest_version = config["project"]["version"]
 
 project = "cz-benchmarks"
 copyright = "2025, Chan Zuckerberg Initiative"
