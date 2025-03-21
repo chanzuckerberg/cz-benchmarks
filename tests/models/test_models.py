@@ -6,6 +6,7 @@ from tests.utils import (
     DummyDataset,
     DummySingleCellModelValidator,
     DummySingleCellPerturbationModelValidator,
+    DummySingleCellModelValidatorWithObsKeys,
 )
 
 
@@ -70,7 +71,7 @@ def test_incompatible_organism(dummy_mouse_dataset):
 def test_missing_required_obs_keys(dummy_single_cell_dataset):
     """Test that validation fails when required obs keys are missing."""
     validator = (
-        DummySingleCellModelValidator()
+        DummySingleCellModelValidatorWithObsKeys()
     )  # Requires obs keys: dataset_id, assay, suspension_type, donor_id.
     # Create new anndata missing one required obs key
     ann = create_dummy_anndata(obs_columns=["dataset_id", "assay", "suspension_type"])

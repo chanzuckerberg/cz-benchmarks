@@ -13,14 +13,10 @@ from czbenchmarks.models.implementations.base_model_implementation import (
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.utils import sync_s3_to_local
-from czbenchmarks.models.types import ModelType as ModelTypeBase
+from czbenchmarks.models.types import ModelType
 from typing import Set
 
 logger = logging.getLogger(__name__)
-
-
-class ModelType(ModelTypeBase):
-    UCE = "UCE"
 
 
 class UCEValidator(BaseSingleCellValidator):
@@ -96,22 +92,22 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"Valid models are: {list(config.model_config.keys())}"
         )
 
-        config.model_config[model_variant].protein_embeddings_dir = (
-            f"{self.model_weights_dir}/protein_embeddings"
-        )
+        config.model_config[
+            model_variant
+        ].protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
         config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
             f"{config.model_config[model_variant].model_filename}"
         )
-        config.model_config[model_variant].offset_pkl_path = (
-            f"{self.model_weights_dir}/species_offsets.pkl"
-        )
-        config.model_config[model_variant].token_file = (
-            f"{self.model_weights_dir}/all_tokens.torch"
-        )
-        config.model_config[model_variant].spec_chrom_csv_path = (
-            f"{self.model_weights_dir}/species_chrom.csv"
-        )
+        config.model_config[
+            model_variant
+        ].offset_pkl_path = f"{self.model_weights_dir}/species_offsets.pkl"
+        config.model_config[
+            model_variant
+        ].token_file = f"{self.model_weights_dir}/all_tokens.torch"
+        config.model_config[
+            model_variant
+        ].spec_chrom_csv_path = f"{self.model_weights_dir}/species_chrom.csv"
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(

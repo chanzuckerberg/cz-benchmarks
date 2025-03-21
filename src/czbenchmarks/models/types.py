@@ -5,6 +5,11 @@ from ..datasets.types import DataType, DataValue
 
 class ModelType(Enum):
     BASELINE = "BASELINE"
+    SCVI = "SCVI"
+    SCGPT = "SCGPT"
+    GENEFORMER = "GENEFORMER"
+    SCGENEPT = "SCGENEPT"
+    UCE = "UCE"
 
     def __hash__(self):
         return hash(self.name)

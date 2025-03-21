@@ -15,17 +15,13 @@ from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
-from czbenchmarks.models.types import ModelType as ModelTypeBase
+from czbenchmarks.models.types import ModelType
 from typing import Set
 from czbenchmarks.utils import sync_s3_to_local
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
-
-class ModelType(ModelTypeBase):
-    GENEFORMER = "GENEFORMER"
 
 
 class GeneformerValidator(BaseSingleCellValidator):

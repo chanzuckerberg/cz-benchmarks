@@ -22,7 +22,7 @@ from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
-from czbenchmarks.models.types import ModelType as ModelTypeBase
+from czbenchmarks.models.types import ModelType
 from czbenchmarks.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
@@ -36,10 +36,6 @@ def load_dataloader(
     pert_data.prepare_split(split=split, seed=1)
     pert_data.get_dataloader(batch_size=batch_size, test_batch_size=val_batch_size)
     return pert_data
-
-
-class ModelType(ModelTypeBase):
-    SCGENEPT = "SCGENEPT"
 
 
 class ScGenePTValidator(BaseSingleCellValidator):

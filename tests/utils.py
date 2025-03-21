@@ -109,11 +109,6 @@ class DummyTask(BaseTask):
         ]
 
 
-class ModelTypeDummy(ModelType):
-    DUMMY_SINGLE_CELL = "DUMMY_SINGLE_CELL"
-    DUMMY_PERTURBATION = "DUMMY_PERTURBATION"
-
-
 class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
     """Validation requirements for ScGenePT models.
 
@@ -127,7 +122,7 @@ class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["feature_name"]
-    model_type = ModelTypeDummy.DUMMY_PERTURBATION
+    model_type = ModelType.SCGENEPT
 
     @property
     def inputs(self) -> Set[DataType]:
@@ -153,11 +148,10 @@ class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
 
 
 class DummySingleCellModelValidator(BaseSingleCellValidator):
-
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = []
     required_var_keys = ["feature_name"]
-    model_type = ModelTypeDummy.DUMMY_SINGLE_CELL
+    model_type = ModelType.SCVI
 
     @property
     def inputs(self) -> Set[DataType]:
@@ -176,3 +170,7 @@ class DummySingleCellModelValidator(BaseSingleCellValidator):
             Set containing embedding output type
         """
         return {DataType.EMBEDDING}
+
+
+class DummySingleCellModelValidatorWithObsKeys(DummySingleCellModelValidator):
+    required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]

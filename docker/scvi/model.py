@@ -11,12 +11,8 @@ from czbenchmarks.models.implementations.base_model_implementation import (
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.utils import sync_s3_to_local
-from czbenchmarks.models.types import ModelType as ModelTypeBase
+from czbenchmarks.models.types import ModelType
 from typing import Set
-
-
-class ModelType(ModelTypeBase):
-    SCVI = "SCVI"
 
 
 class SCVIValidator(BaseSingleCellValidator):
