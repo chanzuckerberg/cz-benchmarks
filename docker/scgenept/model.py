@@ -2,7 +2,7 @@ import argparse
 import logging
 import pathlib
 from glob import glob
-
+from typing import Set
 import numpy as np
 import pandas as pd
 import torch
@@ -12,11 +12,17 @@ from omegaconf import OmegaConf
 # utils.data_loading is a function in https://github.com/czi-ai/scGenePT/tree/main
 from utils.data_loading import load_trained_scgenept_model
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import (
+    BaseDataset,
+    DataType,
+    PerturbationSingleCellDataset,
+    Organism,
+)
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.scgenept import ScGenePTValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
+from czbenchmarks.models.types import ModelType as ModelTypeBase
 from czbenchmarks.utils import download_s3_file, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
@@ -30,6 +36,48 @@ def load_dataloader(
     pert_data.prepare_split(split=split, seed=1)
     pert_data.get_dataloader(batch_size=batch_size, test_batch_size=val_batch_size)
     return pert_data
+
+
+class ModelType(ModelTypeBase):
+    SCGENEPT = "SCGENEPT"
+
+
+class ScGenePTValidator(BaseSingleCellValidator):
+    """Validation requirements for ScGenePT models.
+
+    Validates datasets for use with Single-cell Gene Perturbation Transformer models.
+    Requires gene symbols and currently only supports human data.
+    Used for perturbation prediction tasks.
+    """
+
+    # Override dataset_type in BaseSingleCellValidator
+    dataset_type = PerturbationSingleCellDataset
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.SCGENEPT
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing perturbation predictions and ground truth values for
+            evaluating perturbation prediction performance
+        """
+        return {
+            DataType.PERTURBATION_PRED,
+            DataType.PERTURBATION_TRUTH,
+        }
 
 
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):

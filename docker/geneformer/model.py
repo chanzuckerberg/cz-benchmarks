@@ -10,16 +10,53 @@ from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 from datasets import load_from_disk, Sequence, Value
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.geneformer import GeneformerValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
+from czbenchmarks.models.types import ModelType as ModelTypeBase
+from typing import Set
 from czbenchmarks.utils import sync_s3_to_local
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+
+class ModelType(ModelTypeBase):
+    GENEFORMER = "GENEFORMER"
+
+
+class GeneformerValidator(BaseSingleCellValidator):
+    """Validation requirements for Geneformer models.
+
+    Validates datasets for use with Geneformer transformer models.
+    Requires feature IDs and currently only supports human data.
+    """
+
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["feature_id"]
+    model_type = ModelType.GENEFORMER
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
