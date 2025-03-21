@@ -1,12 +1,12 @@
 import pytest
 
 from czbenchmarks.datasets.types import Organism, DataType
-from czbenchmarks.models.validators.scvi import SCVIValidator
-from czbenchmarks.models.validators.scgenept import ScGenePTValidator
-from czbenchmarks.models.validators.scgpt import ScGPTValidator
-from czbenchmarks.models.validators.geneformer import GeneformerValidator
-from czbenchmarks.models.validators.uce import UCEValidator
-from tests.utils import create_dummy_anndata, DummyDataset
+from tests.utils import (
+    create_dummy_anndata,
+    DummyDataset,
+    DummySingleCellModelValidator,
+    DummySingleCellPerturbationModelValidator,
+)
 
 
 # For all fully implemented single‑cell validators, dataset validation should pass
@@ -14,11 +14,8 @@ from tests.utils import create_dummy_anndata, DummyDataset
 @pytest.mark.parametrize(
     "validator_class, dataset",
     [
-        (SCVIValidator, "dummy_single_cell_dataset"),
-        (ScGenePTValidator, "dummy_perturbation_dataset"),
-        (ScGPTValidator, "dummy_single_cell_dataset"),
-        (GeneformerValidator, "dummy_single_cell_dataset"),
-        (UCEValidator, "dummy_single_cell_dataset"),
+        (DummySingleCellModelValidator, "dummy_single_cell_dataset"),
+        (DummySingleCellPerturbationModelValidator, "dummy_perturbation_dataset"),
     ],
 )
 def test_valid_dataset(validator_class, dataset, request):
@@ -31,9 +28,11 @@ def test_valid_dataset(validator_class, dataset, request):
         pytest.fail(f"Validation failed unexpectedly: {e}")
 
 
-def test_invalid_dataset_type(dummy_single_cell_dataset):
+def test_invalid_dataset_type():
     """Test that validation fails when the dataset_type is incompatible."""
-    validator = SCVIValidator()  # Expects a SingleCellDataset (exact type match)
+    validator = (
+        DummySingleCellModelValidator()
+    )  # Expects a SingleCellDataset (exact type match)
     dummy_ds = DummyDataset("dummy_path")
     # Provide required inputs to bypass missing-input errors.
     ann = create_dummy_anndata(
@@ -48,7 +47,9 @@ def test_invalid_dataset_type(dummy_single_cell_dataset):
 
 def test_missing_required_inputs(dummy_single_cell_dataset):
     """Test that validation fails when required inputs are missing."""
-    validator = SCVIValidator()  # Expects both ANNDATA and METADATA as inputs.
+    validator = (
+        DummySingleCellModelValidator()
+    )  # Expects both ANNDATA and METADATA as inputs.
     # First unload the data to test missing inputs
     dummy_single_cell_dataset.unload_data()
     with pytest.raises(ValueError, match="Missing required inputs"):
@@ -57,7 +58,9 @@ def test_missing_required_inputs(dummy_single_cell_dataset):
 
 def test_incompatible_organism(dummy_mouse_dataset):
     """Test that validation fails when the organism is incompatible."""
-    validator = SCVIValidator()  # SCVIValidator supports HUMAN and MOUSE only.
+    validator = (
+        DummySingleCellModelValidator()
+    )  # DummySingleCellModelValidator supports HUMAN and MOUSE only.
     # Change organism to an unsupported one
     dummy_mouse_dataset.set_input(DataType.ORGANISM, Organism.CHIMPANZEE)
     with pytest.raises(ValueError, match="Dataset organism"):
@@ -67,7 +70,7 @@ def test_incompatible_organism(dummy_mouse_dataset):
 def test_missing_required_obs_keys(dummy_single_cell_dataset):
     """Test that validation fails when required obs keys are missing."""
     validator = (
-        SCVIValidator()
+        DummySingleCellModelValidator()
     )  # Requires obs keys: dataset_id, assay, suspension_type, donor_id.
     # Create new anndata missing one required obs key
     ann = create_dummy_anndata(obs_columns=["dataset_id", "assay", "suspension_type"])
@@ -79,7 +82,7 @@ def test_missing_required_obs_keys(dummy_single_cell_dataset):
 
 def test_missing_required_var_keys(dummy_single_cell_dataset):
     """Test that validation fails when required var keys are missing."""
-    validator = GeneformerValidator()  # Requires var key: "feature_id".
+    validator = DummySingleCellModelValidator()  # Requires var key: "feature_id".
     # Create new anndata without feature_id
     ann = create_dummy_anndata(var_columns=["some_other_feature"])
     dummy_single_cell_dataset.set_input(DataType.ANNDATA, ann)

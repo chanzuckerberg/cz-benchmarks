@@ -9,9 +9,11 @@ from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (
     BaseDataset,
     DataType,
+    PerturbationSingleCellDataset,
 )
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.metrics.types import MetricResult, MetricType
+from czbenchmarks.models.validators import BaseSingleCellValidator
 
 
 def create_dummy_anndata(
@@ -105,3 +107,72 @@ class DummyTask(BaseTask):
                 name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
             )
         ]
+
+
+class ModelTypeDummy(ModelType):
+    DUMMY_SINGLE_CELL = "DUMMY_SINGLE_CELL"
+    DUMMY_PERTURBATION = "DUMMY_PERTURBATION"
+
+
+class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
+    """Validation requirements for ScGenePT models.
+
+    Validates datasets for use with Single-cell Gene Perturbation Transformer models.
+    Requires gene symbols and currently only supports human data.
+    Used for perturbation prediction tasks.
+    """
+
+    # Override dataset_type in BaseSingleCellValidator
+    dataset_type = PerturbationSingleCellDataset
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["feature_name"]
+    model_type = ModelTypeDummy.DUMMY_PERTURBATION
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing perturbation predictions and ground truth values for
+            evaluating perturbation prediction performance
+        """
+        return {
+            DataType.PERTURBATION_PRED,
+            DataType.PERTURBATION_TRUTH,
+        }
+
+
+class DummySingleCellModelValidator(BaseSingleCellValidator):
+
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = []
+    required_var_keys = ["feature_name"]
+    model_type = ModelTypeDummy.DUMMY_SINGLE_CELL
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData and metadata requirements
+        """
+        return {DataType.ANNDATA, DataType.METADATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
