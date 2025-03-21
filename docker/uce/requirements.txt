@@ -9,5 +9,5 @@ scipy==1.14.1
 scikit-learn==1.5.2
 matplotlib==3.9.2
 seaborn==0.13.2
-mlflow==2.17.0
+mlflow==2.20.3
 dill>=0.3.6
