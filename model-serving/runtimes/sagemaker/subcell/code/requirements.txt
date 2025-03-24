@@ -1,0 +1,11 @@
+scikit-image==0.22.0
+torch==2.4.1
+torchvision==0.19.1
+PyYAML==6.0.1
+transformers==4.45.1
+numpy==1.26.4
+pandas==2.2.3
+requests==2.32.3
+boto3==1.35.76
+imagecodecs==2024.12.30
+omegaconf==2.3.0
