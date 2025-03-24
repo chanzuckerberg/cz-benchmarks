@@ -5,12 +5,47 @@ import scvi
 from omegaconf import OmegaConf
 from utils import filter_adata_by_hvg
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.scvi import SCVIValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.utils import sync_s3_to_local
+from czbenchmarks.models.types import ModelType
+from typing import Set
+
+
+class SCVIValidator(BaseSingleCellValidator):
+    """Validation requirements for scVI models.
+
+    Validates datasets for use with Single-cell Variational Inference models.
+    Requires detailed metadata about the dataset, assay, and donor information.
+    Supports both human and mouse data.
+
+    """
+
+    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
+    required_var_keys = []
+    model_type = ModelType.SCVI
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData and metadata requirements
+        """
+        return {DataType.ANNDATA, DataType.METADATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):

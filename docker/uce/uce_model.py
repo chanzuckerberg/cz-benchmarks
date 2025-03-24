@@ -7,14 +7,57 @@ import pandas as pd
 from accelerate import Accelerator
 from omegaconf import OmegaConf
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.uce import UCEValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.utils import sync_s3_to_local
+from czbenchmarks.models.types import ModelType
+from typing import Set
 
 logger = logging.getLogger(__name__)
+
+
+class UCEValidator(BaseSingleCellValidator):
+    """Validation requirements for UCE models.
+
+    Validates datasets for use with Universal Cell Embeddings (UCE) models.
+    Requires gene symbols and supports both human and mouse data.
+
+    """
+
+    available_organisms = [
+        Organism.HUMAN,  # Homo sapiens
+        Organism.MOUSE,  # Mus musculus
+        Organism.TROPICAL_CLAWED_FROG,  # Xenopus tropicalis
+        Organism.ZEBRAFISH,  # Danio rerio
+        Organism.MOUSE_LEMUR,  # Microcebus murinus
+        Organism.WILD_BOAR,  # Sus scrofa
+        Organism.CRAB_EATING_MACAQUE,  # Macaca fascicularis
+        Organism.RHESUS_MACAQUE,  # Macaca mulatta
+    ]
+    required_obs_keys = []
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.UCE
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 
 
 class UCE(UCEValidator, BaseModelImplementation):

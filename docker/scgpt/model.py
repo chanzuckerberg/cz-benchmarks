@@ -4,12 +4,46 @@ import pathlib
 import scgpt as scg
 from omegaconf import OmegaConf
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.scgpt import ScGPTValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.utils import sync_s3_to_local
+from czbenchmarks.models.types import ModelType
+from typing import Set
+
+
+class ScGPTValidator(BaseSingleCellValidator):
+    """Validation requirements for ScGPT models.
+
+    Validates datasets for use with Single-cell GPT models.
+    Requires gene symbols and currently only supports human data.
+
+    """
+
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["feature_name"]
+    model_type = ModelType.SCGPT
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 
 
 class ScGPT(ScGPTValidator, BaseModelImplementation):
