@@ -1,0 +1,74 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docker/**"
+      - ".github/workflows/docker-build.yml"
+      - "src/**"
+      - "pyproject.toml"
+      - "Makefile"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "docker/**"
+      - ".github/workflows/docker-build.yml"
+      - "src/**"
+      - "pyproject.toml"
+      - "Makefile"
+
+# If a new workflow run is triggered while an older one is still in progress, the older run will be automatically cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ECR_REGISTRY: 339713142298.dkr.ecr.us-west-2.amazonaws.com
+  ECR_REPOSITORY: cz-benchmarks
+
+jobs:
+  build-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    strategy:
+      matrix:
+        image:
+          - dockerfile: docker/scvi/Dockerfile
+            custom_tag: scvi
+          - dockerfile: docker/uce/Dockerfile
+            custom_tag: uce
+          - dockerfile: docker/scgenept/Dockerfile
+            custom_tag: scgenept
+          - dockerfile: docker/scgpt/Dockerfile
+            custom_tag: scgpt
+          - dockerfile: docker/geneformer/Dockerfile
+            custom_tag: geneformer
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN_GHA }}
+          role-session-name: BuildCzBenchmarksDockerImages
+
+      - name: Build And Push
+        uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@docker-build-push-v1.6.1
+        with:
+          dockerfile: ${{ matrix.image.dockerfile }}
+          context: .
+          name: ${{ env.ECR_REPOSITORY }}
+          registry: ${{ env.ECR_REGISTRY }}
+          custom_tag: ${{ matrix.image.custom_tag }}
+          platforms: linux/amd64
