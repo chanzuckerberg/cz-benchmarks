@@ -12,8 +12,6 @@ LOCAL_OUTPUT_PATH="${local_output_path:-${LOCAL_OUTPUT_PATH:-${HOME}/.cz-benchma
 LOCAL_CODE_PATH="${local_code_path:-${LOCAL_CODE_PATH:-$(pwd)}}"
 
 # Container settings
-CZBENCH_CONTAINER_NAME="${CZBENCH_CONTAINER_NAME:=czbenchmarks-${MODEL_NAME}}"
-CZBENCH_IMG_TAG="${CZBENCH_IMG_TAG:-${CZBENCH_IMG_TAG:latest}}"
 EVAL_CMD="${EVAL_CMD:=bash}"
 RUN_AS_ROOT="${RUN_AS_ROOT:=false}" # Default to running as current user (not root)
 ADDITIONAL_DOCKER_FLAGS="${ADDITIONAL_DOCKER_FLAGS:=}" # Defaults to no additional flags
@@ -25,11 +23,10 @@ print_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
     echo "  -m, --model-name NAME     Set the model name (env: MODEL_NAME). Required."
-    echo "  -i, --image NAME          Set the Docker image name (env: CZBENCH_IMG)"
-    echo "  -t, --tag TAG             Set the Docker image tag (env: CZBENCH_IMG_TAG)"
     echo "  -d, --dataset-path PATH   Set the dataset path (env: LOCAL_RAW_INPUT_DIR_PATH)"
     echo "      --model-path PATH     Set the model path (env: LOCAL_MODEL_WEIGHTS_PATH)"
-    echo "  -r, --results-path PATH   Set the results path (env: LOCAL_OUTPUT_DATA_DIR_DOCKER)"
+    echo "  -i, --input-path PATH     Set the input path (env: LOCAL_INPUT_DATA_DIR_DOCKER)"
+    echo "  -o, --output-path PATH    Set the output path (env: LOCAL_OUTPUT_DATA_DIR_DOCKER)"
     echo "  -c, --code-path PATH      Set the code path (env: LOCAL_CODE_PATH)"
     echo "  -e, --eval-cmd CMD        Set the evaluation command (env: EVAL_CMD), will be added to \"bash -c \${CMD}\""
     echo "      --docker-flags FLAGS  Additional Docker flags (env: ADDITIONAL_DOCKER_FLAGS)"
@@ -56,22 +53,18 @@ validate_directory() {
 # Function to process variables
 setup_variables() {
     # Initialize variables as empty
-    local czbench_img=""
-    local czbench_img_tag=""
     local local_raw_input_dir_path=""
     local local_model_weights_path=""
-    local local_output_path=""
     local local_input_path=""
+    local local_output_path=""
     local local_code_path=""
     local eval_cmd=""
     local additional_docker_flags=""
     local run_as_root=""
-    local czbench_img_source="environment variable"
-    local czbench_img_tag_source="environment variable"
     local local_raw_input_dir_source="environment variable"
     local local_model_weights_source="environment variable"
-    local local_output_source="environment variable"
     local local_input_source="environment variable"
+    local local_output_source="environment variable"
     local local_code_source="environment variable"
     local additional_docker_flags_source="environment variable"
     local run_as_root_source="environment variable"
@@ -81,16 +74,6 @@ setup_variables() {
         case "$1" in
             -m|--model-name)
                 MODEL_NAME="${2,,}" # Convert to lowercase
-                shift 2
-                ;;
-               --image)
-                czbench_img="$2"
-                czbench_img_source="command line flag"
-                shift 2
-                ;;
-               --tag)
-                czbench_img_tag="$2"
-                czbench_img_tag_source="command line flag"
                 shift 2
                 ;;
             -d|--dataset-path)
@@ -153,9 +136,11 @@ setup_variables() {
         exit 1
     fi
 
+    # Container information
+    CZBENCH_IMG="czbenchmarks-${MODEL_NAME}"
+    CZBENCH_IMG_TAG="latest"
+
     # Variables that can be set from command line or environment
-    CZBENCH_IMG="${czbench_img:-${CZBENCH_IMG}}"
-    CZBENCH_IMG_TAG="${czbench_img_tag:-${CZBENCH_IMG_TAG}}"
     EVAL_CMD="${eval_cmd:-${EVAL_CMD}}"
     ADDITIONAL_DOCKER_FLAGS="${additional_docker_flags:-${ADDITIONAL_DOCKER_FLAGS}}"
     RUN_AS_ROOT="${run_as_root:-${RUN_AS_ROOT}}"
@@ -165,12 +150,12 @@ setup_variables() {
     LOCAL_OUTPUT_PATH="${local_output_path:-${LOCAL_OUTPUT_PATH}}"
     LOCAL_CODE_PATH="${local_code_path:-${LOCAL_CODE_PATH}}"
 
-    # Updates to paths
+    # Updates to paths and set container name
     LOCAL_MODEL_WEIGHTS_PATH="${LOCAL_MODEL_WEIGHTS_PATH}/czbenchmarks-${MODEL_NAME}"
-
+    
     # Show image information
     echo ""
-    echo -e "${GREEN}Docker image set to ${CZBENCH_IMG}:${CZBENCH_IMG_TAG} (image from ${czbench_img_source}, tag from ${czbench_img_tag_source})${RESET}"
+    echo -e "${GREEN}Docker image set to ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}${RESET}"
 
     # Validate required paths and show sources
     for var in LOCAL_RAW_INPUT_DIR_PATH LOCAL_MODEL_WEIGHTS_PATH LOCAL_INPUT_PATH LOCAL_OUTPUT_PATH; do
@@ -260,6 +245,7 @@ DOCKER_CMD="docker run --rm -it \\
 --env SHELL=bash \\"
 
 # Add user-specific settings if not running as root
+# These may not work with WSL, is it supported?
 if [ "${RUN_AS_ROOT}" != "true" ]; then
     DOCKER_CMD="${DOCKER_CMD}
 --volume /etc/passwd:/etc/passwd:ro \\
@@ -277,7 +263,7 @@ DOCKER_CMD="${DOCKER_CMD}
 --volume ${LOCAL_OUTPUT_PATH}:${OUTPUT_DATA_DIR_DOCKER}:rw \\"
 
 # Add code mount and PYTHONPATH for development mode
-# FIXME: is there a better solution to ensure code can be imported from both src and docker/MODEL_NAME? 
+# FIXME: better solution to ensure code can be imported from both src and docker/MODEL_NAME? 
 if [ ! -z "${LOCAL_CODE_PATH}" ]; then
     DOCKER_CMD="${DOCKER_CMD}
 --volume ${LOCAL_CODE_PATH}:${CODE_PATH}:rw \\
@@ -295,7 +281,7 @@ if [ -e ${HOME}/.aws/credentials ]; then
     DOCKER_CMD="${DOCKER_CMD}
 --volume ${HOME}/.aws/credentials:${CODE_PATH}/.aws/credentials:ro \\"
 else
-    echo -e "${RED}AWS credentials not added because they were not found in ${HOME}/.aws/credentials${RESET}"
+    echo -e "${RED}AWS credentials not found in ${HOME}/.aws/credentials${RESET}"
 fi
 
 # Add final options
