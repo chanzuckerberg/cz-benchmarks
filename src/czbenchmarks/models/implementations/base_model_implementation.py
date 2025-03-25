@@ -3,7 +3,7 @@ import logging
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from ...constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -89,7 +89,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     def parse_args(self):
         """Parse model-specific command line arguments."""
 
-    def run(self):
+    def run(self, datasets: Optional[BaseDataset | List[BaseDataset]] = None):
         """Run the full model pipeline.
 
         1. Load and validate all datasets
@@ -97,26 +97,34 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         3. Run inference
         4. Save results
 
+        Args:
+            datasets: List of datasets to process
+
         Raises:
             FileNotFoundError: If no input datasets found
         """
-        # Find all input datasets
-        input_dir = pathlib.Path(INPUT_DATA_PATH_DOCKER).parent
-        base_pattern = get_base_name(INPUT_DATA_PATH_DOCKER)
-        input_files = sorted(glob.glob(os.path.join(input_dir, base_pattern)))
+        if datasets:
+            serialize_datasets = False
+            self.datasets = datasets if isinstance(datasets, list) else [datasets]
+        else:
+            serialize_datasets = True 
+            # Find all input datasets
+            input_dir = pathlib.Path(INPUT_DATA_PATH_DOCKER).parent
+            base_pattern = get_base_name(INPUT_DATA_PATH_DOCKER)
+            input_files = sorted(glob.glob(os.path.join(input_dir, base_pattern)))
 
-        if not input_files:
-            raise FileNotFoundError("No input datasets found")
+            if not input_files:
+                raise FileNotFoundError("No input datasets found")
 
-        # Ensure base file comes first if it exists
-        if INPUT_DATA_PATH_DOCKER in input_files:
-            input_files.remove(INPUT_DATA_PATH_DOCKER)
-            input_files = [INPUT_DATA_PATH_DOCKER] + input_files
+            # Ensure base file comes first if it exists
+            if INPUT_DATA_PATH_DOCKER in input_files:
+                input_files.remove(INPUT_DATA_PATH_DOCKER)
+                input_files = [INPUT_DATA_PATH_DOCKER] + input_files
 
-        # Load all datasets
-        self.datasets = [
-            self.dataset_type.deserialize(input_file) for input_file in input_files
-        ]
+            # Load all datasets
+            self.datasets = [
+                self.dataset_type.deserialize(input_file) for input_file in input_files
+            ]
 
         logger.info("Loading data...")
         for dataset in self.datasets:
@@ -137,8 +145,9 @@ class BaseModelImplementation(BaseModelValidator, ABC):
             self.run_model(dataset)
         logger.info("Model ran successfully")
 
-        # Unload and serialize all datasets
-        for i, dataset in enumerate(self.datasets):
-            dataset.unload_data()
-            output_path = get_numbered_path(OUTPUT_DATA_PATH_DOCKER, i)
-            dataset.serialize(output_path)
+        if serialize_datasets:
+            # Unload and serialize all datasets
+            for i, dataset in enumerate(self.datasets):
+                dataset.unload_data()
+                output_path = get_numbered_path(OUTPUT_DATA_PATH_DOCKER, i)
+                dataset.serialize(output_path)
