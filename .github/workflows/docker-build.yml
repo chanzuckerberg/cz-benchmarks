@@ -28,7 +28,7 @@ concurrency:
 
 env:
   ECR_REGISTRY: 339713142298.dkr.ecr.us-west-2.amazonaws.com
-  ECR_REPOSITORY: cz-benchmarks
+  ECR_REPOSITORY: cz-benchmarks-models
 
 jobs:
   build-push-images:
