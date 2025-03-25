@@ -107,6 +107,7 @@ def run_model(model, cell_crop, output_path):
     probabilities = output.probabilities[0].cpu().numpy()
     embedding = output.pool_op[0].cpu().numpy()
 
+    # TODO: In a production environment, make sure to clean up the output files.
     np.save(output_path + "_embedding.npy", embedding)
     np.save(output_path + "_probabilities.npy", probabilities)
     save_attention_map(
