@@ -32,7 +32,7 @@ env:
 
 jobs:
   build-push-images:
-    runs-on: ubuntu-latest
+    runs-on: x64-xl-privileged
     permissions:
       id-token: write
       contents: read
