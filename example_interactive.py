@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     model = BenchmarkModel()
 
-    # FIXME: serializing datasets is linked to run function signature. How to avoid?
+    # FIXME: serializing datasets is coupled to run function signature. Can this be avoided?
     model_kwargs = {}
     if SERIALIZE_DATASETS:
         model_kwargs = {}

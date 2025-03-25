@@ -1,8 +1,7 @@
 #!/bin/bash
 #
 # Interactive docker container launch script for cz-benchmarks
-# FIXME: Add README.md "Run Docker Container in Interactive Mode" section for detailed usage instructions.
-#
+# FIXME: Add README "Run Docker Container in Interactive Mode" section for detailed usage instructions?
 
 # Local mount paths
 LOCAL_RAW_INPUT_DIR_PATH="${LOCAL_RAW_INPUT_DIR_PATH:-${LOCAL_RAW_INPUT_DIR_PATH:-${HOME}/.cz-benchmarks/datasets}}" # DATASETS_CACHE_PATH
@@ -277,7 +276,7 @@ DOCKER_CMD="${DOCKER_CMD}
 --volume ${LOCAL_OUTPUT_PATH}:${OUTPUT_DATA_DIR_DOCKER}:rw \\"
 
 # Add code mount and PYTHONPATH for development mode
-# FIXME: is there a better solution for setting PYTHONPATH?
+# FIXME: is there a better solution to ensure code can be imported from both src and docker/MODEL_NAME? 
 if [ ! -z "${LOCAL_CODE_PATH}" ]; then
     DOCKER_CMD="${DOCKER_CMD}
 --volume ${LOCAL_CODE_PATH}:${CODE_PATH}:rw \\
