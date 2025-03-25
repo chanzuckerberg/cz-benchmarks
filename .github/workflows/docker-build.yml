@@ -1,25 +1,9 @@
 name: Build and Push Docker Images
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docker/**"
-      - ".github/workflows/docker-build.yml"
-      - "src/**"
-      - "pyproject.toml"
-      - "Makefile"
-
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "docker/**"
-      - ".github/workflows/docker-build.yml"
-      - "src/**"
-      - "pyproject.toml"
-      - "Makefile"
+  release:
+    types: [published]
+  workflow_dispatch:
 
 # If a new workflow run is triggered while an older one is still in progress, the older run will be automatically cancelled.
 concurrency:
