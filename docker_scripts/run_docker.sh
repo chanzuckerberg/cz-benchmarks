@@ -5,9 +5,10 @@
 #
 
 # Local mount paths
-LOCAL_DATASET_PATH="${LOCAL_DATASET_PATH:-${LOCAL_DATASET_PATH:-${HOME}/.cz-benchmarks/datasets}}" # DATASETS_CACHE_PATH
+LOCAL_RAW_INPUT_DIR_PATH="${LOCAL_RAW_INPUT_DIR_PATH:-${LOCAL_RAW_INPUT_DIR_PATH:-${HOME}/.cz-benchmarks/datasets}}" # DATASETS_CACHE_PATH
 LOCAL_MODEL_WEIGHTS_PATH="${LOCAL_MODEL_WEIGHTS_PATH:-${LOCAL_MODEL_WEIGHTS_PATH:-${HOME}/.cz-benchmarks/weights}}" # MODEL_WEIGHTS_CACHE_PATH
-LOCAL_RESULTS_PATH="${local_results_path:-${LOCAL_RESULTS_PATH:-${HOME}/.cz-benchmarks/output}}"
+LOCAL_INPUT_PATH="${local_input_path:-${LOCAL_INPUT_PATH:-${HOME}/.cz-benchmarks/datasets}}"
+LOCAL_OUTPUT_PATH="${local_output_path:-${LOCAL_OUTPUT_PATH:-${HOME}/.cz-benchmarks/output}}"
 LOCAL_CODE_PATH="${local_code_path:-${LOCAL_CODE_PATH:-$(pwd)}}"
 
 # Container settings
@@ -18,15 +19,7 @@ RUN_AS_ROOT="${RUN_AS_ROOT:=false}" # Default to running as current user (not ro
 ADDITIONAL_DOCKER_FLAGS="${ADDITIONAL_DOCKER_FLAGS:=}" # Defaults to no additional flags
 
 ################################################################################
-# Docker Paths -- should not be changed 
-# FIXME: find a way to source from czbenchmarks.constants
-DATASET_PATH=/raw # RAW_INPUT_DIR_PATH_DOCKER
-RESULTS_PATH=/output # OUTPUT_DATA_PATH_DOCKER
-MODEL_WEIGHTS_PATH=/weights # MODEL_WEIGHTS_PATH_DOCKER
-CODE_PATH=/app/package
-
 # Function definitions
-
 # Function to print usage information
 print_usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -34,9 +27,9 @@ print_usage() {
     echo "  -m, --model-name NAME     Set the model name (env: MODEL_NAME). Required."
     echo "  -i, --image NAME          Set the Docker image name (env: CZBENCH_IMG)"
     echo "  -t, --tag TAG             Set the Docker image tag (env: CZBENCH_IMG_TAG)"
-    echo "  -d, --dataset-path PATH   Set the dataset path (env: LOCAL_DATASET_PATH)"
-    echo "     --model-path PATH     Set the model path (env: LOCAL_MODEL_WEIGHTS_PATH)"
-    echo "  -r, --results-path PATH   Set the results path (env: LOCAL_RESULTS_PATH)"
+    echo "  -d, --dataset-path PATH   Set the dataset path (env: LOCAL_RAW_INPUT_DIR_PATH)"
+    echo "      --model-path PATH     Set the model path (env: LOCAL_MODEL_WEIGHTS_PATH)"
+    echo "  -r, --results-path PATH   Set the results path (env: LOCAL_OUTPUT_DATA_DIR_DOCKER)"
     echo "  -c, --code-path PATH      Set the code path (env: LOCAL_CODE_PATH)"
     echo "  -e, --eval-cmd CMD        Set the evaluation command (env: EVAL_CMD), will be added to \"bash -c \${CMD}\""
     echo "      --docker-flags FLAGS  Additional Docker flags (env: ADDITIONAL_DOCKER_FLAGS)"
@@ -65,18 +58,20 @@ setup_variables() {
     # Initialize variables as empty
     local czbench_img=""
     local czbench_img_tag=""
-    local local_dataset_path=""
+    local local_raw_input_dir_path=""
     local local_model_weights_path=""
-    local local_results_path=""
+    local local_output_path=""
+    local local_input_path=""
     local local_code_path=""
     local eval_cmd=""
     local additional_docker_flags=""
     local run_as_root=""
     local czbench_img_source="environment variable"
     local czbench_img_tag_source="environment variable"
-    local local_dataset_source="environment variable"
+    local local_raw_input_dir_source="environment variable"
     local local_model_weights_source="environment variable"
-    local local_results_source="environment variable"
+    local local_output_source="environment variable"
+    local local_input_source="environment variable"
     local local_code_source="environment variable"
     local additional_docker_flags_source="environment variable"
     local run_as_root_source="environment variable"
@@ -88,19 +83,19 @@ setup_variables() {
                 MODEL_NAME="${2,,}" # Convert to lowercase
                 shift 2
                 ;;
-            -i|--image)
+               --image)
                 czbench_img="$2"
                 czbench_img_source="command line flag"
                 shift 2
                 ;;
-            -t|--tag)
+               --tag)
                 czbench_img_tag="$2"
                 czbench_img_tag_source="command line flag"
                 shift 2
                 ;;
             -d|--dataset-path)
-                local_dataset_path="$2"
-                local_dataset_source="command line flag"
+                local_raw_input_dir_path="$2"
+                local_raw_input_dir_source="command line flag"
                 shift 2
                 ;;
             --model-path)
@@ -108,9 +103,14 @@ setup_variables() {
                 local_model_weights_source="command line flag"
                 shift 2
                 ;;
-            -r|--results-path)
-                local_results_path="$2"
-                local_results_source="command line flag"
+            -i|--input-path)
+                local_input_path="$2"
+                local_input_source="command line flag"
+                shift 2
+                ;;
+            -o|--output-path)
+                local_output_path="$2"
+                local_output_source="command line flag"
                 shift 2
                 ;;
             -c|--code-path)
@@ -159,9 +159,10 @@ setup_variables() {
     EVAL_CMD="${eval_cmd:-${EVAL_CMD}}"
     ADDITIONAL_DOCKER_FLAGS="${additional_docker_flags:-${ADDITIONAL_DOCKER_FLAGS}}"
     RUN_AS_ROOT="${run_as_root:-${RUN_AS_ROOT}}"
-    LOCAL_DATASET_PATH="${local_dataset_path:-${LOCAL_DATASET_PATH}}"
+    LOCAL_RAW_INPUT_DIR_PATH="${local_raw_input_dir_path:-${LOCAL_RAW_INPUT_DIR_PATH}}"
     LOCAL_MODEL_WEIGHTS_PATH="${local_model_weights_path:-${LOCAL_MODEL_WEIGHTS_PATH}}"
-    LOCAL_RESULTS_PATH="${local_results_path:-${LOCAL_RESULTS_PATH}}"
+    LOCAL_INPUT_PATH="${local_input_path:-${LOCAL_INPUT_PATH}}"
+    LOCAL_OUTPUT_PATH="${local_output_path:-${LOCAL_OUTPUT_PATH}}"
     LOCAL_CODE_PATH="${local_code_path:-${LOCAL_CODE_PATH}}"
 
     # Updates to paths
@@ -172,7 +173,7 @@ setup_variables() {
     echo -e "${GREEN}Docker image set to ${CZBENCH_IMG}:${CZBENCH_IMG_TAG} (image from ${czbench_img_source}, tag from ${czbench_img_tag_source})${RESET}"
 
     # Validate required paths and show sources
-    for var in LOCAL_DATASET_PATH LOCAL_MODEL_WEIGHTS_PATH LOCAL_RESULTS_PATH; do
+    for var in LOCAL_RAW_INPUT_DIR_PATH LOCAL_MODEL_WEIGHTS_PATH LOCAL_INPUT_PATH LOCAL_OUTPUT_PATH; do
         local source_var="${var,,}"              # First convert to lowercase
         source_var="${source_var/_path/_source}" # Then replace _path with _source
 
@@ -189,7 +190,7 @@ setup_variables() {
     echo ""
     if [ ! -z "${LOCAL_CODE_PATH}" ]; then
         validate_directory "${LOCAL_CODE_PATH}" "LOCAL_CODE_PATH"
-        echo -e "${GREEN}Using development mode with code from ${LOCAL_CODE_PATH}${RESET}"
+        echo -e "${GREEN}Using development mode${RESET}"
         echo -e "${GREEN}LOCAL_CODE_PATH is set to ${LOCAL_CODE_PATH} (from $local_code_source)${RESET}"
     else
         echo -e "${GREEN}LOCAL_CODE_PATH is not set. Development mode will not be used.${RESET}"
@@ -225,6 +226,25 @@ if [ ! "$(ls | grep -c docker_scripts)" -eq 1 ]; then
     exit 1
 fi
 
+# Docker Paths -- should not be changed 
+CODE_PATH=/app/package
+RAW_INPUT_DIR_PATH_DOCKER=/raw
+MODEL_WEIGHTS_PATH_DOCKER=/weights
+INPUT_DATA_PATH_DOCKER=/input/data.dill
+OUTPUT_DATA_PATH_DOCKER=/output/data.dill
+
+# Can also be loaded from constants.py
+# PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER, INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER; 
+# print(f'RAW_INPUT_DIR_PATH_DOCKER={RAW_INPUT_DIR_PATH_DOCKER}; MODEL_WEIGHTS_PATH_DOCKER={MODEL_WEIGHTS_PATH_DOCKER}; INPUT_DATA_PATH_DOCKER={INPUT_DATA_PATH_DOCKER}; OUTPUT_DATA_PATH_DOCKER={OUTPUT_DATA_PATH_DOCKER}')"
+# eval "$(python3 -c "${PYTHON_SCRIPT}")" # Get Docker paths from constants.py
+
+INPUT_DATA_DIR_DOCKER=$(dirname ${INPUT_DATA_PATH_DOCKER})
+OUTPUT_DATA_DIR_DOCKER=$(dirname ${OUTPUT_DATA_PATH_DOCKER})
+
+for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER INPUT_DATA_DIR_DOCKER OUTPUT_DATA_DIR_DOCKER; do
+    echo -e "${GREEN}${var} is set to ${!var} (from czbenchmarks.constants.py)${RESET}"
+done
+
 # Call setup_variables with all command line arguments
 setup_variables "$@"
 
@@ -251,9 +271,10 @@ fi
 
 # Add dataset mount and environment variables
 DOCKER_CMD="${DOCKER_CMD}
---volume ${LOCAL_DATASET_PATH}:${DATASET_PATH}:rw \\
---volume ${LOCAL_MODEL_WEIGHTS_PATH}:${MODEL_WEIGHTS_PATH}:rw \\
---volume ${LOCAL_RESULTS_PATH}:${RESULTS_PATH}:rw \\"
+--volume ${LOCAL_RAW_INPUT_DIR_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
+--volume ${LOCAL_MODEL_WEIGHTS_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\
+--volume ${LOCAL_INPUT_PATH}:${INPUT_DATA_DIR_DOCKER}:rw \\
+--volume ${LOCAL_OUTPUT_PATH}:${OUTPUT_DATA_DIR_DOCKER}:rw \\"
 
 # Add code mount and PYTHONPATH for development mode
 # FIXME: is there a better solution for setting PYTHONPATH?
@@ -288,7 +309,7 @@ ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}"
 
 # Print the full command
 echo ""
-echo -e "${GREEN}Executing command:${RESET}"
+echo -e "${GREEN}Executing docker command:${RESET}"
 echo "${DOCKER_CMD}"
 echo ""
 
