@@ -4,6 +4,7 @@
 # FIXME: Add README "Run Docker Container in Interactive Mode" section for detailed usage instructions?
 
 # Local mount paths
+# FIXME: should input / output paths be mounted since they could contain stale files? Ensure they are empty?
 LOCAL_RAW_INPUT_DIR_PATH="${LOCAL_RAW_INPUT_DIR_PATH:-${LOCAL_RAW_INPUT_DIR_PATH:-${HOME}/.cz-benchmarks/datasets}}" # DATASETS_CACHE_PATH
 LOCAL_MODEL_WEIGHTS_PATH="${LOCAL_MODEL_WEIGHTS_PATH:-${LOCAL_MODEL_WEIGHTS_PATH:-${HOME}/.cz-benchmarks/weights}}" # MODEL_WEIGHTS_CACHE_PATH
 LOCAL_INPUT_PATH="${local_input_path:-${LOCAL_INPUT_PATH:-${HOME}/.cz-benchmarks/datasets}}"
