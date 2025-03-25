@@ -1,5 +1,6 @@
+import os
+import importlib
 from czbenchmarks.datasets.utils import load_dataset
-from model import SCVI as BenchmarkModel # FIXME -- how to make this not model specific?
 
 from czbenchmarks.tasks import (
     ClusteringTask,
@@ -9,6 +10,16 @@ from czbenchmarks.tasks import (
 from czbenchmarks.utils import get_aws_credentials
 
 if __name__ == "__main__":
+    # Get model name from environment variable
+    model_name = os.environ.get("MODEL_NAME").upper()
+
+    # Dynamically import the model class
+    try:
+        module = importlib.import_module("model")
+        BenchmarkModel = getattr(module, model_name)
+    except (ImportError, AttributeError) as e:
+        raise ImportError(f"Failed to import {model_name} from model module: {e}")
+
     aws_credentials = get_aws_credentials(profile="default")
 
     # TODO test with multiple datasets
