@@ -107,7 +107,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
             serialize_datasets = False
             self.datasets = datasets if isinstance(datasets, list) else [datasets]
         else:
-            serialize_datasets = True 
+            serialize_datasets = True
             # Find all input datasets
             input_dir = pathlib.Path(INPUT_DATA_PATH_DOCKER).parent
             base_pattern = get_base_name(INPUT_DATA_PATH_DOCKER)

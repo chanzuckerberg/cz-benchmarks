@@ -1,4 +1,8 @@
-from czbenchmarks.constants import INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER,get_numbered_path
+from czbenchmarks.constants import (
+    INPUT_DATA_PATH_DOCKER,
+    OUTPUT_DATA_PATH_DOCKER,
+    get_numbered_path,
+)
 from czbenchmarks.datasets import BaseDataset
 from czbenchmarks.datasets.utils import load_dataset
 
@@ -37,7 +41,7 @@ if __name__ == "__main__":
             dataset.serialize(input_path)
 
     model = BenchmarkModel()
-    
+
     # FIXME: serializing datasets is linked to run function signature. How to avoid?
     model_kwargs = {}
     if SERIALIZE_DATASETS:
