@@ -14,6 +14,7 @@ from czbenchmarks.tasks import (
 from czbenchmarks.utils import get_aws_credentials
 
 from model import SCVI as BenchmarkModel
+
 # # Or dynamically import the model
 # model_name = os.environ.get("MODEL_NAME", None)
 # if not model_name:
