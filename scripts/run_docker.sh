@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Interactive docker container launch script for cz-benchmarks
-# FIXME: Add README "Run Docker Container in Interactive Mode" section for detailed usage instructions?
+# See the documentation section "Running a Docker Container in Interactive Mode" for detailed usage instructions
 
 ################################################################################
 # User defined information
@@ -65,10 +65,10 @@ initialize_variables() {
     fi
     
     # Updates to variables which require model name
+    MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
     CZBENCH_IMG="czbenchmarks-${MODEL_NAME}"
     CZBENCH_IMG_TAG="latest"
     CZBENCH_CONTAINER_NAME="czbenchmarks-${MODEL_NAME}"
-    MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
 
     # Docker paths -- should not be changed
     RAW_INPUT_DIR_PATH_DOCKER=/raw
@@ -213,7 +213,7 @@ RED="\033[31m"
 # Check if script is run from correct directory
 if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
     echo ""
-    echo -e "${RED}Run this script from root directory. Usage: bash ./scripts/run_docker_interactive.sh -m MODEL_NAME${RESET}"
+    echo -e "${RED}Run this script from root directory. Usage: bash scripts/run_docker.sh -m MODEL_NAME${RESET}"
     echo ""
     print_usage
     exit 1
