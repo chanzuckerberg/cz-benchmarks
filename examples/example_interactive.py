@@ -10,18 +10,8 @@ from czbenchmarks.tasks import (
 )
 from czbenchmarks.utils import get_aws_credentials
 
-sys.path.insert(0, "/app")
+sys.path.insert(0, "/app") # Set to location of model.py
 from model import SCVI as BenchmarkModel
-
-# # Or dynamically import the model -- requires model_name to be set from environment variable
-# model_name = os.environ.get("MODEL_NAME", None)
-# if not model_name:
-#     raise ValueError("MODEL_NAME environment variable is not set")
-# try:
-#     module = importlib.import_module("model")
-#     BenchmarkModel = getattr(module, model_name.upper())
-# except (ImportError, AttributeError) as e:
-#     raise ImportError(f"Failed to import {model_name} from model module: {e}")
 
 if __name__ == "__main__":
     aws_credentials = get_aws_credentials(profile="default")
