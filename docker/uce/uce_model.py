@@ -92,22 +92,22 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"Valid models are: {list(config.model_config.keys())}"
         )
 
-        config.model_config[
-            model_variant
-        ].protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
+        config.model_config[model_variant].protein_embeddings_dir = (
+            f"{self.model_weights_dir}/protein_embeddings"
+        )
         config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
             f"{config.model_config[model_variant].model_filename}"
         )
-        config.model_config[
-            model_variant
-        ].offset_pkl_path = f"{self.model_weights_dir}/species_offsets.pkl"
-        config.model_config[
-            model_variant
-        ].token_file = f"{self.model_weights_dir}/all_tokens.torch"
-        config.model_config[
-            model_variant
-        ].spec_chrom_csv_path = f"{self.model_weights_dir}/species_chrom.csv"
+        config.model_config[model_variant].offset_pkl_path = (
+            f"{self.model_weights_dir}/species_offsets.pkl"
+        )
+        config.model_config[model_variant].token_file = (
+            f"{self.model_weights_dir}/all_tokens.torch"
+        )
+        config.model_config[model_variant].spec_chrom_csv_path = (
+            f"{self.model_weights_dir}/species_chrom.csv"
+        )
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(
