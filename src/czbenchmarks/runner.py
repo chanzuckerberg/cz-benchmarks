@@ -1,11 +1,22 @@
 import os
 import pathlib
 import tempfile
+import boto3
+import base64
 from typing import Any, List, Union, Optional, Dict
 
 import docker
 import yaml
 from omegaconf import OmegaConf
+import logging
+
+# Hide warnings from boto3, botocore, and urllib3, such as
+# AWS credentials file not being found, etc.
+logging.getLogger('boto3').setLevel(logging.ERROR)
+logging.getLogger('botocore').setLevel(logging.ERROR)
+logging.getLogger('urllib3').setLevel(logging.ERROR)
+
+logger = logging.getLogger(__name__)
 
 from .constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -45,6 +56,8 @@ class ContainerRunner:
             environment: Dictionary of environment variables to pass to the container
             kwargs: Additional arguments to pass to the container as CLI params
         """
+        self.client = docker.from_env()
+
         # Load models config from the default location
         default_config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -68,7 +81,33 @@ class ContainerRunner:
 
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
-        self.model_type = model_type  # Store model_type for dataset compatibility
+        
+        # Add ECR authentication if the image is from ECR
+        if ".dkr.ecr." in self.image:
+            try:
+                # Extract region from image URI
+                region = self.image.split('.')[3]
+                registry = self.image.split('/')[0]
+                
+                # Get ECR login token
+                ecr_client = boto3.client('ecr', region_name=region)
+                token = ecr_client.get_authorization_token(registryIds=[registry.split('.')[0]])
+                
+                # Decode the authorization token
+                auth_data = token['authorizationData'][0]
+                token_bytes = base64.b64decode(auth_data['authorizationToken'])
+                username, password = token_bytes.decode('utf-8').split(':')
+                
+                # Login to Docker with decoded credentials
+                self.client.login(
+                    username=username,
+                    password=password,
+                    registry=auth_data['proxyEndpoint']
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed to authenticate with ECR: {str(e)}")
+
+        self.model_type = model_type
         self.app_mount_dir = app_mount_dir
 
         self.gpu = gpu
@@ -76,7 +115,6 @@ class ContainerRunner:
 
         self.cli_args = kwargs
         self.environment = environment or {}  # Store environment variables
-        self.client = docker.from_env()
 
     def run(
         self, datasets: Union[BaseDataset, List[BaseDataset]]
@@ -208,6 +246,17 @@ class ContainerRunner:
         )
         os.makedirs(model_weights_cache_path, exist_ok=True)
 
+        # Pull the image first if it's from ECR
+        if ".dkr.ecr." in self.image:
+            try:
+                logger.info(f"Pulling image {self.image}...")
+                self.client.images.pull(
+                    self.image,
+                    platform="linux/amd64"
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed to pull image {self.image}: {str(e)}")
+
         # Prepare command based on mode (interactive or CLI args)
         command = None
         if self.cli_args and not self.interactive:
@@ -215,18 +264,20 @@ class ContainerRunner:
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
+        # Add platform specification for ECR images
+        platform = "linux/amd64" if ".dkr.ecr." in self.image else None
+        
         # Create the container with appropriate configuration
         container = self.client.containers.create(
             image=self.image,
             command=command,
             volumes=volumes,
-            environment=self.environment,  # Pass environment variables
+            environment=self.environment,
             runtime="nvidia" if self.gpu else None,
-            tty=self.interactive,  # Add TTY for interactive mode
-            stdin_open=self.interactive,  # Keep STDIN open for interactive mode
-            entrypoint=(
-                ["/bin/bash"] if self.interactive else None
-            ),  # Override entrypoint for interactive mode
+            tty=self.interactive,
+            stdin_open=self.interactive,
+            entrypoint=(["/bin/bash"] if self.interactive else None),
+            platform=platform,
         )
 
         try:

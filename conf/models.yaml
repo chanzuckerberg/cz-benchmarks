@@ -1,15 +1,15 @@
 models:
   SCGPT:
-    model_image_uri: czbenchmarks-scgpt:latest
+    model_image_uri: 339713142298.dkr.ecr.us-west-2.amazonaws.com/cz-benchmarks-models:scgpt
 
   SCVI:
-    model_image_uri: czbenchmarks-scvi:latest
+    model_image_uri: 339713142298.dkr.ecr.us-west-2.amazonaws.com/cz-benchmarks-models:scvi
 
   GENEFORMER:
-    model_image_uri: czbenchmarks-geneformer:latest
+    model_image_uri: 339713142298.dkr.ecr.us-west-2.amazonaws.com/cz-benchmarks-models:geneformer
 
   SCGENEPT:
-    model_image_uri: czbenchmarks-scgenept:latest 
+    model_image_uri: 339713142298.dkr.ecr.us-west-2.amazonaws.com/cz-benchmarks-models:scgenept
 
   UCE:
-    model_image_uri: czbenchmarks-uce:latest
+    model_image_uri: 339713142298.dkr.ecr.us-west-2.amazonaws.com/cz-benchmarks-models:uce
