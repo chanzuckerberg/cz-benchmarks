@@ -1,5 +1,6 @@
 import os
 import pathlib
+import subprocess
 import tempfile
 from typing import Any, List, Union, Optional, Dict
 
@@ -8,6 +9,7 @@ import yaml
 from omegaconf import OmegaConf
 
 from .constants import (
+    CZ_BENCHMARKS_MODELS_ECR_REGISTRY,
     INPUT_DATA_PATH_DOCKER,
     MODEL_WEIGHTS_CACHE_PATH,
     MODEL_WEIGHTS_PATH_DOCKER,
@@ -68,6 +70,11 @@ class ContainerRunner:
 
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
+        
+        # Check if the image is from ECR and needs to be fetched
+        if CZ_BENCHMARKS_MODELS_ECR_REGISTRY in self.image:
+            self._fetch_from_ecr()
+
         self.model_type = model_type  # Store model_type for dataset compatibility
         self.app_mount_dir = app_mount_dir
 
@@ -77,6 +84,23 @@ class ContainerRunner:
         self.cli_args = kwargs
         self.environment = environment or {}  # Store environment variables
         self.client = docker.from_env()
+
+    def _fetch_from_ecr(self):
+        """
+        Fetch a model image from the private ECR repository.
+        """
+        try:
+            # Login to ECR
+            login_cmd = f"aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin {CZ_BENCHMARKS_MODELS_ECR_REGISTRY}"
+            subprocess.run(login_cmd, shell=True, check=True)
+
+            # Pull the image
+            pull_cmd = f"docker pull {self.image} --platform amd64"
+            subprocess.run(pull_cmd, shell=True, check=True)
+
+            print(f"Successfully pulled model image from ECR: {self.image}")
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Failed to fetch model from ECR: {str(e)}")
 
     def run(
         self, datasets: Union[BaseDataset, List[BaseDataset]]

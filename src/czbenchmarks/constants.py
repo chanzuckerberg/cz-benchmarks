@@ -8,7 +8,7 @@ ARTIFACTS_PATH_DOCKER = "/artifacts"
 DATASETS_CACHE_PATH = "~/.cz-benchmarks/datasets"
 MODEL_WEIGHTS_PATH_DOCKER = "/weights"
 MODEL_WEIGHTS_CACHE_PATH = "~/.cz-benchmarks/weights"
-
+CZ_BENCHMARKS_MODELS_ECR_REGISTRY = "339713142298.dkr.ecr.us-west-2.amazonaws.com"
 
 # Derived constants
 def get_numbered_path(base_path: str, index: int) -> str:
