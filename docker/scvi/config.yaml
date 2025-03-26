@@ -1,5 +1,5 @@
 homo_sapiens:
-  model_dir: s3://generate-cross-species/models/scvi/homo_sapiens/
+  model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/homo_sapiens/
 
 mus_musculus:
-  model_dir: s3://generate-cross-species/models/scvi/mus_musculus/
+  model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/mus_musculus/
