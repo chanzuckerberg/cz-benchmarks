@@ -186,12 +186,16 @@ build_docker_command() {
 ################################################################################
 # Main script execution starts here
 
-# Docker paths -- should not be changed 
-CODE_PATH_DOCKER=/app/package
+# Docker paths -- should not be changed
 RAW_INPUT_DIR_PATH_DOCKER=/raw
 MODEL_WEIGHTS_PATH_DOCKER=/weights
 INPUT_DATA_PATH_DOCKER=/input/data.dill
 OUTPUT_DATA_PATH_DOCKER=/output/data.dill
+if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
+    CODE_PATH_DOCKER=/app/package # Squash existing code in docker image
+else
+    CODE_PATH_DOCKER=/app # As set by Dockerfile
+fi
 
 # # Docker paths can also be loaded from constants.py
 # PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER, INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER; 
