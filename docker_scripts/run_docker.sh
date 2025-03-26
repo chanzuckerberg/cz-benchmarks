@@ -3,21 +3,23 @@
 # Interactive docker container launch script for cz-benchmarks
 # FIXME: Add README "Run Docker Container in Interactive Mode" section for detailed usage instructions?
 
-# Local mount paths
+################################################################################
+# User defined information
+
+# Mount paths
 # FIXME: should input / output paths be mounted since they could contain stale files? Ensure they are empty?
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
 INPUT_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 OUTPUT_CACHE_PATH=${HOME}/.cz-benchmarks/output
-LOCAL_CODE_PATH=$(pwd) # Leave blank or remove to not mount code
+DEVELOPMENT_CODE_PATH=$(pwd) # Leave blank or remove to not mount code
 
-# Container settings
+# Container execution settings
 EVAL_CMD=bash # e.g. bash or '''python3 example_interactive.py'''
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
 # Function definitions
-# Function to print usage information
 print_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
@@ -25,7 +27,6 @@ print_usage() {
     echo ""
 }
 
-# Function to validate that directory exists
 validate_directory() {
     local path=$1
     local var_name=$2
@@ -35,7 +36,6 @@ validate_directory() {
     fi
 }
 
-# Function to process variables
 setup_variables() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -92,23 +92,23 @@ print_variables() {
         echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "${var}:") ${!var}${RESET}"
     done
 
-    # Handle code path for development mode
-    echo ""
-    echo -e "${GREEN}Development mode:${RESET}"
-    if [ ! -z "${LOCAL_CODE_PATH}" ]; then
-        validate_directory "${LOCAL_CODE_PATH}" "LOCAL_CODE_PATH"
-        echo -e "   ${GREEN}Using development mode."
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "LOCAL_CODE_PATH:") ${LOCAL_CODE_PATH}${RESET}"
-    else
-        echo -e "   ${GREEN}LOCAL_CODE_PATH is not set. Development mode will not be used.${RESET}"
-    fi
-
     # Show Docker paths
     echo ""
     echo -e "${GREEN}Docker paths:${RESET}"
     for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER INPUT_DATA_DIR_DOCKER OUTPUT_DATA_DIR_DOCKER; do
         echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "${var}:") ${!var}${RESET}"
     done
+
+    # Development mode
+    echo ""
+    echo -e "${GREEN}Development mode:${RESET}"
+    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
+        validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "CODE_PATH_DOCKER:") ${CODE_PATH_DOCKER}${RESET}"
+    else
+        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
+    fi
 
     # Show user mode information
     echo ""
@@ -159,9 +159,9 @@ build_docker_command() {
 
     # Add code mount and PYTHONPATH for development mode
     # FIXME: better solution to ensure code can be imported from both src and docker/MODEL_NAME? 
-    if [ ! -z "${LOCAL_CODE_PATH}" ]; then
+    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${LOCAL_CODE_PATH}:${CODE_PATH_DOCKER}:rw \\
+    --volume ${DEVELOPMENT_CODE_PATH}:${CODE_PATH_DOCKER}:rw \\
     --env PYTHONPATH=${CODE_PATH_DOCKER}/src:${CODE_PATH_DOCKER}/docker/${MODEL_NAME}:${CODE_PATH_DOCKER}:"'$PYTHONPATH'" \\"
     fi
 
@@ -184,17 +184,17 @@ build_docker_command() {
 ################################################################################
 # Main script execution starts here
 
-# Docker Paths -- should not be changed 
+# Docker paths -- should not be changed 
 CODE_PATH_DOCKER=/app/package
 RAW_INPUT_DIR_PATH_DOCKER=/raw
 MODEL_WEIGHTS_PATH_DOCKER=/weights
 INPUT_DATA_PATH_DOCKER=/input/data.dill
 OUTPUT_DATA_PATH_DOCKER=/output/data.dill
 
-# Can also be loaded from constants.py
+# # Docker paths can also be loaded from constants.py
 # PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER, INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER; 
 # print(f'RAW_INPUT_DIR_PATH_DOCKER={RAW_INPUT_DIR_PATH_DOCKER}; MODEL_WEIGHTS_PATH_DOCKER={MODEL_WEIGHTS_PATH_DOCKER}; INPUT_DATA_PATH_DOCKER={INPUT_DATA_PATH_DOCKER}; OUTPUT_DATA_PATH_DOCKER={OUTPUT_DATA_PATH_DOCKER}')"
-# eval "$(python3 -c "${PYTHON_SCRIPT}")" # Get Docker paths from constants.py
+# eval "$(python3 -c "${PYTHON_SCRIPT}")"
 
 INPUT_DATA_DIR_DOCKER=$(dirname ${INPUT_DATA_PATH_DOCKER})
 OUTPUT_DATA_DIR_DOCKER=$(dirname ${OUTPUT_DATA_PATH_DOCKER})
@@ -217,7 +217,6 @@ fi
 # Setup variables
 setup_variables "$@"
 print_variables
-
 
 # Create docker command
 build_docker_command
