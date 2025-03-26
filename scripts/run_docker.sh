@@ -73,10 +73,9 @@ initialize_variables() {
     # Docker paths -- should not be changed
     RAW_INPUT_DIR_PATH_DOCKER=/raw
     MODEL_WEIGHTS_PATH_DOCKER=/weights
+    MODEL_CODE_PATH_DOCKER=/app
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
-        CODE_PATH_DOCKER=/app/package # Squash container code when mounting local code
-    else
-        CODE_PATH_DOCKER=/app # As set by Dockerfile
+        BENCHMARK_CODE_PATH_DOCKER=/app/package # Squash container code when mounting local code
     fi
 
     # # Alternatively, Docker paths can also be loaded from czbenchmarks.constants.py to ensure consistency
@@ -108,7 +107,7 @@ print_variables() {
     # Show Docker paths
     echo ""
     echo -e "${GREEN}Docker paths:${RESET}"
-    for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER; do
+    for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER MODEL_CODE_PATH_DOCKER; do
         echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
@@ -118,9 +117,9 @@ print_variables() {
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
         echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "CODE_PATH_DOCKER:") ${CODE_PATH_DOCKER}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "BENCHMARK_CODE_PATH_DOCKER:") ${BENCHMARK_CODE_PATH_DOCKER}${RESET}"
     else
-        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used. Working directory will be ${CODE_PATH_DOCKER}.${RESET}"
+        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
     fi
 
     # Show user mode information
@@ -169,24 +168,25 @@ build_docker_command() {
     --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\"
 
     # Add code mounts and PYTHONPATH for development mode
-    # NOTE: the path docker/${MODEL_NAME} must be mounted first to prevent it from being squashed
+    # NOTE: do not change order, cz-benchmarks mounted last to prevent squashing
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:/app:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}:${CODE_PATH_DOCKER}:rw \\
-    --env PYTHONPATH=/app:${CODE_PATH_DOCKER}/src:"\'$PYTHONPATH\'" \\"
+    --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:${MODEL_CODE_PATH_DOCKER}:rw \\
+    --volume ${DEVELOPMENT_CODE_PATH}/examples:${MODEL_CODE_PATH_DOCKER}/examples:rw \\
+    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\
+    --env PYTHONPATH=${MODEL_CODE_PATH_DOCKER}:${BENCHMARK_CODE_PATH_DOCKER}/src \\"
     fi
 
     # Add AWS credentials if they exist
     if [ -e ${HOME}/.aws/credentials ]; then
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${HOME}/.aws:${CODE_PATH_DOCKER}/.aws:ro \\"
+    --volume ${HOME}/.aws:${BENCHMARK_CODE_PATH_DOCKER}/.aws:ro \\"
     fi
 
     # Add final options
     DOCKER_CMD="${DOCKER_CMD}
-    --env HOME=${CODE_PATH_DOCKER} \\
-    --workdir ${CODE_PATH_DOCKER} \\
+    --env HOME=${MODEL_CODE_PATH_DOCKER} \\
+    --workdir ${MODEL_CODE_PATH_DOCKER} \\
     --env MODEL_NAME=${MODEL_NAME} \\
     --name ${CZBENCH_CONTAINER_NAME} \\
     --entrypoint ${EVAL_CMD} \\
