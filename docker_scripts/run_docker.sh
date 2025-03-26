@@ -60,7 +60,7 @@ setup_variables() {
     echo ""
     echo -e "${GREEN}Required flags:${RESET}"
     if [ ! -z "${MODEL_NAME}" ]; then
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "MODEL_NAME:") ${MODEL_NAME}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "MODEL_NAME:") ${MODEL_NAME}${RESET}"
     else
         echo -e "${RED}MODEL_NAME is required but not set${RESET}"
         print_usage
@@ -70,6 +70,7 @@ setup_variables() {
     # Updates to variables which require model name
     CZBENCH_IMG="czbenchmarks-${MODEL_NAME}"
     CZBENCH_IMG_TAG="latest"
+    CZBENCH_CONTAINER_NAME="czbenchmarks-${MODEL_NAME}"
     MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
 }
 
@@ -77,7 +78,8 @@ print_variables() {
     # Show image information
     echo ""
     echo -e "${GREEN}Docker setup:${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "Docker image:") ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}${RESET}"
+    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Image:") ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}${RESET}"
+    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
     # Validate required paths and show sources
     echo ""
@@ -89,14 +91,14 @@ print_variables() {
         fi
 
         validate_directory "${!var}" "$var"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "${var}:") ${!var}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
     # Show Docker paths
     echo ""
     echo -e "${GREEN}Docker paths:${RESET}"
     for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER INPUT_DATA_DIR_DOCKER OUTPUT_DATA_DIR_DOCKER; do
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "${var}:") ${!var}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
     # Development mode
@@ -104,10 +106,10 @@ print_variables() {
     echo -e "${GREEN}Development mode:${RESET}"
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH:-15}s" "CODE_PATH_DOCKER:") ${CODE_PATH_DOCKER}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
+        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "CODE_PATH_DOCKER:") ${CODE_PATH_DOCKER}${RESET}"
     else
-        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
+        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used. Working directory will be ${CODE_PATH_DOCKER}.${RESET}"
     fi
 
     # Show user mode information
