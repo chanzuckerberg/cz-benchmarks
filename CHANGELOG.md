@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.3.0...v0.4.0) (2025-03-26)
+
+
+### Features
+
+* docker builder ([#124](https://github.com/chanzuckerberg/cz-benchmarks/issues/124)) ([6c0e5b5](https://github.com/chanzuckerberg/cz-benchmarks/commit/6c0e5b5cbcc4eadbda971cd630e1e2040d86fe4f))
+* move model validators back into docker images ([#120](https://github.com/chanzuckerberg/cz-benchmarks/issues/120)) ([ad1cb59](https://github.com/chanzuckerberg/cz-benchmarks/commit/ad1cb5933d4ced62cfabd84d66370a99ea12f9fc))
+
+
+### Documentation
+
+* autogenerate documentation - sphinx ([#116](https://github.com/chanzuckerberg/cz-benchmarks/issues/116)) ([94be611](https://github.com/chanzuckerberg/cz-benchmarks/commit/94be611d4eb31f3b69d3d9423299abba9eee3be4))
+
 ## [0.3.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.2...v0.3.0) (2025-03-19)
 
 
