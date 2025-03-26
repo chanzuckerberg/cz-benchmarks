@@ -168,11 +168,13 @@ build_docker_command() {
     --volume ${DATASETS_CACHE_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
     --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\"
 
-    # Add code mount and PYTHONPATH for development mode
+    # Add code mounts and PYTHONPATH for development mode
+    # NOTE: the path docker/${MODEL_NAME} must be mounted first to prevent it from being squashed
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         DOCKER_CMD="${DOCKER_CMD}
+    --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:/app:rw \\
     --volume ${DEVELOPMENT_CODE_PATH}:${CODE_PATH_DOCKER}:rw \\
-    --env PYTHONPATH=${CODE_PATH_DOCKER}/src:${CODE_PATH_DOCKER}/docker/${MODEL_NAME}:${CODE_PATH_DOCKER}:"'$PYTHONPATH'" \\"
+    --env PYTHONPATH=/app:${CODE_PATH_DOCKER}/src:"\'$PYTHONPATH\'" \\"
     fi
 
     # Add AWS credentials if they exist
