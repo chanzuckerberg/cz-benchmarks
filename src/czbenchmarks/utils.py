@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 import boto3
+from botocore.config import Config
+import botocore
 import logging
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -70,7 +72,7 @@ def download_s3_file(bucket, key, local_path, unsigned=True):
     """
     s3 = boto3.client(
         "s3",
-        config=boto3.Config(signature_version=boto3.UNSIGNED) if unsigned else None,
+        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
     )
 
     # Create directory if it doesn't exist
@@ -95,7 +97,7 @@ def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
     """
     s3 = boto3.client(
         "s3",
-        config=boto3.Config(signature_version=boto3.UNSIGNED) if unsigned else None,
+        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
     )
 
     # Prefix is a directory, proceed with original logic

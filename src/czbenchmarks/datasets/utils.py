@@ -2,6 +2,8 @@ import os
 import hydra
 from hydra.utils import instantiate
 import boto3
+import botocore
+from botocore.config import Config
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
@@ -28,7 +30,7 @@ def _download_dataset(uri: str, output_path: str, unsigned=True):
     # Download from S3
     s3_client = boto3.client(
         "s3",
-        config=boto3.Config(signature_version=boto3.UNSIGNED) if unsigned else None,
+        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
     )
     s3_client.download_file(bucket, key, output_path)
 
