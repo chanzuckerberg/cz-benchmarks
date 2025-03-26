@@ -212,9 +212,9 @@ RESET="\033[0m"
 RED="\033[31m"
 
 # Check if script is run from correct directory
-if [ ! "$(ls | grep -c docker_scripts)" -eq 1 ]; then
+if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
     echo ""
-    echo -e "${RED}Run this script from root directory. Usage: bash ./docker_scripts/run_docker_interactive.sh -m MODEL_NAME${RESET}"
+    echo -e "${RED}Run this script from root directory. Usage: bash ./scripts/run_docker_interactive.sh -m MODEL_NAME${RESET}"
     echo ""
     print_usage
     exit 1
