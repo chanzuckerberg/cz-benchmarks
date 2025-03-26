@@ -1,10 +1,7 @@
+import os
+import sys
 import pathlib
-from czbenchmarks.constants import (
-    INPUT_DATA_PATH_DOCKER,
-    OUTPUT_DATA_PATH_DOCKER,
-    get_numbered_path,
-)
-from czbenchmarks.datasets import BaseDataset
+
 from czbenchmarks.datasets.utils import load_dataset
 
 from czbenchmarks.tasks import (
@@ -14,13 +11,16 @@ from czbenchmarks.tasks import (
 )
 from czbenchmarks.utils import get_aws_credentials
 
+model_name = os.environ.get("MODEL_NAME", None).lower()
+if not model_name:
+    raise ValueError("MODEL_NAME environment variable is not set")
+
+model_directory = pathlib.Path(__file__).absolute().parent / "docker" / model_name
+sys.path.insert(0, str(model_directory))
+
 from model import SCVI as BenchmarkModel
 
-# # Or dynamically import the model
-# model_name = os.environ.get("MODEL_NAME", None)
-# if not model_name:
-#     raise ValueError("MODEL_NAME environment variable is not set")
-
+# # Or dynamically import the model -- requires model_name to be set from environment variable
 # try:
 #     module = importlib.import_module("model")
 #     BenchmarkModel = getattr(module, model_name.upper())
