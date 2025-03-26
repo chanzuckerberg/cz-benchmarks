@@ -7,15 +7,12 @@
 # User defined information
 
 # Mount paths
-# FIXME: should input / output paths be mounted since they could contain stale files? Ensure they are empty?
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
-INPUT_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
-OUTPUT_CACHE_PATH=${HOME}/.cz-benchmarks/output
 DEVELOPMENT_CODE_PATH=$(pwd) # Leave blank or remove to not mount code
 
 # Container execution settings
-EVAL_CMD=bash # e.g. bash or '''python3 example_interactive.py'''
+EVAL_CMD=bash # e.g. bash or "python3 examples/example_interactive.py"
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
@@ -36,7 +33,7 @@ validate_directory() {
     fi
 }
 
-setup_variables() {
+initialize_variables() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -56,7 +53,7 @@ setup_variables() {
         esac
     done
 
-    # Required variables
+    # Validate that required variables are set
     echo ""
     echo -e "${GREEN}Required flags:${RESET}"
     if [ ! -z "${MODEL_NAME}" ]; then
@@ -72,6 +69,20 @@ setup_variables() {
     CZBENCH_IMG_TAG="latest"
     CZBENCH_CONTAINER_NAME="czbenchmarks-${MODEL_NAME}"
     MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
+
+    # Docker paths -- should not be changed
+    RAW_INPUT_DIR_PATH_DOCKER=/raw
+    MODEL_WEIGHTS_PATH_DOCKER=/weights
+    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
+        CODE_PATH_DOCKER=/app/package # Squash container code when mounting local code
+    else
+        CODE_PATH_DOCKER=/app # As set by Dockerfile
+    fi
+
+    # # Alternatively, Docker paths can also be loaded from czbenchmarks.constants.py to ensure consistency
+    # PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER; 
+    # print(f'RAW_INPUT_DIR_PATH_DOCKER={RAW_INPUT_DIR_PATH_DOCKER}; MODEL_WEIGHTS_PATH_DOCKER={MODEL_WEIGHTS_PATH_DOCKER}')"
+    # eval "$(python3 -c "${PYTHON_SCRIPT}")"
 }
 
 print_variables() {
@@ -84,7 +95,7 @@ print_variables() {
     # Validate required paths and show sources
     echo ""
     echo -e "${GREEN}Local paths:${RESET}"
-    for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH INPUT_CACHE_PATH OUTPUT_CACHE_PATH; do
+    for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH; do
         if [ -z "${!var}" ]; then
             echo -e "${RED}Error: $var is required but not set${RESET}"
             exit 1
@@ -97,7 +108,7 @@ print_variables() {
     # Show Docker paths
     echo ""
     echo -e "${GREEN}Docker paths:${RESET}"
-    for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER INPUT_DATA_DIR_DOCKER OUTPUT_DATA_DIR_DOCKER; do
+    for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER; do
         echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
@@ -155,12 +166,9 @@ build_docker_command() {
     # Add mount points
     DOCKER_CMD="${DOCKER_CMD}
     --volume ${DATASETS_CACHE_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
-    --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\
-    --volume ${INPUT_CACHE_PATH}:${INPUT_DATA_DIR_DOCKER}:rw \\
-    --volume ${OUTPUT_CACHE_PATH}:${OUTPUT_DATA_DIR_DOCKER}:rw \\"
+    --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\"
 
     # Add code mount and PYTHONPATH for development mode
-    # FIXME: better solution to ensure code can be imported from both src and docker/MODEL_NAME? 
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         DOCKER_CMD="${DOCKER_CMD}
     --volume ${DEVELOPMENT_CODE_PATH}:${CODE_PATH_DOCKER}:rw \\
@@ -183,27 +191,18 @@ build_docker_command() {
     ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}"
 }
 
+print_docker_command() {
+    echo ""
+    echo -e "${GREEN}Executing docker command:${RESET}"
+    echo "${DOCKER_CMD}"
+    echo ""
+
+    # Before execution, remove extra line continuations that were for printing
+    DOCKER_CMD=$(echo "${DOCKER_CMD}" | tr -d '\\')
+}
+
 ################################################################################
 # Main script execution starts here
-
-# Docker paths -- should not be changed
-RAW_INPUT_DIR_PATH_DOCKER=/raw
-MODEL_WEIGHTS_PATH_DOCKER=/weights
-INPUT_DATA_PATH_DOCKER=/input/data.dill
-OUTPUT_DATA_PATH_DOCKER=/output/data.dill
-if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
-    CODE_PATH_DOCKER=/app/package # Squash existing code in docker image
-else
-    CODE_PATH_DOCKER=/app # As set by Dockerfile
-fi
-
-# # Docker paths can also be loaded from constants.py
-# PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER, INPUT_DATA_PATH_DOCKER, OUTPUT_DATA_PATH_DOCKER; 
-# print(f'RAW_INPUT_DIR_PATH_DOCKER={RAW_INPUT_DIR_PATH_DOCKER}; MODEL_WEIGHTS_PATH_DOCKER={MODEL_WEIGHTS_PATH_DOCKER}; INPUT_DATA_PATH_DOCKER={INPUT_DATA_PATH_DOCKER}; OUTPUT_DATA_PATH_DOCKER={OUTPUT_DATA_PATH_DOCKER}')"
-# eval "$(python3 -c "${PYTHON_SCRIPT}")"
-
-INPUT_DATA_DIR_DOCKER=$(dirname ${INPUT_DATA_PATH_DOCKER})
-OUTPUT_DATA_DIR_DOCKER=$(dirname ${OUTPUT_DATA_PATH_DOCKER})
 
 # Print formatting
 COLUMN_WIDTH=30
@@ -221,17 +220,11 @@ if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
 fi
 
 # Setup variables
-setup_variables "$@"
+initialize_variables "$@"
 print_variables
 
-# Create docker command
+# Create and execute docker command
+DOCKER_CMD=""
 build_docker_command
-
-echo ""
-echo -e "${GREEN}Executing docker command:${RESET}"
-echo "${DOCKER_CMD}"
-echo ""
-
-# Remove extra line continuations for printing before execution
-DOCKER_CMD=$(echo "${DOCKER_CMD}" | tr -d '\\')
+print_docker_command
 eval ${DOCKER_CMD}
