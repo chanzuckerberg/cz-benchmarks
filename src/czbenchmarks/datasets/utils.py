@@ -9,13 +9,14 @@ from ..constants import DATASETS_CACHE_PATH
 from .base import BaseDataset
 
 
-def _download_dataset(uri: str, output_path: str):
+def _download_dataset(uri: str, output_path: str, unsigned=True):
     """
     Download a dataset from the manifest file to the specified output path.
 
     Args:
-        dataset_name: Name of dataset as specified in manifest
+        uri: S3 URI of dataset
         output_path: Local path where dataset should be downloaded
+        unsigned: Whether to use unsigned requests (default: True)
     """
     # Create output directory if it doesn't exist
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -25,7 +26,10 @@ def _download_dataset(uri: str, output_path: str):
     key = "/".join(uri.split("/")[3:])
 
     # Download from S3
-    s3_client = boto3.client("s3")
+    s3_client = boto3.client(
+        "s3",
+        config=boto3.Config(signature_version=boto3.UNSIGNED) if unsigned else None,
+    )
     s3_client.download_file(bucket, key, output_path)
 
 

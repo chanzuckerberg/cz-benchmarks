@@ -1,4 +1,4 @@
-model_uri: s3://generate-cross-species/models/uce
+model_uri: s3://cz-benchmarks-data/models/v1/uce
 
 model_config:
   33l:
