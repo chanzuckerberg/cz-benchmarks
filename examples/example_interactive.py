@@ -27,8 +27,6 @@ from model import SCVI as BenchmarkModel
 # except (ImportError, AttributeError) as e:
 #     raise ImportError(f"Failed to import {model_name} from model module: {e}")
 
-SERIALIZE_DATASETS = False
-
 if __name__ == "__main__":
     aws_credentials = get_aws_credentials(profile="default")
 
@@ -37,27 +35,8 @@ if __name__ == "__main__":
     dataset = load_dataset("example", config_path=current_dir / "custom_interactive.yaml")
     datasets = dataset if isinstance(dataset, list) else [dataset]
 
-    if SERIALIZE_DATASETS:
-        for i, dataset in enumerate(datasets):
-            dataset.unload_data()
-            input_path = get_numbered_path(INPUT_DATA_PATH_DOCKER, i)
-            dataset.serialize(input_path)
-
     model = BenchmarkModel()
-
-    # FIXME: serializing datasets is coupled to run function. Can this be avoided?
-    model_kwargs = {}
-    if SERIALIZE_DATASETS:
-        model_kwargs = {}
-    else:
-        model_kwargs = {"datasets": datasets}
-    model.run(**model_kwargs)
-
-    if SERIALIZE_DATASETS:
-        for i, _ in enumerate(datasets):
-            output_path = get_numbered_path(OUTPUT_DATA_PATH_DOCKER, i)
-            datasets[i] = BaseDataset.deserialize(output_path)
-            datasets[i].load_data()
+    model.run(datasets=datasets)
 
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(datasets)
