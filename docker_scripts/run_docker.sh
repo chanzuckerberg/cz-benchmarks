@@ -170,7 +170,7 @@ build_docker_command() {
     # Add AWS credentials if they exist
     if [ -e ${HOME}/.aws/credentials ]; then
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${HOME}/.aws/credentials:${CODE_PATH_DOCKER}/.aws/credentials:ro \\"
+    --volume ${HOME}/.aws:${CODE_PATH_DOCKER}/.aws:ro \\"
     fi
 
     # Add final options
