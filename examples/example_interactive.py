@@ -1,3 +1,4 @@
+import pathlib
 from czbenchmarks.constants import (
     INPUT_DATA_PATH_DOCKER,
     OUTPUT_DATA_PATH_DOCKER,
@@ -32,7 +33,8 @@ if __name__ == "__main__":
     aws_credentials = get_aws_credentials(profile="default")
 
     # TODO test with multiple datasets
-    dataset = load_dataset("example", config_path="custom_interactive.yaml")
+    current_dir = pathlib.Path(__file__).absolute().parent
+    dataset = load_dataset("example", config_path=current_dir / "custom_interactive.yaml")
     datasets = dataset if isinstance(dataset, list) else [dataset]
 
     if SERIALIZE_DATASETS:
