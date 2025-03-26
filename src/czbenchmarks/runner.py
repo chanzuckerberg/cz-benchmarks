@@ -10,14 +10,6 @@ import yaml
 from omegaconf import OmegaConf
 import logging
 
-# Hide warnings from boto3, botocore, and urllib3, such as
-# AWS credentials file not being found, etc.
-logging.getLogger('boto3').setLevel(logging.ERROR)
-logging.getLogger('botocore').setLevel(logging.ERROR)
-logging.getLogger('urllib3').setLevel(logging.ERROR)
-
-logger = logging.getLogger(__name__)
-
 from .constants import (
     INPUT_DATA_PATH_DOCKER,
     MODEL_WEIGHTS_CACHE_PATH,
@@ -28,6 +20,14 @@ from .constants import (
 )
 from .datasets import BaseDataset
 from .models.types import ModelType
+
+# Hide warnings from boto3, botocore, and urllib3, such as
+# AWS credentials file not being found, etc.
+logging.getLogger("boto3").setLevel(logging.ERROR)
+logging.getLogger("botocore").setLevel(logging.ERROR)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+
+logger = logging.getLogger(__name__)
 
 
 class ContainerRunner:
@@ -81,28 +81,30 @@ class ContainerRunner:
 
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
-        
+
         # Add ECR authentication if the image is from ECR
         if ".dkr.ecr." in self.image:
             try:
                 # Extract region from image URI
-                region = self.image.split('.')[3]
-                registry = self.image.split('/')[0]
-                
+                region = self.image.split(".")[3]
+                registry = self.image.split("/")[0]
+
                 # Get ECR login token
-                ecr_client = boto3.client('ecr', region_name=region)
-                token = ecr_client.get_authorization_token(registryIds=[registry.split('.')[0]])
-                
+                ecr_client = boto3.client("ecr", region_name=region)
+                token = ecr_client.get_authorization_token(
+                    registryIds=[registry.split(".")[0]]
+                )
+
                 # Decode the authorization token
-                auth_data = token['authorizationData'][0]
-                token_bytes = base64.b64decode(auth_data['authorizationToken'])
-                username, password = token_bytes.decode('utf-8').split(':')
-                
+                auth_data = token["authorizationData"][0]
+                token_bytes = base64.b64decode(auth_data["authorizationToken"])
+                username, password = token_bytes.decode("utf-8").split(":")
+
                 # Login to Docker with decoded credentials
                 self.client.login(
                     username=username,
                     password=password,
-                    registry=auth_data['proxyEndpoint']
+                    registry=auth_data["proxyEndpoint"],
                 )
             except Exception as e:
                 raise RuntimeError(f"Failed to authenticate with ECR: {str(e)}")
@@ -250,10 +252,7 @@ class ContainerRunner:
         if ".dkr.ecr." in self.image:
             try:
                 logger.info(f"Pulling image {self.image}...")
-                self.client.images.pull(
-                    self.image,
-                    platform="linux/amd64"
-                )
+                self.client.images.pull(self.image, platform="linux/amd64")
             except Exception as e:
                 raise RuntimeError(f"Failed to pull image {self.image}: {str(e)}")
 
@@ -266,7 +265,7 @@ class ContainerRunner:
 
         # Add platform specification for ECR images
         platform = "linux/amd64" if ".dkr.ecr." in self.image else None
-        
+
         # Create the container with appropriate configuration
         container = self.client.containers.create(
             image=self.image,
