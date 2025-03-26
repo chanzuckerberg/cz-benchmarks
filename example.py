@@ -10,7 +10,7 @@ from czbenchmarks.utils import get_aws_credentials
 if __name__ == "__main__":
     aws_credentials = get_aws_credentials(profile="default")
 
-    dataset = load_dataset("example", config_path="custom.yaml")
+    dataset = load_dataset("tsv2_bladder")
 
     for model_name in ["SCVI", "SCGPT"]:
         dataset = run_inference(model_name, dataset, environment=aws_credentials)

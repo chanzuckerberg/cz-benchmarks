@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 import boto3
+from botocore.config import Config
+import botocore
 import logging
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -59,15 +61,19 @@ def get_aws_credentials(profile="default", aws_shared_credentials_path=None):
     return credentials_dict
 
 
-def download_s3_file(bucket, key, local_path):
+def download_s3_file(bucket, key, local_path, unsigned=True):
     """
     Downloads a single file from S3 to a local path.
 
     :param bucket: S3 bucket name
     :param key: S3 key (file path) to download
     :param local_path: Local file path to save to
+    :param unsigned: Whether to use unsigned requests (default: True)
     """
-    s3 = boto3.client("s3")
+    s3 = boto3.client(
+        "s3",
+        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
+    )
 
     # Create directory if it doesn't exist
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -80,15 +86,19 @@ def download_s3_file(bucket, key, local_path):
         raise
 
 
-def sync_s3_to_local(bucket, prefix, local_dir):
+def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
     """
     Syncs files from an S3 bucket prefix to a local directory.
 
     :param bucket: S3 bucket name
     :param prefix: S3 prefix (directory path or file) to sync from
     :param local_dir: Local directory path to sync to
+    :param unsigned: Whether to use unsigned requests (default: True)
     """
-    s3 = boto3.client("s3")
+    s3 = boto3.client(
+        "s3",
+        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
+    )
 
     # Prefix is a directory, proceed with original logic
     paginator = s3.get_paginator("list_objects_v2")
