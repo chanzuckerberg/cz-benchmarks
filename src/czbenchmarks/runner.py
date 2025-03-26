@@ -21,12 +21,6 @@ from .constants import (
 from .datasets import BaseDataset
 from .models.types import ModelType
 
-# Hide warnings from boto3, botocore, and urllib3, such as
-# AWS credentials file not being found, etc.
-logging.getLogger("boto3").setLevel(logging.ERROR)
-logging.getLogger("botocore").setLevel(logging.ERROR)
-logging.getLogger("urllib3").setLevel(logging.ERROR)
-
 logger = logging.getLogger(__name__)
 
 
