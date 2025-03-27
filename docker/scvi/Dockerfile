@@ -9,6 +9,7 @@ COPY docker/scvi/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src /app/package/src
+COPY conf /app/package/conf
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
 
