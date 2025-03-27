@@ -93,17 +93,16 @@ get_docker_image_uri() {
     fi
 
     CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
-
-    # Login to AWS ECR
-    # FIXME check if aws is installed
-    aws ecr get-login-password --region us-west-2 | \
-        docker login --username AWS --password-stdin 339713142298.dkr.ecr.us-west-2.amazonaws.com
+    ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
+    AWS_REGION=$(echo $ECR_URI | cut -d. -f4)
 }
 
 print_variables() {
     # Show image information
     echo ""
     echo -e "${GREEN}Docker setup:${RESET}"
+    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "ECR URI:") ${ECR_URI}${RESET}"
+    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
     echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Image:") ${CZBENCH_CONTAINER_URI}${RESET}"
     echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
@@ -229,6 +228,12 @@ get_docker_image_uri
 print_variables
 
 # Ensure docker container is updated
+# FIXME check if aws is installed
+echo ""
+echo -e "${GREEN}Logging in to AWS with docker${RESET}"
+aws ecr get-login-password --region ${AWS_REGION} | \
+    docker login --username AWS --password-stdin ${AWS_REGION}
+
 echo ""
 echo -e "${GREEN}Pulling latest image for ${MODEL_NAME}${RESET}"
 docker pull ${CZBENCH_CONTAINER_URI}
