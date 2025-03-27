@@ -20,7 +20,7 @@ else:
 if __name__ == "__main__":
     dataset_list = ["tsv2_heart", "tsv2_large_intestine"]
     datasets = [
-        load_dataset(dataset_name=dataset_name, dataset_cache_path="/raw")
+        load_dataset(dataset_name=dataset_name)
         for dataset_name in dataset_list
     ]
 
