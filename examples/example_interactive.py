@@ -8,14 +8,11 @@ from czbenchmarks.tasks import (
     EmbeddingTask,
     MetadataLabelPredictionTask,
 )
-from czbenchmarks.utils import get_aws_credentials
 
 sys.path.insert(0, "/app") # Set to location of model.py
 from model import SCVI as BenchmarkModel
 
 if __name__ == "__main__":
-    aws_credentials = get_aws_credentials(profile="default")
-
     # TODO test with multiple datasets
     current_dir = pathlib.Path(__file__).absolute().parent
     dataset = load_dataset("example", config_path=current_dir / "custom_interactive.yaml")

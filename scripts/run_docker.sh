@@ -141,14 +141,6 @@ print_variables() {
     else
         echo -e "   ${GREEN}Container will run as current user (${USER})${RESET}"
     fi
-
-    echo ""
-    echo -e "${GREEN}AWS credentials:${RESET}"
-    if [ -e ${HOME}/.aws/credentials ]; then
-        echo -e "   ${GREEN}Using AWS credentials found in ${HOME}/.aws/credentials${RESET}"
-    else
-        echo -e "${RED}AWS credentials not found in ${HOME}/.aws/credentials${RESET}"
-    fi
 }
 
 build_docker_command() {
@@ -186,12 +178,6 @@ build_docker_command() {
     --volume ${DEVELOPMENT_CODE_PATH}/examples:${MODEL_CODE_PATH_DOCKER}/examples:rw \\
     --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\
     --env PYTHONPATH=${MODEL_CODE_PATH_DOCKER}:${BENCHMARK_CODE_PATH_DOCKER}/src \\"
-    fi
-
-    # Add AWS credentials if they exist
-    if [ -e ${HOME}/.aws/credentials ]; then
-        DOCKER_CMD="${DOCKER_CMD}
-    --volume ${HOME}/.aws:${BENCHMARK_CODE_PATH_DOCKER}/.aws:ro \\"
     fi
 
     # Add final options
