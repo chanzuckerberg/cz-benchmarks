@@ -175,6 +175,7 @@ validate_variables() {
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Docker command:") ${EVAL_CMD}${RESET}"
     else
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Custom image provided:") ${CZBENCH_CONTAINER_URI}${RESET}"
     fi
@@ -240,6 +241,7 @@ build_docker_command() {
     --ulimit memlock=-1 \\
     --ulimit stack=67108864 \\
     --env TMPDIR=/tmp \\
+    --env NUMBA_CACHE_DIR=/tmp \\
     --env SHELL=bash \\"
 
     # User-specific settings if not running as root, NOTE: untested on WSL
