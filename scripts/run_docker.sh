@@ -93,6 +93,11 @@ get_docker_image_uri() {
     fi
 
     CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
+
+    # Login to AWS ECR
+    # FIXME check if aws is installed
+    aws ecr get-login-password --region us-west-2 | \
+        docker login --username AWS --password-stdin 339713142298.dkr.ecr.us-west-2.amazonaws.com
 }
 
 print_variables() {
@@ -226,10 +231,7 @@ print_variables
 # Ensure docker container is updated
 echo ""
 echo -e "${GREEN}Pulling latest image for ${MODEL_NAME}${RESET}"
-# docker pull ${CZBENCH_CONTAINER_URI}
-
-# FIXME this is a WAR until container image is published
-CZBENCH_CONTAINER_URI="czbenchmarks-scvi:latest"
+docker pull ${CZBENCH_CONTAINER_URI}
 
 # Create and execute docker command
 DOCKER_CMD=""
