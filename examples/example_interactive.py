@@ -12,7 +12,9 @@ if os.path.exists("/app/model.py"):
     sys.path.insert(0, "/app")
     from model import SCVI as BenchmarkModel
 else:
-    raise ValueError("Model not found in /app/model.py. This example should be run in a Docker container.")
+    raise ValueError(
+        "Model not found in /app/model.py. This example should be run in a Docker container."
+    )
 
 if __name__ == "__main__":
     dataset_list = ["tsv2_heart", "tsv2_large_intestine"]
@@ -34,4 +36,5 @@ if __name__ == "__main__":
     print(clustering_results)
     print("Embedding results:")
     print(embedding_results)
-    print("Prediction results:")    print(prediction_results)
+    print("Prediction results:")
+    print(prediction_results)
