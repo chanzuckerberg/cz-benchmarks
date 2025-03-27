@@ -1,8 +1,7 @@
 from typing import List
 import hydra
 from omegaconf import OmegaConf
-
-from ..datasets.utils import initialize_hydra
+from ..utils import initialize_hydra
 
 
 def list_available_models() -> List[str]:

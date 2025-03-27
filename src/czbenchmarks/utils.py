@@ -5,11 +5,28 @@ import boto3
 from botocore.config import Config
 import botocore
 import logging
+import hydra
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
+
+
+def initialize_hydra(config_path="../../conf"):
+    """
+    Initialize Hydra configuration system.
+    
+    Args:
+        config_path: Path to the configuration directory
+    """
+    if hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+
+    hydra.initialize(
+        config_path=config_path,
+        version_base=None,
+    )
 
 
 def get_aws_credentials(profile="default", aws_shared_credentials_path=None):
