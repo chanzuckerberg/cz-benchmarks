@@ -6,7 +6,7 @@
 ################################################################################
 # User defined information
 
-# Mount paths
+# Mount paths -- could also source from czbenchmarks.constants.py
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
 DEVELOPMENT_CODE_PATH=$(pwd) # Leave blank or remove to not mount code
@@ -17,18 +17,37 @@ RUN_AS_ROOT=false # false or true
 
 ################################################################################
 # Function definitions
+# TODO -- some of these could be moved to a file and shared with other scripts
+
+get_valid_models() {
+    # Get valid models from docker directory folder names
+    # Should replace this with output of a python function in the future
+    
+    VALID_MODELS=()
+    for model_dir in docker/*/; do
+        if [ -d "$model_dir" ] && [ -f "${model_dir}/model.py" ]; then
+            model_dir_name=$(basename "$model_dir")
+            VALID_MODELS+=("$model_dir_name")
+        fi
+    done
+
+    VALID_MODELS_STR=$(printf ", %s" "${VALID_MODELS[@]}")
+    VALID_MODELS_STR=${VALID_MODELS_STR:2} 
+}
+
 print_usage() {
-    echo "Usage: $0 [OPTIONS]"
-    echo "Options:"
-    echo "  -m, --model-name NAME     Set the model name. Required."
-    echo ""
+    echo -e "${MAGENTA_BOLD}Usage: $0 [OPTIONS]${RESET}"
+    echo -e "${BOLD}Options:${RESET}"
+    echo -e "  ${BOLD}-m, --model-name NAME${RESET}     Required. Set the model name, one of:"
+    echo -e "  ${BOLD}${RESET}                             ( ${VALID_MODELS_STR} )"
+    echo -e "  ${BOLD}-h, --help${RESET}                Show this help message and exit."
 }
 
 validate_directory() {
     local path=$1
     local var_name=$2
     if [ ! -d "$path" ]; then
-        echo -e "${RED}Error: Directory for $var_name does not exist: $path${RESET}"
+        echo -e "${RED_BOLD}Error: Directory for $var_name does not exist: $path${RESET}"
         exit 1
     fi
 }
@@ -46,7 +65,7 @@ initialize_variables() {
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Unknown option: $1${RESET}"
+                echo -e "${RED_BOLD}Unknown option: $1${RESET}"
                 print_usage
                 exit 1
                 ;;
@@ -54,18 +73,30 @@ initialize_variables() {
     done
 
     # Validate that required variables are set
-    echo ""
-    echo -e "${GREEN}Required flags:${RESET}"
-    if [ ! -z "${MODEL_NAME}" ]; then
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "MODEL_NAME:") ${MODEL_NAME}${RESET}"
-    else
-        echo -e "${RED}MODEL_NAME is required but not set${RESET}"
+    if [ -z "${MODEL_NAME}" ]; then
+        echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
         print_usage
         exit 1
     fi
     
-    # Updates to variables which require model name
+    # Validate that MODEL_NAME is in the list of valid models
+    is_valid=false
+    for valid_model in "${VALID_MODELS[@]}"; do
+        if [ "${MODEL_NAME}" = "${valid_model}" ]; then
+            is_valid=true
+            break
+        fi
+    done
+    
+    if [ "${is_valid}" = false ]; then # Remove leading ", "
+        echo -e "${RED_BOLD}MODEL_NAME must be one of: ( ${VALID_MODELS_STR} )${RESET}"
+        print_usage
+        exit 1
+    fi
+    
+    # Updates to variables which require model name and create directories if they don't exist
     MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
+    mkdir -p ${MODEL_WEIGHTS_CACHE_PATH}
 
     # Docker paths -- should not be changed
     RAW_INPUT_DIR_PATH_DOCKER=/raw
@@ -82,68 +113,95 @@ initialize_variables() {
 }
 
 get_docker_image_uri() {
+    # Requires $MODEL_NAME. Must be run after initialize_variables
+    if [ -z "$MODEL_NAME" ]; then
+        echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
+        exit 1
+    else
+        MODEL_NAME_UPPER=$(echo "$MODEL_NAME" | tr '[:lower:]' '[:upper:]')
+    fi
+
     # Get model image URI from models.yaml
     MODEL_CONFIG_PATH="conf/models.yaml"
-    PYTHON_SCRIPT="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${MODEL_NAME^^}']['model_image_uri'])"
+    PYTHON_SCRIPT="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${MODEL_NAME_UPPER}']['model_image_uri'])"
     CZBENCH_CONTAINER_URI=$(python3 -c "${PYTHON_SCRIPT}")
 
     if [ -z "$CZBENCH_CONTAINER_URI" ]; then
-        echo -e "${RED}Model ${MODEL_NAME^^} not found in ${MODEL_CONFIG_PATH}${RESET}"
+        echo -e "${RED_BOLD}Model ${MODEL_NAME_UPPER} not found in ${MODEL_CONFIG_PATH}${RESET}"
         exit 1
     fi
 
     CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
-    ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
-    AWS_REGION=$(echo $ECR_URI | cut -d. -f4)
+    AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
+    AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
+
+    for var in CZBENCH_CONTAINER_URI CZBENCH_CONTAINER_NAME AWS_ECR_URI AWS_REGION; do
+        if [ -z "${!var}" ]; then
+            echo -e "${RED_BOLD}$var is required but not set${RESET}"
+            exit 1
+        fi
+    done
 }
 
 print_variables() {
+    echo ""
+    echo -e "${GREEN_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "INITIALIZED VARIABLES") ##########${RESET}"
+    echo ""
+    echo -e "   ${GREEN_BOLD}Required flags:${RESET}"
+    if [ ! -z "${MODEL_NAME}" ]; then
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "MODEL_NAME:") ${MODEL_NAME}${RESET}"
+    else
+        echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
+        print_usage
+        exit 1
+    fi
+
     # Show image information
     echo ""
-    echo -e "${GREEN}Docker setup:${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "ECR URI:") ${ECR_URI}${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Image:") ${CZBENCH_CONTAINER_URI}${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
+    echo -e "   ${GREEN_BOLD}Docker setup:${RESET}"
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
     # Validate required paths and show sources
     echo ""
-    echo -e "${GREEN}Local paths:${RESET}"
+    echo -e "   ${GREEN_BOLD}Local paths:${RESET}"
     for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH; do
         if [ -z "${!var}" ]; then
-            echo -e "${RED}Error: $var is required but not set${RESET}"
+            echo -e "${RED_BOLD}Error: $var is required but not set${RESET}"
             exit 1
         fi
 
         validate_directory "${!var}" "$var"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
     # Show Docker paths
     echo ""
-    echo -e "${GREEN}Docker paths:${RESET}"
+    echo -e "   ${GREEN_BOLD}Docker paths:${RESET}"
     for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER MODEL_CODE_PATH_DOCKER; do
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
 
     # Development mode
     echo ""
-    echo -e "${GREEN}Development mode:${RESET}"
+    echo -e "   ${GREEN_BOLD}Development mode:${RESET}"
     if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
         validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
-        echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "BENCHMARK_CODE_PATH_DOCKER:") ${BENCHMARK_CODE_PATH_DOCKER}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "BENCHMARK_CODE_PATH_DOCKER:") ${BENCHMARK_CODE_PATH_DOCKER}${RESET}"
     else
-        echo -e "   ${GREEN}DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
+        echo -e "   DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
     fi
 
     # Show user mode information
     echo ""
-    echo -e "${GREEN}User mode:${RESET}"
+    echo -e "   ${GREEN_BOLD}User mode:${RESET}"
     if [ "${RUN_AS_ROOT}" = "true" ]; then
-        echo -e "   ${GREEN}Container will run as root${RESET}"
+        echo -e "   Container will run as root${RESET}"
     else
-        echo -e "   ${GREEN}Container will run as current user (${USER})${RESET}"
+        echo -e "   Container will run as current user (${USER})${RESET}"
     fi
 }
 
@@ -196,7 +254,7 @@ build_docker_command() {
 
 print_docker_command() {
     echo ""
-    echo -e "${GREEN}Executing docker command:${RESET}"
+    echo -e "   ${BLUE_BOLD}Executing docker command${RESET}"
     echo "${DOCKER_CMD}"
     echo ""
 
@@ -210,36 +268,50 @@ print_docker_command() {
 # Print formatting
 COLUMN_WIDTH=30
 GREEN="\033[32m"
-RESET="\033[0m"
 RED="\033[31m"
+BLUE="\033[34m"
+MAGENTA="\033[35m"
+BOLD="\033[1m"
+UNBOLD="\033[22m"
+GREEN_BOLD="\033[32;1m"
+RED_BOLD="\033[31;1m"
+BLUE_BOLD="\033[34;1m"
+MAGENTA_BOLD="\033[35;1m"
+RESET="\033[0m"
 
 # Check if script is run from correct directory
 if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
     echo ""
-    echo -e "${RED}Run this script from root directory. Usage: bash scripts/run_docker.sh -m MODEL_NAME${RESET}"
+    echo -e "${RED_BOLD}Run this script from root directory. Usage: bash scripts/run_docker.sh -m MODEL_NAME${RESET}"
     echo ""
     print_usage
     exit 1
 fi
 
 # Setup variables
+get_valid_models
 initialize_variables "$@"
 get_docker_image_uri
 print_variables
 
 # Ensure docker container is updated
-# FIXME check if aws is installed
 echo ""
-echo -e "${GREEN}Logging in to AWS with docker${RESET}"
-aws ecr get-login-password --region ${AWS_REGION} | \
-    docker login --username AWS --password-stdin ${AWS_REGION}
+echo -e "${BLUE_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "EXECUTING WORKFLOW") ##########${RESET}"
+echo ""
+echo -e "   ${BLUE_BOLD}Logging in to AWS with docker${RESET}"
+
+PYTHON_SCRIPT="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
+get_authorization_token()['authorizationData'][0]['authorizationToken'])"
+python3 -c "${PYTHON_SCRIPT}" | base64 -d | cut -d: -f2 | \
+    docker login --username AWS --password-stdin ${AWS_ECR_URI}
+# Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ECR_URI}
 
 echo ""
-echo -e "${GREEN}Pulling latest image for ${MODEL_NAME}${RESET}"
+echo -e "   ${BLUE_BOLD}Pulling latest image for ${MODEL_NAME}${RESET}"
+
 docker pull ${CZBENCH_CONTAINER_URI}
 
 # Create and execute docker command
-DOCKER_CMD=""
 build_docker_command
 print_docker_command
 eval ${DOCKER_CMD}

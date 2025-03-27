@@ -1,6 +1,5 @@
 import sys
-import pathlib
-
+import os
 from czbenchmarks.datasets.utils import load_dataset
 
 from czbenchmarks.tasks import (
@@ -9,14 +8,15 @@ from czbenchmarks.tasks import (
     MetadataLabelPredictionTask,
 )
 
-sys.path.insert(0, "/app") # Set to location of model.py
-from model import SCVI as BenchmarkModel
+if os.path.exists("/app/model.py"):
+    sys.path.insert(0, "/app")
+    from model import SCVI as BenchmarkModel
+else:
+    raise ValueError("Model not found in /app/model.py. This example should be run in a Docker container.")
 
 if __name__ == "__main__":
-    # TODO test with multiple datasets
-    current_dir = pathlib.Path(__file__).absolute().parent
-    dataset = load_dataset("example", config_path=current_dir / "custom_interactive.yaml")
-    datasets = dataset if isinstance(dataset, list) else [dataset]
+    dataset_list = ["tsv2_heart", "tsv2_large_intestine"]
+    datasets = [load_dataset(dataset_name) for dataset_name in dataset_list]
 
     model = BenchmarkModel()
     model.run(datasets=datasets)
@@ -34,5 +34,4 @@ if __name__ == "__main__":
     print(clustering_results)
     print("Embedding results:")
     print(embedding_results)
-    print("Prediction results:")
-    print(prediction_results)
+    print("Prediction results:")    print(prediction_results)

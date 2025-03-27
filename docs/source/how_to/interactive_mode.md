@@ -19,9 +19,9 @@ bash scripts/run_docker.sh -m MODEL_NAME
 The script also includes user-configurable variables at the top of the file:
 
 ### Mount Paths
-- `DATASETS_CACHE_PATH`: Path to the local directory containing datasets. Default: `${HOME}/.cz-benchmarks/datasets`
-- `MODEL_WEIGHTS_CACHE_PATH`: Path to the local directory for model weights. Default: `${HOME}/.cz-benchmarks/weights`
-- `DEVELOPMENT_CODE_PATH`: Path to the local development code. Default: `$(pwd)`. Set to blank or remove if mounting code is not desired.
+- `DATASETS_CACHE_PATH`: Path to the cache directory containing datasets. Default: `${HOME}/.cz-benchmarks/datasets`
+- `MODEL_WEIGHTS_CACHE_PATH`: Path to the cache directory for model weights. Default: `${HOME}/.cz-benchmarks/weights`
+- `DEVELOPMENT_CODE_PATH`: Path to the workstation development code. Default: `$(pwd)`. Set to blank or remove if mounting code is not desired.
 
 ### Container Execution Settings
 - `EVAL_CMD`: Command to execute when the container starts. Default: `bash`
@@ -31,33 +31,34 @@ The script also includes user-configurable variables at the top of the file:
 
 The repository includes an example script (`examples/example_interactive.py`) that demonstrates how to run various tasks on a dataset with the user-selected model. To use this example:
 
-1. Place the input data file (`.h5ad` format) in the datasets cache directory, so the path is `${HOME}/.cz-benchmarks/datasets/example_small.h5ad`. Update `examples/config_interactive.yaml` if the name of the dataset is different. _FIXME: remove this and update yaml file to use datasets from S3 bucket_
-
-2. Launch the container with the appropriate model:
+1. Launch the container with the appropriate model:
    ```bash
    bash scripts/run_docker.sh -m MODEL_NAME
    ```
 
-3. Inside the container, run the example script:
+2. Inside the container, run the example script:
    ```bash
    python3 examples/example_interactive.py
    ```
 
 The example script will:
 
-- Load the dataset specified in `examples/custom_interactive.yaml`
-- Evaluate the dataset with the model
-- Execute three tasks
+- Download the specified dataset(s)
+- Evaluate the dataset(s) with the model
+- Execute tasks
 - Print the results of each task
 
 ## Important Notes
 
-- The script automatically mounts existing AWS credentials if they exist in `${HOME}/.aws`. These are used to download datasets.
-- When running in development mode (with `DEVELOPMENT_CODE_PATH` set), the local code is mounted and the `PYTHONPATH` is configured accordingly
+- When running in development mode (with `DEVELOPMENT_CODE_PATH` set), the code directory is mounted
 - The container has GPU support enabled by default and is configured with appropriate memory settings
-- The script validates that all required directories exist before starting the container
+- The script validates that all required directories exist before starting the container and that a valid model is provided
+- The script will automatically ensure the appropriate container is downloaded and current
 
 ## Limitations
 
 - Each model is provided in a separate Docker container, thus limiting this method to a single model per container. 
-- Running multiple models requires launching separate containers for each model
+- Running multiple models can be accomplished by launching separate containers for each model. The imported model name must be updated:
+```python
+from model import SCVI as BenchmarkModel
+```
