@@ -180,6 +180,11 @@ validate_variables() {
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Custom image provided:") ${CZBENCH_CONTAINER_URI}${RESET}"
     fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
+    if [ "${RUN_AS_ROOT}" = "true" ]; then
+        echo -e "   Container will run as root${RESET}"
+    else
+        echo -e "   Container will run as current user (${USER})${RESET}"
+    fi
 
     RAW_INPUT_DIR_PATH_DOCKER=/raw
     MODEL_WEIGHTS_PATH_DOCKER=/weights
@@ -220,15 +225,6 @@ validate_variables() {
         validate_directory "${!var}" "$var"
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
-
-    # Show user mode information
-    echo ""
-    echo -e "   ${GREEN_BOLD}User mode:${RESET}"
-    if [ "${RUN_AS_ROOT}" = "true" ]; then
-        echo -e "   Container will run as root${RESET}"
-    else
-        echo -e "   Container will run as current user (${USER})${RESET}"
-    fi
 }
 
 build_docker_command() {
