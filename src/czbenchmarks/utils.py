@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def initialize_hydra(config_path="../../conf"):
     """
     Initialize Hydra configuration system.
-    
+
     Args:
         config_path: Path to the configuration directory
     """
