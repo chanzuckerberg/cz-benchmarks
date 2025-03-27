@@ -10,17 +10,18 @@
 # Mount paths -- could also source from czbenchmarks.constants.py
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
-DEVELOPMENT_CODE_PATH=$(pwd) # Leave blank or remove to not mount code
+DEVELOPMENT_CODE_PATH=$(pwd) # Leave empty or remove to not mount code
 
-# Container execution settings
-EVAL_CMD=bash # e.g. bash or "python3 examples/example_interactive.py"
+# Container related settings
+CZBENCH_CONTAINER_URI= # Add custom container:tag here or leave empty to use AWS container
+EVAL_CMD="bash" # "bash" or "python3 -u /app/examples/example_interactive.py"
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
 # Function definitions
-# TODO -- some of these could be moved to a file and shared with other scripts
+# TODO -- some functions could be moved to a file and shared with other scripts
 
-list_available_models() {    
+get_available_models() {    
     # Get valid models from czbenchmarks.models.utils
     PYTHON_SCRIPT="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).lower())"
     AVAILABLE_MODELS=($(python3 -c "${PYTHON_SCRIPT}"))
@@ -108,7 +109,7 @@ initialize_variables() {
     # eval "$(python3 -c "${PYTHON_SCRIPT}")"
 }
 
-get_docker_image_uri() {
+get_aws_docker_image_uri() {
     # Requires $MODEL_NAME. Must be run after initialize_variables
     if [ -z "$MODEL_NAME" ]; then
         echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
@@ -127,16 +128,24 @@ get_docker_image_uri() {
         exit 1
     fi
 
-    CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
     AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
     AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
 
-    for var in CZBENCH_CONTAINER_URI CZBENCH_CONTAINER_NAME AWS_ECR_URI AWS_REGION; do
+    for var in CZBENCH_CONTAINER_URI AWS_ECR_URI AWS_REGION; do
         if [ -z "${!var}" ]; then
             echo -e "${RED_BOLD}$var is required but not set${RESET}"
             exit 1
         fi
     done
+
+    # Login to AWS ECR and pull image
+    # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
+    PYTHON_SCRIPT="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
+    get_authorization_token()['authorizationData'][0]['authorizationToken'])"
+    python3 -c "${PYTHON_SCRIPT}" | base64 -d | cut -d: -f2 | \
+        docker login --username AWS --password-stdin ${AWS_ECR_URI}
+
+    docker pull ${CZBENCH_CONTAINER_URI}
 }
 
 print_variables() {
@@ -155,9 +164,13 @@ print_variables() {
     # Show image information
     echo ""
     echo -e "   ${GREEN_BOLD}Docker setup:${RESET}"
-    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
-    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
-    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
+    if [ "${USE_AWS_ECR}" = true ]; then
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
+    else
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Custom image provided:") ${CZBENCH_CONTAINER_URI}${RESET}"
+    fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
     # Validate required paths and show sources
@@ -243,9 +256,19 @@ build_docker_command() {
     --env HOME=${MODEL_CODE_PATH_DOCKER} \\
     --workdir ${MODEL_CODE_PATH_DOCKER} \\
     --env MODEL_NAME=${MODEL_NAME} \\
-    --name ${CZBENCH_CONTAINER_NAME} \\
-    --entrypoint ${EVAL_CMD} \\
+    --name ${CZBENCH_CONTAINER_NAME} \\"
+
+    # Add entrypoint command
+    if [ "${EVAL_CMD}" = 'bash' ]; then
+        DOCKER_CMD="${DOCKER_CMD}
+    --entrypoint bash \\
     ${CZBENCH_CONTAINER_URI}"
+    else
+        DOCKER_CMD="${DOCKER_CMD}
+    --entrypoint bash \\
+    ${CZBENCH_CONTAINER_URI} \\
+    -c \"${EVAL_CMD}\""
+    fi
 }
 
 print_docker_command() {
@@ -285,27 +308,20 @@ if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
 fi
 
 # Setup variables
-list_available_models
+get_available_models
 initialize_variables "$@"
-get_docker_image_uri
+if [ -z "${CZBENCH_CONTAINER_URI}" ]; then
+    get_aws_docker_image_uri
+    USE_AWS_ECR=true
+else
+    USE_AWS_ECR=false
+fi
+CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
 print_variables
 
 # Ensure docker container is updated
 echo ""
 echo -e "${BLUE_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "EXECUTING WORKFLOW") ##########${RESET}"
-echo ""
-echo -e "   ${BLUE_BOLD}Logging in to AWS with docker${RESET}"
-
-PYTHON_SCRIPT="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
-get_authorization_token()['authorizationData'][0]['authorizationToken'])"
-python3 -c "${PYTHON_SCRIPT}" | base64 -d | cut -d: -f2 | \
-    docker login --username AWS --password-stdin ${AWS_ECR_URI}
-# Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ECR_URI}
-
-echo ""
-echo -e "   ${BLUE_BOLD}Pulling latest image for ${MODEL_NAME}${RESET}"
-
-docker pull ${CZBENCH_CONTAINER_URI}
 
 # Create and execute docker command
 build_docker_command
