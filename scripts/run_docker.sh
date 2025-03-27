@@ -66,9 +66,6 @@ initialize_variables() {
     
     # Updates to variables which require model name
     MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
-    CZBENCH_IMG="czbenchmarks-${MODEL_NAME}"
-    CZBENCH_IMG_TAG="latest"
-    CZBENCH_CONTAINER_NAME="czbenchmarks-${MODEL_NAME}"
 
     # Docker paths -- should not be changed
     RAW_INPUT_DIR_PATH_DOCKER=/raw
@@ -84,11 +81,25 @@ initialize_variables() {
     # eval "$(python3 -c "${PYTHON_SCRIPT}")"
 }
 
+get_docker_image_uri() {
+    # Get model image URI from models.yaml
+    MODEL_CONFIG_PATH="conf/models.yaml"
+    PYTHON_SCRIPT="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${MODEL_NAME^^}']['model_image_uri'])"
+    CZBENCH_CONTAINER_URI=$(python3 -c "${PYTHON_SCRIPT}")
+
+    if [ -z "$CZBENCH_CONTAINER_URI" ]; then
+        echo -e "${RED}Model ${MODEL_NAME^^} not found in ${MODEL_CONFIG_PATH}${RESET}"
+        exit 1
+    fi
+
+    CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
+}
+
 print_variables() {
     # Show image information
     echo ""
     echo -e "${GREEN}Docker setup:${RESET}"
-    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Image:") ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}${RESET}"
+    echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Image:") ${CZBENCH_CONTAINER_URI}${RESET}"
     echo -e "   ${GREEN}$(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
     # Validate required paths and show sources
@@ -190,7 +201,7 @@ build_docker_command() {
     --env MODEL_NAME=${MODEL_NAME} \\
     --name ${CZBENCH_CONTAINER_NAME} \\
     --entrypoint ${EVAL_CMD} \\
-    ${CZBENCH_IMG}:${CZBENCH_IMG_TAG}"
+    ${CZBENCH_CONTAINER_URI}"
 }
 
 print_docker_command() {
@@ -223,7 +234,16 @@ fi
 
 # Setup variables
 initialize_variables "$@"
+get_docker_image_uri
 print_variables
+
+# Ensure docker container is updated
+echo ""
+echo -e "${GREEN}Pulling latest image for ${MODEL_NAME}${RESET}"
+# docker pull ${CZBENCH_CONTAINER_URI}
+
+# FIXME this is a WAR until container images is published
+CZBENCH_CONTAINER_URI="czbenchmarks-scvi:latest"
 
 # Create and execute docker command
 DOCKER_CMD=""
