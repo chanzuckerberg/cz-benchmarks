@@ -242,6 +242,7 @@ build_docker_command() {
     --ulimit stack=67108864 \\
     --env TMPDIR=/tmp \\
     --env NUMBA_CACHE_DIR=/tmp \\
+    --env MPLCONFIGDIR=/tmp \\
     --env SHELL=bash \\"
 
     # User-specific settings if not running as root, NOTE: untested on WSL
