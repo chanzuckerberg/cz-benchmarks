@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Interactive docker container launch script for cz-benchmarks
-# See the documentation section "Running a Docker Container in Interactive Mode" for detailed usage instructions
+# See the documentation section "Running a Docker Container in 
+# Interactive Mode" for detailed usage instructions
 
 ################################################################################
 # User defined information
@@ -19,27 +20,22 @@ RUN_AS_ROOT=false # false or true
 # Function definitions
 # TODO -- some of these could be moved to a file and shared with other scripts
 
-get_valid_models() {
-    # Get valid models from docker directory folder names
-    # Should replace this with output of a python function in the future
+list_available_models() {    
+    # Get valid models from czbenchmarks.models.utils
+    PYTHON_SCRIPT="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).lower())"
+    AVAILABLE_MODELS=($(python3 -c "${PYTHON_SCRIPT}"))
     
-    VALID_MODELS=()
-    for model_dir in docker/*/; do
-        if [ -d "$model_dir" ] && [ -f "${model_dir}/model.py" ]; then
-            model_dir_name=$(basename "$model_dir")
-            VALID_MODELS+=("$model_dir_name")
-        fi
-    done
-
-    VALID_MODELS_STR=$(printf ", %s" "${VALID_MODELS[@]}")
-    VALID_MODELS_STR=${VALID_MODELS_STR:2} 
+    # Format the models as a comma-separated string for display
+    AVAILABLE_MODELS_STR=$(printf ", %s" "${AVAILABLE_MODELS[@]}")
+    AVAILABLE_MODELS_STR=${AVAILABLE_MODELS_STR:2}
 }
 
 print_usage() {
     echo -e "${MAGENTA_BOLD}Usage: $0 [OPTIONS]${RESET}"
     echo -e "${BOLD}Options:${RESET}"
     echo -e "  ${BOLD}-m, --model-name NAME${RESET}     Required. Set the model name, one of:"
-    echo -e "  ${BOLD}${RESET}                             ( ${VALID_MODELS_STR} )"
+    echo -e "  ${BOLD}${RESET}                             ( ${AVAILABLE_MODELS_STR} )"
+    echo -e "  ${BOLD}${RESET}                             Model names are case-insensitive."
     echo -e "  ${BOLD}-h, --help${RESET}                Show this help message and exit."
 }
 
@@ -57,7 +53,7 @@ initialize_variables() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -m|--model-name)
-                MODEL_NAME="${2,,}" # Convert to lowercase
+                MODEL_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]') # Force lowercase
                 shift 2
                 ;;
             -h|--help)
@@ -81,7 +77,7 @@ initialize_variables() {
     
     # Validate that MODEL_NAME is in the list of valid models
     is_valid=false
-    for valid_model in "${VALID_MODELS[@]}"; do
+    for valid_model in "${AVAILABLE_MODELS[@]}"; do
         if [ "${MODEL_NAME}" = "${valid_model}" ]; then
             is_valid=true
             break
@@ -89,7 +85,7 @@ initialize_variables() {
     done
     
     if [ "${is_valid}" = false ]; then # Remove leading ", "
-        echo -e "${RED_BOLD}MODEL_NAME must be one of: ( ${VALID_MODELS_STR} )${RESET}"
+        echo -e "${RED_BOLD}MODEL_NAME must be one of: ( ${AVAILABLE_MODELS_STR} )${RESET}"
         print_usage
         exit 1
     fi
@@ -289,7 +285,7 @@ if [ ! "$(ls | grep -c scripts)" -eq 1 ]; then
 fi
 
 # Setup variables
-get_valid_models
+list_available_models
 initialize_variables "$@"
 get_docker_image_uri
 print_variables

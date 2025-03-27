@@ -6,7 +6,7 @@ This guide explains how launch an interactive docker container with cz-benchmark
 
 The script `scripts/run_docker.sh` is used to launch the container and accepts the following command line flags:
 
-- `-m, --model-name MODEL_NAME`: (Required) Set the model name (geneformer, scgenept, scgpt, scvi, uce). This also determines which docker image to use.
+- `-m, --model-name MODEL_NAME`: (Required) Set the model name (geneformer, scgenept, scgpt, scvi, uce). Model names are case-insensitive. This also determines which docker image to use.
 - `-h, --help`: Display usage information and exit.
 
 Example:
