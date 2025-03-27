@@ -228,7 +228,7 @@ echo ""
 echo -e "${GREEN}Pulling latest image for ${MODEL_NAME}${RESET}"
 # docker pull ${CZBENCH_CONTAINER_URI}
 
-# FIXME this is a WAR until container images is published
+# FIXME this is a WAR until container image is published
 CZBENCH_CONTAINER_URI="czbenchmarks-scvi:latest"
 
 # Create and execute docker command
