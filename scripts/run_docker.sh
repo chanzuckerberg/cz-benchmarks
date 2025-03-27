@@ -10,7 +10,9 @@
 # Mount paths -- could also source from czbenchmarks.constants.py
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
-DEVELOPMENT_CODE_PATH=$(pwd) # Leave empty or remove to not mount code
+DEVELOPMENT_CODE_PATH=$(pwd)
+EXAMPLES_CODE_PATH=${DEVELOPMENT_CODE_PATH}/examples
+MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks code
 
 # Container related settings
 CZBENCH_CONTAINER_URI= # Add custom container:tag here or leave empty to use AWS container
@@ -23,8 +25,8 @@ RUN_AS_ROOT=false # false or true
 
 get_available_models() {    
     # Get valid models from czbenchmarks.models.utils
-    PYTHON_SCRIPT="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).lower())"
-    AVAILABLE_MODELS=($(python3 -c "${PYTHON_SCRIPT}"))
+    local python_script="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).lower())"
+    AVAILABLE_MODELS=($(python3 -c "${python_script}"))
     
     # Format the models as a comma-separated string for display
     AVAILABLE_MODELS_STR=$(printf ", %s" "${AVAILABLE_MODELS[@]}")
@@ -43,8 +45,14 @@ print_usage() {
 validate_directory() {
     local path=$1
     local var_name=$2
-    if [ ! -d "$path" ]; then
-        echo -e "${RED_BOLD}Error: Directory for $var_name does not exist: $path${RESET}"
+
+    if [ -z "${path}" ]; then
+        echo -e "${RED_BOLD}Error: ${var_name} is required but not set${RESET}"
+        exit 1
+    fi
+
+    if [ ! -d "${path}" ]; then
+        echo -e "${RED_BOLD}Error: Directory for ${var_name} does not exist: ${path}${RESET}"
         exit 1
     fi
 }
@@ -77,7 +85,7 @@ initialize_variables() {
     fi
     
     # Validate that MODEL_NAME is in the list of valid models
-    is_valid=false
+    local is_valid=false
     for valid_model in "${AVAILABLE_MODELS[@]}"; do
         if [ "${MODEL_NAME}" = "${valid_model}" ]; then
             is_valid=true
@@ -98,10 +106,9 @@ initialize_variables() {
     # Docker paths -- should not be changed
     RAW_INPUT_DIR_PATH_DOCKER=/raw
     MODEL_WEIGHTS_PATH_DOCKER=/weights
+    EXAMPLES_CODE_PATH_DOCKER=/app
     MODEL_CODE_PATH_DOCKER=/app
-    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
-        BENCHMARK_CODE_PATH_DOCKER=/app/package # Squash container code when mounting local code
-    fi
+    BENCHMARK_CODE_PATH_DOCKER=/app/package # Squash existing container fw code when mounting local code
 
     # # Alternatively, Docker paths can also be loaded from czbenchmarks.constants.py to ensure consistency
     # PYTHON_SCRIPT="from czbenchmarks.constants import RAW_INPUT_DIR_PATH_DOCKER, MODEL_WEIGHTS_PATH_DOCKER; 
@@ -115,16 +122,16 @@ get_aws_docker_image_uri() {
         echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
         exit 1
     else
-        MODEL_NAME_UPPER=$(echo "$MODEL_NAME" | tr '[:lower:]' '[:upper:]')
+        local model_name_upper=$(echo "$MODEL_NAME" | tr '[:lower:]' '[:upper:]')
     fi
 
     # Get model image URI from models.yaml
     MODEL_CONFIG_PATH="conf/models.yaml"
-    PYTHON_SCRIPT="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${MODEL_NAME_UPPER}']['model_image_uri'])"
-    CZBENCH_CONTAINER_URI=$(python3 -c "${PYTHON_SCRIPT}")
+    local python_script="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${model_name_upper}']['model_image_uri'])"
+    CZBENCH_CONTAINER_URI=$(python3 -c "${python_script}")
 
     if [ -z "$CZBENCH_CONTAINER_URI" ]; then
-        echo -e "${RED_BOLD}Model ${MODEL_NAME_UPPER} not found in ${MODEL_CONFIG_PATH}${RESET}"
+        echo -e "${RED_BOLD}Model ${model_name_upper} not found in ${MODEL_CONFIG_PATH}${RESET}"
         exit 1
     fi
 
@@ -140,15 +147,15 @@ get_aws_docker_image_uri() {
 
     # Login to AWS ECR and pull image
     # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
-    PYTHON_SCRIPT="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
+    local python_script="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
     get_authorization_token()['authorizationData'][0]['authorizationToken'])"
-    python3 -c "${PYTHON_SCRIPT}" | base64 -d | cut -d: -f2 | \
+    python3 -c "${python_script}" | base64 -d | cut -d: -f2 | \
         docker login --username AWS --password-stdin ${AWS_ECR_URI}
 
     docker pull ${CZBENCH_CONTAINER_URI}
 }
 
-print_variables() {
+validate_variables() {
     echo ""
     echo -e "${GREEN_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "INITIALIZED VARIABLES") ##########${RESET}"
     echo ""
@@ -173,36 +180,45 @@ print_variables() {
     fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
 
+    RAW_INPUT_DIR_PATH_DOCKER=/raw
+    MODEL_WEIGHTS_PATH_DOCKER=/weights
+    EXAMPLES_CODE_PATH_DOCKER=/app
+    MODEL_CODE_PATH_DOCKER=/app
+    BENCHMARK_CODE_PATH_DOCKER=/app/package # Squash existing container fw code when mounting local code
+
+    # Show Docker paths
+    local docker_paths=(RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER MODEL_CODE_PATH_DOCKER EXAMPLES_CODE_PATH_DOCKER)
+    if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
+        docker_paths+=(BENCHMARK_CODE_PATH_DOCKER)
+    fi
+    echo ""
+    echo -e "   ${GREEN_BOLD}Docker paths:${RESET}"
+    for var in "${docker_paths[@]}"; do
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
+    done
+
+    # Examples directory
+    validate_directory "${EXAMPLES_CODE_PATH}" "EXAMPLES_CODE_PATH"
+    echo ""
+    echo -e "   ${GREEN_BOLD}Examples path:${RESET}"
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "EXAMPLES_CODE_PATH:") ${EXAMPLES_CODE_PATH}${RESET}"
+
+    # Development mode
+    if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
+        validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
+        echo ""
+        echo -e "   ${GREEN_BOLD}Development paths:${RESET}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
+        echo -e "   DEVELOPMENT_CODE_PATH will be mounted in container at ${BENCHMARK_CODE_PATH_DOCKER}${RESET}"
+    fi
+    
     # Validate required paths and show sources
     echo ""
-    echo -e "   ${GREEN_BOLD}Local paths:${RESET}"
+    echo -e "   ${GREEN_BOLD}Cache paths:${RESET}"
     for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH; do
-        if [ -z "${!var}" ]; then
-            echo -e "${RED_BOLD}Error: $var is required but not set${RESET}"
-            exit 1
-        fi
-
         validate_directory "${!var}" "$var"
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
     done
-
-    # Show Docker paths
-    echo ""
-    echo -e "   ${GREEN_BOLD}Docker paths:${RESET}"
-    for var in RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER MODEL_CODE_PATH_DOCKER; do
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
-    done
-
-    # Development mode
-    echo ""
-    echo -e "   ${GREEN_BOLD}Development mode:${RESET}"
-    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
-        validate_directory "${DEVELOPMENT_CODE_PATH}" "DEVELOPMENT_CODE_PATH"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "DEVELOPMENT_CODE_PATH:") ${DEVELOPMENT_CODE_PATH}${RESET}"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "BENCHMARK_CODE_PATH_DOCKER:") ${BENCHMARK_CODE_PATH_DOCKER}${RESET}"
-    else
-        echo -e "   DEVELOPMENT_CODE_PATH is not set. Development mode will not be used.${RESET}"
-    fi
 
     # Show user mode information
     echo ""
@@ -236,20 +252,20 @@ build_docker_command() {
     --volume ${HOME}/.ssh:${HOME}/.ssh:ro \\"
     fi
 
-    # Add mount points
-    DOCKER_CMD="${DOCKER_CMD}
-    --volume ${DATASETS_CACHE_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
-    --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\"
-
-    # Add code mounts and PYTHONPATH for development mode
-    # NOTE: do not change order, cz-benchmarks mounted last to prevent squashing
-    if [ ! -z "${DEVELOPMENT_CODE_PATH}" ]; then
+    # Mounts for development of cz-benchmarks framework
+    # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
+    if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
         DOCKER_CMD="${DOCKER_CMD}
     --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:${MODEL_CODE_PATH_DOCKER}:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}/examples:${MODEL_CODE_PATH_DOCKER}/examples:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\
-    --env PYTHONPATH=${MODEL_CODE_PATH_DOCKER}:${BENCHMARK_CODE_PATH_DOCKER}/src \\"
+    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
     fi
+
+    # Add mount points -- examples directory must be mounted after framework code (above)
+    DOCKER_CMD="${DOCKER_CMD}
+    --volume ${DATASETS_CACHE_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
+    --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\
+    --volume ${DEVELOPMENT_CODE_PATH}/examples:${EXAMPLES_CODE_PATH_DOCKER}/examples:rw \\
+    --env PYTHONPATH=${MODEL_CODE_PATH_DOCKER} \\"
 
     # Add final options
     DOCKER_CMD="${DOCKER_CMD}
@@ -260,14 +276,18 @@ build_docker_command() {
 
     # Add entrypoint command
     if [ "${EVAL_CMD}" = 'bash' ]; then
+
         DOCKER_CMD="${DOCKER_CMD}
     --entrypoint bash \\
     ${CZBENCH_CONTAINER_URI}"
+
     else
+
         DOCKER_CMD="${DOCKER_CMD}
     --entrypoint bash \\
     ${CZBENCH_CONTAINER_URI} \\
     -c \"${EVAL_CMD}\""
+    
     fi
 }
 
@@ -317,7 +337,7 @@ else
     USE_AWS_ECR=false
 fi
 CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
-print_variables
+validate_variables
 
 # Ensure docker container is updated
 echo ""
