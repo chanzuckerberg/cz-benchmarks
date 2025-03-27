@@ -13,7 +13,8 @@ if os.path.exists("/app/model.py"):
     from model import SCVI as BenchmarkModel
 else:
     raise ValueError(
-        "Model not found in /app/model.py. This example should be run in a Docker container."
+        "Model not found in /app/model.py. "
+        "This example should be run in a Docker container."
     )
 
 if __name__ == "__main__":
