@@ -38,7 +38,6 @@ def _download_dataset(uri: str, output_path: str, unsigned=True):
 
 def load_dataset(
     dataset_name: str,
-    dataset_cache_path: Optional[str] = None,
     config_path: Optional[str] = None,
 ) -> BaseDataset:
     """
@@ -88,8 +87,7 @@ def load_dataset(
             raise FileNotFoundError(f"Local dataset file not found: {expanded_path}")
     else:
         # Setup cache path
-        dataset_cache_path = dataset_cache_path or DATASETS_CACHE_PATH
-        cache_path = os.path.expanduser(dataset_cache_path)
+        cache_path = os.path.expanduser(DATASETS_CACHE_PATH)
         os.makedirs(cache_path, exist_ok=True)
         cache_file = os.path.join(cache_path, f"{dataset_name}.h5ad")
 

@@ -268,6 +268,8 @@ build_docker_command() {
     --volume ${DATASETS_CACHE_PATH}:${RAW_INPUT_DIR_PATH_DOCKER}:rw \\
     --volume ${MODEL_WEIGHTS_CACHE_PATH}:${MODEL_WEIGHTS_PATH_DOCKER}:rw \\
     --volume ${DEVELOPMENT_CODE_PATH}/examples:${EXAMPLES_CODE_PATH_DOCKER}/examples:rw \\
+    --env DATASETS_CACHE_PATH=${RAW_INPUT_DIR_PATH_DOCKER} \\
+    --env MODEL_WEIGHTS_CACHE_PATH=${MODEL_WEIGHTS_PATH_DOCKER} \\
     --env PYTHONPATH=${MODEL_CODE_PATH_DOCKER} \\"
 
     # Add final options
