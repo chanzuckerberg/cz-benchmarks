@@ -6,7 +6,7 @@ This guide explains how launch an interactive docker container with cz-benchmark
 
 The script `scripts/run_docker.sh` is used to launch the container and accepts the following command line flags:
 
-- `-m, --model-name MODEL_NAME`: (Required) Set the model name (geneformer, scgenept, scgpt, scvi, uce). Model names are case-insensitive. This also determines which docker image to use.
+- `-m, --model-name MODEL_NAME`: (Required) Set the model name (geneformer, scgenept, scgpt, scvi, uce). Model names are case-insensitive and will be converted to lowercase internally. This also determines which docker image to use.
 - `-h, --help`: Display usage information and exit.
 
 Example:
@@ -21,11 +21,17 @@ The script also includes user-configurable variables at the top of the file:
 ### Mount Paths
 - `DATASETS_CACHE_PATH`: Path to the cache directory containing datasets. Default: `${HOME}/.cz-benchmarks/datasets`
 - `MODEL_WEIGHTS_CACHE_PATH`: Path to the cache directory for model weights. Default: `${HOME}/.cz-benchmarks/weights`
-- `DEVELOPMENT_CODE_PATH`: Path to the workstation development code. Default: `$(pwd)`. Set to blank or remove if mounting code is not desired.
+- `DEVELOPMENT_CODE_PATH`: Path to the workstation development code. Default: `$(pwd)`. 
+- `EXAMPLES_CODE_PATH`: Path to the examples directory. Default: `$(pwd)/examples`
+- `MOUNT_FRAMEWORK_CODE`: Whether to mount the framework code. Options: `true` or `false`.
 
 ### Container Execution Settings
-- `EVAL_CMD`: Command to execute when the container starts. Default: `bash`
+- `EVAL_CMD`: Command to execute when the container starts (`bash` or `python3 -u examples/example_interactive.py`). 
 - `RUN_AS_ROOT`: Whether to run the container as root. Options: `false` (default) or `true`
+- `CZBENCH_CONTAINER_URI`: URI for the container image. Can be either:
+  - A custom container URI (e.g., `czbenchmarks-MODEL_NAME:latest`)
+  - An AWS ECR container URI (automatically handles authentication)
+  - Left blank to use the prebuilt container from AWS ECR
 
 ## Running the Interactive Example
 
@@ -50,10 +56,11 @@ The example script will:
 
 ## Important Notes
 
-- When running in development mode (with `DEVELOPMENT_CODE_PATH` set), the code directory is mounted
+- When running in development mode (with `MOUNT_FRAMEWORK_CODE` set to `true`), the code directory is mounted
 - The container has GPU support enabled by default and is configured with appropriate memory settings
 - The script validates that all required directories exist before starting the container and that a valid model is provided
 - The script will automatically ensure the appropriate container is downloaded and current
+- When using AWS ECR images, the script automatically handles authentication and image pulling
 
 ## Limitations
 
