@@ -62,5 +62,5 @@ jobs:
           context: .
           name: ${{ env.ECR_REPOSITORY }}
           registry: ${{ env.ECR_REGISTRY }}
-          custom_tag: ${{ matrix.image.custom_tag }}${{ github.event.release.tag_name != null ? '-' + github.event.release.tag_name : '' }}
+          custom_tag: ${{ matrix.image.custom_tag }}${{ github.event_name == 'release' && format('-{0}', github.event.release.tag_name) || '' }}
           platforms: linux/amd64
