@@ -8,7 +8,9 @@ OUTPUT_DATA_PATH_DOCKER = os.environ.get("OUTPUT_DATA_PATH_DOCKER", "/output/dat
 ARTIFACTS_PATH_DOCKER = os.environ.get("ARTIFACTS_PATH_DOCKER", "/artifacts")
 DATASETS_CACHE_PATH = os.environ.get("DATASETS_CACHE_PATH", "~/.cz-benchmarks/datasets")
 MODEL_WEIGHTS_PATH_DOCKER = os.environ.get("MODEL_WEIGHTS_PATH_DOCKER", "/weights")
-MODEL_WEIGHTS_CACHE_PATH = os.environ.get("MODEL_WEIGHTS_CACHE_PATH", "~/.cz-benchmarks/weights")
+MODEL_WEIGHTS_CACHE_PATH = os.environ.get(
+    "MODEL_WEIGHTS_CACHE_PATH", "~/.cz-benchmarks/weights"
+)
 
 
 # Derived constants
