@@ -1,9 +1,17 @@
 name: Build and Push Docker Images
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+
+# on:
+#   release:
+#     types: [published]
+#   workflow_dispatch:
 
 # If a new workflow run is triggered while an older one is still in progress, the older run will be automatically cancelled.
 concurrency:
@@ -11,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ECR_REGISTRY: 339713142298.dkr.ecr.us-west-2.amazonaws.com
-  ECR_REPOSITORY: cz-benchmarks-models
+  ECR_REGISTRY: public.ecr.aws/y4c8w5f9
+  ECR_REPOSITORY: cz-benchmarks-models-public
 
 jobs:
   build-push-images:
@@ -54,5 +62,5 @@ jobs:
           context: .
           name: ${{ env.ECR_REPOSITORY }}
           registry: ${{ env.ECR_REGISTRY }}
-          custom_tag: ${{ matrix.image.custom_tag }}
+          custom_tag: ${{ matrix.image.custom_tag }}${{ github.event.release.tag_name != null ? '-' + github.event.release.tag_name : '' }}
           platforms: linux/amd64
