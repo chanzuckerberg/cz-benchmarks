@@ -51,7 +51,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: us-west-2
+          aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN_GHA }}
           role-session-name: BuildCzBenchmarksDockerImages
 
