@@ -40,58 +40,31 @@ clean:
 .PHONY: rebuild
 rebuild: clean all
 
-# Check formatting with black
-.PHONY: black-check
-black-check:
-	# Check if code conforms to Black's formatting style
-	black --check .
+# Check formatting with ruff
+.PHONY: ruff-fmt-check
+ruff-fmt-check:
+	ruff format --check .
 
-# Fix formatting with black
-.PHONY: black-fix
-black-fix:
-	# Automatically format code using Black
-	black .
-
-# Run flake8 to lint the code
-.PHONY: flake8
-flake8:
-	# Lint the code using Flake8
-	flake8
-
-# Apply fixes for unused imports and variables
-.PHONY: autoflake
-autoflake:
-	# Automatically remove unused imports and variables
-	autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive .
+# Fix formatting with ruff
+.PHONY: ruff-fmt
+ruff-fmt:
+	ruff format .
 
 # Run ruff to check the code
 .PHONY: ruff-check
 ruff-check:
-	# Check code with Ruff
 	ruff check .
 
 # Run ruff with auto-fix
 .PHONY: ruff-fix
 ruff-fix:
-	# Auto-fix code with Ruff
 	ruff check . --fix
 
 # Run mypy type checking
 .PHONY: mypy-check
 mypy-check:
-	# Type check code with mypy
 	mypy .
 
-# Run all linters and checkers
+# Run all linters and checkers # TODO: enable mypy-check
 .PHONY: lint
-lint: flake8 black-check ruff-check #mypy-check
-
-# Run all linters and fixers
-.PHONY: lint-fix
-lint-fix: autoflake black-fix ruff-fix
-
-# Install tools explicitly
-.PHONY: install-tools
-install-tools:
-	# Install all required linting and formatting tools
-	pip install black flake8 autoflake
+lint: ruff-check ruff-fmt-check #mypy-check
