@@ -52,8 +52,7 @@ class BaseModelValidator(ABC):
         # Check for dataset_type
         if not hasattr(cls, "dataset_type"):
             raise TypeError(
-                f"Can't instantiate {cls.__name__}"
-                " without dataset_type class variable"
+                f"Can't instantiate {cls.__name__} without dataset_type class variable"
             )
 
     @abstractmethod
