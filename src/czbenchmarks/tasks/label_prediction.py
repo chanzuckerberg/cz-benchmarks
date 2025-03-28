@@ -91,7 +91,7 @@ class MetadataLabelPredictionTask(BaseTask):
         embeddings = data.get_output(model_type, DataType.EMBEDDING)
         labels = data.get_input(DataType.METADATA)[self.label_key]
         logger.info(
-            f"Initial data shape: {embeddings.shape}, " f"labels shape: {labels.shape}"
+            f"Initial data shape: {embeddings.shape}, labels shape: {labels.shape}"
         )
 
         # Filter classes with minimum size requirement
@@ -104,7 +104,7 @@ class MetadataLabelPredictionTask(BaseTask):
         n_classes = len(labels.unique())
         target_type = "binary" if n_classes == 2 else "weighted"
         logger.info(
-            f"Found {n_classes} classes, using {target_type} " "averaging for metrics"
+            f"Found {n_classes} classes, using {target_type} averaging for metrics"
         )
 
         scorers = {
@@ -124,9 +124,7 @@ class MetadataLabelPredictionTask(BaseTask):
         skf = StratifiedKFold(
             n_splits=self.n_folds, shuffle=True, random_state=self.seed
         )
-        logger.info(
-            f"Using {self.n_folds}-fold cross validation " f"with seed {self.seed}"
-        )
+        logger.info(f"Using {self.n_folds}-fold cross validation with seed {self.seed}")
 
         # Create classifiers
         classifiers = {
