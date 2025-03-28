@@ -5,36 +5,36 @@ all: scvi uce scgpt scgenept
 # Build the scvi image
 .PHONY: scvi
 scvi:
-	docker build -t cz-benchmarks-models:scvi -f docker/scvi/Dockerfile .
+	docker build -t czbenchmarks-scvi:latest -f docker/scvi/Dockerfile .
 
 # Build the uce image
 .PHONY: uce
 uce:
-	docker build -t cz-benchmarks-models:uce -f docker/uce/Dockerfile .
+	docker build -t czbenchmarks-uce:latest -f docker/uce/Dockerfile .
 
 # Build the scgpt image
 .PHONY: scgpt
 scgpt:
-	docker build -t cz-benchmarks-models:scgpt -f docker/scgpt/Dockerfile .
+	docker build -t czbenchmarks-scgpt:latest -f docker/scgpt/Dockerfile .
 
 # Build the scgenept image
 .PHONY: scgenept
 scgenept:
-	docker build -t cz-benchmarks-models:scgenept -f docker/scgenept/Dockerfile .
+	docker build -t czbenchmarks-scgenept:latest -f docker/scgenept/Dockerfile .
 
 # Build the geneformer image
 .PHONY: geneformer
 geneformer:
-	docker build -t cz-benchmarks-models:geneformer -f docker/geneformer/Dockerfile .
+	docker build -t czbenchmarks-geneformer:latest -f docker/geneformer/Dockerfile .
 
 # Clean up images
 .PHONY: clean
 clean:
-	docker rmi cz-benchmarks-models:scvi || true
-	docker rmi cz-benchmarks-models:uce || true
-	docker rmi cz-benchmarks-models:scgpt || true
-	docker rmi cz-benchmarks-models:scgenept || true
-	docker rmi cz-benchmarks-models:geneformer || true
+	docker rmi czbenchmarks-scvi:latest || true
+	docker rmi czbenchmarks-uce:latest || true
+	docker rmi czbenchmarks-scgpt:latest || true
+	docker rmi czbenchmarks-scgenept:latest || true
+  docker rmi czbenchmarks-geneformer:latest || true
 
 # Helper target to rebuild everything from scratch
 .PHONY: rebuild
