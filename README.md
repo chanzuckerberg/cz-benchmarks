@@ -8,6 +8,8 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 
 ## Installation Instructions
 
+⚠️ Warning: The provided model images are based on NVIDIA base images and require an NVIDIA GPU. They will only run on linux/amd64 systems with the NVIDIA Container Runtime enabled.
+
 ### From Source
 
 ```bash

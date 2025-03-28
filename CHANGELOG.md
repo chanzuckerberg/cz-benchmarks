@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.0...v0.4.1) (2025-03-27)
+
+
+### Bug Fixes
+
+* add conf directory to all containers ([#128](https://github.com/chanzuckerberg/cz-benchmarks/issues/128)) ([9415e3c](https://github.com/chanzuckerberg/cz-benchmarks/commit/9415e3c63bc8bcf93b9d1e85b4dd57d6532c90d4))
+
 ## [0.4.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.3.0...v0.4.0) (2025-03-26)
 
 
