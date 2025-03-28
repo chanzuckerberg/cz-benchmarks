@@ -1,3 +1,5 @@
+import logging
+import sys
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.runner import run_inference
 from czbenchmarks.tasks import (
@@ -5,6 +7,7 @@ from czbenchmarks.tasks import (
 )
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     dataset = load_dataset("adamson_perturb")
 
     dataset = run_inference("SCGENEPT", dataset, gene_pert="TMED2+ctrl")
