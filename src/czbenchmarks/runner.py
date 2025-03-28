@@ -277,7 +277,7 @@ class ContainerRunner:
             container.start()
             # Stream logs in real-time for monitoring
             for log in container.logs(stream=True, follow=True):
-                print(log.decode().strip())
+                logger.info(log.decode().strip())
 
             # Wait for container to finish and check exit status
             result = container.wait()

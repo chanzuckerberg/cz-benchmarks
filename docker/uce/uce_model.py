@@ -119,12 +119,12 @@ class UCE(UCEValidator, BaseModelImplementation):
             protein_embeddings_target.unlink()
         protein_embeddings_target.symlink_to(protein_embeddings_source)
 
-        print(f"Contents of {protein_embeddings_target}:\n")
+        logger.info(f"Contents of {protein_embeddings_target}:\n")
         if protein_embeddings_target.exists():
             for path in protein_embeddings_target.rglob("*"):
-                print(f"{path.relative_to(protein_embeddings_target)}\n")
+                logger.info(f"{path.relative_to(protein_embeddings_target)}\n")
         else:
-            print("Directory does not exist\n")
+            logger.warning("Directory does not exist\n")
 
         adata = dataset.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))
