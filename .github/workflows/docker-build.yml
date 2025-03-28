@@ -54,6 +54,11 @@ jobs:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN_GHA }}
           role-session-name: BuildCzBenchmarksDockerImages
+      
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
 
       - name: Build And Push
         uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@docker-build-push-v1.6.1
