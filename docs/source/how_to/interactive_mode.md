@@ -6,7 +6,7 @@ This guide explains how launch an interactive docker container with cz-benchmark
 
 The script `scripts/run_docker.sh` is used to launch the container and accepts the following command line flags:
 
-- `-m, --model-name MODEL_NAME`: (Required) Set the model name (geneformer, scgenept, scgpt, scvi, uce). Model names are case-insensitive and will be converted to lowercase internally. This also determines which docker image to use.
+- `-m, --model-name MODEL_NAME`: (Required) Set the model name (GENEFORMER, SCGENEPT, SCGPt, SCVI, UCE). Model names are case-insensitive and will be converted to lowercase internally. This also determines which docker image to use.
 - `-h, --help`: Display usage information and exit.
 
 Example:
@@ -26,12 +26,9 @@ The script also includes user-configurable variables at the top of the file:
 - `MOUNT_FRAMEWORK_CODE`: Whether to mount the framework code. Options: `true` or `false`.
 
 ### Container Execution Settings
+- `BUILD_DEV_CONTAINER`: true to use prebuilt container from AWS ECR, false to build a container with development code
 - `EVAL_CMD`: Command to execute when the container starts (`bash` or `python3 -u examples/example_interactive.py`). 
 - `RUN_AS_ROOT`: Whether to run the container as root. Options: `false` (default) or `true`
-- `CZBENCH_CONTAINER_URI`: URI for the container image. Can be either:
-  - A custom container URI (e.g., `czbenchmarks-MODEL_NAME:latest`)
-  - An AWS ECR container URI (automatically handles authentication)
-  - Left blank to use the prebuilt container from AWS ECR
 
 ## Running the Interactive Example
 
@@ -54,9 +51,8 @@ The example script will:
 - Execute tasks
 - Print the results of each task
 
-## Important Notes
+## Additional Notes
 
-- When running in development mode (with `MOUNT_FRAMEWORK_CODE` set to `true`), the code directory is mounted
 - The container has GPU support enabled by default and is configured with appropriate memory settings
 - The script validates that all required directories exist before starting the container and that a valid model is provided
 - The script will automatically ensure the appropriate container is downloaded and current
@@ -64,8 +60,5 @@ The example script will:
 
 ## Limitations
 
-- Each model is provided in a separate Docker container, thus limiting this method to a single model per container. 
-- Running multiple models can be accomplished by launching separate containers for each model. The imported model name must be updated:
-```python
-from model import SCVI as BenchmarkModel
-```
+- Each model is provided in a separate Docker container, thus limiting this method to a single model per container
+- Running multiple models can be accomplished by launching the docker run script for each model
