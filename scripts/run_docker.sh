@@ -126,12 +126,12 @@ get_aws_docker_image_uri() {
     fi
 
     # Get model image URI from models.yaml
-    MODEL_CONFIG_PATH="conf/models.yaml"
-    local python_script="import yaml; print(yaml.safe_load(open('${MODEL_CONFIG_PATH}'))['models']['${model_name_upper}']['model_image_uri'])"
+    local model_config_path="conf/models.yaml"
+    local python_script="import yaml; print(yaml.safe_load(open('${model_config_path}'))['models']['${model_name_upper}']['model_image_uri'])"
     CZBENCH_CONTAINER_URI=$(python3 -c "${python_script}")
 
     if [ -z "$CZBENCH_CONTAINER_URI" ]; then
-        echo -e "${RED_BOLD}Model ${model_name_upper} not found in ${MODEL_CONFIG_PATH}${RESET}"
+        echo -e "${RED_BOLD}Model ${model_name_upper} not found in ${model_config_path}${RESET}"
         exit 1
     fi
 
@@ -181,10 +181,11 @@ validate_variables() {
     fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
     if [ "${RUN_AS_ROOT}" = "true" ]; then
-        echo -e "   Container will run as root${RESET}"
+        local container_user="root"
     else
-        echo -e "   Container will run as current user (${USER})${RESET}"
+        local container_user=${USER}
     fi
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container user:") ${container_user}${RESET}"
 
     RAW_INPUT_DIR_PATH_DOCKER=/raw
     MODEL_WEIGHTS_PATH_DOCKER=/weights
@@ -244,19 +245,19 @@ build_docker_command() {
     # User-specific settings if not running as root, NOTE: untested on WSL
     if [ "${RUN_AS_ROOT,,}" != "true" ]; then # Force lowercase comparison
         DOCKER_CMD="${DOCKER_CMD}
-    --volume /etc/passwd:/etc/passwd:ro \\
-    --volume /etc/group:/etc/group:ro \\
-    --volume /etc/shadow:/etc/shadow:ro \\
-    --user $(id -u):$(id -g) \\
-    --volume ${HOME}/.ssh:${HOME}/.ssh:ro \\"
+        --volume /etc/passwd:/etc/passwd:ro \\
+        --volume /etc/group:/etc/group:ro \\
+        --volume /etc/shadow:/etc/shadow:ro \\
+        --user $(id -u):$(id -g) \\
+        --volume ${HOME}/.ssh:${HOME}/.ssh:ro \\"
     fi
 
     # Mounts for development of cz-benchmarks framework
     # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:${MODEL_CODE_PATH_DOCKER}:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
+        --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:${MODEL_CODE_PATH_DOCKER}:rw \\
+        --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
     fi
 
     # Add mount points -- examples directory must be mounted after framework code (above)
@@ -277,18 +278,14 @@ build_docker_command() {
 
     # Add entrypoint command
     if [ "${EVAL_CMD}" = 'bash' ]; then
-
         DOCKER_CMD="${DOCKER_CMD}
-    --entrypoint bash \\
-    ${CZBENCH_CONTAINER_URI}"
-
+        --entrypoint bash \\
+        ${CZBENCH_CONTAINER_URI}"
     else
-
         DOCKER_CMD="${DOCKER_CMD}
-    --entrypoint bash \\
-    ${CZBENCH_CONTAINER_URI} \\
-    -c \"${EVAL_CMD}\""
-    
+        --entrypoint bash \\
+        ${CZBENCH_CONTAINER_URI} \\
+        -c \"${EVAL_CMD}\""
     fi
 }
 
