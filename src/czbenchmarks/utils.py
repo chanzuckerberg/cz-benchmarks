@@ -6,6 +6,8 @@ from botocore.config import Config
 import botocore
 import logging
 import hydra
+from omegaconf import OmegaConf
+
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
@@ -27,6 +29,33 @@ def initialize_hydra(config_path="../../conf"):
         config_path=config_path,
         version_base=None,
     )
+
+
+def import_class_from_config(config_path: str):
+    """
+    Import a class based on the _target_ field in a configuration file.
+
+    Args:
+        config_path: Path to the configuration file
+
+    Returns:
+        class_obj: The imported class object
+    """
+    # Load the configuration
+    logger.info(f"Loading model configuration from {config_path}")
+    cfg = OmegaConf.load(config_path)
+
+    # Get the target class path
+    target_path = cfg._target_
+
+    # Import the class using the target path
+    module_path, class_name = target_path.rsplit(".", 1)
+    module = __import__(module_path, fromlist=[class_name])
+    class_obj = getattr(module, class_name)
+
+    logger.info(f"Imported class: {class_obj.__name__}")
+
+    return class_obj
 
 
 def get_aws_credentials(profile="default", aws_shared_credentials_path=None):
