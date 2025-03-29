@@ -15,7 +15,7 @@ EXAMPLES_CODE_PATH=${DEVELOPMENT_CODE_PATH}/examples
 MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks code
 
 # Container related settings
-CZBENCH_CONTAINER_URI= # Add custom container:tag here or leave empty to use AWS container
+BUILD_DEV_CONTAINER=true # true or false -- true to build container from code, false to pull from AWS
 EVAL_CMD="bash" # "bash" or "python3 -u /app/examples/example_interactive.py"
 RUN_AS_ROOT=false # false or true
 
@@ -25,7 +25,7 @@ RUN_AS_ROOT=false # false or true
 
 get_available_models() {    
     # Get valid models from czbenchmarks.models.utils
-    local python_script="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).lower())"
+    local python_script="from czbenchmarks.models.utils import list_available_models; print(' '.join(list_available_models()).upper())"
     AVAILABLE_MODELS=($(python3 -c "${python_script}"))
     
     # Format the models as a comma-separated string for display
@@ -57,12 +57,22 @@ validate_directory() {
     fi
 }
 
+variable_is_set() {
+    local var_name=$1
+    local var_value=${!var_name}
+
+    if [ -z "${var_value}" ]; then
+        echo -e "${RED_BOLD}Error: ${var_name} is required but not set${RESET}"
+        exit 1
+    fi
+}
+
 initialize_variables() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -m|--model-name)
-                MODEL_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]') # Force lowercase
+                MODEL_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]') # Force uppercase
                 shift 2
                 ;;
             -h|--help)
@@ -77,7 +87,7 @@ initialize_variables() {
         esac
     done
 
-    # Validate that required variables are set
+    # Validate that required variables are set by flags
     if [ -z "${MODEL_NAME}" ]; then
         echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
         print_usage
@@ -116,43 +126,50 @@ initialize_variables() {
     # eval "$(python3 -c "${PYTHON_SCRIPT}")"
 }
 
-get_aws_docker_image_uri() {
+get_docker_image() {
     # Requires $MODEL_NAME. Must be run after initialize_variables
-    if [ -z "$MODEL_NAME" ]; then
-        echo -e "${RED_BOLD}MODEL_NAME is required but not set${RESET}"
-        exit 1
-    else
-        local model_name_upper=$(echo "$MODEL_NAME" | tr '[:lower:]' '[:upper:]')
-    fi
+    variable_is_set MODEL_NAME
+
+    echo ""
+    echo -e "${MAGENTA_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "GETTING DOCKER IMAGE") ##########${RESET}"
 
     # Get model image URI from models.yaml
     local model_config_path="conf/models.yaml"
-    local python_script="import yaml; print(yaml.safe_load(open('${model_config_path}'))['models']['${model_name_upper}']['model_image_uri'])"
+    local python_script="import yaml; print(yaml.safe_load(open('${model_config_path}'))['models']['${MODEL_NAME}']['model_image_uri'])"
     CZBENCH_CONTAINER_URI=$(python3 -c "${python_script}")
+    variable_is_set CZBENCH_CONTAINER_URI
 
-    if [ -z "$CZBENCH_CONTAINER_URI" ]; then
-        echo -e "${RED_BOLD}Model ${model_name_upper} not found in ${model_config_path}${RESET}"
-        exit 1
+    if [ "${BUILD_DEV_CONTAINER}" = false ]; then
+        AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
+        variable_is_set AWS_ECR_URI
+
+        AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
+        variable_is_set AWS_REGION
+
+        echo ""
+        echo -e "   ${MAGENTA_BOLD}Authenticating to AWS ${AWS_ECR_URI} in region ${AWS_REGION}${RESET}"
+
+        # Login to AWS ECR and pull image
+        # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
+        local python_script="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
+        get_authorization_token()['authorizationData'][0]['authorizationToken'])"
+        python3 -c "${python_script}" | base64 -d | cut -d: -f2 | \
+            docker login --username AWS --password-stdin ${AWS_ECR_URI}
+
+        echo -e "   ${MAGENTA_BOLD}Pulling image ${CZBENCH_CONTAINER_URI}${RESET}"
+        docker pull ${CZBENCH_CONTAINER_URI}
+
+    else
+        CZBENCH_CONTAINER_URI=$(echo $CZBENCH_CONTAINER_URI | rev | cut -d/ -f1 | rev)
+
+        echo ""
+        echo -e "   ${MAGENTA_BOLD}Building image ${CZBENCH_CONTAINER_URI}${RESET}"
+        local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+        make ${model_name_lower}
     fi
 
-    AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
-    AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
-
-    for var in CZBENCH_CONTAINER_URI AWS_ECR_URI AWS_REGION; do
-        if [ -z "${!var}" ]; then
-            echo -e "${RED_BOLD}$var is required but not set${RESET}"
-            exit 1
-        fi
-    done
-
-    # Login to AWS ECR and pull image
-    # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
-    local python_script="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
-    get_authorization_token()['authorizationData'][0]['authorizationToken'])"
-    python3 -c "${python_script}" | base64 -d | cut -d: -f2 | \
-        docker login --username AWS --password-stdin ${AWS_ECR_URI}
-
-    docker pull ${CZBENCH_CONTAINER_URI}
+    CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
+    variable_is_set CZBENCH_CONTAINER_NAME
 }
 
 validate_variables() {
@@ -171,16 +188,15 @@ validate_variables() {
     # Show image information
     echo ""
     echo -e "   ${GREEN_BOLD}Docker setup:${RESET}"
-    if [ "${USE_AWS_ECR}" = true ]; then
+    if [ "${BUILD_DEV_CONTAINER}" = false ]; then
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
         echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Docker command:") ${EVAL_CMD}${RESET}"
-    else
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Custom image provided:") ${CZBENCH_CONTAINER_URI}${RESET}"
     fi
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
-    if [ "${RUN_AS_ROOT}" = "true" ]; then
+    echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Docker command:") ${EVAL_CMD}${RESET}"
+
+    if [ "${RUN_AS_ROOT}" = true ]; then
         local container_user="root"
     else
         local container_user=${USER}
@@ -243,7 +259,7 @@ build_docker_command() {
     --env SHELL=bash \\"
 
     # User-specific settings if not running as root, NOTE: untested on WSL
-    if [ "${RUN_AS_ROOT,,}" != "true" ]; then # Force lowercase comparison
+    if [ "$(echo ${RUN_AS_ROOT} | tr '[:upper:]' '[:lower:]')" = true ]; then # Force lowercase comparison
         DOCKER_CMD="${DOCKER_CMD}
         --volume /etc/passwd:/etc/passwd:ro \\
         --volume /etc/group:/etc/group:ro \\
@@ -328,13 +344,7 @@ fi
 # Setup variables
 get_available_models
 initialize_variables "$@"
-if [ -z "${CZBENCH_CONTAINER_URI}" ]; then
-    get_aws_docker_image_uri
-    USE_AWS_ECR=true
-else
-    USE_AWS_ECR=false
-fi
-CZBENCH_CONTAINER_NAME=$(basename ${CZBENCH_CONTAINER_URI} | tr ':' '-')
+get_docker_image
 validate_variables
 
 # Ensure docker container is updated
