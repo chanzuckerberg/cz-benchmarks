@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.2...v0.4.3) (2025-03-31)
+
+
+### Bug Fixes
+
+* remove old conf line in docker ([#142](https://github.com/chanzuckerberg/cz-benchmarks/issues/142)) ([69e637a](https://github.com/chanzuckerberg/cz-benchmarks/commit/69e637a3545deba78b53cff740025a0a9e621d81))
+
 ## [0.4.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.1...v0.4.2) (2025-03-31)
 
 
