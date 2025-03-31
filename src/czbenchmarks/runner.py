@@ -54,7 +54,7 @@ class ContainerRunner:
 
         # Load models config from the default location
         default_config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            os.path.dirname(__file__),
             "conf",
             "models.yaml",
         )
