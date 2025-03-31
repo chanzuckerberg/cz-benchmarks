@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install '.[dev]'
+          uv pip install --cache-dir ~/.cache/uv '.[dev]'
 
       - name: Run linting
         run: make lint
