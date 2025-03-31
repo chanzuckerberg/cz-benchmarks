@@ -91,9 +91,9 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         args = self.parse_args()
         config = OmegaConf.load("config.yaml")
-        assert (
-            f"{args.model_variant}__{args.dataset_name}" in config.models
-        ), f"Model {args.model_variant}__{args.dataset_name} not found in config"
+        assert f"{args.model_variant}__{args.dataset_name}" in config.models, (
+            f"Model {args.model_variant}__{args.dataset_name} not found in config"
+        )
         return f"{args.model_variant}/{args.dataset_name}"
 
     def _download_model_weights(self, _dataset: BaseDataset):
@@ -111,7 +111,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
         sync_s3_to_local(bucket, key, self.model_weights_dir)
         logger.info(
-            f"Downloaded model weights from {model_uri} to " f"{self.model_weights_dir}"
+            f"Downloaded model weights from {model_uri} to {self.model_weights_dir}"
         )
 
         # Copy the vocab.json file from S3 to local model weights directory

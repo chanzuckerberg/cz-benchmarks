@@ -54,7 +54,7 @@ class ContainerRunner:
 
         # Load models config from the default location
         default_config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            os.path.dirname(__file__),
             "conf",
             "models.yaml",
         )
@@ -277,7 +277,7 @@ class ContainerRunner:
             container.start()
             # Stream logs in real-time for monitoring
             for log in container.logs(stream=True, follow=True):
-                print(log.decode().strip())
+                logger.info(log.decode().strip())
 
             # Wait for container to finish and check exit status
             result = container.wait()

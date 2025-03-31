@@ -149,10 +149,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
             gene_median_file=str(
-                Path(
-                    f"{model_weights_dir_parent}/"
-                    f"{self.token_config.gene_median_file}"
-                )
+                Path(f"{model_weights_dir_parent}/{self.token_config.gene_median_file}")
             ),
             token_dictionary_file=str(
                 Path(

@@ -92,22 +92,22 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"Valid models are: {list(config.model_config.keys())}"
         )
 
-        config.model_config[model_variant].protein_embeddings_dir = (
-            f"{self.model_weights_dir}/protein_embeddings"
-        )
+        config.model_config[
+            model_variant
+        ].protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
         config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
             f"{config.model_config[model_variant].model_filename}"
         )
-        config.model_config[model_variant].offset_pkl_path = (
-            f"{self.model_weights_dir}/species_offsets.pkl"
-        )
-        config.model_config[model_variant].token_file = (
-            f"{self.model_weights_dir}/all_tokens.torch"
-        )
-        config.model_config[model_variant].spec_chrom_csv_path = (
-            f"{self.model_weights_dir}/species_chrom.csv"
-        )
+        config.model_config[
+            model_variant
+        ].offset_pkl_path = f"{self.model_weights_dir}/species_offsets.pkl"
+        config.model_config[
+            model_variant
+        ].token_file = f"{self.model_weights_dir}/all_tokens.torch"
+        config.model_config[
+            model_variant
+        ].spec_chrom_csv_path = f"{self.model_weights_dir}/species_chrom.csv"
 
         # Create symbolic link for protein embeddings directory
         protein_embeddings_source = pathlib.Path(
@@ -119,12 +119,12 @@ class UCE(UCEValidator, BaseModelImplementation):
             protein_embeddings_target.unlink()
         protein_embeddings_target.symlink_to(protein_embeddings_source)
 
-        print(f"Contents of {protein_embeddings_target}:\n")
+        logger.info(f"Contents of {protein_embeddings_target}:\n")
         if protein_embeddings_target.exists():
             for path in protein_embeddings_target.rglob("*"):
-                print(f"{path.relative_to(protein_embeddings_target)}\n")
+                logger.info(f"{path.relative_to(protein_embeddings_target)}\n")
         else:
-            print("Directory does not exist\n")
+            logger.warning("Directory does not exist\n")
 
         adata = dataset.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))

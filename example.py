@@ -1,3 +1,5 @@
+import logging
+import sys
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.runner import run_inference
 from czbenchmarks.tasks import (
@@ -8,6 +10,7 @@ from czbenchmarks.tasks import (
 from czbenchmarks.utils import get_aws_credentials
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     aws_credentials = get_aws_credentials(profile="default")
 
     dataset = load_dataset("tsv2_bladder")
