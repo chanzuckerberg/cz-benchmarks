@@ -75,34 +75,6 @@ class ContainerRunner:
 
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
-
-        # Add ECR authentication if the image is from ECR
-        if ".dkr.ecr." in self.image:
-            try:
-                # Extract region from image URI
-                region = self.image.split(".")[3]
-                registry = self.image.split("/")[0]
-
-                # Get ECR login token
-                ecr_client = boto3.client("ecr", region_name=region)
-                token = ecr_client.get_authorization_token(
-                    registryIds=[registry.split(".")[0]]
-                )
-
-                # Decode the authorization token
-                auth_data = token["authorizationData"][0]
-                token_bytes = base64.b64decode(auth_data["authorizationToken"])
-                username, password = token_bytes.decode("utf-8").split(":")
-
-                # Login to Docker with decoded credentials
-                self.client.login(
-                    username=username,
-                    password=password,
-                    registry=auth_data["proxyEndpoint"],
-                )
-            except Exception as e:
-                raise RuntimeError(f"Failed to authenticate with ECR: {str(e)}")
-
         self.model_type = model_type
         self.app_mount_dir = app_mount_dir
 
@@ -236,6 +208,7 @@ class ContainerRunner:
         Raises:
             RuntimeError: If the container exits with a non-zero status code
         """
+        public_ecr_registry = "public.ecr.aws"
         image_name = self.image.split("/")[-1].split(":")[0]
         model_weights_cache_path = os.path.expanduser(
             os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name)
@@ -243,7 +216,7 @@ class ContainerRunner:
         os.makedirs(model_weights_cache_path, exist_ok=True)
 
         # Pull the image first if it's from ECR
-        if ".dkr.ecr." in self.image:
+        if public_ecr_registry in self.image:
             try:
                 logger.info(f"Pulling image {self.image}...")
                 self.client.images.pull(self.image, platform="linux/amd64")
@@ -258,7 +231,7 @@ class ContainerRunner:
                 command.extend([f"--{key}", str(value)])
 
         # Add platform specification for ECR images
-        platform = "linux/amd64" if ".dkr.ecr." in self.image else None
+        platform = "linux/amd64" if public_ecr_registry in self.image else None
 
         # Create the container with appropriate configuration
         container = self.client.containers.create(

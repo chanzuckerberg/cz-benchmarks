@@ -467,7 +467,7 @@ wheels = [
 
 [[package]]
 name = "cz-benchmarks"
-version = "0.4.1"
+version = "0.4.3"
 source = { editable = "." }
 dependencies = [
     { name = "anndata" },

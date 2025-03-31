@@ -16,6 +16,9 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 git clone https://github.com/chanzuckerberg/cz-benchmarks.git
 cd cz-benchmarks
 pip install .
+
+# The library pulls model images from a Public ECR repo so this clears any old, expired, or conflicting credentials that may cause errors. Public ECR doesn't require credentials
+docker logout public.ecr.aws 
 ```
 
 ### macOS Development Setup
