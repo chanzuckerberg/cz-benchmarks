@@ -298,8 +298,13 @@ class ContainerRunner:
         Returns:
             Path to the model-specific weights cache directory
         """
-        image_name = self.image.split("/")[-1].split(":")[0]
-        return os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))
+        # Include both repository name and tag in the cache path
+        image_parts = self.image.split("/")[-1].split(":")
+        image_name = image_parts[0]
+        tag = image_parts[1] if len(image_parts) > 1 else "latest"
+        return os.path.expanduser(
+            os.path.join(MODEL_WEIGHTS_CACHE_PATH, f"{image_name}-{tag}")
+        )
 
 
 def run_inference(
