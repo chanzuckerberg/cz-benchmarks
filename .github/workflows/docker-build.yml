@@ -74,6 +74,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
+            ${{ env.PUBLIC_ECR_REPO }}:${{ matrix.image.custom_tag }}
             ${{ env.PUBLIC_ECR_REPO }}:${{ matrix.image.custom_tag }}${{ github.event_name == 'release' && format('-{0}', github.event.release.tag_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
