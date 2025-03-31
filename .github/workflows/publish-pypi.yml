@@ -34,14 +34,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/uv
-          key: ${{ runner.os }}-python-3.10-${{ hashFiles('uv.lock') }}
-          restore-keys: ${{ runner.os }}-python-3.10-
+          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-3.10-build-
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
-        run: uv pip install --cache-dir ~/.cache/uv -e '.[build]'
+        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
 
       - name: Build package
         run: python -m build
