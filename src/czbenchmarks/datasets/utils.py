@@ -35,7 +35,7 @@ def _download_dataset(uri: str, output_path: str, unsigned=True):
     s3_client.download_file(bucket, key, output_path)
 
 
-def initialize_hydra(config_path="../../../conf"):
+def initialize_hydra(config_path="../conf"):
     if hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
