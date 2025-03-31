@@ -1,3 +1,6 @@
 # Python packages for the MLflow model
+torch==2.6.0
+torchvision==0.15.1
+jax[cuda12]
 scvi-tools==1.2.2.post2
 boto3
