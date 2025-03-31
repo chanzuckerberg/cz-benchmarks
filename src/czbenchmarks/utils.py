@@ -15,7 +15,7 @@ logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-def initialize_hydra(config_path="../../conf"):
+def initialize_hydra(config_path="./conf"):
     """
     Initialize Hydra configuration system.
 
