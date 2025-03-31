@@ -40,30 +40,35 @@ clean:
 .PHONY: rebuild
 rebuild: clean all
 
+# Run all unit tests with coverage
+.PHONY: test
+test:
+	uv run pytest --cov=czbenchmarks --cov-report=term-missing tests/
+
 # Check formatting with ruff
 .PHONY: ruff-fmt-check
 ruff-fmt-check:
-	ruff format --check .
+	uv run ruff format --check .
 
 # Fix formatting with ruff
 .PHONY: ruff-fmt
 ruff-fmt:
-	ruff format .
+	uv run ruff format .
 
 # Run ruff to check the code
 .PHONY: ruff-check
 ruff-check:
-	ruff check .
+	uv run ruff check .
 
 # Run ruff with auto-fix
 .PHONY: ruff-fix
 ruff-fix:
-	ruff check . --fix
+	uv run ruff check . --fix
 
 # Run mypy type checking
 .PHONY: mypy-check
 mypy-check:
-	mypy .
+	uv run mypy .
 
 # Run all linters and checkers # TODO: enable mypy-check
 .PHONY: lint
