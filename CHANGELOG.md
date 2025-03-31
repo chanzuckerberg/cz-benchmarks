@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.1...v0.4.2) (2025-03-31)
+
+
+### Bug Fixes
+
+* include conf dir in package structure ([#140](https://github.com/chanzuckerberg/cz-benchmarks/issues/140)) ([24e02f6](https://github.com/chanzuckerberg/cz-benchmarks/commit/24e02f6e71559241dc05b19ec4d0e3f5012cb00d))
+
 ## [0.4.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.0...v0.4.1) (2025-03-27)
 
 
