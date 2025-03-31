@@ -31,18 +31,14 @@ uv sync --all-extras
 
 ```python
 from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.runner import ContainerRunner
+from czbenchmarks.runner import run_inference
 from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
 # Load dataset with custom configuration
 dataset = load_dataset("example", config_path="custom.yaml")
 
 # Run model
-runner = ContainerRunner(
-    image="czbenchmarks-scvi:latest",
-    gpu=True,
-)
-dataset = runner.run(dataset)
+dataset = run_inference("SCVI", dataset)
 
 # Run evaluation tasks
 task = ClusteringTask(label_key="cell_type")
