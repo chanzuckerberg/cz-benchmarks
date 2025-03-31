@@ -11,12 +11,10 @@ from czbenchmarks.utils import get_aws_credentials
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    aws_credentials = get_aws_credentials(profile="default")
-
     dataset = load_dataset("tsv2_bladder")
 
     for model_name in ["SCVI", "SCGPT"]:
-        dataset = run_inference(model_name, dataset, environment=aws_credentials)
+        dataset = run_inference(model_name, dataset)
 
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(dataset)
