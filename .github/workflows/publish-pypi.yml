@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get the version 
+      - name: Get the version
         id: get_version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
@@ -25,22 +25,23 @@ jobs:
         run: |
           echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version-file: .python-version
+
+      - name: Cache python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-3.10-build-
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
-        run: pip install build wheel setuptools twine
+        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
 
       - name: Build package
         run: python -m build
