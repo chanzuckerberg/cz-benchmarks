@@ -110,7 +110,8 @@ initialize_variables() {
     fi
     
     # Updates to variables which require model name and create directories if they don't exist
-    MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${MODEL_NAME}"
+    local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+    MODEL_WEIGHTS_CACHE_PATH="${MODEL_WEIGHTS_CACHE_PATH}/czbenchmarks-${model_name_lower}"
     mkdir -p ${MODEL_WEIGHTS_CACHE_PATH}
 
     # Docker paths -- should not be changed
@@ -225,6 +226,7 @@ validate_variables() {
     echo ""
     echo -e "   ${GREEN_BOLD}Examples path:${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "EXAMPLES_CODE_PATH:") ${EXAMPLES_CODE_PATH}${RESET}"
+    echo -e "   EXAMPLES_CODE_PATH will be mounted in container at ${EXAMPLES_CODE_PATH_DOCKER}${RESET}"
 
     # Development mode
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
@@ -259,21 +261,22 @@ build_docker_command() {
     --env SHELL=bash \\"
 
     # User-specific settings if not running as root, NOTE: untested on WSL
-    if [ "$(echo ${RUN_AS_ROOT} | tr '[:upper:]' '[:lower:]')" = true ]; then # Force lowercase comparison
+    if [ "${RUN_AS_ROOT}" = false ]; then # Force lowercase comparison
         DOCKER_CMD="${DOCKER_CMD}
-        --volume /etc/passwd:/etc/passwd:ro \\
-        --volume /etc/group:/etc/group:ro \\
-        --volume /etc/shadow:/etc/shadow:ro \\
-        --user $(id -u):$(id -g) \\
-        --volume ${HOME}/.ssh:${HOME}/.ssh:ro \\"
+    --volume /etc/passwd:/etc/passwd:ro \\
+    --volume /etc/group:/etc/group:ro \\
+    --volume /etc/shadow:/etc/shadow:ro \\
+    --user $(id -u):$(id -g) \\
+    --volume ${HOME}/.ssh:${HOME}/.ssh:ro \\"
     fi
 
     # Mounts for development of cz-benchmarks framework
     # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
+        local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
         DOCKER_CMD="${DOCKER_CMD}
-        --volume ${DEVELOPMENT_CODE_PATH}/docker/${MODEL_NAME}:${MODEL_CODE_PATH_DOCKER}:rw \\
-        --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
+    --volume ${DEVELOPMENT_CODE_PATH}/docker/${model_name_lower}:${MODEL_CODE_PATH_DOCKER}:rw \\
+    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
     fi
 
     # Add mount points -- examples directory must be mounted after framework code (above)
@@ -295,13 +298,13 @@ build_docker_command() {
     # Add entrypoint command
     if [ "${EVAL_CMD}" = 'bash' ]; then
         DOCKER_CMD="${DOCKER_CMD}
-        --entrypoint bash \\
-        ${CZBENCH_CONTAINER_URI}"
+    --entrypoint bash \\
+    ${CZBENCH_CONTAINER_URI}"
     else
         DOCKER_CMD="${DOCKER_CMD}
-        --entrypoint bash \\
-        ${CZBENCH_CONTAINER_URI} \\
-        -c \"${EVAL_CMD}\""
+    --entrypoint bash \\
+    ${CZBENCH_CONTAINER_URI} \\
+    -c \"${EVAL_CMD}\""
     fi
 }
 
