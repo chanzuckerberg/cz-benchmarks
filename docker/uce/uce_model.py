@@ -94,7 +94,7 @@ class UCE(UCEValidator, BaseModelImplementation):
 
         config.model_config[
             model_variant
-        ].protein_embeddings_dir = f"{self.model_weights_dir}/protein_embeddings"
+        ].protein_embeddings_dir = f"{self.model_weights_dir}/model_files/protein_embeddings"
         config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
             f"{config.model_config[model_variant].model_filename}"
@@ -119,7 +119,6 @@ class UCE(UCEValidator, BaseModelImplementation):
             protein_embeddings_target.unlink()
         protein_embeddings_target.symlink_to(protein_embeddings_source)
 
-        logger.info(f"Contents of {protein_embeddings_target}:\n")
         if protein_embeddings_target.exists():
             for path in protein_embeddings_target.rglob("*"):
                 logger.info(f"{path.relative_to(protein_embeddings_target)}\n")
