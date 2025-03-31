@@ -20,15 +20,11 @@ pip install .
 
 ### macOS Development Setup
 
-When developing on macOS, first install hnswlib from conda-forge:
+Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
 
 ```bash
-conda install -c conda-forge hnswlib
-```
-
-Then proceed with the regular installation. For development, include the dev dependencies:
-```bash
-pip install -e ".[dev]"
+uv python install
+uv sync --all-extras
 ```
 
 ## Example Usage
