@@ -124,7 +124,7 @@ if __name__ == "__main__":
         "--datasets",
         "-d",
         nargs="+",
-        choices=utils.list_datasets(),
+        choices=utils.list_available_datasets(),
         required=True,
         help="One or more dataset names (from datasets.yaml).",
     )
