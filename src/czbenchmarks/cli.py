@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import TypedDict, NotRequired
+from typing_extensions import TypedDict, NotRequired
 from czbenchmarks.datasets import utils
 from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks.runner import ContainerRunner
