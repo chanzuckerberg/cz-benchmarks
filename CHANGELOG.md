@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.4.4](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.3...v0.4.4) (2025-04-01)
+
+
+### Bug Fixes
+
+* add tag to mount dir ([#144](https://github.com/chanzuckerberg/cz-benchmarks/issues/144)) ([b9d2500](https://github.com/chanzuckerberg/cz-benchmarks/commit/b9d250047f589d2321508360025d6c7495f86c10))
+* push model images to ECR public repo ([#133](https://github.com/chanzuckerberg/cz-benchmarks/issues/133)) ([8b5b653](https://github.com/chanzuckerberg/cz-benchmarks/commit/8b5b65357212fc652f03596baf8711b9a0b68c70))
+
+## [0.4.3](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.2...v0.4.3) (2025-03-31)
+
+
+### Bug Fixes
+
+* remove old conf line in docker ([#142](https://github.com/chanzuckerberg/cz-benchmarks/issues/142)) ([69e637a](https://github.com/chanzuckerberg/cz-benchmarks/commit/69e637a3545deba78b53cff740025a0a9e621d81))
+
+## [0.4.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.1...v0.4.2) (2025-03-31)
+
+
+### Bug Fixes
+
+* include conf dir in package structure ([#140](https://github.com/chanzuckerberg/cz-benchmarks/issues/140)) ([24e02f6](https://github.com/chanzuckerberg/cz-benchmarks/commit/24e02f6e71559241dc05b19ec4d0e3f5012cb00d))
+
+## [0.4.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.0...v0.4.1) (2025-03-27)
+
+
+### Bug Fixes
+
+* add conf directory to all containers ([#128](https://github.com/chanzuckerberg/cz-benchmarks/issues/128)) ([9415e3c](https://github.com/chanzuckerberg/cz-benchmarks/commit/9415e3c63bc8bcf93b9d1e85b4dd57d6532c90d4))
+
+## [0.4.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.3.0...v0.4.0) (2025-03-26)
+
+
+### Features
+
+* docker builder ([#124](https://github.com/chanzuckerberg/cz-benchmarks/issues/124)) ([6c0e5b5](https://github.com/chanzuckerberg/cz-benchmarks/commit/6c0e5b5cbcc4eadbda971cd630e1e2040d86fe4f))
+* move model validators back into docker images ([#120](https://github.com/chanzuckerberg/cz-benchmarks/issues/120)) ([ad1cb59](https://github.com/chanzuckerberg/cz-benchmarks/commit/ad1cb5933d4ced62cfabd84d66370a99ea12f9fc))
+
+
+### Documentation
+
+* autogenerate documentation - sphinx ([#116](https://github.com/chanzuckerberg/cz-benchmarks/issues/116)) ([94be611](https://github.com/chanzuckerberg/cz-benchmarks/commit/94be611d4eb31f3b69d3d9423299abba9eee3be4))
+
 ## [0.3.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.2...v0.3.0) (2025-03-19)
 
 

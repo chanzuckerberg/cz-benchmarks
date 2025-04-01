@@ -1,6 +1,0 @@
-[flake8]
-max-line-length = 90
-
-# E203: Black conflicts with flake8 for slicing syntax, and Black's style is preferred.
-# W503: PEP 8 recommends breaking lines before binary operators, which Black enforces.
-ignore = E203, W503

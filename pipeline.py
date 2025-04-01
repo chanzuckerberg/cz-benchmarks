@@ -14,6 +14,8 @@ Usage:
     python pipeline.py
 """
 
+import logging
+import sys
 from czbenchmarks.runner import run_inference
 from czbenchmarks.tasks import (
     ClusteringTask,
@@ -23,13 +25,16 @@ from czbenchmarks.tasks import (
 from czbenchmarks.datasets.utils import load_dataset, list_available_datasets
 import pickle
 
+logger = logging.getLogger(__name__)
+
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     all_datasets = list_available_datasets()
 
     all_results = {}
 
     for dataset_name in all_datasets:
-        print(dataset_name)
+        logger.info(dataset_name)
         if not dataset_name.startswith("tsv2_"):
             continue
 

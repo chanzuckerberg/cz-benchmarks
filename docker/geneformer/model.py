@@ -10,16 +10,49 @@ from geneformer import EmbExtractor, TranscriptomeTokenizer
 from omegaconf import OmegaConf
 from datasets import load_from_disk, Sequence, Value
 
-from czbenchmarks.datasets import BaseDataset, DataType
+from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
 )
-from czbenchmarks.models.validators.geneformer import GeneformerValidator
+from czbenchmarks.models.validators import BaseSingleCellValidator
+from czbenchmarks.models.types import ModelType
+from typing import Set
 from czbenchmarks.utils import sync_s3_to_local
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+
+class GeneformerValidator(BaseSingleCellValidator):
+    """Validation requirements for Geneformer models.
+
+    Validates datasets for use with Geneformer transformer models.
+    Requires feature IDs and currently only supports human data.
+    """
+
+    available_organisms = [Organism.HUMAN]
+    required_obs_keys = []
+    required_var_keys = ["feature_id"]
+    model_type = ModelType.GENEFORMER
+
+    @property
+    def inputs(self) -> Set[DataType]:
+        """Required input data types.
+
+        Returns:
+            Set containing AnnData requirement
+        """
+        return {DataType.ANNDATA}
+
+    @property
+    def outputs(self) -> Set[DataType]:
+        """Expected model output types.
+
+        Returns:
+            Set containing embedding output type
+        """
+        return {DataType.EMBEDDING}
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
@@ -116,10 +149,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             custom_attr_name_dict={"cell_idx": "cell_idx"},
             nproc=4,
             gene_median_file=str(
-                Path(
-                    f"{model_weights_dir_parent}/"
-                    f"{self.token_config.gene_median_file}"
-                )
+                Path(f"{model_weights_dir_parent}/{self.token_config.gene_median_file}")
             ),
             token_dictionary_file=str(
                 Path(

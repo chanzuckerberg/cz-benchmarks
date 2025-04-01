@@ -1,4 +1,4 @@
-name: Test Coverage
+name: Checks
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-coverage:
+  run-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -19,25 +19,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version-file: .python-version
 
-      - name: Cache pip dependencies
+      - name: Cache python dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-python-3.10-dev-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-3.10-dev-
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install .
-          pip install -e ".[dev]"
+          uv pip install --system --cache-dir ~/.cache/uv '.[dev]'
+
+      - name: Run linting
+        run: make lint
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=czbenchmarks --cov-report=term-missing tests/ | tee coverage.txt
+          make test | tee coverage.txt
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

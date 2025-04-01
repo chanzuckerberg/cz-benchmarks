@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cz-benchmarks"
-version = "0.3.0"
+version = "0.4.4"
 description = "A framework for benchmarking single-cell machine learning models"
 authors = [{ name = "Chan Zuckerberg Initiative", email = "pypi@chanzuckerberg.com" }]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.10.12"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -24,35 +24,53 @@ dependencies = [
     "docker>=6.1.0",
     "pyyaml>=6.0",
     "boto3>=1.28.0",
-
     # Data handling
     "anndata>=0.9.0",
     "h5py>=3.8.0",
-
     "dill>=0.3.6",
     "scikit-learn",
     "scanpy",
     "igraph>=0.11.8",
     "leidenalg>=0.10.2",
-
     "hydra-core>=1.3.2",
-    "hnswlib>=0.8.0; platform_system == 'Linux'",  # Install via conda on macOS
-    "scib-metrics==0.5.1",
-    "scikit-misc==0.5.1",
+    "scib-metrics>=0.5.1",
+    "scikit-misc>=0.5.1",
     "pydantic>=2.0.0",
+    "hnswlib>=0.8.0; platform_system == 'Linux'",  # Install via conda on macOS
 ]
 
 [project.optional-dependencies]
+build = [
+    "build>=1.2.2.post1",
+    "wheel>=0.45.1",
+    "setuptools>=78.1.0",
+    "twine>=6.1.0",
+]
+
 dev = [
-    "black==24.8.0",
-    "flake8==7.0.0",
-    "autoflake==2.2.1",
-    "ruff==0.9.8",
-    "mypy==1.9.0",
-    "pre-commit>=4.1.0",
-    "pytest>=7.4.0",
+    "ruff>=0.11.2",
+    "mypy>=1.15.0",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
     "pytest-cov>=6.0.0",
-    "typing-extensions>=4.5.0",
+    "typing-extensions>=4.13.0",
+]
+
+docs = [
+    "sphinx>=8.1.3",
+    "sphinx-autoapi>=3.6.0",
+    "sphinx-autodoc-typehints>=3.0.1",
+    "sphinx-markdown-builder>=0.6.8",
+    "myst-parser>=4.0.1",
+    "sphinx-rtd-theme>=3.0.2",
+    "sphinxcontrib-applehelp>=2.0.0",
+    "sphinxcontrib-devhelp>=2.0.0",
+    "sphinxcontrib-htmlhelp>=2.1.0",
+    "sphinxcontrib-jsmath>=1.0.1",
+    "sphinxcontrib-qthelp>=2.0.0",
+    "sphinxcontrib-serializinghtml>=2.0.0",
+    "sphinxcontrib-jquery>=4.1",
+    "sphinxcontrib-napoleon>=0.7",
 ]
 
 [project.urls]

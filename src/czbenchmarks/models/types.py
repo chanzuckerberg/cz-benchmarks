@@ -7,8 +7,8 @@ class ModelType(Enum):
     BASELINE = "BASELINE"
     SCVI = "SCVI"
     SCGPT = "SCGPT"
-    SCGENEPT = "SCGENEPT"
     GENEFORMER = "GENEFORMER"
+    SCGENEPT = "SCGENEPT"
     UCE = "UCE"
 
     def __hash__(self):

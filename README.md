@@ -8,43 +8,40 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 
 ## Installation Instructions
 
+⚠️ Warning: The provided model images are based on NVIDIA base images and require an NVIDIA GPU. They will only run on linux/amd64 systems with the NVIDIA Container Runtime enabled.
+
 ### From Source
 
 ```bash
 git clone https://github.com/chanzuckerberg/cz-benchmarks.git
 cd cz-benchmarks
 pip install .
+
+# The library pulls model images from a Public ECR repo so this clears any old, expired, or conflicting credentials that may cause errors. Public ECR doesn't require credentials
+docker logout public.ecr.aws 
 ```
 
 ### macOS Development Setup
 
-When developing on macOS, first install hnswlib from conda-forge:
+Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
 
 ```bash
-conda install -c conda-forge hnswlib
-```
-
-Then proceed with the regular installation. For development, include the dev dependencies:
-```bash
-pip install -e ".[dev]"
+uv python install
+uv sync --all-extras
 ```
 
 ## Example Usage
 
 ```python
 from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.runner import ContainerRunner
+from czbenchmarks.runner import run_inference
 from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
 
 # Load dataset with custom configuration
 dataset = load_dataset("example", config_path="custom.yaml")
 
 # Run model
-runner = ContainerRunner(
-    image="czbenchmarks-scvi:latest",
-    gpu=True,
-)
-dataset = runner.run(dataset)
+dataset = run_inference("SCVI", dataset)
 
 # Run evaluation tasks
 task = ClusteringTask(label_key="cell_type")

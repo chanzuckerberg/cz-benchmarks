@@ -6,6 +6,7 @@ from typing import Any, List, Union, Optional, Dict
 import docker
 import yaml
 from omegaconf import OmegaConf
+import logging
 
 from .constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -17,6 +18,8 @@ from .constants import (
 )
 from .datasets import BaseDataset
 from .models.types import ModelType
+
+logger = logging.getLogger(__name__)
 
 
 class ContainerRunner:
@@ -45,9 +48,11 @@ class ContainerRunner:
             environment: Dictionary of environment variables to pass to the container
             kwargs: Additional arguments to pass to the container as CLI params
         """
+        self.client = docker.from_env()
+
         # Load models config from the default location
         default_config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            os.path.dirname(__file__),
             "conf",
             "models.yaml",
         )
@@ -68,7 +73,7 @@ class ContainerRunner:
 
         model_info = cfg.models[model_key]
         self.image = model_info.model_image_uri
-        self.model_type = model_type  # Store model_type for dataset compatibility
+        self.model_type = model_type
         self.app_mount_dir = app_mount_dir
 
         self.gpu = gpu
@@ -76,7 +81,6 @@ class ContainerRunner:
 
         self.cli_args = kwargs
         self.environment = environment or {}  # Store environment variables
-        self.client = docker.from_env()
 
     def run(
         self, datasets: Union[BaseDataset, List[BaseDataset]]
@@ -202,11 +206,20 @@ class ContainerRunner:
         Raises:
             RuntimeError: If the container exits with a non-zero status code
         """
+        public_ecr_registry = "public.ecr.aws"
         image_name = self.image.split("/")[-1].split(":")[0]
         model_weights_cache_path = os.path.expanduser(
             os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name)
         )
         os.makedirs(model_weights_cache_path, exist_ok=True)
+
+        # Pull the image first if it's from ECR
+        if public_ecr_registry in self.image:
+            try:
+                logger.info(f"Pulling image {self.image}...")
+                self.client.images.pull(self.image, platform="linux/amd64")
+            except Exception as e:
+                raise RuntimeError(f"Failed to pull image {self.image}: {str(e)}")
 
         # Prepare command based on mode (interactive or CLI args)
         command = None
@@ -215,25 +228,27 @@ class ContainerRunner:
             for key, value in self.cli_args.items():
                 command.extend([f"--{key}", str(value)])
 
+        # Add platform specification for ECR images
+        platform = "linux/amd64" if public_ecr_registry in self.image else None
+
         # Create the container with appropriate configuration
         container = self.client.containers.create(
             image=self.image,
             command=command,
             volumes=volumes,
-            environment=self.environment,  # Pass environment variables
+            environment=self.environment,
             runtime="nvidia" if self.gpu else None,
-            tty=self.interactive,  # Add TTY for interactive mode
-            stdin_open=self.interactive,  # Keep STDIN open for interactive mode
-            entrypoint=(
-                ["/bin/bash"] if self.interactive else None
-            ),  # Override entrypoint for interactive mode
+            tty=self.interactive,
+            stdin_open=self.interactive,
+            entrypoint=(["/bin/bash"] if self.interactive else None),
+            platform=platform,
         )
 
         try:
             container.start()
             # Stream logs in real-time for monitoring
             for log in container.logs(stream=True, follow=True):
-                print(log.decode().strip())
+                logger.info(log.decode().strip())
 
             # Wait for container to finish and check exit status
             result = container.wait()
@@ -254,8 +269,13 @@ class ContainerRunner:
         Returns:
             Path to the model-specific weights cache directory
         """
-        image_name = self.image.split("/")[-1].split(":")[0]
-        return os.path.expanduser(os.path.join(MODEL_WEIGHTS_CACHE_PATH, image_name))
+        # Include both repository name and tag in the cache path
+        image_parts = self.image.split("/")[-1].split(":")
+        image_name = image_parts[0]
+        tag = image_parts[1] if len(image_parts) > 1 else "latest"
+        return os.path.expanduser(
+            os.path.join(MODEL_WEIGHTS_CACHE_PATH, f"{image_name}-{tag}")
+        )
 
 
 def run_inference(
