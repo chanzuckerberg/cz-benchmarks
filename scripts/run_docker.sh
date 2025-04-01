@@ -10,8 +10,8 @@
 # Mount paths -- could also source from czbenchmarks.constants.py
 DATASETS_CACHE_PATH=${HOME}/.cz-benchmarks/datasets
 MODEL_WEIGHTS_CACHE_PATH=${HOME}/.cz-benchmarks/weights
+EXAMPLES_CODE_PATH=$(pwd)/examples
 DEVELOPMENT_CODE_PATH=$(pwd)
-EXAMPLES_CODE_PATH=${DEVELOPMENT_CODE_PATH}/examples
 MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks code
 
 # Container related settings
