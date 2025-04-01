@@ -54,7 +54,7 @@ def run(
     # Load each model
     for model_name in model_names:
         log.info(f"Running model {model_name}")
-        runner = ContainerRunner(model_name)
+        runner = ContainerRunner(model_name, gpu=True)
 
         for dataset_name, dataset in datasets.items():
             log.info(f"Running model {model_name} on dataset {dataset_name}")
