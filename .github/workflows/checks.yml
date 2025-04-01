@@ -1,4 +1,4 @@
-name: Test Coverage
+name: Checks
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-coverage:
+  run-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

@@ -12,55 +12,6 @@ logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-def get_aws_credentials(profile="default", aws_shared_credentials_path=None):
-    """
-    Get AWS credentials from the specified profile.
-
-    :param profile: AWS profile name (default: 'default')
-    :param aws_shared_credentials_path: Path to the AWS credentials file (optional)
-    :return: Dictionary containing AWS credentials
-    """
-
-    # Check environment variable and default path for credentials file
-    if aws_shared_credentials_path is None:
-        default_aws_shared_credentials_path = "~/.aws/credentials"
-        aws_shared_credentials_path = os.environ.get(
-            "AWS_SHARED_CREDENTIALS_FILE", default_aws_shared_credentials_path
-        )
-
-    aws_shared_credentials_path = os.path.expanduser(aws_shared_credentials_path)
-    if not os.path.exists(aws_shared_credentials_path):
-        logger.warning(
-            f"AWS credentials file not found at {aws_shared_credentials_path}. "
-            f"This may cause issues when accessing AWS resources."
-        )
-        credentials_dict = {}
-    else:
-        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = aws_shared_credentials_path
-        session = boto3.Session(profile_name=profile)
-        credentials = session.get_credentials()
-
-        # See if these are valid credentials
-        if hasattr(credentials, "access_key") and hasattr(credentials, "secret_key"):
-            logger.info(
-                f"Using AWS credentials found at {aws_shared_credentials_path}."
-            )
-            credentials_dict = {
-                "AWS_ACCESS_KEY_ID": credentials.access_key,
-                "AWS_SECRET_ACCESS_KEY": credentials.secret_key,
-            }
-        else:
-            logger.warning(
-                f"Entries for both aws_access_key_id and aws_secret_access_key"
-                f" were not found for profile {profile} at"
-                f" {aws_shared_credentials_path}. AWS credentials will"
-                f" not be added to the container."
-            )
-            credentials_dict = {}
-
-    return credentials_dict
-
-
 def download_s3_file(bucket, key, local_path, unsigned=True):
     """
     Downloads a single file from S3 to a local path.
