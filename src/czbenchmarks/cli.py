@@ -48,38 +48,51 @@ def run(
     # Load datasets
     datasets: dict[str, BaseDataset] = {}
     for dataset_name in dataset_names:
+        log.info(f"Loading dataset {dataset_name}")
         datasets[dataset_name] = utils.load_dataset(dataset_name)
 
     # Load each model
     for model_name in model_names:
+        log.info(f"Running model {model_name}")
         runner = ContainerRunner(model_name)
 
         for dataset_name, dataset in datasets.items():
+            log.info(f"Running model {model_name} on dataset {dataset_name}")
             embeddings = runner.run(dataset)
 
             if clustering_task_args:
+                log.info("Running clustering task with args: %s", clustering_task_args)
                 clustering_task = ClusteringTask(**clustering_task_args)
+                clustering_task.set_baseline(dataset)
                 clustering_results = clustering_task.run(embeddings)
                 log.info(
                     f"Clustering results for {model_name} on {dataset_name}:\n\n{clustering_results}\n"
                 )
 
             if embedding_task_args:
+                log.info("Running embedding task with args: %s", embedding_task_args)
                 embedding_task = EmbeddingTask(**embedding_task_args)
+                embedding_task.set_baseline(dataset)
                 embedding_results = embedding_task.run(embeddings)
                 log.info(
                     f"Embedding results for {model_name} on {dataset_name}:\n\n{embedding_results}\n"
                 )
 
             if prediction_task_args:
+                log.info("Running prediction task with args: %s", prediction_task_args)
                 prediction_task = MetadataLabelPredictionTask(**prediction_task_args)
+                prediction_task.set_baseline(dataset)
                 prediction_results = prediction_task.run(embeddings)
                 log.info(
                     f"Prediction results for {model_name} on {dataset_name}:\n\n{prediction_results}\n"
                 )
 
             if integration_task_args:
+                log.info(
+                    "Running integration task with args: %s", integration_task_args
+                )
                 integration_task = BatchIntegrationTask(**integration_task_args)
+                integration_task.set_baseline(dataset)
                 integration_results = integration_task.run(embeddings)
                 log.info(
                     f"Integration results for {model_name} on {dataset_name}:\n\n{integration_results}\n"
@@ -111,6 +124,7 @@ if __name__ == "__main__":
         "--datasets",
         "-d",
         nargs="+",
+        choices=utils.list_datasets(),
         required=True,
         help="One or more dataset names (from datasets.yaml).",
     )
