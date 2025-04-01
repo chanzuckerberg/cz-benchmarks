@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.4](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.3...v0.4.4) (2025-04-01)
+
+
+### Bug Fixes
+
+* add tag to mount dir ([#144](https://github.com/chanzuckerberg/cz-benchmarks/issues/144)) ([b9d2500](https://github.com/chanzuckerberg/cz-benchmarks/commit/b9d250047f589d2321508360025d6c7495f86c10))
+* push model images to ECR public repo ([#133](https://github.com/chanzuckerberg/cz-benchmarks/issues/133)) ([8b5b653](https://github.com/chanzuckerberg/cz-benchmarks/commit/8b5b65357212fc652f03596baf8711b9a0b68c70))
+
 ## [0.4.3](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.2...v0.4.3) (2025-03-31)
 
 
