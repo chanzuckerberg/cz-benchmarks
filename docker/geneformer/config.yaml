@@ -1,4 +1,4 @@
-_target_: model.GeneFormer
+_target_: model.Geneformer
 
 # Training configuration
 label_feature: cell_subclass
