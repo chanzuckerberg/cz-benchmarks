@@ -52,25 +52,19 @@ class SingleCellDataset(BaseDataset):
 
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
-        # Validate that adata.X contains raw counts (non-negative whole numbers)
-        if isinstance(self.adata.X, np.ndarray):
-            if np.any(np.mod(self.adata.X, 1) != 0) or np.any(self.adata.X < 0):
-                raise ValueError(
-                    "Dataset X matrix must contain non-negative whole numbers (raw counts)"
-                )
-        else:  # For sparse matrices
-            if np.any(np.mod(self.adata.X.data, 1) != 0) or np.any(
-                self.adata.X.data < 0
-            ):
-                raise ValueError(
-                    "Dataset X matrix must contain non-negative whole numbers (raw counts)"
-                )
-
-        if not np.issubdtype(self.adata.X.dtype, np.integer):
+        # Check if data contains non-integer or negative values
+        data = (
+            self.adata.X.data
+            if hasattr(self.adata.X, "data")
+            and not isinstance(self.adata.X, np.ndarray)
+            else self.adata.X
+        )
+        if np.any(np.mod(data, 1) != 0) or np.any(data < 0):
             logger.warning(
-                "Dataset X matrix contains raw counts but is not an integer type. Converting to int32."
+                "Dataset X matrix does not contain raw counts."
+                " Some models may require raw counts as input."
+                " Check the corresponding model card for more details."
             )
-            self.adata.X = self.adata.X.astype(np.int32)
 
         if not var:
             if "ensembl_id" in self.adata.var.columns:
