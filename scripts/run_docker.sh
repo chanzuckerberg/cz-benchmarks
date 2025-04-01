@@ -135,7 +135,7 @@ get_docker_image() {
     echo -e "${MAGENTA_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "GETTING DOCKER IMAGE") ##########${RESET}"
 
     # Get model image URI from models.yaml
-    local model_config_path="conf/models.yaml"
+    local model_config_path="src/czbenchmarks/conf/models.yaml"
     local python_script="import yaml; print(yaml.safe_load(open('${model_config_path}'))['models']['${MODEL_NAME}']['model_image_uri'])"
     CZBENCH_CONTAINER_URI=$(python3 -c "${python_script}")
     variable_is_set CZBENCH_CONTAINER_URI
