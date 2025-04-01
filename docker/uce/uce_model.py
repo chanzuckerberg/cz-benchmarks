@@ -94,7 +94,9 @@ class UCE(UCEValidator, BaseModelImplementation):
 
         config.model_config[
             model_variant
-        ].protein_embeddings_dir = f"{self.model_weights_dir}/model_files/protein_embeddings"
+        ].protein_embeddings_dir = (
+            f"{self.model_weights_dir}/model_files/protein_embeddings"
+        )
         config.model_config[model_variant].model_loc = (
             f"{self.model_weights_dir}/"
             f"{config.model_config[model_variant].model_filename}"
