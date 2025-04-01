@@ -4,6 +4,9 @@ from typing import Dict
 import numpy as np
 from .base import BaseDataset
 from .types import Organism, DataType
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SingleCellDataset(BaseDataset):
@@ -49,9 +52,25 @@ class SingleCellDataset(BaseDataset):
 
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
-        # Validate that adata.X contains raw counts (integers)
+        # Validate that adata.X contains raw counts (non-negative whole numbers)
+        if isinstance(self.adata.X, np.ndarray):
+            if np.any(np.mod(self.adata.X, 1) != 0) or np.any(self.adata.X < 0):
+                raise ValueError(
+                    "Dataset X matrix must contain non-negative whole numbers (raw counts)"
+                )
+        else:  # For sparse matrices
+            if np.any(np.mod(self.adata.X.data, 1) != 0) or np.any(
+                self.adata.X.data < 0
+            ):
+                raise ValueError(
+                    "Dataset X matrix must contain non-negative whole numbers (raw counts)"
+                )
+
         if not np.issubdtype(self.adata.X.dtype, np.integer):
-            raise ValueError("Dataset X matrix must have integer dtype (raw counts)")
+            logger.warning(
+                "Dataset X matrix contains raw counts but is not an integer type. Converting to int32."
+            )
+            self.adata.X = self.adata.X.astype(np.int32)
 
         if not var:
             if "ensembl_id" in self.adata.var.columns:
