@@ -117,19 +117,19 @@ if __name__ == "__main__":
 
     # Run parser clustering task
     run_parser.add_argument(
-        "--clustering-task-label",
+        "--clustering-task-label-key",
         help="Key to access ground truth labels in metadata",
     )
 
     # Run parser embedding task
     run_parser.add_argument(
-        "--embedding-task-label",
+        "--embedding-task-label-key",
         help="Key to access ground truth labels in metadata",
     )
 
     # Run parser prediction task
     run_parser.add_argument(
-        "--prediction-task-label",
+        "--prediction-task-label-key",
         help="Key to access ground truth labels in metadata",
     )
     run_parser.add_argument(
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     # Run parser integration task
     run_parser.add_argument(
-        "--integration-task-label",
+        "--integration-task-label-key",
         help="Key to access ground truth labels in metadata",
     )
     run_parser.add_argument(
@@ -184,25 +184,25 @@ if __name__ == "__main__":
         prediction_task_args: PredictionTaskArgs | None = None
         integration_task_args: IntegrationTaskArgs | None = None
 
-        if args.get("clustering_task_label"):
+        if args.get("clustering_task_label_key"):
             pre = "clustering_task_"
             clustering_task_args = ClusteringTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
 
-        if args.get("embedding_task_label"):
+        if args.get("embedding_task_label_key"):
             pre = "embedding_task_"
             embedding_task_args = EmbeddingTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
 
-        if args.get("prediction_task_label"):
+        if args.get("prediction_task_label_key"):
             pre = "prediction_task_"
             prediction_task_args = PredictionTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
 
-        if args.get("integration_task_label"):
+        if args.get("integration_task_label_key"):
             pre = "integration_task_"
             integration_task_args = IntegrationTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
