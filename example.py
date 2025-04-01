@@ -12,7 +12,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     dataset = load_dataset("tsv2_bladder")
 
-    for model_name in ["SCGENEPT"]:
+    for model_name in ["SCVI", "SCGPT"]:
         dataset = run_inference(model_name, dataset)
 
         task = ClusteringTask(label_key="cell_type")
