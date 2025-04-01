@@ -501,7 +501,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
-    { name = "typing-extensions" },
 ]
 docs = [
     { name = "myst-parser" },
@@ -562,7 +561,6 @@ requires-dist = [
     { name = "sphinxcontrib-serializinghtml", marker = "extra == 'docs'", specifier = ">=2.0.0" },
     { name = "twine", marker = "extra == 'build'", specifier = ">=6.1.0" },
     { name = "typing-extensions", specifier = ">=4.13.0" },
-    { name = "typing-extensions", marker = "extra == 'dev'", specifier = ">=4.13.0" },
     { name = "wheel", marker = "extra == 'build'", specifier = ">=0.45.1" },
 ]
 provides-extras = ["build", "dev", "docs"]
