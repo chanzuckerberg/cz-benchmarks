@@ -70,7 +70,9 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """
         model_weights_subdir = self.get_model_weights_subdir(dataset)
         if model_weights_subdir != "":
-            self.model_weights_dir = f"{MODEL_WEIGHTS_PATH_DOCKER}/{model_weights_subdir}"
+            self.model_weights_dir = (
+                f"{MODEL_WEIGHTS_PATH_DOCKER}/{model_weights_subdir}"
+            )
         else:
             self.model_weights_dir = MODEL_WEIGHTS_PATH_DOCKER
 
