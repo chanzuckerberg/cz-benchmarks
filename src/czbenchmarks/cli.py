@@ -63,7 +63,6 @@ def run(
             if clustering_task_args:
                 log.info("Running clustering task with args: %s", clustering_task_args)
                 clustering_task = ClusteringTask(**clustering_task_args)
-                clustering_task.set_baseline(dataset)
                 clustering_results = clustering_task.run(embeddings)
                 log.info(
                     f"Clustering results for {model_name} on {dataset_name}:\n\n{clustering_results}\n"
@@ -72,7 +71,6 @@ def run(
             if embedding_task_args:
                 log.info("Running embedding task with args: %s", embedding_task_args)
                 embedding_task = EmbeddingTask(**embedding_task_args)
-                embedding_task.set_baseline(dataset)
                 embedding_results = embedding_task.run(embeddings)
                 log.info(
                     f"Embedding results for {model_name} on {dataset_name}:\n\n{embedding_results}\n"
@@ -81,7 +79,6 @@ def run(
             if prediction_task_args:
                 log.info("Running prediction task with args: %s", prediction_task_args)
                 prediction_task = MetadataLabelPredictionTask(**prediction_task_args)
-                prediction_task.set_baseline(dataset)
                 prediction_results = prediction_task.run(embeddings)
                 log.info(
                     f"Prediction results for {model_name} on {dataset_name}:\n\n{prediction_results}\n"
@@ -92,7 +89,6 @@ def run(
                     "Running integration task with args: %s", integration_task_args
                 )
                 integration_task = BatchIntegrationTask(**integration_task_args)
-                integration_task.set_baseline(dataset)
                 integration_results = integration_task.run(embeddings)
                 log.info(
                     f"Integration results for {model_name} on {dataset_name}:\n\n{integration_results}\n"
