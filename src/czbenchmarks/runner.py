@@ -1,8 +1,6 @@
 import os
 import pathlib
 import tempfile
-import boto3
-import base64
 from typing import Any, List, Union, Optional, Dict
 
 import docker
