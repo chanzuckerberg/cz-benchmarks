@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cz-benchmarks"
-version = "0.4.3"
+version = "0.4.4"
 description = "A framework for benchmarking single-cell machine learning models"
 authors = [{ name = "Chan Zuckerberg Initiative", email = "pypi@chanzuckerberg.com" }]
 readme = "README.md"
@@ -36,7 +36,7 @@ dependencies = [
     "scib-metrics>=0.5.1",
     "scikit-misc>=0.5.1",
     "pydantic>=2.0.0",
-    "hnswlib>=0.8.0",
+    "hnswlib>=0.8.0; platform_system == 'Linux'",  # Install via conda on macOS
 ]
 
 [project.optional-dependencies]

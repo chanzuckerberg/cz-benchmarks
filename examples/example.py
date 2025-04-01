@@ -10,7 +10,6 @@ from czbenchmarks.tasks import (
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
     dataset = load_dataset("tsv2_bladder")
 
     for model_name in ["SCVI", "SCGPT"]:

@@ -73,3 +73,6 @@ mypy-check:
 # Run all linters and checkers # TODO: enable mypy-check
 .PHONY: lint
 lint: ruff-check ruff-fmt-check #mypy-check
+
+.PHONY: lint-fix
+lint-fix: ruff-fix ruff-fmt #mypy-fix
