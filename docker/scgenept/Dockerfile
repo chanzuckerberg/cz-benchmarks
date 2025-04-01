@@ -12,7 +12,6 @@ RUN git clone https://github.com/czi-ai/scGenePT.git && \
 
 # Install the czbenchmarks package
 COPY src /app/package/src
-COPY conf /app/package/conf
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
 RUN pip install -e /app/package
