@@ -101,14 +101,15 @@ if __name__ == "__main__":
     # Run parser
     run_parser = subparsers.add_parser("run", help="Run a set of tasks.")
     run_parser.add_argument(
-        "-m",
         "--models",
+        "-m",
         nargs="+",
         help="One or more model names (from models.yaml).",
         required=True,
     )
     run_parser.add_argument(
         "--datasets",
+        "-d",
         nargs="+",
         required=True,
         help="One or more dataset names (from datasets.yaml).",
@@ -208,8 +209,8 @@ if __name__ == "__main__":
             )
 
         run(
-            models=args["models"],
-            datasets=args["datasets"],
+            model_names=args["models"],
+            dataset_names=args["datasets"],
             clustering_task_args=clustering_task_args,
             embedding_task_args=embedding_task_args,
             prediction_task_args=prediction_task_args,
