@@ -8,6 +8,7 @@ How to guides
 
    installation
    usage_guide
+   interactive_mode
    add_model
    add_tasks
    custom_data

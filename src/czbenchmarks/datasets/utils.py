@@ -8,6 +8,7 @@ from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
 from ..constants import DATASETS_CACHE_PATH
+from ..utils import initialize_hydra
 from .base import BaseDataset
 
 
@@ -33,16 +34,6 @@ def _download_dataset(uri: str, output_path: str, unsigned=True):
         config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
     )
     s3_client.download_file(bucket, key, output_path)
-
-
-def initialize_hydra(config_path="../conf"):
-    if hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
-        hydra.core.global_hydra.GlobalHydra.instance().clear()
-
-    hydra.initialize(
-        config_path=config_path,
-        version_base=None,
-    )
 
 
 def load_dataset(

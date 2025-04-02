@@ -1,3 +1,5 @@
+_target_: model.SCVI
+
 homo_sapiens:
   model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/homo_sapiens/
 

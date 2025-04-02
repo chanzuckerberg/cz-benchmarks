@@ -1,3 +1,5 @@
+_target_: model.ScGPT
+
 models:
   human:
     model_name: human

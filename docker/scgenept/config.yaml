@@ -1,3 +1,5 @@
+_target_: model.SCGenePT
+
 models:
   model_bucket: "s3://czi-scgenept-public"
   vocab_uri: "${models.model_bucket}/models/pretrained/scgpt/vocab.json"
