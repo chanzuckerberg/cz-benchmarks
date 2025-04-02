@@ -211,7 +211,7 @@ def write_embeddings(
     Write all processed datasets (with embeddings) to the specified directory.
     """
     for dataset_name, dataset in embeddings.items():
-        dataset.serialize(str(output_dir / f"{dataset_name}.dill"))
+        dataset.serialize(os.path.join(str(output_dir), f"{dataset_name}.dill"))
 
 
 def get_version() -> str:
