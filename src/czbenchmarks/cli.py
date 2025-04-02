@@ -134,7 +134,7 @@ def run_task(
         raise ValueError("Expected a single task result, got list")
 
     # Serialize the result to a json-compatible dict
-    result = {k.value: [v.model_dump() for v in values] for k, values in result.items()}
+    result = {k.value: [v.model_dump("json") for v in val] for k, val in result.items()}
     return TaskResult(result=result, args=task_args)
 
 
