@@ -19,10 +19,12 @@ class ClusteringTask(BaseTask):
 
     Args:
         label_key (str): Key to access ground truth labels in metadata
+        random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str):
+    def __init__(self, label_key: str, random_seed: int = 42):
         self.label_key = label_key
+        self.random_seed = random_seed
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -56,7 +58,7 @@ class ClusteringTask(BaseTask):
 
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
+        self.predicted_labels = cluster_embedding(adata, obsm_key="emb", random_seed=self.random_seed)
 
     def _compute_metrics(self) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
