@@ -45,7 +45,7 @@ class IntegrationTaskArgs(TypedDict):
 
 
 class TaskResult(TypedDict):
-    result: dict[ModelType, list[MetricResult]]
+    result: dict[str, list[MetricResult]]
     args: (
         ClusteringTaskArgs
         | EmbeddingTaskArgs
@@ -135,6 +135,8 @@ def run_task(
     if isinstance(result, list):
         raise ValueError("Expected a single task result, got list")
 
+    # Convert ModelType enum keys to strings for JSON serialization
+    result = {k.value: v for k, v in result.items()}
     return TaskResult(result=result, args=task_args)
 
 
