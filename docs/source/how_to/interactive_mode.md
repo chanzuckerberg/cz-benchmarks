@@ -41,6 +41,14 @@ The repository includes an example script (`examples/example_interactive.py`) th
 
 2. Inside the container, run the example script:
    ```bash
+   # For UCE
+   /opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py
+   ```
+
+   or
+
+   ```bash
+   # Or all other models
    python3 examples/example_interactive.py
    ```
 
