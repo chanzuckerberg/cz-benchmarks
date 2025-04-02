@@ -10,8 +10,6 @@ import yaml
 from datetime import datetime
 from czbenchmarks.datasets import utils
 from czbenchmarks.datasets.base import BaseDataset
-from czbenchmarks.metrics.types import MetricResult
-from czbenchmarks.models.types import ModelType
 from czbenchmarks import runner
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
@@ -45,7 +43,7 @@ class IntegrationTaskArgs(TypedDict):
 
 
 class TaskResult(TypedDict):
-    result: dict[str, list[MetricResult]]
+    result: dict[str, list[dict]]
     args: (
         ClusteringTaskArgs
         | EmbeddingTaskArgs
@@ -135,8 +133,8 @@ def run_task(
     if isinstance(result, list):
         raise ValueError("Expected a single task result, got list")
 
-    # Convert ModelType enum keys to strings for JSON serialization
-    result = {k.value: v for k, v in result.items()}
+    # Serialize the result to a json-compatible dict
+    result = {k.value: [v.model_dump() for v in values] for k, values in result.items()}
     return TaskResult(result=result, args=task_args)
 
 
@@ -182,7 +180,7 @@ def write_results(
 
 def get_version() -> str:
     """
-    Get the current library version.
+    Get the current version of the czbenchmarks library.
     """
     try:
         return version("czbenchmarks")
