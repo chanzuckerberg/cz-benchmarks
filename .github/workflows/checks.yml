@@ -24,9 +24,12 @@ jobs:
       - name: Cache python dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-python-3.10-dev-${{ hashFiles('uv.lock') }}
-          restore-keys: ${{ runner.os }}-python-3.10-dev-
+          path: |
+            ~/.cache/uv
+            ~/.local/lib/python*
+            ~/.local/bin
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-deps-
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -34,31 +37,28 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system --cache-dir ~/.cache/uv '.[dev]'
-      
-      - name: Cache env
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/uv
-            ~/.local/lib/python*
-            ~/.local/bin
-          key: ${{ runner.os }}-env-${{ github.sha }}
 
   lint:
-    needs: setup
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore env
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Restore cached dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/uv
             ~/.local/lib/python*
             ~/.local/bin
-          key: ${{ runner.os }}-env-${{ github.sha }}
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-deps-
 
       - name: Run linting
         run: make lint
@@ -70,18 +70,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore env
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Restore cached dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/uv
             ~/.local/lib/python*
             ~/.local/bin
-          key: ${{ runner.os }}-env-${{ github.sha }}
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-deps-
 
       - name: Run tests
-        run: |
-          pytest
+        run: make test
 
   coverage:
     runs-on: ubuntu-latest
@@ -90,18 +95,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore env
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Restore cached dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/uv
             ~/.local/lib/python*
             ~/.local/bin
-          key: ${{ runner.os }}-env-${{ github.sha }}
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-deps-
 
       - name: Generate coverage report
-        run: |
-          pytest --cov=czbenchmarks --cov-report=term-missing tests/
+        run: make test-coverage | tee coverage.txt
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
