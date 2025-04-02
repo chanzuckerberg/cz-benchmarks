@@ -13,7 +13,7 @@ if __name__ == "__main__":
     dataset = load_dataset("tsv2_bladder")
 
     for model_name in ["SCVI", "SCGPT"]:
-        run_inference(model_name, dataset)
+        dataset = run_inference(model_name, dataset)
 
     task = ClusteringTask(label_key="cell_type")
     clustering_results = task.run(dataset)
