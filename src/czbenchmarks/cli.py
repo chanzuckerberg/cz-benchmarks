@@ -1,3 +1,11 @@
+"""
+czbenchmarks CLI
+
+Usage:
+    czbenchmarks run --models <model_name> --datasets <dataset_name>
+    czbenchmarks list <list_type>
+"""
+
 import logging
 import json
 import os
@@ -85,7 +93,7 @@ def run(
         result = DatasetResult(dataset_name=dataset_name)
 
         log.info(f"Loading dataset {dataset_name}")
-        embeddings = utils.load_dataset(dataset_name)
+        embeddings = dataset_utils.load_dataset(dataset_name)
 
         # Run inference against this dataset for each model to generate embeddings
         for model_name in model_names:
@@ -298,8 +306,8 @@ if __name__ == "__main__":
     list_parser.add_argument(
         "list_type",
         type=str,
-        choices=["datasets", "models", "tasks"],
-        help="What you want to list: 'datasets', 'models', or 'tasks'.",
+        choices=["datasets", "models"],
+        help="List available datasets or models.",
     )
 
     # Parse arguments to dict
@@ -312,7 +320,11 @@ if __name__ == "__main__":
         raise
 
     if args["action"] == "list":
-        raise NotImplementedError("This commmand is not yet implemented")
+        if args["list_type"] == "datasets":
+            sys.stdout.write(dataset_utils.list_available_datasets())
+        elif args["list_type"] == "models":
+            sys.stdout.write(model_utils.list_available_models())
+        sys.exit(0)
 
     if args["action"] == "run":
         clustering_task_args: ClusteringTaskArgs | None = None
@@ -325,19 +337,16 @@ if __name__ == "__main__":
             clustering_task_args = ClusteringTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
-
         if args.get("embedding_task_label_key"):
             pre = "embedding_task_"
             embedding_task_args = EmbeddingTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
-
         if args.get("prediction_task_label_key"):
             pre = "prediction_task_"
             prediction_task_args = PredictionTaskArgs(
                 **{k.removeprefix(pre): v for k, v in args.items() if k.startswith(pre)}
             )
-
         if args.get("integration_task_label_key"):
             pre = "integration_task_"
             integration_task_args = IntegrationTaskArgs(
