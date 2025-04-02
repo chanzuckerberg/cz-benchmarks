@@ -45,7 +45,7 @@ class IntegrationTaskArgs(TypedDict):
 
 
 class TaskResult(TypedDict):
-    results: list[dict[ModelType, list[MetricResult]]]
+    result: dict[ModelType, list[MetricResult]]
     args: (
         ClusteringTaskArgs
         | EmbeddingTaskArgs
@@ -86,28 +86,28 @@ def run(
         result = DatasetResult(dataset_name=dataset_name)
 
         log.info(f"Loading dataset {dataset_name}")
-        dataset = utils.load_dataset(dataset_name)
+        embeddings = utils.load_dataset(dataset_name)
 
-        # Run inference against this dataset for each model
+        # Run inference against this dataset for each model to generate embeddings
         for model_name in model_names:
             log.info(f"Running {model_name} inference on dataset {dataset_name}")
-            dataset = runner.run_inference(model_name, dataset, gpu=True)
+            embeddings = runner.run_inference(model_name, embeddings, gpu=True)
 
         if clustering_task_args:
             result["clustering_task"] = run_task(
-                ClusteringTask, dataset, clustering_task_args
+                ClusteringTask, embeddings, clustering_task_args
             )
         if embedding_task_args:
             result["embedding_task"] = run_task(
-                EmbeddingTask, dataset, embedding_task_args
+                EmbeddingTask, embeddings, embedding_task_args
             )
         if prediction_task_args:
             result["prediction_task"] = run_task(
-                MetadataLabelPredictionTask, dataset, prediction_task_args
+                MetadataLabelPredictionTask, embeddings, prediction_task_args
             )
         if integration_task_args:
             result["integration_task"] = run_task(
-                BatchIntegrationTask, dataset, integration_task_args
+                BatchIntegrationTask, embeddings, integration_task_args
             )
         results.append(result)
 
@@ -119,7 +119,7 @@ def run_task(
     | type[EmbeddingTask]
     | type[MetadataLabelPredictionTask]
     | type[BatchIntegrationTask],
-    embeddings: list[BaseDataset],
+    embeddings: BaseDataset,
     task_args: ClusteringTaskArgs
     | EmbeddingTaskArgs
     | PredictionTaskArgs
@@ -130,19 +130,12 @@ def run_task(
     """
     log.info("Running %s with args: %s", TaskCls.__name__, task_args)
     task = TaskCls(**task_args)
-    results = task.run(embeddings)
+    result = task.run(embeddings)
 
-    if isinstance(results, dict):
-        results = [results]  # Ensure results are always a list
+    if isinstance(result, list):
+        raise ValueError("Expected a single task result, got list")
 
-    log.info(
-        "%s results for %s on %s:\n\n%s\n",
-        TaskCls.__name__,
-        task_args["model_name"],
-        task_args["dataset_name"],
-        results,
-    )
-    return TaskResult(results=results, args=task_args)
+    return TaskResult(result=result, args=task_args)
 
 
 def write_results(
@@ -204,8 +197,6 @@ def get_version() -> str:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -312,6 +303,7 @@ if __name__ == "__main__":
     # Parse arguments to dict
     try:
         args = vars(parser.parse_args())
+        logging.basicConfig(level=args["log_level"].upper(), stream=sys.stdout)
     except argparse.ArgumentError as e:
         parser.error(str(e))
     except SystemExit:
