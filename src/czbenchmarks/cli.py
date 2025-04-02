@@ -87,11 +87,13 @@ def run(
     embedding_task_args: EmbeddingTaskArgs | None = None,
     prediction_task_args: PredictionTaskArgs | None = None,
     integration_task_args: IntegrationTaskArgs | None = None,
-) -> list[DatasetResult]:
+) -> tuple[dict[str, BaseDataset], list[DatasetResult]]:
     """
     Run a set of tasks for a set of models on a set of datasets.
+    Returns a tuple of (processed_datasets, results).
     """
     results: list[DatasetResult] = []
+    processed_datasets: dict[str, BaseDataset] = {}
 
     for dataset_name in dataset_names:
         result = DatasetResult(dataset_name=dataset_name)
@@ -103,6 +105,7 @@ def run(
         for model_name in model_names:
             log.info(f"Running {model_name} inference on dataset {dataset_name}")
             embeddings = runner.run_inference(model_name, embeddings, gpu=True)
+            processed_datasets[dataset_name] = embeddings
 
         if clustering_task_args:
             result["clustering_task"] = run_task(
@@ -158,7 +161,11 @@ def write_results(
     *,
     output_format: str = DEFAULT_OUTPUT_FORMAT,
     output_file: str | None = None,  # Writes to stdout if None
-) -> None:
+) -> Path | None:
+    """
+    Format and write results to the given directory or file.
+    Returns the path to the written file, or None if writing only to stdout.
+    """
     # Get the intended format/extension
     if output_file and output_file.endswith(".json"):
         output_format = "json"
@@ -179,7 +186,7 @@ def write_results(
     # Write to stdout if not otherwise specified
     if not output_file:
         sys.stdout.write(result_str)
-        return
+        return None
 
     # Generate a unique filename if we were passed a directory
     if os.path.isdir(output_file) or output_file.endswith("/"):
@@ -191,6 +198,19 @@ def write_results(
     # Write the results to the specified file
     with open(output_file, "w") as f:
         f.write(result_str)
+
+    log.info("Wrote results to %s", output_file)
+    return Path(output_file)
+
+
+def write_embeddings(
+    embeddings: dict[str, BaseDataset], output_dir: str | Path
+) -> None:
+    """
+    Write all processed datasets (with embeddings) to the specified directory.
+    """
+    for dataset_name, dataset in embeddings.items():
+        dataset.serialize(str(output_dir / f"{dataset_name}.dill"))
 
 
 def get_version() -> str:
@@ -262,6 +282,13 @@ if __name__ == "__main__":
         "--output-file",
         "-o",
         help="Path to file or directory to save results (default is stdout)",
+    )
+    run_parser.add_argument(
+        "--save-embeddings",
+        "-s",
+        nargs="?",
+        const=True,
+        help="Save processed datasets to the specified directory, or save to an auto-generated directory if this flag is set with no arguments (datasets are not saved by default)",
     )
 
     # Run parser clustering task
@@ -360,7 +387,7 @@ if __name__ == "__main__":
             )
 
         # Run the tasks
-        results = run(
+        embeddings, results = run(
             model_names=args["models"],
             dataset_names=args["datasets"],
             clustering_task_args=clustering_task_args,
@@ -377,8 +404,17 @@ if __name__ == "__main__":
         )
 
         # Write the results to the specified output
-        write_results(
+        result_path = write_results(
             run_result,
             output_format=args["output_format"],
             output_file=args.get("output_file"),
         )
+
+        # Optionally write processed datasets to disk
+        if args.get("save_embeddings"):
+            dirname = datetime.now().strftime("czbenchmarks_embeddings_%Y%m%d_%H%M%S")
+            if isinstance(args.get("save_embeddings"), str):
+                dirname = args["save_embeddings"]
+            elif result_path:
+                dirname = result_path.parent / f"{result_path.stem}_embeddings"
+            write_embeddings(embeddings, dirname)
