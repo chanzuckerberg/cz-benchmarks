@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 # TODO: Later we can add cluster parameters as kwargs here and add them
 # to the task config
-def cluster_embedding(adata: AnnData, obsm_key: str = "emb", random_seed: int = 42) -> List[int]:
+def cluster_embedding(
+    adata: AnnData, obsm_key: str = "emb", random_seed: int = 42
+) -> List[int]:
     """Cluster cells in embedding space using the Leiden algorithm.
 
     Computes nearest neighbors in the embedding space and runs the Leiden
@@ -25,7 +27,13 @@ def cluster_embedding(adata: AnnData, obsm_key: str = "emb", random_seed: int = 
         List of cluster assignments as integers
     """
     sc.pp.neighbors(adata, use_rep=obsm_key, random_state=random_seed)
-    sc.tl.leiden(adata, key_added="leiden", flavor="igraph", n_iterations=2, random_state=random_seed)
+    sc.tl.leiden(
+        adata,
+        key_added="leiden",
+        flavor="igraph",
+        n_iterations=2,
+        random_state=random_seed,
+    )
     return list(adata.obs["leiden"])
 
 

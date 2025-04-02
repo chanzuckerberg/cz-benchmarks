@@ -58,7 +58,9 @@ class ClusteringTask(BaseTask):
 
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(adata, obsm_key="emb", random_seed=self.random_seed)
+        self.predicted_labels = cluster_embedding(
+            adata, obsm_key="emb", random_seed=self.random_seed
+        )
 
     def _compute_metrics(self) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
