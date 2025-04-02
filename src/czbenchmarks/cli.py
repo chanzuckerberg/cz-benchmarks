@@ -2,8 +2,12 @@
 czbenchmarks CLI
 
 Usage:
-    czbenchmarks run --models <model_name> --datasets <dataset_name>
     czbenchmarks list <list_type>
+    czbenchmarks run --models <model_name> --datasets <dataset_name> --TASK_NAME-task-label-key <label_key>
+        [--clustering-task-label-key <label_key>]
+        [--embedding-task-label-key <label_key>]
+        [--prediction-task-label-key <label_key>]
+        [--integration-task-label-key <label_key>]
 """
 
 import logging
@@ -52,7 +56,7 @@ class IntegrationTaskArgs(TypedDict):
 
 
 class TaskResult(TypedDict):
-    result: dict[str, list[dict]]
+    results: dict[str, list[dict]]
     args: (
         ClusteringTaskArgs
         | EmbeddingTaskArgs
@@ -137,16 +141,16 @@ def run_task(
     """
     log.info("Running %s with args: %s", TaskCls.__name__, task_args)
     task = TaskCls(**task_args)
-    result = task.run(embeddings)
+    results = task.run(embeddings)
 
-    if isinstance(result, list):
+    if isinstance(results, list):
         raise ValueError("Expected a single task result, got list")
 
     # Serialize the result to a json-compatible dict
-    result = {
-        k.value: [v.model_dump(mode="json") for v in val] for k, val in result.items()
+    results = {
+        k.value: [v.model_dump(mode="json") for v in val] for k, val in results.items()
     }
-    return TaskResult(result=result, args=task_args)
+    return TaskResult(results=results, args=task_args)
 
 
 def write_results(
