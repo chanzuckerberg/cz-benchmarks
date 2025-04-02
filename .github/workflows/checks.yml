@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-checks:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -34,13 +34,74 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system --cache-dir ~/.cache/uv '.[dev]'
+      
+      - name: Cache env
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/lib/python*
+            ~/.local/bin
+          key: ${{ runner.os }}-env-${{ github.sha }}
+
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore env
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/lib/python*
+            ~/.local/bin
+          key: ${{ runner.os }}-env-${{ github.sha }}
 
       - name: Run linting
         run: make lint
 
-      - name: Run tests with coverage
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore env
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/lib/python*
+            ~/.local/bin
+          key: ${{ runner.os }}-env-${{ github.sha }}
+
+      - name: Run tests
         run: |
-          make test | tee coverage.txt
+          pytest
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore env
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/lib/python*
+            ~/.local/bin
+          key: ${{ runner.os }}-env-${{ github.sha }}
+
+      - name: Generate coverage report
+        run: |
+          pytest --cov=czbenchmarks --cov-report=term-missing tests/
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
