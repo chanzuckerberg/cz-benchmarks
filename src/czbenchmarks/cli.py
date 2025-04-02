@@ -8,6 +8,7 @@ Usage:
         [--embedding-task-label-key <label_key>]
         [--prediction-task-label-key <label_key>]
         [--integration-task-label-key <label_key>]
+        [--save-embeddings <output_dir>]
 """
 
 import logging
