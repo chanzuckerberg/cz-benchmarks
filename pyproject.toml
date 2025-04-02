@@ -81,3 +81,6 @@ Repository = "https://github.com/chanzuckerberg/cz-benchmarks"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/czbenchmarks"]
+
+[project.scripts]
+czbenchmarks = "czbenchmarks.cli:main"

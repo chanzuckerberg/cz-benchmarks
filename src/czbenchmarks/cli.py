@@ -232,7 +232,8 @@ def get_version() -> str:
     return pyproject["project"]["version"]
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Entry point for the czbenchmarks CLI."""
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -419,3 +420,7 @@ if __name__ == "__main__":
             elif result_path:
                 dirname = result_path.parent / f"{result_path.stem}_embeddings"
             write_embeddings(embeddings, dirname)
+
+
+if __name__ == "__main__":
+    main()
