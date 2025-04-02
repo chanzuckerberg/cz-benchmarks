@@ -91,7 +91,7 @@ def run(
         # Run inference against this dataset for each model
         for model_name in model_names:
             log.info(f"Running {model_name} inference on dataset {dataset_name}")
-            runner.run_inference(model_name, dataset, gpu=True)
+            dataset = runner.run_inference(model_name, dataset, gpu=True)
 
         if clustering_task_args:
             result["clustering_task"] = run_task(
@@ -216,6 +216,13 @@ if __name__ == "__main__":
         help="Show version number and exit",
         action="version",
         version=f"%(prog)s {get_version()}",
+    )
+    parser.add_argument(
+        "--log-level",
+        "-ll",
+        choices=["debug", "info", "warning", "error", "critical"],
+        default="info",
+        help="Set the logging level (default is info)",
     )
 
     subparsers = parser.add_subparsers(dest="action", required=True)
@@ -357,7 +364,7 @@ if __name__ == "__main__":
         run_result = RunResult(
             results=results,
             czbenchmarks_version=get_version(),
-            args=" ".join(sys.argv),
+            args=" ".join(sys.argv[1:]),
         )
 
         # Write the results to the specified output
