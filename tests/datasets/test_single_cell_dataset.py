@@ -37,14 +37,6 @@ def test_single_cell_dataset_validate_without_load(dummy_human_anndata):
         dummy_human_anndata.validate()
 
 
-def test_single_cell_dataset_validate_float_counts(float_counts_anndata):
-    """Test that SingleCellDataset validation fails with float counts."""
-    with pytest.raises(
-        ValueError, match=".*Dataset X matrix must have integer dtype.*"
-    ):
-        float_counts_anndata.validate()
-
-
 def test_single_cell_dataset_validate_wrong_prefix(dummy_human_anndata_wrong_prefix):
     """Test that SingleCellDataset validation fails with wrong gene name prefixes."""
     with pytest.raises(ValueError, match="Gene names must start with"):

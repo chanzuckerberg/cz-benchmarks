@@ -40,9 +40,14 @@ clean:
 .PHONY: rebuild
 rebuild: clean all
 
-# Run all unit tests with coverage
+# Run all unit tests
 .PHONY: test
 test:
+	uv run pytest
+
+# Run all unit tests with coverage
+.PHONY: test-coverage
+test-coverage:
 	uv run pytest --cov=czbenchmarks --cov-report=term-missing tests/
 
 # Check formatting with ruff

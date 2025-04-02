@@ -1,3 +1,5 @@
+_target_: uce_model.UCE
+
 model_uri: s3://cz-benchmarks-data/models/v1/uce
 
 model_config:

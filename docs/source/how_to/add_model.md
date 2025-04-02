@@ -48,3 +48,16 @@ class YourModel(YourModelValidator, BaseModelImplementation):
 if __name__ == "__main__":
     YourModel().run()
 ```
+
+4. Create a model configuration file (`config.yaml`)
+
+The file `config.yaml` is used to store configuration information about the model, e.g. such as the URI for model weights and associated files. Minimally, it must contain a `_target_` entry that points to the model class based on `BaseModelImplementation` in the `model.py` file.
+
+```yaml
+_target_: model.YourModel
+
+model_type:
+  model_dir: s3://path/to/model/weights/
+
+```
+
