@@ -1,3 +1,19 @@
+"""
+Benchmark Pipeline for Single-Cell Models
+
+This script runs a comprehensive benchmarking pipeline for single-cell models
+across multiple datasets. It evaluates model performance on three key tasks:
+1. Cell clustering (comparing against cell_type labels)
+2. Embedding quality assessment
+3. Metadata label prediction (for cell_type and sex)
+
+Results for all datasets and tasks are collected and saved to a .pkl file
+for further analysis.
+
+Usage:
+    python pipeline.py
+"""
+
 import logging
 import sys
 from czbenchmarks.runner import run_inference
