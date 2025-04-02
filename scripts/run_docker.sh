@@ -15,7 +15,7 @@ DEVELOPMENT_CODE_PATH=$(pwd)
 MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks code
 
 # Container related settings
-BUILD_DEV_CONTAINER=true # true or false -- true to build container from code, false to pull from AWS
+BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull public image
 EVAL_CMD="bash" # "bash" or "python3 -u /app/examples/example_interactive.py"
 RUN_AS_ROOT=false # false or true
 
@@ -161,11 +161,12 @@ get_docker_image() {
         docker pull ${CZBENCH_CONTAINER_URI}
 
     else
-        CZBENCH_CONTAINER_URI=$(echo $CZBENCH_CONTAINER_URI | rev | cut -d/ -f1 | rev)
+        local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+        CZBENCH_CONTAINER_URI=cz-benchmarks-models:${model_name_lower}
 
         echo ""
         echo -e "   ${MAGENTA_BOLD}Building image ${CZBENCH_CONTAINER_URI}${RESET}"
-        local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+        
         make ${model_name_lower}
     fi
 
