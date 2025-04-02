@@ -126,7 +126,7 @@ def run(
             )
         results.append(result)
 
-    return results
+    return processed_datasets, results
 
 
 def run_task(
