@@ -8,7 +8,8 @@ from importlib.metadata import version, PackageNotFoundError
 from typing_extensions import TypedDict, NotRequired
 import yaml
 from datetime import datetime
-from czbenchmarks.datasets import utils
+from czbenchmarks.datasets import utils as dataset_utils
+from czbenchmarks.models import utils as model_utils
 from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks import runner
 from czbenchmarks.tasks.clustering import ClusteringTask
@@ -224,6 +225,7 @@ if __name__ == "__main__":
         "--models",
         "-m",
         nargs="+",
+        choices=model_utils.list_available_models(),
         help="One or more model names (from models.yaml).",
         required=True,
     )
@@ -231,7 +233,7 @@ if __name__ == "__main__":
         "--datasets",
         "-d",
         nargs="+",
-        choices=utils.list_available_datasets(),
+        choices=dataset_utils.list_available_datasets(),
         required=True,
         help="One or more dataset names (from datasets.yaml).",
     )
