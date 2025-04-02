@@ -1,5 +1,6 @@
 import os
 import hydra
+from pathlib import Path
 from omegaconf import OmegaConf
 from czbenchmarks.utils import initialize_hydra, import_class_from_config
 
@@ -20,9 +21,10 @@ def test_initialize_hydra():
     # Clear hydra
     hydra.core.global_hydra.GlobalHydra.instance().clear()
 
-    # Test with custom config path
-    custom_path = os.path.join(os.path.dirname(__file__), "conf")
-    initialize_hydra(custom_path)
+    # Test with custom config path -- hydra requires relative paths
+    this_dir = Path(__file__).parent
+    custom_path = Path(this_dir / "conf").relative_to(this_dir)
+    initialize_hydra(str(custom_path))
     assert hydra.core.global_hydra.GlobalHydra.instance().is_initialized()
 
     # Clean up
