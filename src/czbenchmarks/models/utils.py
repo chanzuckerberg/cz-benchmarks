@@ -1,21 +1,22 @@
+from typing import List
 import hydra
 from omegaconf import OmegaConf
-from czbenchmarks.datasets import utils as datasets_utils
+from ..utils import initialize_hydra
 
 
-def list_available_models() -> list[str]:
+def list_available_models() -> List[str]:
     """
     Lists all available models defined in the models.yaml configuration file.
 
     Returns:
         list: A sorted list of model names available in the configuration.
     """
-    datasets_utils.initialize_hydra()
+    initialize_hydra()
 
     # Load the datasets configuration
     cfg = OmegaConf.to_container(hydra.compose(config_name="models"), resolve=True)
 
-    # Extract model names
+    # Extract dataset names
     model_names = list(cfg.get("models", {}).keys())
 
     # Sort alphabetically for easier reading

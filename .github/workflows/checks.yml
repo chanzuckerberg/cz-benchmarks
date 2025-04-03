@@ -21,26 +21,26 @@ jobs:
         with:
           python-version-file: .python-version
 
-      - name: Cache python dependencies
-        uses: actions/cache@v4
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-python-3.10-dev-${{ hashFiles('uv.lock') }}
-          restore-keys: ${{ runner.os }}-python-3.10-dev-
-
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+          enable-cache: true
+          cache-dependency-glob: pyproject.toml
 
       - name: Install dependencies
         run: |
-          uv pip install --system --cache-dir ~/.cache/uv '.[dev]'
+          uv pip install --system '.[dev]'
+
+      - name: Run tests
+        run: make test
 
       - name: Run linting
+        if: always()
         run: make lint
 
-      - name: Run tests with coverage
-        run: |
-          make test | tee coverage.txt
+      - name: Generate coverage report
+        if: always()
+        run: make test-coverage | tee coverage.txt
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
