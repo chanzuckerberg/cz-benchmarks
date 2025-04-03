@@ -52,11 +52,15 @@ class ContainerRunner:
         self.client = docker.from_env()
 
         # Load models config from the default location
-        config_path = os.path.join(
-            os.path.dirname(__file__),
-            "conf",
-            "models.yaml",
-        ) if custom_config_path is None else custom_config_path
+        config_path = (
+            os.path.join(
+                os.path.dirname(__file__),
+                "conf",
+                "models.yaml",
+            )
+            if custom_config_path is None
+            else custom_config_path
+        )
 
         with open(config_path) as f:
             cfg = OmegaConf.create(yaml.safe_load(f))
