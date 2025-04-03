@@ -13,6 +13,7 @@ if __name__ == "__main__":
     dataset = load_dataset("tsv2_bladder")
 
     for model_name in ["SCVI", "SCGPT"]:
+        # Add embeddings to the dataset for each model
         dataset = run_inference(model_name, dataset)
 
     task = ClusteringTask(label_key="cell_type")

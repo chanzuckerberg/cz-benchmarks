@@ -37,7 +37,7 @@ dependencies = [
     "scikit-misc>=0.5.1",
     "typing-extensions>=4.13.0",
     "pydantic>=2.0.0",
-    "hnswlib>=0.8.0; platform_system == 'Linux'", # Install via conda on macOS
+    "hnswlib>=0.8.0",
     "tomli>=2.2.1",
 ]
 
