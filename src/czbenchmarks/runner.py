@@ -35,6 +35,7 @@ class ContainerRunner:
         interactive: bool = False,
         app_mount_dir: Optional[str] = None,
         environment: Optional[Dict[str, str]] = None,
+        custom_config_path: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize the ContainerRunner.
@@ -46,18 +47,23 @@ class ContainerRunner:
             app_mount_dir: Optional directory to mount to /app (this will override the
                 default /app mount from the docker build!)
             environment: Dictionary of environment variables to pass to the container
+            custom_config_path: Path to a custom models.yaml file
             kwargs: Additional arguments to pass to the container as CLI params
         """
         self.client = docker.from_env()
 
         # Load models config from the default location
-        default_config_path = os.path.join(
-            os.path.dirname(__file__),
-            "conf",
-            "models.yaml",
+        config_path = (
+            os.path.join(
+                os.path.dirname(__file__),
+                "conf",
+                "models.yaml",
+            )
+            if custom_config_path is None
+            else custom_config_path
         )
 
-        with open(default_config_path) as f:
+        with open(config_path) as f:
             cfg = OmegaConf.create(yaml.safe_load(f))
 
         # Convert string model name to ModelType enum for dataset compatibility
@@ -285,6 +291,7 @@ def run_inference(
     interactive: bool = False,
     app_mount_dir: Optional[str] = None,
     environment: Optional[Dict[str, str]] = None,
+    custom_config_path: Optional[str] = None,
     **kwargs,
 ) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
@@ -297,6 +304,7 @@ def run_inference(
         app_mount_dir: Optional directory to mount to /app in the container
             (this will override the default /app mount from the docker build!)
         environment: Dictionary of environment variables to pass to the container
+        custom_config_path: Path to a custom models.yaml file
         **kwargs: Additional arguments to pass to the container as CLI params
 
     Returns:
@@ -308,6 +316,7 @@ def run_inference(
         interactive=interactive,
         app_mount_dir=app_mount_dir,
         environment=environment,
+        custom_config_path=custom_config_path,
         **kwargs,
     )
     return runner.run(dataset)
