@@ -151,10 +151,10 @@ def run_task(
         raise ValueError("Expected a single task result, got list")
 
     # Serialize the result to a json-compatible dict
-    results = {
+    json_results = {
         k.value: [v.model_dump(mode="json") for v in val] for k, val in results.items()
     }
-    return TaskResult(results=results, args=task_args)
+    return TaskResult(results=json_results, args=task_args)
 
 
 def write_results(
@@ -186,7 +186,7 @@ def write_results(
 
     # Write to stdout if not otherwise specified
     if not output_file:
-        sys.stdout.write(result_str)
+        sys.stdout.write(f"{result_str}\n")
         return None
 
     # Generate a unique filename if we were passed a directory
@@ -198,7 +198,7 @@ def write_results(
 
     # Write the results to the specified file
     with open(output_file, "w") as f:
-        f.write(result_str)
+        f.write(f"{result_str}\n")
 
     log.info("Wrote results to %s", output_file)
     return Path(output_file)
@@ -222,7 +222,7 @@ def get_version() -> str:
     try:
         return version("czbenchmarks")
     except PackageNotFoundError:
-        log.warning(
+        log.debug(
             "Package `czbenchmarks` is not installed: fetching version info from pyproject.toml"
         )
 
@@ -357,9 +357,10 @@ def main() -> None:
 
     if args["action"] == "list":
         if args["list_type"] == "datasets":
-            sys.stdout.write(dataset_utils.list_available_datasets())
+            sys.stdout.write(" ".join(dataset_utils.list_available_datasets()))
         elif args["list_type"] == "models":
-            sys.stdout.write(model_utils.list_available_models())
+            sys.stdout.write(" ".join(model_utils.list_available_models()))
+        sys.stdout.write("\n")
         sys.exit(0)
 
     if args["action"] == "run":
