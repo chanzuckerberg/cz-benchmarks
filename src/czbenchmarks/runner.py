@@ -47,6 +47,7 @@ class ContainerRunner:
             app_mount_dir: Optional directory to mount to /app (this will override the
                 default /app mount from the docker build!)
             environment: Dictionary of environment variables to pass to the container
+            custom_config_path: Path to a custom models.yaml file
             kwargs: Additional arguments to pass to the container as CLI params
         """
         self.client = docker.from_env()
@@ -290,6 +291,7 @@ def run_inference(
     interactive: bool = False,
     app_mount_dir: Optional[str] = None,
     environment: Optional[Dict[str, str]] = None,
+    custom_config_path: Optional[str] = None,
     **kwargs,
 ) -> BaseDataset:
     """Convenience function to run inference on a single dataset.
@@ -302,6 +304,7 @@ def run_inference(
         app_mount_dir: Optional directory to mount to /app in the container
             (this will override the default /app mount from the docker build!)
         environment: Dictionary of environment variables to pass to the container
+        custom_config_path: Path to a custom models.yaml file
         **kwargs: Additional arguments to pass to the container as CLI params
 
     Returns:
@@ -313,6 +316,7 @@ def run_inference(
         interactive=interactive,
         app_mount_dir=app_mount_dir,
         environment=environment,
+        custom_config_path=custom_config_path,
         **kwargs,
     )
     return runner.run(dataset)
