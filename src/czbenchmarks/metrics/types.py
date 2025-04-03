@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Set
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MetricType(Enum):
@@ -160,4 +160,4 @@ class MetricRegistry:
 class MetricResult(BaseModel):
     metric_type: MetricType
     value: float
-    params: Optional[Dict[str, Any]] = {}
+    params: Optional[Dict[str, Any]] = Field(default_factory=dict)
