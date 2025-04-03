@@ -35,6 +35,7 @@ class ContainerRunner:
         interactive: bool = False,
         app_mount_dir: Optional[str] = None,
         environment: Optional[Dict[str, str]] = None,
+        custom_config_path: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize the ContainerRunner.
@@ -51,13 +52,13 @@ class ContainerRunner:
         self.client = docker.from_env()
 
         # Load models config from the default location
-        default_config_path = os.path.join(
+        config_path = os.path.join(
             os.path.dirname(__file__),
             "conf",
             "models.yaml",
-        )
+        ) if custom_config_path is None else custom_config_path
 
-        with open(default_config_path) as f:
+        with open(config_path) as f:
             cfg = OmegaConf.create(yaml.safe_load(f))
 
         # Convert string model name to ModelType enum for dataset compatibility

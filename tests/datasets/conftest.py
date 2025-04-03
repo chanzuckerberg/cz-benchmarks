@@ -204,37 +204,6 @@ def perturbation_invalid_condition(tmp_path):
 
 
 @pytest.fixture
-def perturbation_invalid_combo(tmp_path):
-    """Creates a PerturbationSingleCellDataset with invalid combo perturbation."""
-    file_path = tmp_path / "perturbation_invalid_combo.h5ad"
-    adata = create_dummy_anndata(
-        n_cells=6,
-        n_genes=3,
-        obs_columns=["condition", "split"],
-        organism=Organism.HUMAN,
-    )
-    adata.obs["condition"] = [
-        "ctrl",
-        "ctrl",
-        "ENSG00000123456+INVALID123",  # Second gene has wrong prefix
-        "ENSG00000123456+INVALID123",
-        "ENSG00000123456+ctrl",
-        "ENSG00000123456+ctrl",
-    ]
-    adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
-    adata.write_h5ad(file_path)
-
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
-        organism=Organism.HUMAN,
-        condition_key="condition",
-        split_key="split",
-    )
-    dataset.load_data()
-    return dataset
-
-
-@pytest.fixture
 def perturbation_valid_conditions(tmp_path):
     """Creates a PerturbationSingleCellDataset with all valid condition formats."""
     file_path = tmp_path / "perturbation_valid.h5ad"
