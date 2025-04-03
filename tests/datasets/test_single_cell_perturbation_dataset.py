@@ -45,12 +45,6 @@ def test_perturbation_dataset_validate_invalid_condition(
         perturbation_invalid_condition.validate()
 
 
-def test_perturbation_dataset_validate_invalid_combo(perturbation_invalid_combo):
-    """Test that validation fails with invalid combo perturbation."""
-    with pytest.raises(ValueError, match="Invalid gene prefix in condition.*"):
-        perturbation_invalid_combo.validate()
-
-
 def test_perturbation_dataset_validate_success(perturbation_valid_conditions):
     """Test that validation succeeds with valid condition formats."""
     perturbation_valid_conditions.validate()  # Should not raise any exceptions

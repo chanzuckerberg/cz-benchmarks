@@ -183,21 +183,3 @@ class PerturbationSingleCellDataset(SingleCellDataset):
                     f"Invalid perturbation condition format: {condition}. "
                     "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
                 )
-
-            # For {gene}+ctrl format
-            if parts[1] == "ctrl":
-                if not parts[0].startswith(self.organism.prefix):
-                    raise ValueError(
-                        f"Invalid gene prefix in condition {condition}. "
-                        f"Must start with {self.organism.prefix}"
-                    )
-            # For {gene1}+{gene2} format
-            else:
-                if not (
-                    parts[0].startswith(self.organism.prefix)
-                    and parts[1].startswith(self.organism.prefix)
-                ):
-                    raise ValueError(
-                        f"Invalid gene prefix in condition {condition}. "
-                        f"Both genes must start with {self.organism.prefix}"
-                    )
