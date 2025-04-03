@@ -68,7 +68,7 @@ ruff-fix:
 # Run mypy type checking
 .PHONY: mypy-check
 mypy-check:
-	uv run mypy src/czbenchmarks
+	uv run mypy .
 
 # Run all linters and checkers # TODO: enable mypy-check
 .PHONY: lint
