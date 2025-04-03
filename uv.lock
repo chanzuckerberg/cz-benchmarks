@@ -493,7 +493,7 @@ wheels = [
 
 [[package]]
 name = "cz-benchmarks"
-version = "0.4.4"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "anndata" },
@@ -501,7 +501,7 @@ dependencies = [
     { name = "dill" },
     { name = "docker" },
     { name = "h5py" },
-    { name = "hnswlib", marker = "sys_platform == 'linux'" },
+    { name = "hnswlib" },
     { name = "hydra-core" },
     { name = "igraph" },
     { name = "leidenalg" },
@@ -562,7 +562,7 @@ requires-dist = [
     { name = "dill", specifier = ">=0.3.6" },
     { name = "docker", specifier = ">=6.1.0" },
     { name = "h5py", specifier = ">=3.8.0" },
-    { name = "hnswlib", marker = "sys_platform == 'linux'", specifier = ">=0.8.0" },
+    { name = "hnswlib", specifier = ">=0.8.0" },
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "igraph", specifier = ">=0.11.8" },
     { name = "leidenalg", specifier = ">=0.10.2" },

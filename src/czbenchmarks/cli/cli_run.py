@@ -1,14 +1,15 @@
 import argparse
-
 import logging
 import json
 import os
 import sys
-from pathlib import Path
-from typing import NamedTuple
-from typing_extensions import TypedDict, NotRequired
 import yaml
+
+from pathlib import Path
+from typing import Any, NamedTuple
+from typing_extensions import TypedDict
 from datetime import datetime
+
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.models import utils as model_utils
 from czbenchmarks.datasets.base import BaseDataset
@@ -25,81 +26,30 @@ log = logging.getLogger(__name__)
 VALID_OUTPUT_FORMATS = ["json", "yaml"]
 DEFAULT_OUTPUT_FORMAT = "json"
 
-
-class GeneformerModelArgs(TypedDict):
-    model_variant: str
-
-
-class ScgeneptModelArgs(TypedDict):
-    model_variant: str
-    gene_pert: str
-    dataset_name: str
-    chunk_size: int
+TaskResultType = dict[str, list[dict]]  # {model_name: metrics[]}
+DatasetResultType = dict[str, TaskResultType]  # {task_name: TaskResultType}
+RunResultType = dict[str, DatasetResultType]  # {dataset_name: DatasetResultType}
 
 
-class ScgptModelArgs(TypedDict):
-    model_variant: str
-
-
-class UceModelArgs(TypedDict):
-    model_variant: str
+class RunResult(TypedDict):
+    results: RunResultType
+    czbenchmarks_version: str
+    args: str
 
 
 class ModelArgs(NamedTuple):
     name: str
-    args: GeneformerModelArgs | ScgeneptModelArgs | ScgptModelArgs | UceModelArgs
-
-
-class ClusteringTaskArgs(TypedDict):
-    label_key: str
-
-
-class EmbeddingTaskArgs(TypedDict):
-    label_key: str
-
-
-class LabelPredictionTaskArgs(TypedDict):
-    label_key: str
-    n_folds: NotRequired[int]
-    seed: NotRequired[int]
-    min_class_size: NotRequired[int]
-
-
-class IntegrationTaskArgs(TypedDict):
-    label_key: str
-    batch_key: NotRequired[str]
+    args: dict[str, Any]  # Args forwarded to the model container
 
 
 class TaskArgs(NamedTuple):
     name: str
-    args: (
-        ClusteringTaskArgs
-        | EmbeddingTaskArgs
-        | LabelPredictionTaskArgs
-        | IntegrationTaskArgs
+    task: (
+        ClusteringTask
+        | EmbeddingTask
+        | MetadataLabelPredictionTask
+        | BatchIntegrationTask
     )
-    cls: (
-        type[ClusteringTask]
-        | type[EmbeddingTask]
-        | type[MetadataLabelPredictionTask]
-        | type[BatchIntegrationTask]
-    )
-
-
-class TaskResult(TypedDict):
-    results: dict[str, list[dict]]
-    args: (
-        ClusteringTaskArgs
-        | EmbeddingTaskArgs
-        | LabelPredictionTaskArgs
-        | IntegrationTaskArgs
-    )
-
-
-class RunResult(TypedDict):
-    results: dict[str, dict[str, TaskResult]]  # {dataset_name: {task_name: TaskResult}}
-    czbenchmarks_version: str
-    args: str
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -188,6 +138,12 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Variant of the scgpt model to use (see docker/scgpt/config.yaml)",
     )
 
+    # Extra arguments for scvi model
+    parser.add_argument(
+        "--scvi-model-variant",
+        help="Variant of the scvi model to use (see docker/scvi/config.yaml)",
+    )
+
     # Extra arguments for uce model
     parser.add_argument(
         "--uce-model-variant",
@@ -243,44 +199,25 @@ def main(args: argparse.Namespace) -> None:
     Run a set of tasks for a set of models on a set of datasets.
     """
     model_args: list[ModelArgs] = []
-    if "geneformer" in args.models:
+    if "GENEFORMER" in args.models:
         model_args.append(
-            ModelArgs(
-                name="geneformer",
-                args=GeneformerModelArgs(
-                    model_variant=args.geneformer_model_variant,
-                ),
-            )
+            ModelArgs(name="GENEFORMER", args=parse_model_args("geneformer_", args)),
         )
-    if "scgenept" in args.models:
+    if "SCGENEPT" in args.models:
         model_args.append(
-            ModelArgs(
-                name="scgenept",
-                args=ScgeneptModelArgs(
-                    model_variant=args.scgenept_model_variant,
-                    gene_pert=args.scgenept_gene_pert,
-                    dataset_name=args.scgenept_dataset_name,
-                    chunk_size=args.scgenept_chunk_size,
-                ),
-            )
+            ModelArgs(name="SCGENEPT", args=parse_model_args("scgenept_", args)),
         )
-    if "scgpt" in args.models:
+    if "SCGPT" in args.models:
         model_args.append(
-            ModelArgs(
-                name="scgpt",
-                args=ScgptModelArgs(
-                    model_variant=args.scgpt_model_variant,
-                ),
-            )
+            ModelArgs(name="SCGPT", args=parse_model_args("scgpt_", args)),
         )
-    if "uce" in args.models:
+    if "SCVI" in args.models:
         model_args.append(
-            ModelArgs(
-                name="uce",
-                args=UceModelArgs(
-                    model_variant=args.uce_model_variant,
-                ),
-            )
+            ModelArgs(name="SCVI", args=parse_model_args("scvi_", args)),
+        )
+    if "UCE" in args.models:
+        model_args.append(
+            ModelArgs(name="UCE", args=parse_model_args("uce_", args)),
         )
 
     task_args: list[TaskArgs] = []
@@ -288,44 +225,30 @@ def main(args: argparse.Namespace) -> None:
         task_args.append(
             TaskArgs(
                 name="clustering",
-                args=ClusteringTaskArgs(
-                    label_key=args.clustering_task_label_key or args.label_key
-                ),
-                cls=ClusteringTask,
+                task=ClusteringTask(**parse_task_args("clustering_task_", args)),
             )
         )
     if "embedding" in args.tasks:
         task_args.append(
             TaskArgs(
                 name="embedding",
-                args=EmbeddingTaskArgs(
-                    label_key=args.embedding_task_label_key or args.label_key
-                ),
-                cls=EmbeddingTask,
+                task=EmbeddingTask(**parse_task_args("embedding_task_", args)),
             )
         )
     if "label_prediction" in args.tasks:
         task_args.append(
             TaskArgs(
                 name="label_prediction",
-                args=LabelPredictionTaskArgs(
-                    label_key=args.label_prediction_task_label_key or args.label_key,
-                    n_folds=args.label_prediction_task_n_folds,
-                    seed=args.label_prediction_task_seed,
-                    min_class_size=args.label_prediction_task_min_class_size,
+                task=MetadataLabelPredictionTask(
+                    **parse_task_args("label_prediction_task_", args)
                 ),
-                cls=MetadataLabelPredictionTask,
             )
         )
     if "integration" in args.tasks:
         task_args.append(
             TaskArgs(
                 name="integration",
-                args=IntegrationTaskArgs(
-                    label_key=args.integration_task_label_key or args.label_key,
-                    batch_key=args.integration_task_batch,
-                ),
-                cls=BatchIntegrationTask,
+                task=BatchIntegrationTask(**parse_task_args("integration_task_", args)),
             )
         )
 
@@ -355,8 +278,10 @@ def main(args: argparse.Namespace) -> None:
         dirname = datetime.now().strftime(
             "czbenchmarks_processed_datasets_%Y%m%d_%H%M%S"
         )
-        if isinstance(args.save_embeddings, str):
-            dirname = args.save_embeddings
+        if args.save_processed_datasets and isinstance(
+            args.save_processed_datasets, str
+        ):
+            dirname = args.save_processed_datasets
         elif result_path:
             dirname = str(result_path.parent / f"{result_path.stem}_processed_datasets")
         write_processed_datasets(processed_datasets, dirname)
@@ -367,54 +292,48 @@ def run(
     dataset_names: list[str],
     model_args: list[ModelArgs],
     task_args: list[TaskArgs],
-) -> tuple[dict[str, BaseDataset], dict[str, dict[str, TaskResult]]]:
+) -> tuple[dict[str, BaseDataset], RunResultType]:
     """
     Run a set of tasks for a set of models on a set of datasets.
-    Returns a tuple of (BaseDataset[], {dataset_name: {task_name: TaskResult}}).
     """
-    dataset_results: dict[str, dict[str, TaskResult]] = {}
+    run_results: RunResultType = {}
     processed_datasets: dict[str, BaseDataset] = {}
 
     for dataset_name in dataset_names:
-        task_results: dict[str, TaskResult] = {}
+        dataset_results: dict[str, TaskResultType] = {}
 
         log.info(f"Loading dataset {dataset_name}")
         processed_dataset = dataset_utils.load_dataset(dataset_name)
 
         # Run inference against this dataset for each model to generate embeddings
-        for model_name, model_arg in model_args:
+        for model_name, args in model_args:
             log.info(f"Running {model_name} inference on dataset {dataset_name}")
             processed_dataset = runner.run_inference(
-                model_name, processed_dataset, gpu=True, **model_arg
+                model_name, processed_dataset, gpu=True, **args
             )
             processed_datasets[dataset_name] = processed_dataset
 
         # Run each task on the processed dataset
-        for task_name, task_arg, TaskCls in task_args:
-            task_results[task_name] = run_task(TaskCls, processed_dataset, task_arg)
+        for task_name, task in task_args:
+            log.info(f"Running {task_name} on dataset {dataset_name}")
+            dataset_results[task_name] = run_task(processed_dataset, task)
 
         # Store the results for this dataset
-        dataset_results[dataset_name] = task_results
+        run_results[dataset_name] = dataset_results
 
-    return processed_datasets, dataset_results
+    return processed_datasets, run_results
 
 
 def run_task(
-    TaskCls: type[ClusteringTask]
-    | type[EmbeddingTask]
-    | type[MetadataLabelPredictionTask]
-    | type[BatchIntegrationTask],
     processed_dataset: BaseDataset,
-    task_args: ClusteringTaskArgs
-    | EmbeddingTaskArgs
-    | LabelPredictionTaskArgs
-    | IntegrationTaskArgs,
-) -> TaskResult:
+    task: ClusteringTask
+    | EmbeddingTask
+    | MetadataLabelPredictionTask
+    | BatchIntegrationTask,
+) -> TaskResultType:
     """
     Run a task and return the results.
     """
-    log.info("Running %s with args: %s", TaskCls.__name__, task_args)
-    task = TaskCls(**task_args)
     results = task.run(processed_dataset)
 
     if isinstance(results, list):
@@ -424,7 +343,7 @@ def run_task(
     json_results = {
         k.value: [v.model_dump(mode="json") for v in val] for k, val in results.items()
     }
-    return TaskResult(results=json_results, args=task_args)
+    return json_results
 
 
 def write_results(
@@ -483,3 +402,26 @@ def write_processed_datasets(
     os.makedirs(output_dir, exist_ok=True)
     for dataset_name, dataset in processed_datasets.items():
         dataset.serialize(os.path.join(str(output_dir), f"{dataset_name}.dill"))
+
+
+def parse_model_args(prefix: str, args: argparse.Namespace) -> dict[str, Any]:
+    """
+    For a dict of `args`, strip the given prefix and return all matching non-null entries.
+    """
+    result: dict[str, Any] = {}
+    for k, v in vars(args).items():
+        if v is not None and k.startswith(prefix):
+            result[k.removeprefix(prefix)] = v
+    return result
+
+
+def parse_task_args(prefix: str, args: argparse.Namespace) -> dict[str, Any]:
+    """
+    For a dict of `args`, strip the given prefix and return all matching non-null entries.
+    Also sets "label_key" which is required for all tasks.
+    """
+    result: dict[str, Any] = {"label_key": args.label_key}  # "label_key" is required
+    for k, v in vars(args).items():
+        if v is not None and k.startswith(prefix):
+            result[k.removeprefix(prefix)] = v
+    return result
