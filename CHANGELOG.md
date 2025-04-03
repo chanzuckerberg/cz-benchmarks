@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.4...v0.5.0) (2025-04-03)
+
+
+### Features
+
+* random seed for clustering ([#151](https://github.com/chanzuckerberg/cz-benchmarks/issues/151)) ([a1df9f9](https://github.com/chanzuckerberg/cz-benchmarks/commit/a1df9f901125132d2702545a07dea18a99562e80))
+
+
+### Bug Fixes
+
+* add descriptive comment for pipeline.py ([#110](https://github.com/chanzuckerberg/cz-benchmarks/issues/110)) ([7e0ead3](https://github.com/chanzuckerberg/cz-benchmarks/commit/7e0ead397ed0cfb17d478d76e4f2a0be4aa83dd6))
+* developer workflow implementation ([#126](https://github.com/chanzuckerberg/cz-benchmarks/issues/126)) ([703b5eb](https://github.com/chanzuckerberg/cz-benchmarks/commit/703b5eba3ba77c8f9a94eeb34942a56b00f8f6e1))
+* remove gene prefix validation from condition keys of perturbation single cell datasets ([#152](https://github.com/chanzuckerberg/cz-benchmarks/issues/152)) ([e766946](https://github.com/chanzuckerberg/cz-benchmarks/commit/e766946d10d1878f307f87bd23056544dc56e465))
+
 ## [0.4.4](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.3...v0.4.4) (2025-04-01)
 
 
