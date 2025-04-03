@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
-from .constants import RANDOM_SEED
+from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,11 +14,11 @@ logger = logging.getLogger(__name__)
 # to the task config
 def cluster_embedding(
     adata: AnnData,
-    obsm_key: str = "emb",
+    obsm_key: str = OBSM_KEY,
     random_seed: int = RANDOM_SEED,
     n_iterations: int = 2,
-    flavor: str = "igraph",
-    key_added: str = "leiden",
+    flavor: str = FLAVOR,
+    key_added: str = KEY_ADDED,
 ) -> List[int]:
     """Cluster cells in embedding space using the Leiden algorithm.
 

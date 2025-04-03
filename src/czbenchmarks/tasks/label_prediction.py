@@ -125,7 +125,9 @@ class MetadataLabelPredictionTask(BaseTask):
         skf = StratifiedKFold(
             n_splits=self.n_folds, shuffle=True, random_state=self.random_seed
         )
-        logger.info(f"Using {self.n_folds}-fold cross validation with random_seed {self.random_seed}")
+        logger.info(
+            f"Using {self.n_folds}-fold cross validation with random_seed {self.random_seed}"
+        )
 
         # Create classifiers
         classifiers = {
