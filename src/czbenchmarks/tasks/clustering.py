@@ -7,6 +7,7 @@ from ..metrics.types import MetricResult, MetricType
 from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
+from .constants import RANDOM_SEED, N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +20,22 @@ class ClusteringTask(BaseTask):
 
     Args:
         label_key (str): Key to access ground truth labels in metadata
+        random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str):
+    def __init__(
+        self,
+        label_key: str,
+        random_seed: int = RANDOM_SEED,
+        n_iterations: int = N_ITERATIONS,
+        flavor: str = FLAVOR,
+        key_added: str = KEY_ADDED,
+    ):
         self.label_key = label_key
+        self.random_seed = random_seed
+        self.n_iterations = n_iterations
+        self.flavor = flavor
+        self.key_added = key_added
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -56,7 +69,14 @@ class ClusteringTask(BaseTask):
 
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(adata, obsm_key="emb")
+        self.predicted_labels = cluster_embedding(
+            adata,
+            obsm_key=OBSM_KEY,
+            random_seed=self.random_seed,
+            n_iterations=self.n_iterations,
+            flavor=self.flavor,
+            key_added=self.key_added,
+        )
 
     def _compute_metrics(self) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
