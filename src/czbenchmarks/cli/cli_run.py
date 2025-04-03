@@ -100,6 +100,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--label-key",
         "-l",
+        required=True,
         help="The dataset column to use as the label key, e.g. `cell_type`.",
     )
     parser.add_argument(
