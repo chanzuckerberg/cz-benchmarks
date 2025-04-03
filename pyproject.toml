@@ -86,4 +86,4 @@ Repository = "https://github.com/chanzuckerberg/cz-benchmarks"
 packages = ["src/czbenchmarks"]
 
 [project.scripts]
-czbenchmarks = "czbenchmarks.cli:main"
+czbenchmarks = "czbenchmarks.cli.cli:main"
