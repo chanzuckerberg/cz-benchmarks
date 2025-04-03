@@ -17,6 +17,7 @@ from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
+from czbenchmarks.tasks import utils as task_utils
 
 log = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--tasks",
         "-t",
         nargs="+",
-        choices=cli.TASKS,
+        choices=task_utils.TASK_NAMES,
         required=True,
         help="One or more tasks to run.",
     )

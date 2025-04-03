@@ -17,7 +17,6 @@ from importlib.metadata import version, PackageNotFoundError
 from czbenchmarks.cli import cli_list, cli_run
 
 log = logging.getLogger(__name__)
-TASKS = ["clustering", "embedding", "label_prediction", "integration"]
 
 
 def main() -> None:

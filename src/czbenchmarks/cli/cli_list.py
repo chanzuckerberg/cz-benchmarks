@@ -3,7 +3,7 @@ import sys
 
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.models import utils as model_utils
-from czbenchmarks.cli import cli
+from czbenchmarks.tasks import utils as task_utils
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -26,5 +26,5 @@ def main(args: argparse.Namespace) -> None:
     elif args.list_type == "models":
         sys.stdout.write(" ".join(model_utils.list_available_models()))
     elif args.list_type == "tasks":
-        sys.stdout.write(" ".join(cli.TASKS))
+        sys.stdout.write(" ".join(task_utils.TASK_NAMES))
     sys.stdout.write("\n")
