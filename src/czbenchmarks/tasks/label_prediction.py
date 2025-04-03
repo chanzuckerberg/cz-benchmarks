@@ -24,6 +24,7 @@ from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import filter_minimum_class
+from .constants import RANDOM_SEED, N_FOLDS, MIN_CLASS_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -37,20 +38,20 @@ class MetadataLabelPredictionTask(BaseTask):
     Args:
         label_key: Key to access ground truth labels in metadata
         n_folds: Number of cross-validation folds
-        seed: Random seed for reproducibility
+        random_seed: Random seed for reproducibility
         min_class_size: Minimum samples required per class
     """
 
     def __init__(
         self,
         label_key: str,
-        n_folds: int = 5,
-        seed: int = 42,
-        min_class_size: int = 10,
+        n_folds: int = N_FOLDS,
+        random_seed: int = RANDOM_SEED,
+        min_class_size: int = MIN_CLASS_SIZE,
     ):
         self.label_key = label_key
         self.n_folds = n_folds
-        self.seed = seed
+        self.random_seed = random_seed
         self.min_class_size = min_class_size
         logger.info(
             "Initialized MetadataLabelPredictionTask with: "
@@ -122,9 +123,9 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Setup cross validation
         skf = StratifiedKFold(
-            n_splits=self.n_folds, shuffle=True, random_state=self.seed
+            n_splits=self.n_folds, shuffle=True, random_state=self.random_seed
         )
-        logger.info(f"Using {self.n_folds}-fold cross validation with seed {self.seed}")
+        logger.info(f"Using {self.n_folds}-fold cross validation with random_seed {self.random_seed}")
 
         # Create classifiers
         classifiers = {

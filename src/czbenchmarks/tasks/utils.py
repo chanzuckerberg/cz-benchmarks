@@ -5,14 +5,19 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
-
+from .constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
 # TODO: Later we can add cluster parameters as kwargs here and add them
 # to the task config
 def cluster_embedding(
-    adata: AnnData, obsm_key: str = "emb", random_seed: int = 42
+    adata: AnnData,
+    obsm_key: str = "emb",
+    random_seed: int = RANDOM_SEED,
+    n_iterations: int = 2,
+    flavor: str = "igraph",
+    key_added: str = "leiden",
 ) -> List[int]:
     """Cluster cells in embedding space using the Leiden algorithm.
 
@@ -23,15 +28,18 @@ def cluster_embedding(
         adata: AnnData object containing the embedding
         obsm_key: Key in adata.obsm containing the embedding coordinates
         random_seed: Random seed for reproducibility
+        n_iterations: Number of iterations for the Leiden algorithm
+        flavor: Flavor of the Leiden algorithm
+        key_added: Key in adata.obs to store the cluster assignments
     Returns:
         List of cluster assignments as integers
     """
     sc.pp.neighbors(adata, use_rep=obsm_key, random_state=random_seed)
     sc.tl.leiden(
         adata,
-        key_added="leiden",
-        flavor="igraph",
-        n_iterations=2,
+        key_added=key_added,
+        flavor=flavor,
+        n_iterations=n_iterations,
         random_state=random_seed,
     )
     return list(adata.obs["leiden"])

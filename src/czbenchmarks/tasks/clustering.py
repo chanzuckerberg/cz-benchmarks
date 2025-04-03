@@ -7,7 +7,7 @@ from ..metrics.types import MetricResult, MetricType
 from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
-
+from .constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
@@ -22,9 +22,19 @@ class ClusteringTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str, random_seed: int = 42):
+    def __init__(
+        self,
+        label_key: str,
+        random_seed: int = RANDOM_SEED,
+        n_iterations: int = 2,
+        flavor: str = "igraph",
+        key_added: str = "leiden",
+        ):
         self.label_key = label_key
         self.random_seed = random_seed
+        self.n_iterations = n_iterations
+        self.flavor = flavor
+        self.key_added = key_added
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -59,7 +69,10 @@ class ClusteringTask(BaseTask):
         # Store labels and generate clusters
         self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
         self.predicted_labels = cluster_embedding(
-            adata, obsm_key="emb", random_seed=self.random_seed
+            adata, obsm_key="emb", random_seed=self.random_seed,
+            n_iterations=self.n_iterations,
+            flavor=self.flavor,
+            key_added=self.key_added,
         )
 
     def _compute_metrics(self) -> List[MetricResult]:
