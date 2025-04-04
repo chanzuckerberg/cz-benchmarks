@@ -35,8 +35,10 @@ dependencies = [
     "hydra-core>=1.3.2",
     "scib-metrics>=0.5.1",
     "scikit-misc>=0.5.1",
+    "typing-extensions>=4.13.0",
     "pydantic>=2.0.0",
     "hnswlib>=0.8.0",
+    "tomli>=2.2.1",
 ]
 
 [project.optional-dependencies]
@@ -48,12 +50,15 @@ build = [
 ]
 
 dev = [
+    "boto3-stubs>=1.37.26",
+    "botocore-stubs>=1.37.26",
     "ruff>=0.11.2",
     "mypy>=1.15.0",
+    "pandas-stubs>=2.2.3.250308",
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-cov>=6.0.0",
-    "typing-extensions>=4.13.0",
+    "types-pyyaml>=6.0.12.20250402",
 ]
 
 docs = [
@@ -79,3 +84,6 @@ Repository = "https://github.com/chanzuckerberg/cz-benchmarks"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/czbenchmarks"]
+
+[project.scripts]
+czbenchmarks = "czbenchmarks.cli.cli:main"
