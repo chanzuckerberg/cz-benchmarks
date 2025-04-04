@@ -222,9 +222,12 @@ validate_variables() {
     # Validate required paths and show sources
     echo ""
     echo -e "   ${GREEN_BOLD}Cache paths:${RESET}"
-    for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH; do
-        validate_directory "${!var}" "$var"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
+    local paths=(DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH)
+    local docker_paths=(RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER)
+    for i in "${!paths[@]}"; do
+        validate_directory "${!paths[$i]}" "${paths[$i]}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${paths[$i]}:") ${!paths[$i]}${RESET}"
+        echo -e "   ${paths[$i]} will be mounted in container at ${!docker_paths[$i]}${RESET}"
     done
 }
 
