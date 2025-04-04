@@ -142,22 +142,6 @@ get_docker_image() {
     variable_is_set CZBENCH_CONTAINER_URI
 
     if [ "${BUILD_DEV_CONTAINER}" = false ]; then
-        AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
-        variable_is_set AWS_ECR_URI
-
-        AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
-        variable_is_set AWS_REGION
-
-        echo ""
-        echo -e "   ${MAGENTA_BOLD}Authenticating to AWS ${AWS_ECR_URI} in region ${AWS_REGION}${RESET}"
-
-        # Login to AWS ECR and pull image
-        # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
-        local python_script="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
-        get_authorization_token()['authorizationData'][0]['authorizationToken'])"
-        python3 -c "${python_script}" | base64 -d | cut -d: -f2 | \
-            docker login --username AWS --password-stdin ${AWS_ECR_URI}
-
         echo -e "   ${MAGENTA_BOLD}Pulling image ${CZBENCH_CONTAINER_URI}${RESET}"
         docker pull ${CZBENCH_CONTAINER_URI}
 
@@ -191,10 +175,6 @@ validate_variables() {
     # Show image information
     echo ""
     echo -e "   ${GREEN_BOLD}Docker setup:${RESET}"
-    if [ "${BUILD_DEV_CONTAINER}" = false ]; then
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
-    fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Docker command:") ${EVAL_CMD}${RESET}"
