@@ -1,4 +1,4 @@
-_target_: model.SCGenePT
+_target_: model.ScGenePT
 
 models:
   model_bucket: "s3://czi-scgenept-public"
