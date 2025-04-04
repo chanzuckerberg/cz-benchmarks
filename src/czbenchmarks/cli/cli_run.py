@@ -6,8 +6,8 @@ import sys
 import yaml
 
 from pathlib import Path
-from typing import Any, NamedTuple
-from typing_extensions import TypedDict
+from typing import Any, Generic, TypeVar
+from dataclasses import asdict, dataclass
 from datetime import datetime
 
 from czbenchmarks.datasets import utils as dataset_utils
@@ -15,6 +15,7 @@ from czbenchmarks.models import utils as model_utils
 from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks import runner
 from czbenchmarks.cli import cli
+from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
@@ -30,26 +31,27 @@ TaskResultType = dict[str, list[dict]]  # {model_name: metrics[]}
 DatasetResultType = dict[str, TaskResultType]  # {task_name: TaskResultType}
 RunResultType = dict[str, DatasetResultType]  # {dataset_name: DatasetResultType}
 
+TaskType = TypeVar("TaskType", bound=BaseTask)
 
-class RunResult(TypedDict):
+
+@dataclass
+class RunResult:
     results: RunResultType
     czbenchmarks_version: str
     args: str
 
 
-class ModelArgs(NamedTuple):
+@dataclass
+class ModelArgs:
     name: str
     args: dict[str, Any]  # Args forwarded to the model container
 
 
-class TaskArgs(NamedTuple):
+@dataclass
+class TaskArgs(Generic[TaskType]):
     name: str
-    task: (
-        ClusteringTask
-        | EmbeddingTask
-        | MetadataLabelPredictionTask
-        | BatchIntegrationTask
-    )
+    task: TaskType
+    set_baseline: bool
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -155,17 +157,32 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--clustering-task-label-key",
         help="Label key to use for clustering task (optional, overrides --label-key)",
     )
+    parser.add_argument(
+        "--clustering-task-set-baseline",
+        action="store_true",
+        help="Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset",
+    )
 
     # Extra arguments for embedding task
     parser.add_argument(
         "--embedding-task-label-key",
         help="Label key to use for embedding task (optional, overrides --label-key)",
     )
+    parser.add_argument(
+        "--embedding-task-set-baseline",
+        action="store_true",
+        help="Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset",
+    )
 
-    # Extra arguments for prediction task
+    # Extra arguments for label prediction task
     parser.add_argument(
         "--label-prediction-task-label-key",
         help="Label key to use for label prediction task (optional, overrides --label-key)",
+    )
+    parser.add_argument(
+        "--label-prediction-task-set-baseline",
+        action="store_true",
+        help="Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset",
     )
     parser.add_argument(
         "--label-prediction-task-n-folds",
@@ -189,6 +206,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Label key to use for integration task (optional, overrides --label-key)",
     )
     parser.add_argument(
+        "--integration-task-set-baseline",
+        action="store_true",
+        help="Use raw gene expression matrix as features for classification (instead of embeddings)",
+    )
+    parser.add_argument(
         "--integration-task-batch",
         help="Key to access batch labels in metadata",
     )
@@ -200,57 +222,27 @@ def main(args: argparse.Namespace) -> None:
     """
     model_args: list[ModelArgs] = []
     if "GENEFORMER" in args.models:
-        model_args.append(
-            ModelArgs(name="GENEFORMER", args=parse_model_args("geneformer_", args)),
-        )
+        model_args.append(parse_model_args("geneformer", args))
     if "SCGENEPT" in args.models:
-        model_args.append(
-            ModelArgs(name="SCGENEPT", args=parse_model_args("scgenept_", args)),
-        )
+        model_args.append(parse_model_args("scgenept", args))
     if "SCGPT" in args.models:
-        model_args.append(
-            ModelArgs(name="SCGPT", args=parse_model_args("scgpt_", args)),
-        )
+        model_args.append(parse_model_args("scgpt", args))
     if "SCVI" in args.models:
-        model_args.append(
-            ModelArgs(name="SCVI", args=parse_model_args("scvi_", args)),
-        )
+        model_args.append(parse_model_args("scvi", args))
     if "UCE" in args.models:
-        model_args.append(
-            ModelArgs(name="UCE", args=parse_model_args("uce_", args)),
-        )
+        model_args.append(parse_model_args("uce", args))
 
     task_args: list[TaskArgs] = []
     if "clustering" in args.tasks:
-        task_args.append(
-            TaskArgs(
-                name="clustering",
-                task=ClusteringTask(**parse_task_args("clustering_task_", args)),
-            )
-        )
+        task_args.append(parse_task_args("clustering", ClusteringTask, args))
     if "embedding" in args.tasks:
-        task_args.append(
-            TaskArgs(
-                name="embedding",
-                task=EmbeddingTask(**parse_task_args("embedding_task_", args)),
-            )
-        )
+        task_args.append(parse_task_args("embedding", EmbeddingTask, args))
     if "label_prediction" in args.tasks:
         task_args.append(
-            TaskArgs(
-                name="label_prediction",
-                task=MetadataLabelPredictionTask(
-                    **parse_task_args("label_prediction_task_", args)
-                ),
-            )
+            parse_task_args("label_prediction", MetadataLabelPredictionTask, args)
         )
     if "integration" in args.tasks:
-        task_args.append(
-            TaskArgs(
-                name="integration",
-                task=BatchIntegrationTask(**parse_task_args("integration_task_", args)),
-            )
-        )
+        task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
 
     # Run the tasks
     processed_datasets, dataset_results = run(
@@ -306,17 +298,22 @@ def run(
         processed_dataset = dataset_utils.load_dataset(dataset_name)
 
         # Run inference against this dataset for each model to generate embeddings
-        for model_name, args in model_args:
-            log.info(f"Running {model_name} inference on dataset {dataset_name}")
+        for model_arg in model_args:
+            log.info(f"Running {model_arg.name} inference on dataset {dataset_name}")
             processed_dataset = runner.run_inference(
-                model_name, processed_dataset, gpu=True, **args
+                model_arg.name, processed_dataset, gpu=True, **model_arg.args
             )
             processed_datasets[dataset_name] = processed_dataset
 
         # Run each task on the processed dataset
-        for task_name, task in task_args:
-            log.info(f"Running {task_name} on dataset {dataset_name}")
-            dataset_results[task_name] = run_task(processed_dataset, task)
+        for task_arg in task_args:
+            if task_arg.set_baseline:
+                log.info(
+                    f"Setting baseline for {task_arg.name} on dataset {dataset_name}"
+                )
+                task_arg.task.set_baseline(processed_dataset)
+            log.info(f"Running {task_arg.name} on dataset {dataset_name}")
+            dataset_results[task_arg.name] = run_task(processed_dataset, task_arg.task)
 
         # Store the results for this dataset
         run_results[dataset_name] = dataset_results
@@ -324,13 +321,7 @@ def run(
     return processed_datasets, run_results
 
 
-def run_task(
-    processed_dataset: BaseDataset,
-    task: ClusteringTask
-    | EmbeddingTask
-    | MetadataLabelPredictionTask
-    | BatchIntegrationTask,
-) -> TaskResultType:
+def run_task(processed_dataset: BaseDataset, task: TaskType) -> TaskResultType:
     """
     Run a task and return the results.
     """
@@ -356,6 +347,8 @@ def write_results(
     Format and write results to the given directory or file.
     Returns the path to the written file, or None if writing only to stdout.
     """
+    results_dict = asdict(results)
+
     # Get the intended format/extension
     if output_file and output_file.endswith(".json"):
         output_format = "json"
@@ -369,9 +362,9 @@ def write_results(
     # Dump the results to a string
     result_str = ""
     if output_format == "json":
-        result_str = json.dumps(results, indent=2)
+        result_str = json.dumps(results_dict, indent=2)
     else:
-        result_str = yaml.dump(results)
+        result_str = yaml.dump(results_dict)
 
     # Write to stdout if not otherwise specified
     if not output_file:
@@ -404,24 +397,33 @@ def write_processed_datasets(
         dataset.serialize(os.path.join(str(output_dir), f"{dataset_name}.dill"))
 
 
-def parse_model_args(prefix: str, args: argparse.Namespace) -> dict[str, Any]:
+def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:
     """
-    For a dict of `args`, strip the given prefix and return all matching non-null entries.
+    Populate a ModelArgs instance from the given argparse namespace.
     """
-    result: dict[str, Any] = {}
+    prefix = f"{model_name.lower()}_"
+    model_args: dict[str, Any] = {}
     for k, v in vars(args).items():
         if v is not None and k.startswith(prefix):
-            result[k.removeprefix(prefix)] = v
-    return result
+            model_args[k.removeprefix(prefix)] = v
+    return ModelArgs(name=model_name.upper(), args=model_args)
 
 
-def parse_task_args(prefix: str, args: argparse.Namespace) -> dict[str, Any]:
+def parse_task_args(
+    task_name: str, TaskCls: type[TaskType], args: argparse.Namespace
+) -> TaskArgs:
     """
-    For a dict of `args`, strip the given prefix and return all matching non-null entries.
-    Also sets "label_key" which is required for all tasks.
+    Populate a TaskArgs instance from the given argparse namespace.
     """
-    result: dict[str, Any] = {"label_key": args.label_key}  # "label_key" is required
+    prefix = f"{task_name.lower()}_task_"
+    task_args: dict[str, Any] = {"label_key": args.label_key}  # "label_key" is required
+
     for k, v in vars(args).items():
         if v is not None and k.startswith(prefix):
-            result[k.removeprefix(prefix)] = v
-    return result
+            task_args[k.removeprefix(prefix)] = v
+
+    set_baseline = task_args.pop("set_baseline", False)
+
+    return TaskArgs(
+        name=task_name, task=TaskCls(**task_args), set_baseline=set_baseline
+    )
