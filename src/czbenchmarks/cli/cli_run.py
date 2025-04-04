@@ -65,7 +65,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         nargs="+",
         choices=model_utils.list_available_models(),
         help="One or more model names (from models.yaml).",
-        required=True,
     )
     parser.add_argument(
         "--datasets",
@@ -221,16 +220,17 @@ def main(args: argparse.Namespace) -> None:
     Run a set of tasks for a set of models on a set of datasets.
     """
     model_args: list[ModelArgs] = []
-    if "GENEFORMER" in args.models:
-        model_args.append(parse_model_args("geneformer", args))
-    if "SCGENEPT" in args.models:
-        model_args.append(parse_model_args("scgenept", args))
-    if "SCGPT" in args.models:
-        model_args.append(parse_model_args("scgpt", args))
-    if "SCVI" in args.models:
-        model_args.append(parse_model_args("scvi", args))
-    if "UCE" in args.models:
-        model_args.append(parse_model_args("uce", args))
+    if args.models:
+        if "GENEFORMER" in args.models:
+            model_args.append(parse_model_args("geneformer", args))
+        if "SCGENEPT" in args.models:
+            model_args.append(parse_model_args("scgenept", args))
+        if "SCGPT" in args.models:
+            model_args.append(parse_model_args("scgpt", args))
+        if "SCVI" in args.models:
+            model_args.append(parse_model_args("scvi", args))
+        if "UCE" in args.models:
+            model_args.append(parse_model_args("uce", args))
 
     task_args: list[TaskArgs] = []
     if "clustering" in args.tasks:
@@ -304,6 +304,11 @@ def run(
                 model_arg.name, processed_dataset, gpu=True, **model_arg.args
             )
             processed_datasets[dataset_name] = processed_dataset
+
+        # Explicitly oad the dataset into memory if we didn't call `run_inference` above
+        if not model_args:
+            log.info(f"Loading dataset {dataset_name} into memory")
+            processed_dataset.load_data()
 
         # Run each task on the processed dataset
         for task_arg in task_args:
