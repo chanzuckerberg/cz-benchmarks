@@ -228,7 +228,7 @@ validate_variables() {
     done
 }
 
-build_docker_command() {
+create_docker_run_command() {
     # Build docker run command progressively
     DOCKER_CMD="docker run --rm -it \\
     --ipc=host \\
@@ -337,6 +337,6 @@ echo ""
 echo -e "${BLUE_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "EXECUTING WORKFLOW") ##########${RESET}"
 
 # Create and execute docker command
-build_docker_command
+create_docker_run_command
 print_docker_command
 eval ${DOCKER_CMD}
