@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import logging
 import json
 import os
@@ -21,6 +22,7 @@ from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks import utils as task_utils
+from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +46,7 @@ class RunResult:
 @dataclass
 class ModelArgs:
     name: str
-    args: dict[str, Any]  # Args forwarded to the model container
+    args: dict[str, list[str | int]]  # Args forwarded to the model container
 
 
 @dataclass
@@ -83,12 +85,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="One or more tasks to run.",
     )
     parser.add_argument(
-        "--label-key",
-        "-l",
-        required=True,
-        help="The dataset column to use as the label key, e.g. `cell_type` (can be overridden per-task).",
-    )
-    parser.add_argument(
         "--output-format",
         "-fmt",
         choices=VALID_OUTPUT_FORMATS,
@@ -111,43 +107,51 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for geneformer model
     parser.add_argument(
         "--geneformer-model-variant",
+        nargs="+",
         help="Variant of the geneformer model to use (see docker/geneformer/config.yaml)",
     )
 
     # Extra arguments for scgenept model
     parser.add_argument(
         "--scgenept-model-variant",
+        nargs="+",
         help="Variant of the scgenept model to use (see docker/scgenept/config.yaml)",
     )
     parser.add_argument(
         "--scgenept-gene-pert",
+        nargs="+",
         help="Gene perturbation to use for scgenept model",
     )
     parser.add_argument(
         "--scgenept-dataset-name",
+        nargs="+",
         help="Dataset name to use for scgenept model",
     )
     parser.add_argument(
         "--scgenept-chunk-size",
         type=int,
+        nargs="+",
         help="Chunk size to use for scgenept model",
     )
 
     # Extra arguments for scgpt model
     parser.add_argument(
         "--scgpt-model-variant",
+        nargs="+",
         help="Variant of the scgpt model to use (see docker/scgpt/config.yaml)",
     )
 
     # Extra arguments for scvi model
     parser.add_argument(
         "--scvi-model-variant",
+        nargs="+",
         help="Variant of the scvi model to use (see docker/scvi/config.yaml)",
     )
 
     # Extra arguments for uce model
     parser.add_argument(
         "--uce-model-variant",
+        nargs="+",
         help="Variant of the uce model to use (see docker/uce/config.yaml)",
     )
 
@@ -243,6 +247,8 @@ def main(args: argparse.Namespace) -> None:
         )
     if "integration" in args.tasks:
         task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
+    if "perturbation" in args.tasks:
+        task_args.append(parse_task_args("perturbation", PerturbationTask, args))
 
     # Run the tasks
     processed_datasets, dataset_results = run(
@@ -299,10 +305,21 @@ def run(
 
         # Run inference against this dataset for each model to generate embeddings
         for model_arg in model_args:
-            log.info(f"Running {model_arg.name} inference on dataset {dataset_name}")
-            processed_dataset = runner.run_inference(
-                model_arg.name, processed_dataset, gpu=True, **model_arg.args
-            )
+            keys, values = zip(*model_arg.args.items())
+            permutations = [
+                {k: v for k, v in zip(keys, permutation)}
+                for permutation in itertools.product(*values)
+            ]
+
+            # Run inference against every permutation of model arguments
+            for permutation in permutations:
+                log.info(
+                    f"Running {model_arg.name} inference on dataset {dataset_name} with args {permutation}"
+                )
+                processed_dataset = runner.run_inference(
+                    model_arg.name, processed_dataset, gpu=True, **permutation
+                )
+
             processed_datasets[dataset_name] = processed_dataset
 
         # Explicitly oad the dataset into memory if we didn't call `run_inference` above
@@ -421,7 +438,7 @@ def parse_task_args(
     Populate a TaskArgs instance from the given argparse namespace.
     """
     prefix = f"{task_name.lower()}_task_"
-    task_args: dict[str, Any] = {"label_key": args.label_key}  # "label_key" is required
+    task_args: dict[str, Any] = {}
 
     for k, v in vars(args).items():
         if v is not None and k.startswith(prefix):
