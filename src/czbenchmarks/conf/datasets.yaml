@@ -152,11 +152,6 @@ datasets:
     organism: ${organism:HUMAN}
     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Ovary_v2_curated.h5ad
 
-  tsv2_pancreas:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
-    organism: ${organism:HUMAN}
-    path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Pancreas_v2_curated.h5ad
-
   tsv2_prostate:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
