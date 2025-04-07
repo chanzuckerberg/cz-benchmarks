@@ -1,27 +1,30 @@
 import argparse
 import itertools
-import logging
 import json
+import logging
 import os
 import sys
 import yaml
 
-from pathlib import Path
-from typing import Any, Generic, TypeVar
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Generic, TypeVar
 
-from czbenchmarks.datasets import utils as dataset_utils
-from czbenchmarks.models import utils as model_utils
-from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks import runner
 from czbenchmarks.cli import cli
+from czbenchmarks.datasets import utils as dataset_utils
+from czbenchmarks.datasets.base import BaseDataset
+from czbenchmarks.metrics.types import MetricResult
+from czbenchmarks.models import utils as model_utils
+from czbenchmarks.models.types import ModelType
+from czbenchmarks.tasks import utils as task_utils
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
-from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
-from czbenchmarks.tasks import utils as task_utils
+from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 
 log = logging.getLogger(__name__)
@@ -29,31 +32,44 @@ log = logging.getLogger(__name__)
 VALID_OUTPUT_FORMATS = ["json", "yaml"]
 DEFAULT_OUTPUT_FORMAT = "json"
 
-TaskResultType = dict[str, list[dict]]  # {model_name: metrics[]}
-DatasetResultType = dict[str, TaskResultType]  # {task_name: TaskResultType}
-RunResultType = dict[str, DatasetResultType]  # {dataset_name: DatasetResultType}
-
 TaskType = TypeVar("TaskType", bound=BaseTask)
+ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
 
 
 @dataclass
-class RunResult:
-    results: RunResultType
-    czbenchmarks_version: str
-    args: str
+class ProcessedDataset:
+    dataset_name: str
+    model_args: dict[str, dict[str, str | int]]  # {model_name: {arg_name: arg_value}}
+    data: BaseDataset
 
 
 @dataclass
 class ModelArgs:
-    name: str
+    name: str  # Upper-case model name e.g. SCVI
     args: dict[str, list[str | int]]  # Args forwarded to the model container
 
 
 @dataclass
 class TaskArgs(Generic[TaskType]):
-    name: str
+    name: str  # Lower-case task name e.g. embedding
     task: TaskType
     set_baseline: bool
+
+
+@dataclass
+class TaskResult:
+    task_name: str
+    model_type: str
+    dataset_name: str
+    model_args: ModelArgsDict
+    metrics: list[MetricResult]
+
+    def to_dict(self) -> dict[str, Any]:
+        task_result_dict = asdict(self)
+        task_result_dict["metrics"] = [
+            metric.model_dump(mode="json") for metric in self.metrics
+        ]
+        return task_result_dict
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -223,19 +239,12 @@ def main(args: argparse.Namespace) -> None:
     """
     Run a set of tasks for a set of models on a set of datasets.
     """
+    # Collect all the arguments that we'll need to pass directly to each model
     model_args: list[ModelArgs] = []
-    if args.models:
-        if "GENEFORMER" in args.models:
-            model_args.append(parse_model_args("geneformer", args))
-        if "SCGENEPT" in args.models:
-            model_args.append(parse_model_args("scgenept", args))
-        if "SCGPT" in args.models:
-            model_args.append(parse_model_args("scgpt", args))
-        if "SCVI" in args.models:
-            model_args.append(parse_model_args("scvi", args))
-        if "UCE" in args.models:
-            model_args.append(parse_model_args("uce", args))
+    for model_name in args.models or []:
+        model_args.append(parse_model_args(model_name.lower(), args))
 
+    # Collect all the task-related arguments
     task_args: list[TaskArgs] = []
     if "clustering" in args.tasks:
         task_args.append(parse_task_args("clustering", ClusteringTask, args))
@@ -251,22 +260,15 @@ def main(args: argparse.Namespace) -> None:
         task_args.append(parse_task_args("perturbation", PerturbationTask, args))
 
     # Run the tasks
-    processed_datasets, dataset_results = run(
+    processed_datasets, task_results = run(
         dataset_names=args.datasets,
         model_args=model_args,
         task_args=task_args,
     )
 
-    # Append some extra metadata before writing the results
-    run_result = RunResult(
-        results=dataset_results,
-        czbenchmarks_version=cli.get_version(),
-        args=" ".join(sys.argv[1:]),
-    )
-
     # Write the results to the specified output
     result_path = write_results(
-        run_result,
+        task_results,
         output_format=args.output_format,
         output_file=args.output_file,
     )
@@ -287,80 +289,182 @@ def main(args: argparse.Namespace) -> None:
 
 def run(
     *,
-    dataset_names: list[str],
-    model_args: list[ModelArgs],
-    task_args: list[TaskArgs],
-) -> tuple[dict[str, BaseDataset], RunResultType]:
+    dataset_names: list[str],  # One per dataset
+    model_args: list[ModelArgs],  # One per model
+    task_args: list[TaskArgs],  # One per task
+) -> tuple[list[ProcessedDataset], list[TaskResult]]:
     """
     Run a set of tasks for a set of models on a set of datasets.
     """
-    run_results: RunResultType = {}
-    processed_datasets: dict[str, BaseDataset] = {}
+    task_results: list[TaskResult] = []
+    processed_datasets: list[ProcessedDataset] = []
 
     for dataset_name in dataset_names:
-        dataset_results: dict[str, TaskResultType] = {}
+        model_permutations = get_model_arg_permutations(model_args)
 
-        log.info(f"Loading dataset {dataset_name}")
-        processed_dataset = dataset_utils.load_dataset(dataset_name)
+        # Run inference against a single dataset if there is only one set of arguments per model:
+        # A single dataset can support multiple models, but not multiple variants of the same model
+        if all(len(permutations) == 1 for permutations in model_permutations.values()):
+            args = {k: v[0] for k, v in model_permutations.items()}
+            processed_dataset, task_results = run_tasks_for_shared_dataset(
+                dataset_name, args, task_args
+            )
+            processed_datasets.append(processed_dataset)
+            task_results.extend(task_results)
 
-        # Run inference against this dataset for each model to generate embeddings
-        for model_arg in model_args:
-            keys, values = zip(*model_arg.args.items())
-            permutations = [
-                {k: v for k, v in zip(keys, permutation)}
-                for permutation in itertools.product(*values)
-            ]
+        # To run inference with multiple variants of the same model we must load separate datasets:
+        # A single dataset can support multiple models, but not multiple variants of the same model
+        else:
+            processed_datasets, task_results = run_tasks_for_dataset_variants(
+                dataset_name, model_permutations, task_args
+            )
+            processed_datasets.extend(processed_datasets)
+            task_results.extend(task_results)
 
-            # Run inference against every permutation of model arguments
-            for permutation in permutations:
+    return processed_datasets, task_results
+
+
+def run_tasks_for_shared_dataset(
+    dataset_name: str,
+    model_args: dict[str, ModelArgsDict],  # {model_name: ModelArgsDict}
+    task_args: list[TaskArgs],
+) -> tuple[ProcessedDataset, list[TaskResult]]:
+    """
+    Run tasks against a shared dataset: used when there is a single set of arguments per model.
+    A single dataset can support multiple models, but not multiple variants of the same model.
+    """
+    task_results: list[TaskResult] = []
+
+    # Dataset is loaded once and shared across all models and tasks
+    log.info(f"Loading dataset {dataset_name}")
+    processed_data = dataset_utils.load_dataset(dataset_name)
+
+    # Run inference for each model and attach embeddings to the dataset
+    for model_name, model_arg in model_args.items():
+        log.info(
+            f"Running {model_name} inference on dataset {dataset_name} with args {model_arg}"
+        )
+        processed_data = runner.run_inference(
+            model_name,
+            processed_data,
+            gpu=True,
+            **model_arg,  # type: ignore [arg-type]
+        )
+
+    # Run each task on the shared dataset
+    for task_arg in task_args:
+        log.info(f"Running {task_arg.name} on dataset {dataset_name}")
+        task_result = run_task(dataset_name, processed_data, model_args, task_arg)
+        task_results.extend(task_result)
+
+    # Wrap the processed data with some extra mdetadata
+    processed_dataset = ProcessedDataset(
+        dataset_name=dataset_name,
+        model_args=model_args,
+        data=processed_data,
+    )
+    return processed_dataset, task_results
+
+
+def run_tasks_for_dataset_variants(
+    dataset_name: str,
+    model_arg_permutations: dict[str, list[dict[str, str | int]]],
+    task_args: list[TaskArgs],
+) -> tuple[list[ProcessedDataset], list[TaskResult]]:
+    """
+    Run tasks against separate dataset variants: used when there are multiple sets of arguments (permutations) per model.
+    A single dataset can support multiple models, but not multiple variants of the same model.
+    """
+    task_results: list[TaskResult] = []
+    processed_datasets: list[ProcessedDataset] = []
+
+    for model_name, model_args in model_arg_permutations.items():
+        for args in model_args:
+            # Create a new dataset for each set of model arguments
+            log.info(f"Loading dataset {dataset_name}")
+            processed_data = dataset_utils.load_dataset(dataset_name)
+
+            log.info(
+                f"Running {model_name} inference on dataset {dataset_name} with args {args}"
+            )
+            processed_data = runner.run_inference(
+                model_name,
+                processed_data,
+                gpu=True,
+                **args,  # type: ignore [arg-type]
+            )
+            processed_dataset = ProcessedDataset(
+                dataset_name=dataset_name,
+                model_args={model_name: args},
+                data=processed_data,
+            )
+            processed_datasets.append(processed_dataset)
+
+            for task_arg in task_args:
                 log.info(
-                    f"Running {model_arg.name} inference on dataset {dataset_name} with args {permutation}"
+                    f"Running {task_arg.name} on dataset {dataset_name} variant {args}"
                 )
-                processed_dataset = runner.run_inference(
-                    model_arg.name, processed_dataset, gpu=True, **permutation
+                task_result = run_task(
+                    dataset_name, processed_data, {model_name: args}, task_arg
                 )
+                task_results.extend(task_result)
 
-            processed_datasets[dataset_name] = processed_dataset
-
-        # Explicitly oad the dataset into memory if we didn't call `run_inference` above
-        if not model_args:
-            log.info(f"Loading dataset {dataset_name} into memory")
-            processed_dataset.load_data()
-
-        # Run each task on the processed dataset
-        for task_arg in task_args:
-            if task_arg.set_baseline:
-                log.info(
-                    f"Setting baseline for {task_arg.name} on dataset {dataset_name}"
-                )
-                task_arg.task.set_baseline(processed_dataset)
-            log.info(f"Running {task_arg.name} on dataset {dataset_name}")
-            dataset_results[task_arg.name] = run_task(processed_dataset, task_arg.task)
-
-        # Store the results for this dataset
-        run_results[dataset_name] = dataset_results
-
-    return processed_datasets, run_results
+    return processed_datasets, task_results
 
 
-def run_task(processed_dataset: BaseDataset, task: TaskType) -> TaskResultType:
+def run_task(
+    dataset_name: str,
+    dataset: BaseDataset,
+    model_args: dict[str, ModelArgsDict],
+    task_args: TaskArgs,
+) -> list[TaskResult]:
     """
     Run a task and return the results.
     """
-    results = task.run(processed_dataset)
+    task_results: list[TaskResult] = []
 
-    if isinstance(results, list):
+    if task_args.set_baseline:
+        dataset.load_data()
+        task_args.task.set_baseline(dataset)
+
+    result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
+
+    if isinstance(result, list):
         raise ValueError("Expected a single task result, got list")
 
-    # Serialize the result to a json-compatible dict
-    json_results = {
-        k.value: [v.model_dump(mode="json") for v in val] for k, val in results.items()
-    }
-    return json_results
+    for model_type, metrics in result.items():
+        task_result = TaskResult(
+            task_name=task_args.name,
+            model_type=model_type.value,
+            dataset_name=dataset_name,
+            model_args=model_args.get(model_type.value) or {},
+            metrics=metrics,
+        )
+        task_results.append(task_result)
+
+    return task_results
+
+
+def get_model_arg_permutations(
+    model_args: list[ModelArgs],
+) -> dict[str, list[ModelArgsDict]]:
+    """
+    Generate all the "permutations" of model arguments we want to run for each dataset:
+    E.g. Running 2 variants of scgenept at 2 chunk sizes results in 4 permutations
+    """
+    result: dict[str, list[ModelArgsDict]] = defaultdict(list)
+    for model_arg in model_args:
+        keys, values = zip(*model_arg.args.items())
+        permutations: list[dict[str, str | int]] = [
+            {k: v for k, v in zip(keys, permutation)}
+            for permutation in itertools.product(*values)
+        ]
+        result[model_arg.name] = permutations
+    return result
 
 
 def write_results(
-    results: RunResult,
+    task_results: list[TaskResult],
     *,
     output_format: str = DEFAULT_OUTPUT_FORMAT,
     output_file: str | None = None,  # Writes to stdout if None
@@ -369,7 +473,11 @@ def write_results(
     Format and write results to the given directory or file.
     Returns the path to the written file, or None if writing only to stdout.
     """
-    results_dict = asdict(results)
+    results_dict = {
+        "czbenchmarks_version": cli.get_version(),
+        "args": "czbenchmarks " + " ".join(sys.argv[1:]),
+        "task_results": [result.to_dict() for result in task_results],
+    }
 
     # Get the intended format/extension
     if output_file and output_file.endswith(".json"):
@@ -409,14 +517,16 @@ def write_results(
 
 
 def write_processed_datasets(
-    processed_datasets: dict[str, BaseDataset], output_dir: str
+    processed_datasets: list[ProcessedDataset], output_dir: str
 ) -> None:
     """
     Write all processed datasets (with embeddings) to the specified directory.
     """
     os.makedirs(output_dir, exist_ok=True)
-    for dataset_name, dataset in processed_datasets.items():
-        dataset.serialize(os.path.join(str(output_dir), f"{dataset_name}.dill"))
+    for dataset in processed_datasets:
+        dataset.data.serialize(
+            os.path.join(str(output_dir), f"{dataset.dataset_name}.dill")
+        )
 
 
 def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:
