@@ -30,7 +30,24 @@ uv python install
 uv sync --all-extras
 ```
 
-## Example Usage
+## CLI Usage
+
+```sh
+# List available models, datasets, or tasks
+czbenchmarks list [models|datasets|tasks]
+
+# Run benchmarking workflow for the given model(s), dataset(s), and task(s) for the given label
+czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> --label-key <label_key>
+
+# For example
+czbenchmarks run --models SCGPT --datasets tsv2_bladder --tasks clustering --label-key cell_type --output-file results.json
+
+# View the full list of options
+czbenchmarks --help
+czbenchmarks run --help
+```
+
+## Library Usage
 
 ```python
 from czbenchmarks.datasets.utils import load_dataset

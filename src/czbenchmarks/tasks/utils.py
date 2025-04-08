@@ -9,6 +9,8 @@ from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
 
+TASK_NAMES = ["clustering", "embedding", "label_prediction", "integration"]
+
 
 # TODO: Later we can add cluster parameters as kwargs here and add them
 # to the task config
