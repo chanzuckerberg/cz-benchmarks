@@ -16,8 +16,11 @@ MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks c
 
 # Container related settings
 BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull public image
-EVAL_CMD="bash" # "bash", "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
-# or "python3 -u /app/examples/example_interactive.py" for all other models
+EVAL_CMD="bash" # Example evaluation commands:
+# "bash"
+# "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
+# "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
+# "python3 -u /app/examples/example_interactive.py" for all other models
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
