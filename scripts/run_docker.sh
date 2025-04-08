@@ -259,9 +259,25 @@ create_docker_run_command() {
     # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
         local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+        local model_files=(config.yaml)
+
+        if [ "${model_name_lower}" = "uce" ]; then
+            model_files+=(uce_model.py)
+        else
+            model_files+=(model.py)
+        fi
+
+        if [ "${model_name_lower}" = "scvi" ]; then
+            model_files+=(utils.py)
+        fi
+
+        for file in "${model_files[@]}"; do
+            DOCKER_CMD="${DOCKER_CMD}
+    --volume ${DEVELOPMENT_CODE_PATH}/docker/${model_name_lower}/${file}:${MODEL_CODE_PATH_DOCKER}/${file}:rw \\"
+        done
+
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${DEVELOPMENT_CODE_PATH}/docker/${model_name_lower}:${MODEL_CODE_PATH_DOCKER}:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
+    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"  
     fi
 
     # Add mount points -- examples directory must be mounted after framework code (above)
