@@ -288,10 +288,21 @@ def main(args: argparse.Namespace) -> None:
 
 
 def run(
-    *,
-    dataset_names: list[str],  # One per dataset
-    model_args: list[ModelArgs],  # One per model
-    task_args: list[TaskArgs],  # One per task
+    dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
+) -> tuple[list[ProcessedDataset], list[TaskResult]]:
+    """
+    Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.
+    """
+    log.info(
+        f"Starting benchmarking for {len(dataset_names)} datasets, {len(model_args)} models, and {len(task_args)} tasks"
+    )
+    if not model_args:
+        return run_without_inference(dataset_names, task_args)
+    return run_with_inference(dataset_names, model_args, task_args)
+
+
+def run_with_inference(
+    dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
 ) -> tuple[list[ProcessedDataset], list[TaskResult]]:
     """
     Run a set of tasks for a set of models on a set of datasets.
@@ -299,115 +310,77 @@ def run(
     task_results: list[TaskResult] = []
     processed_datasets: list[ProcessedDataset] = []
 
-    for dataset_name in dataset_names:
-        model_permutations = get_model_arg_permutations(model_args)
+    # Get all unique combinations of model arguments: each requires a separate inference run
+    model_arg_permutations = get_model_arg_permutations(model_args)
 
-        # Run inference against a single dataset if there is only one set of arguments per model:
-        # A single dataset can support multiple models, but not multiple variants of the same model
-        if all(len(permutations) == 1 for permutations in model_permutations.values()):
-            args = {k: v[0] for k, v in model_permutations.items()}
-            processed_dataset, task_results = run_tasks_for_shared_dataset(
-                dataset_name, args, task_args
-            )
-            processed_datasets.append(processed_dataset)
-            task_results.extend(task_results)
+    for dataset_idx, dataset_name in enumerate(dataset_names):
+        log.info(
+            f'Processing dataset "{dataset_name}" ({dataset_idx + 1}/{len(dataset_names)})'
+        )
 
-        # To run inference with multiple variants of the same model we must load separate datasets:
-        # A single dataset can support multiple models, but not multiple variants of the same model
-        else:
-            processed_datasets, task_results = run_tasks_for_dataset_variants(
-                dataset_name, model_permutations, task_args
-            )
-            processed_datasets.extend(processed_datasets)
-            task_results.extend(task_results)
+        for model_name, model_arg_permutation in model_arg_permutations.items():
+            for args_idx, args in enumerate(model_arg_permutation):
+                log.info(
+                    f'Starting model inference "{model_name}" ({args_idx + 1}/{len(model_arg_permutation)}) '
+                    f'for dataset "{dataset_name}"  ({args})'
+                )
+                processed_data = dataset_utils.load_dataset(dataset_name)
+                processed_data = runner.run_inference(
+                    model_name,
+                    processed_data,
+                    gpu=True,
+                    **args,  # type: ignore [arg-type]
+                )
+                processed_dataset = ProcessedDataset(
+                    dataset_name=dataset_name,
+                    model_args={model_name: args},
+                    data=processed_data,
+                )
+                processed_datasets.append(processed_dataset)
+
+                # Run each task against the processed dataset
+                for task_arg_idx, task_arg in enumerate(task_args):
+                    log.info(
+                        f'Starting task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for '
+                        f'dataset "{dataset_name}" and model "{model_name}" ({task_arg})'
+                    )
+                    task_result = run_task(
+                        dataset_name, processed_data, {model_name: args}, task_arg
+                    )
+                    task_results.extend(task_result)
 
     return processed_datasets, task_results
 
 
-def run_tasks_for_shared_dataset(
-    dataset_name: str,
-    model_args: dict[str, ModelArgsDict],  # {model_name: ModelArgsDict}
-    task_args: list[TaskArgs],
-) -> tuple[ProcessedDataset, list[TaskResult]]:
-    """
-    Run tasks against a shared dataset: used when there is a single set of arguments per model.
-    A single dataset can support multiple models, but not multiple variants of the same model.
-    """
-    task_results: list[TaskResult] = []
-
-    # Dataset is loaded once and shared across all models and tasks
-    log.info(f"Loading dataset {dataset_name}")
-    processed_data = dataset_utils.load_dataset(dataset_name)
-
-    # Run inference for each model and attach embeddings to the dataset
-    for model_name, model_arg in model_args.items():
-        log.info(
-            f"Running {model_name} inference on dataset {dataset_name} with args {model_arg}"
-        )
-        processed_data = runner.run_inference(
-            model_name,
-            processed_data,
-            gpu=True,
-            **model_arg,  # type: ignore [arg-type]
-        )
-
-    # Run each task on the shared dataset
-    for task_arg in task_args:
-        log.info(f"Running {task_arg.name} on dataset {dataset_name}")
-        task_result = run_task(dataset_name, processed_data, model_args, task_arg)
-        task_results.extend(task_result)
-
-    # Wrap the processed data with some extra mdetadata
-    processed_dataset = ProcessedDataset(
-        dataset_name=dataset_name,
-        model_args=model_args,
-        data=processed_data,
-    )
-    return processed_dataset, task_results
-
-
-def run_tasks_for_dataset_variants(
-    dataset_name: str,
-    model_arg_permutations: dict[str, list[dict[str, str | int]]],
-    task_args: list[TaskArgs],
+def run_without_inference(
+    dataset_names: list[str], task_args: list[TaskArgs]
 ) -> tuple[list[ProcessedDataset], list[TaskResult]]:
     """
-    Run tasks against separate dataset variants: used when there are multiple sets of arguments (permutations) per model.
-    A single dataset can support multiple models, but not multiple variants of the same model.
+    Run a set of tasks directly against raw datasets without first running model inference.
     """
     task_results: list[TaskResult] = []
     processed_datasets: list[ProcessedDataset] = []
 
-    for model_name, model_args in model_arg_permutations.items():
-        for args in model_args:
-            # Create a new dataset for each set of model arguments
-            log.info(f"Loading dataset {dataset_name}")
-            processed_data = dataset_utils.load_dataset(dataset_name)
+    for dataset_idx, dataset_name in enumerate(dataset_names):
+        log.info(
+            f'Processing dataset "{dataset_name}" ({dataset_idx + 1}/{len(dataset_names)})'
+        )
+        processed_data = dataset_utils.load_dataset(dataset_name)
+        processed_data.load_data()
 
+        processed_dataset = ProcessedDataset(
+            dataset_name=dataset_name,
+            model_args={},
+            data=processed_data,
+        )
+        processed_datasets.append(processed_dataset)
+
+        for task_arg_idx, task_arg in enumerate(task_args):
             log.info(
-                f"Running {model_name} inference on dataset {dataset_name} with args {args}"
+                f'Starting task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for dataset "{dataset_name}"'
             )
-            processed_data = runner.run_inference(
-                model_name,
-                processed_data,
-                gpu=True,
-                **args,  # type: ignore [arg-type]
-            )
-            processed_dataset = ProcessedDataset(
-                dataset_name=dataset_name,
-                model_args={model_name: args},
-                data=processed_data,
-            )
-            processed_datasets.append(processed_dataset)
-
-            for task_arg in task_args:
-                log.info(
-                    f"Running {task_arg.name} on dataset {dataset_name} variant {args}"
-                )
-                task_result = run_task(
-                    dataset_name, processed_data, {model_name: args}, task_arg
-                )
-                task_results.extend(task_result)
+            task_result = run_task(dataset_name, processed_data, {}, task_arg)
+            task_results.extend(task_result)
 
     return processed_datasets, task_results
 
@@ -424,7 +397,6 @@ def run_task(
     task_results: list[TaskResult] = []
 
     if task_args.set_baseline:
-        dataset.load_data()
         task_args.task.set_baseline(dataset)
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
