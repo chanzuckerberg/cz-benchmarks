@@ -1,28 +1,44 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 import sys
+import toml
 
 sys.path.insert(0, os.path.abspath("../../src"))
+with open("../../pyproject.toml", "r") as f:
+    config = toml.load(f)
+
+
+latest_version = config["project"]["version"]
 
 
 project = "cz-benchmarks"
 copyright = "2025, Chan Zuckerberg Initiative"
 author = "Chan Zuckerberg Initiative"
-release = "0.2.2"
-
+release = str(latest_version)
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx_copybutton",
+    "sphinx_autodoc_typehints",
     "sphinx.ext.githubpages",
     "sphinx_markdown_builder",
     "myst_parser",
     "autoapi.extension",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
+    "nbsphinx", 
+    "sphinx.ext.intersphinx", 
+    'sphinx.ext.napoleon', 
+    'sphinx.ext.autosummary',
+    "sphinx.ext.viewcode",
 ]
 
 
-autoapi_keep_files = False
+viewcode_follow_imported_members = True
+autosummary_generate = True
+
+autoapi_keep_files = True
+autoapi_index = 'developer/index'
 autoapi_options = [
     "members",
     "undoc-members",
@@ -32,17 +48,47 @@ autoapi_options = [
     "imported-members",
 ]
 
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+
+
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "linkify",
+]
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+    "scipy": ("http://docs.scipy.org/doc/scipy/reference", None),
+    "anndata": ("https://anndata.readthedocs.io/en/latest/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scanpy": ("https://scanpy.readthedocs.io/en/stable/", None),
+    "sklearn": ("http://scikit-learn.org/stable", None),
+}
+
+
+
+autoapi_keep_files = True
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "imported-members",
+]
 autoapi_dirs = ["../../src/"]
 # , '../../docker/geneformer',
 # '../../docker/scgenept',
 # '../../docker/scgpt',
 # '../../docker/scvi',
 # '../../docker/uce']
-
 autoapi_type = "python"
-
-autosummary_generate = True
 autoapi_add_toctree_entry = True
+
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -61,16 +107,6 @@ autodoc_type_aliases = {
     "Organism": "czbenchmarks.datasets.types.Organism",
 }
 
-# nitpick_ignore = [
-#     ("py:class", "BaseDataset"),
-#     ("py:class", "Organism"),
-#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.func"),
-#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.required_args"),
-#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.default_params"),
-#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.description"),
-#     ("py:class", "czbenchmarks.metrics.types.MetricInfo.tags"),
-# ]
-
 
 inheritance_graph_attrs = dict(
     rankdir="LR", size='"18.0, 28.0 "', fontsize=16, ratio="expand", dpi=96
@@ -87,4 +123,4 @@ inheritance_node_attrs = dict(
 
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
-html_css_files = ["diagram.css"]
+html_css_files = ["custom.css"]

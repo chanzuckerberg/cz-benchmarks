@@ -1,14 +1,16 @@
-How to guides
-============
+How To Guides
+===========================
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   installation
-   usage_guide
+   run_benchmarks
+   custom_dataset
+   custom_model
+   custom_task
    interactive_mode
-   add_model
-   add_tasks
-   custom_data
+   visualize_results
+
+   
