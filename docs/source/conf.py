@@ -53,9 +53,8 @@ autoapi_dirs = ["../../src/"]
 # '../../docker/scvi',
 # '../../docker/uce']
 autoapi_type = "python"
-autoapi_add_toctree_entry = True
+autoapi_add_toctree_entry = False
 autoapi_keep_files = False
-# autoapi_index = './developer_documentation/index'
 
 
 napoleon_google_docstring = True

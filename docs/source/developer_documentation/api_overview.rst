@@ -5,4 +5,4 @@ API Reference
    :maxdepth: 1
    :caption: Contents:
 
-   ../autoapi/index.rst
+   ../autoapi/czbenchmarks/index
