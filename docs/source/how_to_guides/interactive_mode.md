@@ -1,4 +1,4 @@
-# Running a Docker Container in Interactive Mode
+# Running a Docker Container with model in Interactive Mode
 
 This guide explains how launch an interactive docker container with cz-benchmarks and run benchmarks for a model.
 

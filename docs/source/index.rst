@@ -23,5 +23,8 @@ CZ Benchmarks is a reproducible benchmarking package designed for standardized e
    :caption: Contents:
 
    quick_start
-   how_to/index
-   developer/index
+   how_to_guides/index
+   developer_documentation/index
+   policy/index
+   legal
+   changelog_release_notes

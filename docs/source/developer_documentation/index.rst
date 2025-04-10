@@ -1,5 +1,5 @@
 Developer Guide
-===========================
+===============
 
 
 .. toctree::
@@ -11,5 +11,7 @@ Developer Guide
    models
    tasks
    metrics
-   api_overview
+   design_overview
+   core_modules
    class_diagram
+   api_overview

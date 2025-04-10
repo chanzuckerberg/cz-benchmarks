@@ -37,8 +37,6 @@ extensions = [
 viewcode_follow_imported_members = True
 autosummary_generate = True
 
-autoapi_keep_files = True
-autoapi_index = 'developer/index'
 autoapi_options = [
     "members",
     "undoc-members",
@@ -47,6 +45,17 @@ autoapi_options = [
     "special-members",
     "imported-members",
 ]
+autoapi_dirs = ["../../src/"]
+# , '../../docker/geneformer',
+# '../../docker/scgenept',
+# '../../docker/scgpt',
+# '../../docker/scvi',
+# '../../docker/uce']
+autoapi_type = "python"
+autoapi_add_toctree_entry = False
+autoapi_keep_files = False
+#autoapi_index = './developer_documentation/index'
+
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
@@ -68,26 +77,6 @@ intersphinx_mapping = {
     "scanpy": ("https://scanpy.readthedocs.io/en/stable/", None),
     "sklearn": ("http://scikit-learn.org/stable", None),
 }
-
-
-
-autoapi_keep_files = True
-autoapi_options = [
-    "members",
-    "undoc-members",
-    "show-inheritance",
-    "show-module-summary",
-    "special-members",
-    "imported-members",
-]
-autoapi_dirs = ["../../src/"]
-# , '../../docker/geneformer',
-# '../../docker/scgenept',
-# '../../docker/scgpt',
-# '../../docker/scvi',
-# '../../docker/uce']
-autoapi_type = "python"
-autoapi_add_toctree_entry = True
 
 
 templates_path = ["_templates"]

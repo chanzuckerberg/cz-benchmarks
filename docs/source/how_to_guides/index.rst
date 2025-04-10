@@ -1,5 +1,5 @@
 How To Guides
-===========================
+==============
 
 
 .. toctree::
@@ -12,5 +12,3 @@ How To Guides
    custom_task
    interactive_mode
    visualize_results
-
-   
