@@ -4,9 +4,7 @@ import logging
 
 from czbenchmarks.utils import import_class_from_config
 from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.tasks import (
-    PerturbationTask
-)
+from czbenchmarks.tasks import PerturbationTask
 
 logger = logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -16,7 +14,7 @@ BenchmarkModel = import_class_from_config(os.path.join(APP_PATH, "config.yaml"))
 
 if __name__ == "__main__":
     # Set the gene perturbation flags
-    sys.argv += ["--gene_pert", "CEBPB+ctrl"]
+    sys.argv += ["--gene_pert", "TMED2+ctrl"]
 
     dataset_list = ["adamson_perturb"]
     datasets = [
