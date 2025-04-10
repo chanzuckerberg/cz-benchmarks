@@ -16,5 +16,10 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
    :maxdepth: 2
    :caption: Contents:
 
-   how_to/index
-   class_diagram
+   package_overview/index
+   quick_start/index
+   how_to_guide/index
+   developer_contribution/index
+   policy/index
+   licensing_legal/index
+   changelog_release_notes/index
