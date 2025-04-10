@@ -1,6 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 import sys
+
 import toml
 
 sys.path.insert(0, os.path.abspath("../../src"))
@@ -26,10 +27,10 @@ extensions = [
     "autoapi.extension",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
-    "nbsphinx", 
-    "sphinx.ext.intersphinx", 
-    'sphinx.ext.napoleon', 
-    'sphinx.ext.autosummary',
+    "nbsphinx",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
 ]
 
@@ -54,7 +55,7 @@ autoapi_dirs = ["../../src/"]
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autoapi_keep_files = False
-#autoapi_index = './developer_documentation/index'
+# autoapi_index = './developer_documentation/index'
 
 
 napoleon_google_docstring = True
