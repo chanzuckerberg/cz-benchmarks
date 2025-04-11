@@ -7,9 +7,9 @@ import sys
 import yaml
 
 from collections import defaultdict
-from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
+from pydantic import BaseModel
 from typing import Any, Generic, TypeVar
 
 from czbenchmarks import runner
@@ -36,40 +36,31 @@ TaskType = TypeVar("TaskType", bound=BaseTask)
 ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
 
 
-@dataclass
-class ProcessedDataset:
+class ProcessedDataset(BaseModel):
+    model_config = {"arbitrary_types_allowed": True}  # Required to support BaseDataset
     dataset_name: str
     model_args: dict[str, dict[str, str | int]]  # {model_name: {arg_name: arg_value}}
     data: BaseDataset
 
 
-@dataclass
-class ModelArgs:
+class ModelArgs(BaseModel):
     name: str  # Upper-case model name e.g. SCVI
     args: dict[str, list[str | int]]  # Args forwarded to the model container
 
 
-@dataclass
-class TaskArgs(Generic[TaskType]):
+class TaskArgs(BaseModel, Generic[TaskType]):
+    model_config = {"arbitrary_types_allowed": True}  # Required to support TaskType
     name: str  # Lower-case task name e.g. embedding
     task: TaskType
     set_baseline: bool
 
 
-@dataclass
-class TaskResult:
+class TaskResult(BaseModel):
     task_name: str
     model_type: str
     dataset_name: str
     model_args: ModelArgsDict
     metrics: list[MetricResult]
-
-    def to_dict(self) -> dict[str, Any]:
-        task_result_dict = asdict(self)
-        task_result_dict["metrics"] = [
-            metric.model_dump(mode="json") for metric in self.metrics
-        ]
-        return task_result_dict
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -174,6 +165,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for clustering task
     parser.add_argument(
         "--clustering-task-label-key",
+        nargs="+",
         help="Label key to use for clustering task (optional, overrides --label-key)",
     )
     parser.add_argument(
@@ -185,6 +177,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for embedding task
     parser.add_argument(
         "--embedding-task-label-key",
+        nargs="+",
         help="Label key to use for embedding task (optional, overrides --label-key)",
     )
     parser.add_argument(
@@ -196,6 +189,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for label prediction task
     parser.add_argument(
         "--label-prediction-task-label-key",
+        nargs="+",
         help="Label key to use for label prediction task (optional, overrides --label-key)",
     )
     parser.add_argument(
@@ -222,6 +216,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for integration task
     parser.add_argument(
         "--integration-task-label-key",
+        nargs="+",
         help="Label key to use for integration task (optional, overrides --label-key)",
     )
     parser.add_argument(
@@ -237,7 +232,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def main(args: argparse.Namespace) -> None:
     """
-    Run a set of tasks for a set of models on a set of datasets.
+    Execute a series of tasks using multiple models on a collection of datasets.
+
+    This function handles the benchmarking process by iterating over the specified datasets,
+    running inference with the provided models to generate results, and running the tasks to evaluate
+    the generated outputs.
     """
     # Collect all the arguments that we'll need to pass directly to each model
     model_args: list[ModelArgs] = []
@@ -305,7 +304,11 @@ def run_with_inference(
     dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
 ) -> tuple[list[ProcessedDataset], list[TaskResult]]:
     """
-    Run a set of tasks for a set of models on a set of datasets.
+    Execute a series of tasks using multiple models on a collection of datasets.
+
+    This function handles the benchmarking process by iterating over the specified datasets,
+    running inference with the provided models to generate results, and running the tasks to evaluate
+    the generated outputs.
     """
     task_results: list[TaskResult] = []
     processed_datasets: list[ProcessedDataset] = []
@@ -426,6 +429,9 @@ def get_model_arg_permutations(
     """
     result: dict[str, list[ModelArgsDict]] = defaultdict(list)
     for model_arg in model_args:
+        if not model_arg.args:
+            result[model_arg.name] = [{}]
+            continue
         keys, values = zip(*model_arg.args.items())
         permutations: list[dict[str, str | int]] = [
             {k: v for k, v in zip(keys, permutation)}
@@ -448,7 +454,7 @@ def write_results(
     results_dict = {
         "czbenchmarks_version": cli.get_version(),
         "args": "czbenchmarks " + " ".join(sys.argv[1:]),
-        "task_results": [result.to_dict() for result in task_results],
+        "task_results": [result.model_dump(mode="json") for result in task_results],
     }
 
     # Get the intended format/extension
