@@ -7,10 +7,10 @@ Developer Guide
    :caption: Contents:
 
    architecture
-   datasets
-   models
-   tasks
-   metrics
+   dataset
+   model
+   task
+   metric
    design_overview
    core_modules
    class_diagram

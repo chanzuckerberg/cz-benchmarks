@@ -1,4 +1,5 @@
-# CZ-Benchmarks Tasks
+CZ-Benchmarks Tasks
+=====================
 
-.. include:: ../../src/czbenchmarks/tasks/README.md
+.. include:: ../../../src/czbenchmarks/tasks/README.md
    :parser: myst

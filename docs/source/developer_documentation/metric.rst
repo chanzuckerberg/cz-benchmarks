@@ -1,4 +1,5 @@
-# CZ-Benchmarks Metrics
+CZ-Benchmarks Metrics
+=====================
 
-.. include:: ../../src/czbenchmarks/metrics/README.md
+.. include:: ../../../src/czbenchmarks/metrics/README.md
    :parser: myst
