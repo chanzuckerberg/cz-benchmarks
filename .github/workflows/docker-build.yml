@@ -17,7 +17,7 @@ env:
 
 jobs:
   build-push-images:
-    runs-on: amd64-xl-privileged
+    runs-on: xl-amd64-privileged
     permissions:
       id-token: write
       contents: read
