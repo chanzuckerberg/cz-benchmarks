@@ -1,5 +1,4 @@
 import argparse
-from copy import deepcopy
 import itertools
 import json
 import logging
@@ -8,6 +7,7 @@ import sys
 import yaml
 
 from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from pydantic import BaseModel
@@ -377,7 +377,6 @@ def run_without_inference(
             f'Processing dataset "{dataset_name}" ({dataset_idx + 1}/{len(dataset_names)})'
         )
         dataset = dataset_utils.load_dataset(dataset_name)
-        dataset.load_data()
 
         for task_arg_idx, task_arg in enumerate(task_args):
             log.info(
@@ -511,32 +510,15 @@ def set_processed_datasets_cache(
     cache_path = get_processed_dataset_cache_path(
         dataset_name, model_name=model_name, model_args=model_args
     )
-    dataset.serialize(cache_path)
-
-
-def try_processed_datasets_cache(
-    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
-) -> BaseDataset | None:
-    """
-    Deserialize and return a processed dataset from the cache if it exists, else return None.
-    """
-    cache_path = get_processed_dataset_cache_path(
-        dataset_name, model_name=model_name, model_args=model_args
-    )
-    if os.path.exists(cache_path):
-        return BaseDataset.deserialize(cache_path)
-    return None
-
-
-def get_processed_dataset_cache_path(
-    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
-) -> str:
-    """
-    Return a unique file path in the cache directory for the given dataset and model arguments.
-    """
-    model_args_str = "_".join(f"{k}-{v}" for k, v in model_args.items())
-    filename = f"{dataset_name}_{model_name}_{model_args_str}.dill"
-    return os.path.join(PROCESSED_DATASETS_CACHE_PATH, filename)
+    try:
+        # "Unload" the source data so we only cache the results
+        dataset.unload_data()
+        dataset.serialize(cache_path)
+    except Exception as e:
+        # Log the exception, but don't raise if we can't write to the cache for some reason
+        log.exception(
+            f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
+        )
 
 
 def try_processed_datasets_cache(

@@ -124,7 +124,7 @@ def test_main(mocker: MockFixture) -> None:
                         },
                     )
                 ],
-                task_args=[],
+                task_args=[mock_task_args],
             ),
             call(
                 dataset_names=["norman_perturb"],
@@ -137,7 +137,7 @@ def test_main(mocker: MockFixture) -> None:
                         },
                     )
                 ],
-                task_args=[],
+                task_args=[mock_task_args],
             ),
         ]
     )
