@@ -1,4 +1,5 @@
 import argparse
+from copy import deepcopy
 import itertools
 import json
 import logging
@@ -210,8 +211,17 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Key to access batch labels in metadata",
     )
 
+    # Advanced feature: define multiple batches of jobs using JSON
+    parser.add_argument(
+        "--batch-json",
+        "-b",
+        nargs="+",
+        default=[""],
+        help='Override CLI arguments from the given JSON, e.g. \'{"output_file": "..."}\'. Can be set multiple times to run complex "batch" jobs.',
+    )
 
-def main(args: argparse.Namespace) -> None:
+
+def main(parsed_args: argparse.Namespace) -> None:
     """
     Execute a series of tasks using multiple models on a collection of datasets.
 
@@ -219,32 +229,43 @@ def main(args: argparse.Namespace) -> None:
     running inference with the provided models to generate results, and running the tasks to evaluate
     the generated outputs.
     """
-    # Collect all the arguments that we'll need to pass directly to each model
-    model_args: list[ModelArgs] = []
-    for model_name in args.models or []:
-        model_args.append(parse_model_args(model_name.lower(), args))
+    task_results: list[TaskResult] = []
+    batch_args = parse_batch_json(parsed_args.batch_json)
 
-    # Collect all the task-related arguments
-    task_args: list[TaskArgs] = []
-    if "clustering" in args.tasks:
-        task_args.append(parse_task_args("clustering", ClusteringTask, args))
-    if "embedding" in args.tasks:
-        task_args.append(parse_task_args("embedding", EmbeddingTask, args))
-    if "label_prediction" in args.tasks:
-        task_args.append(
-            parse_task_args("label_prediction", MetadataLabelPredictionTask, args)
+    for batch_idx, batch_dict in enumerate(batch_args):
+        log.info(f"Starting batch {batch_idx + 1}/{len(parsed_args.batch_json)}")
+
+        args = deepcopy(parsed_args)
+        for batch_key, batch_val in batch_dict.items():
+            setattr(args, batch_key, batch_val)
+
+        # Collect all the arguments that we'll need to pass directly to each model
+        model_args: list[ModelArgs] = []
+        for model_name in args.models or []:
+            model_args.append(parse_model_args(model_name.lower(), args))
+
+        # Collect all the task-related arguments
+        task_args: list[TaskArgs] = []
+        if "clustering" in args.tasks:
+            task_args.append(parse_task_args("clustering", ClusteringTask, args))
+        if "embedding" in args.tasks:
+            task_args.append(parse_task_args("embedding", EmbeddingTask, args))
+        if "label_prediction" in args.tasks:
+            task_args.append(
+                parse_task_args("label_prediction", MetadataLabelPredictionTask, args)
+            )
+        if "integration" in args.tasks:
+            task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
+        if "perturbation" in args.tasks:
+            task_args.append(parse_task_args("perturbation", PerturbationTask, args))
+
+        # Run the tasks
+        task_result = run(
+            dataset_names=args.datasets,
+            model_args=model_args,
+            task_args=task_args,
         )
-    if "integration" in args.tasks:
-        task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
-    if "perturbation" in args.tasks:
-        task_args.append(parse_task_args("perturbation", PerturbationTask, args))
-
-    # Run the tasks
-    task_results = run(
-        dataset_names=args.datasets,
-        model_args=model_args,
-        task_args=task_args,
-    )
+        task_results.extend(task_result)
 
     # Write the results to the specified output
     write_results(
@@ -261,7 +282,7 @@ def run(
     Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.
     """
     log.info(
-        f"Starting benchmarking for {len(dataset_names)} datasets, {len(model_args)} models, and {len(task_args)} tasks"
+        f"Starting benchmarking batch for {len(dataset_names)} datasets, {len(model_args)} models, and {len(task_args)} tasks"
     )
     if not model_args:
         return run_without_inference(dataset_names, task_args)
@@ -490,16 +511,32 @@ def set_processed_datasets_cache(
     cache_path = get_processed_dataset_cache_path(
         dataset_name, model_name=model_name, model_args=model_args
     )
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        # "Unload" the source data so we only cache the results
-        dataset.unload_data()
-        dataset.serialize(str(cache_path))
-    except Exception as e:
-        # Log the exception, but don't raise if we can't write to the cache for some reason
-        log.exception(
-            f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
-        )
+    dataset.serialize(cache_path)
+
+
+def try_processed_datasets_cache(
+    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+) -> BaseDataset | None:
+    """
+    Deserialize and return a processed dataset from the cache if it exists, else return None.
+    """
+    cache_path = get_processed_dataset_cache_path(
+        dataset_name, model_name=model_name, model_args=model_args
+    )
+    if os.path.exists(cache_path):
+        return BaseDataset.deserialize(cache_path)
+    return None
+
+
+def get_processed_dataset_cache_path(
+    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+) -> str:
+    """
+    Return a unique file path in the cache directory for the given dataset and model arguments.
+    """
+    model_args_str = "_".join(f"{k}-{v}" for k, v in model_args.items())
+    filename = f"{dataset_name}_{model_name}_{model_args_str}.dill"
+    return os.path.join(PROCESSED_DATASETS_CACHE_PATH, filename)
 
 
 def try_processed_datasets_cache(
@@ -571,3 +608,47 @@ def parse_task_args(
     return TaskArgs(
         name=task_name, task=TaskCls(**task_args), set_baseline=set_baseline
     )
+
+
+def parse_batch_json(batch_json_list: list[str]) -> list[dict[str, Any]]:
+    """
+    Parse the `--batch-json` argument.
+    Returns a list of dicts where each entry is a batch of CLI arguments.
+    """
+    batches: list[dict[str, Any]] = []
+
+    if not batch_json_list:
+        return [{}]
+
+    for batch_json in batch_json_list:
+        if not batch_json.strip():
+            batches.append({})
+            continue
+
+        # Load JSON from disk if we were given a valid file path
+        if os.path.isfile(batch_json):
+            try:
+                with open(batch_json, "r") as f:
+                    batches.append(json.load(f))
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to load batch JSON from file {batch_json}: {e}"
+                ) from e
+            continue
+
+        # Otherwise treat the input as JSON
+        try:
+            result = json.loads(batch_json)
+            if isinstance(result, list):
+                batches.extend(result)
+            elif isinstance(result, dict):
+                batches.append(result)
+            else:
+                raise ValueError(
+                    "Invalid batch JSON: input must be a dictionary of CLI arguments"
+                )
+            continue
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid batch JSON {batch_json}: {e}") from e
+
+    return batches

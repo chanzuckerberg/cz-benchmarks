@@ -47,6 +47,7 @@ def test_main(mocker: MockFixture) -> None:
             datasets=[],
             output_file=None,
             output_format=None,
+            batch_json=[],
         )
     )
     mock_run.assert_called_once_with(dataset_names=[], model_args=[], task_args=[])
@@ -73,6 +74,7 @@ def test_main(mocker: MockFixture) -> None:
             datasets=["tsv2_blood", "tsv2_heart"],
             output_file="output_file.yaml",
             output_format="yaml",
+            batch_json=[""],
         )
     )
     mock_run.assert_called_once_with(
@@ -89,6 +91,56 @@ def test_main(mocker: MockFixture) -> None:
         mock_task_results, output_format="yaml", output_file="output_file.yaml"
     )
     assert mock_parse_task_args.call_count == 2
+
+    # Reset mocked functions
+    mock_parse_task_args.reset_mock()
+    mock_run.reset_mock()
+    mock_write_results.reset_mock()
+
+    # Handle batch inputs
+    main(
+        argparse.Namespace(
+            models=["SCGENEPT"],
+            tasks=["perturbation"],
+            datasets=[],
+            output_file="output_file.yaml",
+            output_format="yaml",
+            batch_json=[
+                '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
+                '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
+            ],
+        )
+    )
+    mock_run.assert_has_calls(
+        [
+            call(
+                dataset_names=["adamson_perturb"],
+                model_args=[
+                    ModelArgs(
+                        name="SCGENEPT",
+                        args={
+                            "dataset_name": ["adamson"],
+                            "gene_pert": ["AEBPB+ctrl", "AEBPB+dox"],
+                        },
+                    )
+                ],
+                task_args=[],
+            ),
+            call(
+                dataset_names=["norman_perturb"],
+                model_args=[
+                    ModelArgs(
+                        name="SCGENEPT",
+                        args={
+                            "dataset_name": ["norman"],
+                            "gene_pert": ["NTGC+ctrl", "NTGC+dox"],
+                        },
+                    )
+                ],
+                task_args=[],
+            ),
+        ]
+    )
 
 
 def test_run_with_inference(mocker: MockFixture) -> None:
