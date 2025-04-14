@@ -14,6 +14,7 @@ from typing import Any, Generic, TypeVar
 
 from czbenchmarks import runner
 from czbenchmarks.cli import cli
+from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.datasets.base import BaseDataset
 from czbenchmarks.metrics.types import MetricResult
@@ -34,13 +35,6 @@ DEFAULT_OUTPUT_FORMAT = "json"
 
 TaskType = TypeVar("TaskType", bound=BaseTask)
 ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
-
-
-class ProcessedDataset(BaseModel):
-    model_config = {"arbitrary_types_allowed": True}  # Required to support BaseDataset
-    dataset_name: str
-    model_args: dict[str, dict[str, str | int]]  # {model_name: {arg_name: arg_value}}
-    data: BaseDataset
 
 
 class ModelArgs(BaseModel):
@@ -80,7 +74,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "-d",
         nargs="+",
         choices=dataset_utils.list_available_datasets(),
-        required=True,
         help="One or more dataset names (from datasets.yaml).",
     )
     parser.add_argument(
@@ -88,7 +81,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "-t",
         nargs="+",
         choices=task_utils.TASK_NAMES,
-        required=True,
         help="One or more tasks to run.",
     )
     parser.add_argument(
@@ -102,13 +94,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--output-file",
         "-o",
         help="Path to file or directory to save results (default is stdout)",
-    )
-    parser.add_argument(
-        "--save-processed-datasets",
-        "-s",
-        nargs="?",
-        const=True,
-        help="Save processed datasets to the specified directory, or save to an auto-generated directory if this flag is set with no arguments (datasets are not saved by default)",
     )
 
     # Extra arguments for geneformer model
@@ -165,8 +150,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for clustering task
     parser.add_argument(
         "--clustering-task-label-key",
-        nargs="+",
-        help="Label key to use for clustering task (optional, overrides --label-key)",
+        help="Label key to use for clustering task",
     )
     parser.add_argument(
         "--clustering-task-set-baseline",
@@ -177,8 +161,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for embedding task
     parser.add_argument(
         "--embedding-task-label-key",
-        nargs="+",
-        help="Label key to use for embedding task (optional, overrides --label-key)",
+        help="Label key to use for embedding task",
     )
     parser.add_argument(
         "--embedding-task-set-baseline",
@@ -189,8 +172,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for label prediction task
     parser.add_argument(
         "--label-prediction-task-label-key",
-        nargs="+",
-        help="Label key to use for label prediction task (optional, overrides --label-key)",
+        help="Label key to use for label prediction task",
     )
     parser.add_argument(
         "--label-prediction-task-set-baseline",
@@ -216,8 +198,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     # Extra arguments for integration task
     parser.add_argument(
         "--integration-task-label-key",
-        nargs="+",
-        help="Label key to use for integration task (optional, overrides --label-key)",
+        help="Label key to use for integration task",
     )
     parser.add_argument(
         "--integration-task-set-baseline",
@@ -259,36 +240,23 @@ def main(args: argparse.Namespace) -> None:
         task_args.append(parse_task_args("perturbation", PerturbationTask, args))
 
     # Run the tasks
-    processed_datasets, task_results = run(
+    task_results = run(
         dataset_names=args.datasets,
         model_args=model_args,
         task_args=task_args,
     )
 
     # Write the results to the specified output
-    result_path = write_results(
+    write_results(
         task_results,
         output_format=args.output_format,
         output_file=args.output_file,
     )
 
-    # Optionally write processed datasets to disk
-    if args.save_processed_datasets:
-        dirname = datetime.now().strftime(
-            "czbenchmarks_processed_datasets_%Y%m%d_%H%M%S"
-        )
-        if args.save_processed_datasets and isinstance(
-            args.save_processed_datasets, str
-        ):
-            dirname = args.save_processed_datasets
-        elif result_path:
-            dirname = str(result_path.parent / f"{result_path.stem}_processed_datasets")
-        write_processed_datasets(processed_datasets, dirname)
-
 
 def run(
     dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
-) -> tuple[list[ProcessedDataset], list[TaskResult]]:
+) -> list[TaskResult]:
     """
     Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.
     """
@@ -302,7 +270,7 @@ def run(
 
 def run_with_inference(
     dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
-) -> tuple[list[ProcessedDataset], list[TaskResult]]:
+) -> list[TaskResult]:
     """
     Execute a series of tasks using multiple models on a collection of datasets.
 
@@ -311,7 +279,6 @@ def run_with_inference(
     the generated outputs.
     """
     task_results: list[TaskResult] = []
-    processed_datasets: list[ProcessedDataset] = []
 
     # Get all unique combinations of model arguments: each requires a separate inference run
     model_arg_permutations = get_model_arg_permutations(model_args)
@@ -327,19 +294,9 @@ def run_with_inference(
                     f'Starting model inference "{model_name}" ({args_idx + 1}/{len(model_arg_permutation)}) '
                     f'for dataset "{dataset_name}"  ({args})'
                 )
-                processed_data = dataset_utils.load_dataset(dataset_name)
-                processed_data = runner.run_inference(
-                    model_name,
-                    processed_data,
-                    gpu=True,
-                    **args,  # type: ignore [arg-type]
+                processed_dataset = run_inference_or_load_from_cache(
+                    dataset_name, model_name=model_name, model_args=args
                 )
-                processed_dataset = ProcessedDataset(
-                    dataset_name=dataset_name,
-                    model_args={model_name: args},
-                    data=processed_data,
-                )
-                processed_datasets.append(processed_dataset)
 
                 # Run each task against the processed dataset
                 for task_arg_idx, task_arg in enumerate(task_args):
@@ -348,44 +305,67 @@ def run_with_inference(
                         f'dataset "{dataset_name}" and model "{model_name}" ({task_arg})'
                     )
                     task_result = run_task(
-                        dataset_name, processed_data, {model_name: args}, task_arg
+                        dataset_name, processed_dataset, {model_name: args}, task_arg
                     )
                     task_results.extend(task_result)
 
-    return processed_datasets, task_results
+    return task_results
+
+
+def run_inference_or_load_from_cache(
+    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+) -> BaseDataset:
+    """
+    Load the processed dataset from the cache if it exists, else run inference and save to cache.
+    """
+    processed_dataset = try_processed_datasets_cache(
+        dataset_name, model_name=model_name, model_args=model_args
+    )
+    if processed_dataset:
+        log.info("Processed dataset is cached: skipping inference")
+        return processed_dataset
+
+    dataset = dataset_utils.load_dataset(dataset_name)
+    processed_dataset = runner.run_inference(
+        model_name,
+        dataset,
+        gpu=True,
+        **model_args,  # type: ignore [arg-type]
+    )
+
+    set_processed_datasets_cache(
+        processed_dataset,
+        dataset_name,
+        model_name=model_name,
+        model_args=model_args,
+    )
+
+    return processed_dataset
 
 
 def run_without_inference(
     dataset_names: list[str], task_args: list[TaskArgs]
-) -> tuple[list[ProcessedDataset], list[TaskResult]]:
+) -> list[TaskResult]:
     """
     Run a set of tasks directly against raw datasets without first running model inference.
     """
     task_results: list[TaskResult] = []
-    processed_datasets: list[ProcessedDataset] = []
 
     for dataset_idx, dataset_name in enumerate(dataset_names):
         log.info(
             f'Processing dataset "{dataset_name}" ({dataset_idx + 1}/{len(dataset_names)})'
         )
-        processed_data = dataset_utils.load_dataset(dataset_name)
-        processed_data.load_data()
-
-        processed_dataset = ProcessedDataset(
-            dataset_name=dataset_name,
-            model_args={},
-            data=processed_data,
-        )
-        processed_datasets.append(processed_dataset)
+        dataset = dataset_utils.load_dataset(dataset_name)
+        dataset.load_data()
 
         for task_arg_idx, task_arg in enumerate(task_args):
             log.info(
                 f'Starting task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for dataset "{dataset_name}"'
             )
-            task_result = run_task(dataset_name, processed_data, {}, task_arg)
+            task_result = run_task(dataset_name, dataset, {}, task_arg)
             task_results.extend(task_result)
 
-    return processed_datasets, task_results
+    return task_results
 
 
 def run_task(
@@ -400,6 +380,7 @@ def run_task(
     task_results: list[TaskResult] = []
 
     if task_args.set_baseline:
+        dataset.load_data()
         task_args.task.set_baseline(dataset)
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
@@ -416,6 +397,7 @@ def run_task(
             metrics=metrics,
         )
         task_results.append(task_result)
+        log.info(task_result)
 
     return task_results
 
@@ -494,17 +476,66 @@ def write_results(
     return Path(output_file)
 
 
-def write_processed_datasets(
-    processed_datasets: list[ProcessedDataset], output_dir: str
+def set_processed_datasets_cache(
+    dataset: BaseDataset,
+    dataset_name: str,
+    *,
+    model_name: str,
+    model_args: ModelArgsDict,
 ) -> None:
     """
-    Write all processed datasets (with embeddings) to the specified directory.
+    Write a dataset to disk in the cache directory.
+    A "processed" dataset has been run with model inference for the given arguments.
     """
-    os.makedirs(output_dir, exist_ok=True)
-    for dataset in processed_datasets:
-        dataset.data.serialize(
-            os.path.join(str(output_dir), f"{dataset.dataset_name}.dill")
+    os.makedirs(PROCESSED_DATASETS_CACHE_PATH, exist_ok=True)
+    cache_path = get_processed_dataset_cache_path(
+        dataset_name, model_name=model_name, model_args=model_args
+    )
+    try:
+        # "Unload" the source data so we only cache the results
+        dataset.unload_data()
+        dataset.serialize(cache_path)
+    except Exception as e:
+        # Log the exception, but don't raise if we can't write to the cache for some reason
+        log.exception(
+            f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
         )
+
+
+def try_processed_datasets_cache(
+    dataset_name: str,
+    *,
+    model_name: str,
+    model_args: ModelArgsDict,
+) -> BaseDataset | None:
+    """
+    Deserialize and return a processed dataset from the cache if it exists, else return None.
+    """
+    cache_path = get_processed_dataset_cache_path(
+        dataset_name, model_name=model_name, model_args=model_args
+    )
+    if os.path.exists(cache_path):
+        # Load the original dataset
+        dataset = dataset_utils.load_dataset(dataset_name)
+        dataset.load_data()
+
+        # Attach the cached results to the dataset
+        processed_dataset = BaseDataset.deserialize(cache_path)
+        dataset._outputs = processed_dataset._outputs
+        return dataset
+
+    return None
+
+
+def get_processed_dataset_cache_path(
+    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+) -> str:
+    """
+    Return a unique file path in the cache directory for the given dataset and model arguments.
+    """
+    model_args_str = "_".join(f"{k}-{v}" for k, v in model_args.items())
+    filename = f"{dataset_name}_{model_name}_{model_args_str}.dill"
+    return os.path.join(PROCESSED_DATASETS_CACHE_PATH, filename)
 
 
 def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:

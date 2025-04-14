@@ -24,10 +24,8 @@ from czbenchmarks.datasets import utils as dataset_utils
 def test_main(mocker: MockFixture) -> None:
     # Setup mocks
     mock_task_results = []
-    mock_processed_datasets = []
     mock_run = mocker.patch(
-        "czbenchmarks.cli.cli_run.run",
-        return_value=(mock_processed_datasets, mock_task_results),
+        "czbenchmarks.cli.cli_run.run", return_value=mock_task_results
     )
     mock_write_results = mocker.patch(
         "czbenchmarks.cli.cli_run.write_results",
@@ -46,7 +44,6 @@ def test_main(mocker: MockFixture) -> None:
             datasets=[],
             output_file=None,
             output_format=None,
-            save_processed_datasets=None,
         )
     )
     mock_run.assert_called_once_with(dataset_names=[], model_args=[], task_args=[])
@@ -73,7 +70,6 @@ def test_main(mocker: MockFixture) -> None:
             datasets=["tsv2_blood", "tsv2_heart"],
             output_file="output_file.yaml",
             output_format="yaml",
-            save_processed_datasets=None,
         )
     )
     mock_run.assert_called_once_with(
@@ -105,10 +101,6 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
     )
-    mock_processed_dataset = MagicMock()
-    mocker.patch(
-        "czbenchmarks.cli.cli_run.ProcessedDataset", return_value=mock_processed_dataset
-    )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     model_args = [
         ModelArgs(name="SCGPT", args={}),
@@ -130,7 +122,7 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     task_args = [embedding_task_args, clustering_task_args]
 
     # Run tasks with mocked data
-    processed_datasets, task_results = run_with_inference(
+    task_results = run_with_inference(
         dataset_names=dataset_names,
         model_args=model_args,
         task_args=task_args,
@@ -138,7 +130,6 @@ def test_run_with_inference(mocker: MockFixture) -> None:
 
     # Verify results
     assert mock_load_dataset.call_count == 6  # 2 datasets * 3 model variants
-    assert len(processed_datasets) == 6
     assert len(task_results) == 12  # # 2 datasets * 3 model variants * 2 tasks
 
     # Check that inference was run for each model variant, for each dataset
@@ -238,10 +229,6 @@ def test_run_without_inference(mocker: MockFixture) -> None:
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
     )
-    mock_processed_dataset = MagicMock()
-    mocker.patch(
-        "czbenchmarks.cli.cli_run.ProcessedDataset", return_value=mock_processed_dataset
-    )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     embedding_task_args = TaskArgs(
         name="embedding",
@@ -256,14 +243,13 @@ def test_run_without_inference(mocker: MockFixture) -> None:
     task_args = [embedding_task_args, clustering_task_args]
 
     # Run tasks with mocked data
-    processed_datasets, task_results = run_without_inference(
+    task_results = run_without_inference(
         dataset_names=dataset_names,
         task_args=task_args,
     )
 
     # Verify results
     assert mock_load_dataset.call_count == 2  # once for each dataset
-    assert len(processed_datasets) == 2
     assert len(task_results) == 4  # # 2 datasets * 2 tasks
 
     # Check that each task was run for each dataset
