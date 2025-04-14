@@ -46,16 +46,15 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     def __init__(self, **user_kwargs):
         super().__init__()
-        
+
         cli_args = self.parse_args()
-        
+
         self.args = self._merge_arguments(
-            cli_args=vars(cli_args),
-            user_args=user_kwargs
+            cli_args=vars(cli_args), user_args=user_kwargs
         )
-        
+
         self.args = Namespace(**self.args)
-        
+
     @abstractmethod
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         """Get subdirectory for model variant weights.
@@ -109,13 +108,13 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         if not parser:
             args = parser.parse_known_args()[0]
         return args
-    
-    def _merge_arguments(self, 
-                       cli_args: Dict[str, Any],
-                       user_args: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _merge_arguments(
+        self, cli_args: Dict[str, Any], user_args: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Merge arguments with user input as priority"""
         return {**cli_args, **user_args}
-    
+
     def create_parser(self) -> Optional[ArgumentParser]:
         """Subclasses implement to define their CLI arguments"""
         return None

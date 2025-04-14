@@ -89,7 +89,9 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         config = OmegaConf.load("config.yaml")
-        assert f"{self.args.model_variant}__{self.args.dataset_name}" in config.models, (
+        assert (
+            f"{self.args.model_variant}__{self.args.dataset_name}" in config.models
+        ), (
             f"Model {self.args.model_variant}__{self.args.dataset_name} not found in config"
         )
         return f"{self.args.model_variant}/{self.args.dataset_name}"
@@ -98,7 +100,9 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         config = OmegaConf.load("config.yaml")
 
         # Sync the finetuned model weights from S3 to the local model weights directory
-        model_uri = config.models[f"{self.args.model_variant}__{self.args.dataset_name}"]
+        model_uri = config.models[
+            f"{self.args.model_variant}__{self.args.dataset_name}"
+        ]
 
         # Create all parent directories
         pathlib.Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
