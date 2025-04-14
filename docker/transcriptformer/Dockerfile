@@ -6,8 +6,8 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip git
 
 # Install TranscriptFormer
-RUN git clone https://github.com/czi-ai/transcriptformer.git && \
-    cd transcriptformer && \
+RUN git clone https://github.com/czi-ai/transcriptformer-public && \
+    cd transcriptformer-public && \
     pip install -e .
 
 COPY src /app/package/src
