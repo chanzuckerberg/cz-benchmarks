@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
+# TODO: remove conda as it does not appear to be needed
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p /opt/conda && \
     rm miniconda.sh
@@ -23,6 +24,7 @@ RUN conda create -n uce python=3.11 -y && \
     echo "conda activate uce" >> ~/.bashrc
 
 # Clone the UCE repository and install UCE
+# TODO: clone / install somewhere that won't be squashed by code mounting
 RUN git clone https://github.com/giovp/UCE && \
     cd UCE && \
     /opt/conda/envs/uce/bin/pip install . && \
@@ -43,6 +45,7 @@ COPY docker/uce/requirements.txt .
 RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
 # Copy model files
+# TODO: change filename to model.py
 COPY docker/uce/uce_model.py .
 COPY docker/uce/config.yaml .
 
