@@ -77,7 +77,7 @@ class ScGenePTValidator(BaseSingleCellValidator):
 
 
 class ScGenePT(ScGenePTValidator, BaseModelImplementation):
-    def parse_args(self):
+    def create_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument(
             "--model_variant", type=str, default="scgenept_go_c_gpt_concat"
@@ -85,23 +85,20 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         parser.add_argument("--gene_pert", type=str, default="CEBPB+ctrl")
         parser.add_argument("--dataset_name", type=str, default="adamson")
         parser.add_argument("--chunk_size", type=int, default=512)
-        args = parser.parse_args()
-        return args
+        return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
-        args = self.parse_args()
         config = OmegaConf.load("config.yaml")
-        assert f"{args.model_variant}__{args.dataset_name}" in config.models, (
-            f"Model {args.model_variant}__{args.dataset_name} not found in config"
+        assert f"{self.args.model_variant}__{self.args.dataset_name}" in config.models, (
+            f"Model {self.args.model_variant}__{self.args.dataset_name} not found in config"
         )
-        return f"{args.model_variant}/{args.dataset_name}"
+        return f"{self.args.model_variant}/{self.args.dataset_name}"
 
     def _download_model_weights(self, _dataset: BaseDataset):
         config = OmegaConf.load("config.yaml")
-        args = self.parse_args()
 
         # Sync the finetuned model weights from S3 to the local model weights directory
-        model_uri = config.models[f"{args.model_variant}__{args.dataset_name}"]
+        model_uri = config.models[f"{self.args.model_variant}__{self.args.dataset_name}"]
 
         # Create all parent directories
         pathlib.Path(self.model_weights_dir).mkdir(parents=True, exist_ok=True)
@@ -144,8 +141,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         adata = dataset.adata
         adata.var["gene_name"] = adata.var["feature_name"]
 
-        args = self.parse_args()
-        dataset_name = args.dataset_name
+        dataset_name = self.args.dataset_name
         batch_size = 64
         eval_batch_size = 64
 
@@ -173,17 +169,16 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model, gene_ids = load_trained_scgenept_model(
             ref_adata,
-            args.model_variant,
+            self.args.model_variant,
             str(pathlib.Path(self.model_weights_dir).parent.parent) + "/",
             model_filename,
             device,
         )
 
         gene_names = adata.var["gene_name"].to_list()
-        gene_pert = args.gene_pert
-        chunk_size = args.chunk_size
+        gene_pert = self.args.gene_pert
+        chunk_size = self.args.chunk_size
         logger.info(f"Predicting perturbations for gene(s) {gene_pert}")
-
         all_preds = []
 
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
