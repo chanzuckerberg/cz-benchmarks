@@ -487,14 +487,14 @@ def set_processed_datasets_cache(
     Write a dataset to disk in the cache directory.
     A "processed" dataset has been run with model inference for the given arguments.
     """
-    os.makedirs(PROCESSED_DATASETS_CACHE_PATH, exist_ok=True)
     cache_path = get_processed_dataset_cache_path(
         dataset_name, model_name=model_name, model_args=model_args
     )
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         # "Unload" the source data so we only cache the results
         dataset.unload_data()
-        dataset.serialize(cache_path)
+        dataset.serialize(str(cache_path))
     except Exception as e:
         # Log the exception, but don't raise if we can't write to the cache for some reason
         log.exception(
@@ -514,13 +514,13 @@ def try_processed_datasets_cache(
     cache_path = get_processed_dataset_cache_path(
         dataset_name, model_name=model_name, model_args=model_args
     )
-    if os.path.exists(cache_path):
+    if cache_path.exists():
         # Load the original dataset
         dataset = dataset_utils.load_dataset(dataset_name)
         dataset.load_data()
 
         # Attach the cached results to the dataset
-        processed_dataset = BaseDataset.deserialize(cache_path)
+        processed_dataset = BaseDataset.deserialize(str(cache_path))
         dataset._outputs = processed_dataset._outputs
         return dataset
 
@@ -529,13 +529,14 @@ def try_processed_datasets_cache(
 
 def get_processed_dataset_cache_path(
     dataset_name: str, *, model_name: str, model_args: ModelArgsDict
-) -> str:
+) -> Path:
     """
     Return a unique file path in the cache directory for the given dataset and model arguments.
     """
+    cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
     model_args_str = "_".join(f"{k}-{v}" for k, v in model_args.items())
     filename = f"{dataset_name}_{model_name}_{model_args_str}.dill"
-    return os.path.join(PROCESSED_DATASETS_CACHE_PATH, filename)
+    return cache_dir / filename
 
 
 def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:
