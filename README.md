@@ -37,10 +37,10 @@ uv sync --all-extras
 czbenchmarks list [models|datasets|tasks]
 
 # Run benchmarking workflow for the given model(s), dataset(s), and task(s) for the given label
-czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> --label-key <label_key>
+czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name>
 
 # For example
-czbenchmarks run --models SCGPT --datasets tsv2_bladder --tasks clustering --label-key cell_type --output-file results.json
+czbenchmarks run --models SCGPT --scgpt-model-variant human --datasets tsv2_bladder --tasks clustering --clustering-task-label-key cell_type
 
 # View the full list of options
 czbenchmarks --help
