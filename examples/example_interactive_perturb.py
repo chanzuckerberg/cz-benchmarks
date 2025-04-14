@@ -14,6 +14,7 @@ BenchmarkModel = import_class_from_config(os.path.join(APP_PATH, "config.yaml"))
 
 if __name__ == "__main__":
     # Set the gene perturbation flags
+    # TODO: When refactoring, allow model to accept perturbation genes directly
     sys.argv += ["--gene_pert", "TMED2+ctrl"]
 
     dataset_list = ["adamson_perturb"]

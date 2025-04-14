@@ -21,6 +21,7 @@ EVAL_CMD="bash" # Example evaluation commands:
 # "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
 # "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
 # "python3 -u /app/examples/example_interactive.py" for all other models
+# TODO: update when docker containers are simplified
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
@@ -260,6 +261,7 @@ create_docker_run_command() {
 
     # Mounts for development of cz-benchmarks framework
     # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
+    # TODO: simplify when docker containers are homogenized
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
         local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
         local model_files=(config.yaml)
