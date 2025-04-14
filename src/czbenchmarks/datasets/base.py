@@ -91,9 +91,9 @@ class BaseDataset(ABC):
         """Safely set an output with type checking."""
         if data_type.is_input:
             raise ValueError(f"Cannot set input type as output: {data_type.name}")
-        
+
         self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
-        
+
         if model_type is not None:
             if model_type not in self._outputs:
                 self._outputs[model_type] = {}
@@ -108,7 +108,7 @@ class BaseDataset(ABC):
         if data_type not in self._inputs:
             raise KeyError(f"Input {data_type.name} not found")
         return self._inputs[data_type]
-    
+
     def get_output(self, model_type: ModelType, data_type: DataType) -> DataValue:
         """Safely get an output with error handling."""
         if model_type is not None:
