@@ -534,9 +534,11 @@ def get_processed_dataset_cache_path(
     Return a unique file path in the cache directory for the given dataset and model arguments.
     """
     cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
-    model_args_str = "_".join(f"{k}-{v}" for k, v in model_args.items())
-    filename = f"{dataset_name}_{model_name}_{model_args_str}.dill"
-    return cache_dir / filename
+    filename = f"{dataset_name}_{model_name}"
+    if model_args:
+        model_args_str = "_".join(f"{k}-{v}" for k, v in sorted(model_args.items()))
+        filename = f"{filename}_{model_args_str}"
+    return cache_dir / f"{filename}.dill"
 
 
 def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:

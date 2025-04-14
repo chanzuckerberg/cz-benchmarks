@@ -1,13 +1,16 @@
 import argparse
+from pathlib import Path
 from unittest.mock import MagicMock, call
 
 from pytest_mock import MockFixture
+
 from czbenchmarks.cli.cli_run import (
     ModelArgs,
     ModelArgsDict,
     TaskArgs,
     TaskResult,
     get_model_arg_permutations,
+    get_processed_dataset_cache_path,
     main,
     run_task,
     run_without_inference,
@@ -360,3 +363,26 @@ def test_get_model_arg_permutations(mocker: MockFixture) -> None:
             {"model_variant": "adamson", "gene_pert": "CEBPB+dox"},
         ]
     }
+
+
+def test_get_processed_dataset_cache_path() -> None:
+    # The cache key for a model with no args is {dataset_name}_{model_name}.dill
+    assert (
+        get_processed_dataset_cache_path("tsv2_heart", model_name="SCVI", model_args={})
+        == Path("~/.cz-benchmarks/processed_datasets/tsv2_heart_SCVI.dill")
+        .expanduser()
+        .absolute()
+    )
+    # Model args are sorted and included in the cache key
+    assert (
+        get_processed_dataset_cache_path(
+            "norman_perturb",
+            model_name="SCGENEPT",
+            model_args={"model_variant": "norman", "gene_pert": "CEBPB+ctrl"},
+        )
+        == Path(
+            "~/.cz-benchmarks/processed_datasets/norman_perturb_SCGENEPT_gene_pert-CEBPB+ctrl_model_variant-norman.dill"
+        )
+        .expanduser()
+        .absolute()
+    )
