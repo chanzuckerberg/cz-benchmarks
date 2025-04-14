@@ -49,9 +49,6 @@ class SCVIValidator(BaseSingleCellValidator):
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
-    def parse_args(self):
-        pass
-
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         return dataset.organism.name
 

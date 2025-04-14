@@ -56,9 +56,8 @@ class GeneformerValidator(BaseSingleCellValidator):
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
-    def __init__(self):
-        super().__init__()
-        self.args = self.parse_args()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.config = OmegaConf.load("config.yaml")
 
         if self.args.model_variant not in self.config.models:
@@ -68,12 +67,12 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         self.selected_model = self.config.models[self.args.model_variant]
         self.token_config = self.selected_model.token_config
 
-    def parse_args(self):
+    def create_parser(self):
         parser = argparse.ArgumentParser(
             description="Run Geneformer model on input dataset."
         )
         parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
-        return parser.parse_args()
+        return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         """Get the model weights subdirectory for the selected model."""
