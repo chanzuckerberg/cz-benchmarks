@@ -1,4 +1,4 @@
-# Running a Docker Container with model in Interactive Mode
+# Running a Docker Container in Interactive Mode
 
 This guide explains how launch an interactive docker container with cz-benchmarks and run benchmarks for a model.
 
@@ -23,16 +23,16 @@ The script also includes user-configurable variables at the top of the file:
 - `MODEL_WEIGHTS_CACHE_PATH`: Path to the cache directory for model weights. Default: `${HOME}/.cz-benchmarks/weights`
 - `DEVELOPMENT_CODE_PATH`: Path to the workstation development code. Default: `$(pwd)`. 
 - `EXAMPLES_CODE_PATH`: Path to the examples directory. Default: `$(pwd)/examples`
-- `MOUNT_FRAMEWORK_CODE`: Whether to mount the framework code. Options: `true` or `false`.
+- `MOUNT_FRAMEWORK_CODE`: Whether to mount the framework code. Note: the examples directory is always mounted in interactive mode, while mounting the code directory is optional. Options: `true` or `false`.
 
 ### Container Execution Settings
-- `BUILD_DEV_CONTAINER`: true to use prebuilt container from AWS ECR, false to build a container with development code
+- `BUILD_DEV_CONTAINER`: true to use prebuilt container from AWS ECR, false to build a container with development code.
 - `EVAL_CMD`: Command to execute when the container starts (`bash` or `python3 -u examples/example_interactive.py`). 
 - `RUN_AS_ROOT`: Whether to run the container as root. Options: `false` (default) or `true`
 
 ## Running the Interactive Example
 
-The repository includes an example script (`examples/example_interactive.py`) that demonstrates how to run various tasks on a dataset with the user-selected model. To use this example:
+The repository includes two example scripts (`examples/example_interactive.py`) and (`examples/example_interactive_perturb.py`, for perturbation tasks) that demonstrate how to run various tasks on a dataset with the user-selected model. To use this example:
 
 1. Launch the container with the appropriate model:
    ```bash
@@ -41,12 +41,15 @@ The repository includes an example script (`examples/example_interactive.py`) th
 
 2. Inside the container, run the example script:
    ```bash
+   # For perturbation tasks with scGenePT
+   python3 examples/example_interactive_perturb.py
+   ```
+or
+   ```bash
    # For UCE
    /opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py
    ```
-
-   or
-
+or
    ```bash
    # Or all other models
    python3 examples/example_interactive.py
