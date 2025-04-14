@@ -3,7 +3,7 @@ czbenchmarks CLI
 
 Usage:
     czbenchmarks list [datasets|models|tasks]
-    czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> --label-key <label_key>
+    czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name>
         [--output-file <output_file>]
         [--save-processed-datasets <output_dir>]
 """

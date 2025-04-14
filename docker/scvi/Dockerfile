@@ -14,6 +14,7 @@ COPY README.md /app/package/README.md
 
 RUN pip install -e /app/package
 
+# TODO put utils into model file to simplify code mounting
 COPY docker/scvi/model.py .
 COPY docker/scvi/utils.py .
 COPY docker/scvi/config.yaml .

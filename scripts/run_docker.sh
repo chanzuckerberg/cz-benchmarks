@@ -16,8 +16,12 @@ MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks c
 
 # Container related settings
 BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull public image
-EVAL_CMD="bash" # "bash", "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
-# or "python3 -u /app/examples/example_interactive.py" for all other models
+EVAL_CMD="bash" # Example evaluation commands:
+# "bash"
+# "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
+# "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
+# "python3 -u /app/examples/example_interactive.py" for all other models
+# TODO: update when docker containers are simplified
 RUN_AS_ROOT=false # false or true
 
 ################################################################################
@@ -142,22 +146,6 @@ get_docker_image() {
     variable_is_set CZBENCH_CONTAINER_URI
 
     if [ "${BUILD_DEV_CONTAINER}" = false ]; then
-        AWS_ECR_URI=$(echo $CZBENCH_CONTAINER_URI | cut -d/ -f1)
-        variable_is_set AWS_ECR_URI
-
-        AWS_REGION=$(echo $AWS_ECR_URI | cut -d. -f4)
-        variable_is_set AWS_REGION
-
-        echo ""
-        echo -e "   ${MAGENTA_BOLD}Authenticating to AWS ${AWS_ECR_URI} in region ${AWS_REGION}${RESET}"
-
-        # Login to AWS ECR and pull image
-        # Alternative requires aws cli: aws ecr get-login-password --region ${AWS_REGION}
-        local python_script="import boto3; print(boto3.client('ecr', region_name='${AWS_REGION}').\
-        get_authorization_token()['authorizationData'][0]['authorizationToken'])"
-        python3 -c "${python_script}" | base64 -d | cut -d: -f2 | \
-            docker login --username AWS --password-stdin ${AWS_ECR_URI}
-
         echo -e "   ${MAGENTA_BOLD}Pulling image ${CZBENCH_CONTAINER_URI}${RESET}"
         docker pull ${CZBENCH_CONTAINER_URI}
 
@@ -191,10 +179,6 @@ validate_variables() {
     # Show image information
     echo ""
     echo -e "   ${GREEN_BOLD}Docker setup:${RESET}"
-    if [ "${BUILD_DEV_CONTAINER}" = false ]; then
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS_ECR_URI:") ${AWS_ECR_URI}${RESET}"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "AWS Region:") ${AWS_REGION}${RESET}"
-    fi
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Image name:") ${CZBENCH_CONTAINER_URI}${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Container name:") ${CZBENCH_CONTAINER_NAME}${RESET}"
     echo -e "   $(printf "%-${COLUMN_WIDTH}s" "Docker command:") ${EVAL_CMD}${RESET}"
@@ -242,13 +226,16 @@ validate_variables() {
     # Validate required paths and show sources
     echo ""
     echo -e "   ${GREEN_BOLD}Cache paths:${RESET}"
-    for var in DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH; do
-        validate_directory "${!var}" "$var"
-        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${var}:") ${!var}${RESET}"
+    local paths=(DATASETS_CACHE_PATH MODEL_WEIGHTS_CACHE_PATH)
+    local docker_paths=(RAW_INPUT_DIR_PATH_DOCKER MODEL_WEIGHTS_PATH_DOCKER)
+    for i in "${!paths[@]}"; do
+        validate_directory "${!paths[$i]}" "${paths[$i]}"
+        echo -e "   $(printf "%-${COLUMN_WIDTH}s" "${paths[$i]}:") ${!paths[$i]}${RESET}"
+        echo -e "   ${paths[$i]} will be mounted in container at ${!docker_paths[$i]}${RESET}"
     done
 }
 
-build_docker_command() {
+create_docker_run_command() {
     # Build docker run command progressively
     DOCKER_CMD="docker run --rm -it \\
     --ipc=host \\
@@ -274,11 +261,28 @@ build_docker_command() {
 
     # Mounts for development of cz-benchmarks framework
     # NOTE: do not change order, cz-benchmarks fw mounted last to prevent squashing
+    # TODO: simplify when docker containers are homogenized
     if [ "${MOUNT_FRAMEWORK_CODE}" = true ]; then
         local model_name_lower=$(echo "${MODEL_NAME}" | tr '[:upper:]' '[:lower:]')
+        local model_files=(config.yaml)
+
+        if [ "${model_name_lower}" = "uce" ]; then
+            model_files+=(uce_model.py)
+        else
+            model_files+=(model.py)
+        fi
+
+        if [ "${model_name_lower}" = "scvi" ]; then
+            model_files+=(utils.py)
+        fi
+
+        for file in "${model_files[@]}"; do
+            DOCKER_CMD="${DOCKER_CMD}
+    --volume ${DEVELOPMENT_CODE_PATH}/docker/${model_name_lower}/${file}:${MODEL_CODE_PATH_DOCKER}/${file}:rw \\"
+        done
+
         DOCKER_CMD="${DOCKER_CMD}
-    --volume ${DEVELOPMENT_CODE_PATH}/docker/${model_name_lower}:${MODEL_CODE_PATH_DOCKER}:rw \\
-    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"
+    --volume ${DEVELOPMENT_CODE_PATH}:${BENCHMARK_CODE_PATH_DOCKER}:rw \\"  
     fi
 
     # Add mount points -- examples directory must be mounted after framework code (above)
@@ -357,6 +361,6 @@ echo ""
 echo -e "${BLUE_BOLD}########## $(printf "%-${COLUMN_WIDTH}s" "EXECUTING WORKFLOW") ##########${RESET}"
 
 # Create and execute docker command
-build_docker_command
+create_docker_run_command
 print_docker_command
 eval ${DOCKER_CMD}
