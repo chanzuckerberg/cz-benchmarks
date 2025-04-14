@@ -178,7 +178,10 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         gene_names = adata.var["gene_name"].to_list()
         gene_pert = self.args.gene_pert
         chunk_size = self.args.chunk_size
+<<<<<<< HEAD
         logger.info(f"Predicting perturbations for gene(s) {gene_pert}")
+=======
+>>>>>>> 3617c01cf05a2e8a1c7ce5fb2415f43214ef370c
         all_preds = []
 
         num_chunks = (adata.shape[0] + chunk_size - 1) // chunk_size
