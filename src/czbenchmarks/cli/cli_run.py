@@ -207,7 +207,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Use raw gene expression matrix as features for classification (instead of embeddings)",
     )
     parser.add_argument(
-        "--integration-task-batch",
+        "--integration-task-batch-key",
         help="Key to access batch labels in metadata",
     )
 
