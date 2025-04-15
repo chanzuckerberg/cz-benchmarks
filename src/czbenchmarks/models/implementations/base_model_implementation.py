@@ -112,13 +112,13 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         if parser:
             args = parser.parse_known_args()[0]
         return args
-    
-    def _merge_arguments(self, 
-                       cli_args: dict[str, Any],
-                       user_args: dict[str, Any]) -> dict[str, Any]:
+
+    def _merge_arguments(
+        self, cli_args: dict[str, Any], user_args: dict[str, Any]
+    ) -> dict[str, Any]:
         """Merge arguments with user input as priority"""
         return {**cli_args, **user_args}
-    
+
     def create_parser(self) -> ArgumentParser | None:
         """Subclasses implement to define their CLI arguments"""
         return None

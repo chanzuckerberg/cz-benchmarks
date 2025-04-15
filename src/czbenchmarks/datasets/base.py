@@ -90,9 +90,9 @@ class BaseDataset(ABC):
     ) -> None:
         """Safely set an output with type checking.
         Args:
-            model_type (ModelType | None): The type of model associated with the output. 
-                This parameter is used to differentiate between outputs 
-                from various models. It can be set to `None` if the output 
+            model_type (ModelType | None): The type of model associated with the output.
+                This parameter is used to differentiate between outputs
+                from various models. It can be set to `None` if the output
                 is not tied to a specific model type defined in the `ModelType` enum.
             data_type (DataType): Specifies the data type of the output.
             value (Any): The value to assign to the output.
@@ -110,13 +110,15 @@ class BaseDataset(ABC):
         if data_type not in self._inputs:
             raise KeyError(f"Input {data_type.name} not found")
         return self._inputs[data_type]
-    
-    def get_output(self, model_type: ModelType | None, data_type: DataType) -> DataValue:
+
+    def get_output(
+        self, model_type: ModelType | None, data_type: DataType
+    ) -> DataValue:
         """Safely get an output with error handling.
         Args:
-            model_type (ModelType | None): The type of model associated with the output. 
-                This parameter is used to differentiate between outputs 
-                from various models. It can be set to `None` if the output 
+            model_type (ModelType | None): The type of model associated with the output.
+                This parameter is used to differentiate between outputs
+                from various models. It can be set to `None` if the output
                 is not tied to a specific model type defined in the `ModelType` enum.
             data_type (DataType): Specifies the data type of the output.
         Returns:
