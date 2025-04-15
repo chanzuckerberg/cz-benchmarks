@@ -519,6 +519,7 @@ def set_processed_datasets_cache(
         log.exception(
             f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
         )
+    dataset.load_data()
 
 
 def try_processed_datasets_cache(
