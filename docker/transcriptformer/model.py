@@ -1,7 +1,10 @@
 import pathlib
+import os
 import subprocess
-from typing import Set, Literal
+import sys
+from typing import Set
 
+import anndata
 from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
     BaseModelImplementation,
@@ -42,6 +45,11 @@ class TranscriptFormerValidator(BaseSingleCellValidator):
 
 
 class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
+    def __init__(self):
+        super().__init__()
+        
+        # TranscriptFormer operates directly on data files stored on disk rather than loading data into memory
+        self.load_data = False
 
     def parse_args(self):
         """Parse command line arguments to select model variant.
@@ -64,39 +72,48 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         return args.model_variant
 
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
-        model_variant = self.parse_args()
-        return model_variant
+        return ""
 
     def _download_model_weights(self, dataset: BaseDataset):
-        model_variant = self.parse_args()
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
 
         # Download model weights using TranscriptFormer's download script
         subprocess.run(
             [
-                "/bin/python3",
+                sys.executable,
                 "transcriptformer/download_artifacts.py",
-                model_variant,
+                "all",
                 f"--checkpoint-dir={str(model_dir)}",
             ],
             check=True,
         )
 
     def run_model(self, dataset: BaseDataset):
-        model_path = str(self.model_weights_dir)
+        model_dir = str(self.model_weights_dir)
+        
+        # Get model variant
+        model_variant = self.parse_args()
+        
+        model_path = os.path.join(model_dir, model_variant)
+        
+        # Run inference using the inference.py script with Hydra configuration
+        cmd = [
+            sys.executable, "inference.py",
+            "--config-name=inference_config.yaml",
+            f"model.checkpoint_path={model_path}",
+            f"model.inference_config.data_files.0={str(dataset.path)}",
+            "model.inference_config.batch_size=32",
+            "model.inference_config.precision=16-mixed"
+        ]
+        
+        breakpoint()
+        # Run the inference command
+        subprocess.run(cmd, check=True)
 
-        # Prepare inference configuration
-        inference_config = {
-            "model.checkpoint_path": model_path,
-            "model.inference_config.data_files.0": str(dataset.adata_path),
-            "model.inference_config.batch_size": 32,
-            "model.inference_config.precision": "16-mixed",
-        }
-
-        # Run inference
-        embeddings = run_inference(inference_config)
-
+        adata = anndata.read_h5ad("inference_results/embeddings.h5ad")
+        embeddings = adata.obsm["embeddings"]
+        
         # Set the output
         dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
 

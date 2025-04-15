@@ -42,6 +42,10 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     datasets: List[BaseDataset]
     model_weights_dir: str
+    
+    def __init__(self):
+        super().__init__()
+        self.load_data = True
 
     @abstractmethod
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
@@ -130,10 +134,13 @@ class BaseModelImplementation(BaseModelValidator, ABC):
                 self.dataset_type.deserialize(input_file) for input_file in input_files
             ]
 
-        logger.info("Loading data...")
-        for dataset in self.datasets:
-            dataset.load_data()
-        logger.info("Data loaded successfully")
+        if self.load_data:
+            logger.info("Loading data...")
+            for dataset in self.datasets:
+                dataset.load_data()
+            logger.info("Data loaded successfully")
+        else:
+            logger.info("Data not loaded as load_data is False")
 
         logger.info("Validating data...")
         for dataset in self.datasets:
