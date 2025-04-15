@@ -10,7 +10,7 @@ ARG GITHUB_USERNAME
 ARG GITHUB_TOKEN
 RUN git config --global url."https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" && \
     git clone https://github.com/czi-ai/transcriptformer-public transcriptformer && \
-    cd transcriptformer-public && \
+    cd transcriptformer && \
     pip install -e .
 
 COPY src /app/package/src
