@@ -77,8 +77,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         subprocess.run(
             [
                 "python",
-                "-m",
-                "transcriptformer.download_artifacts",
+                "transcriptformer/download_artifacts.py",
                 model_variant,
                 f"--checkpoint-dir={str(model_dir)}",
             ],

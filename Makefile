@@ -1,6 +1,6 @@
 # Default target
 .PHONY: all
-all: scvi uce scgpt scgenept
+all: scvi uce scgpt scgenept geneformer transcriptformer
 
 # Build the scvi image
 .PHONY: scvi
@@ -27,6 +27,15 @@ scgenept:
 geneformer:
 	docker build -t cz-benchmarks-models:geneformer -f docker/geneformer/Dockerfile .
 
+# Build the transcriptformer image
+.PHONY: transcriptformer
+transcriptformer:
+	docker build \
+		--secret id=github_username,src=${GITHUB_USERNAME} \
+		--secret id=github_token,src=${GITHUB_TOKEN} \
+		-t cz-benchmarks-models:transcriptformer \
+		-f docker/transcriptformer/Dockerfile .
+
 # Clean up images
 .PHONY: clean
 clean:
@@ -35,7 +44,7 @@ clean:
 	docker rmi cz-benchmarks-models:scgpt || true
 	docker rmi cz-benchmarks-models:scgenept || true
 	docker rmi cz-benchmarks-models:geneformer || true
-
+	docker rmi cz-benchmarks-models:transcriptformer || true
 # Helper target to rebuild everything from scratch
 .PHONY: rebuild
 rebuild: clean all
