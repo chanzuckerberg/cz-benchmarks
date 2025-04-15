@@ -30,9 +30,9 @@ geneformer:
 # Build the transcriptformer image
 .PHONY: transcriptformer
 transcriptformer:
-	docker build \
-		--secret id=github_username,src=${GITHUB_USERNAME} \
-		--secret id=github_token,src=${GITHUB_TOKEN} \
+	DOCKER_BUILDKIT=1 docker build \
+		--build-arg GITHUB_USERNAME=${GITHUB_USERNAME} \
+		--build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
 		-t cz-benchmarks-models:transcriptformer \
 		-f docker/transcriptformer/Dockerfile .
 
