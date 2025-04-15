@@ -4,24 +4,26 @@ from unittest.mock import MagicMock, call
 
 from pytest_mock import MockFixture
 
+from czbenchmarks import runner
 from czbenchmarks.cli.cli_run import (
-    ModelArgs,
-    ModelArgsDict,
-    TaskArgs,
-    TaskResult,
     get_model_arg_permutations,
     get_processed_dataset_cache_path,
     main,
+    ModelArgs,
+    ModelArgsDict,
     run_task,
-    run_without_inference,
     run_with_inference,
+    run_without_inference,
+    set_processed_datasets_cache,
+    TaskArgs,
+    TaskResult,
 )
-from czbenchmarks import runner
+from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
+from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
-from czbenchmarks.datasets import utils as dataset_utils
 
 
 def test_main(mocker: MockFixture) -> None:
@@ -438,3 +440,23 @@ def test_get_processed_dataset_cache_path() -> None:
         .expanduser()
         .absolute()
     )
+
+
+def test_set_processed_datasets_cache() -> None:
+    mock_dataset = MagicMock()
+    set_processed_datasets_cache(
+        dataset=mock_dataset,
+        dataset_name="tsv2_heart",
+        model_name="SCVI",
+        model_args={"model_variant": "homo_sapiens"},
+    )
+    mock_dataset.unload_data.assert_called_once()
+    mock_dataset.serialize.assert_called_once_with(
+        (
+            Path(PROCESSED_DATASETS_CACHE_PATH)
+            / "tsv2_heart_SCVI_model_variant-homo_sapiens.dill"
+        )
+        .expanduser()
+        .absolute()
+    )
+    mock_dataset.load_data.assert_called_once()
