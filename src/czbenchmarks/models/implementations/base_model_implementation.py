@@ -3,7 +3,7 @@ import logging
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Any
 from argparse import ArgumentParser, Namespace
 
 from ...constants import (
@@ -43,10 +43,14 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     datasets: List[BaseDataset]
     model_weights_dir: str
+    args: Namespace
 
     def __init__(self, **user_kwargs):
         super().__init__()
 
+        # User supplied arguments take precedence over CLI arguments
+        # This allows for easy overriding of default values
+        # while still allowing for CLI argument parsing
         cli_args = self.parse_args()
 
         self.args = self._merge_arguments(
@@ -105,17 +109,17 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """Centralized argument parsing using subclass-defined parser"""
         parser = self.create_parser()
         args = Namespace()
-        if not parser:
+        if parser:
             args = parser.parse_known_args()[0]
         return args
-
-    def _merge_arguments(
-        self, cli_args: Dict[str, Any], user_args: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    
+    def _merge_arguments(self, 
+                       cli_args: dict[str, Any],
+                       user_args: dict[str, Any]) -> dict[str, Any]:
         """Merge arguments with user input as priority"""
         return {**cli_args, **user_args}
-
-    def create_parser(self) -> Optional[ArgumentParser]:
+    
+    def create_parser(self) -> ArgumentParser | None:
         """Subclasses implement to define their CLI arguments"""
         return None
 
