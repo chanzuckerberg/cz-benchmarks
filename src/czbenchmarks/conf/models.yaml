@@ -20,3 +20,6 @@ models:
 
   UCE:
     model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:uce
+
+  TRANSCRIPTFORMER:
+    model_image_uri: cz-benchmarks-models:transcriptformer

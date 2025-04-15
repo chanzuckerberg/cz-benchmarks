@@ -8,7 +8,6 @@ from czbenchmarks.models.implementations.base_model_implementation import (
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.models.types import ModelType
-from transcriptformer.inference import run_inference
 
 
 class TranscriptFormerValidator(BaseSingleCellValidator):
@@ -66,7 +65,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
 
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         model_variant = self.parse_args()
-        return f"{dataset.organism.name}_{model_variant}"
+        return model_variant
 
     def _download_model_weights(self, dataset: BaseDataset):
         model_variant = self.parse_args()
@@ -76,7 +75,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         # Download model weights using TranscriptFormer's download script
         subprocess.run(
             [
-                "python",
+                "/bin/python3",
                 "transcriptformer/download_artifacts.py",
                 model_variant,
                 f"--checkpoint-dir={str(model_dir)}",

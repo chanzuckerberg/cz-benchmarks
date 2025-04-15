@@ -21,6 +21,5 @@ RUN pip install -e /app/package
 
 COPY docker/transcriptformer/model.py .
 COPY docker/transcriptformer/utils.py .
-COPY docker/transcriptformer/config.yaml .
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"] 
