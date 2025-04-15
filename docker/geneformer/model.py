@@ -71,7 +71,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         parser = argparse.ArgumentParser(
             description="Run Geneformer model on input dataset."
         )
-        parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
+        parser.add_argument("--model-variant", type=str, default="gf_12L_30M")
         return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
