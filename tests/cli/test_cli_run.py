@@ -452,11 +452,13 @@ def test_set_processed_datasets_cache() -> None:
     )
     mock_dataset.unload_data.assert_called_once()
     mock_dataset.serialize.assert_called_once_with(
-        (
-            Path(PROCESSED_DATASETS_CACHE_PATH)
-            / "tsv2_heart_SCVI_model_variant-homo_sapiens.dill"
+        str(
+            (
+                Path(PROCESSED_DATASETS_CACHE_PATH)
+                / "tsv2_heart_SCVI_model_variant-homo_sapiens.dill"
+            )
+            .expanduser()
+            .absolute()
         )
-        .expanduser()
-        .absolute()
     )
     mock_dataset.load_data.assert_called_once()
