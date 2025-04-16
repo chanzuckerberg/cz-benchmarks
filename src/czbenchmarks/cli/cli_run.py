@@ -207,7 +207,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Use raw gene expression matrix as features for classification (instead of embeddings)",
     )
     parser.add_argument(
-        "--integration-task-batch",
+        "--integration-task-batch-key",
         help="Key to access batch labels in metadata",
     )
 
@@ -513,12 +513,14 @@ def set_processed_datasets_cache(
     try:
         # "Unload" the source data so we only cache the results
         dataset.unload_data()
-        dataset.serialize(cache_path)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        dataset.serialize(str(cache_path))
     except Exception as e:
         # Log the exception, but don't raise if we can't write to the cache for some reason
         log.exception(
             f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
         )
+    dataset.load_data()
 
 
 def try_processed_datasets_cache(
