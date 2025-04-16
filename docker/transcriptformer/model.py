@@ -93,25 +93,24 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         model_dir = str(self.model_weights_dir)
         
         # Get model variant
-        model_variant = self.parse_args()
+        model_variant = self.parse_args().replace("-", "_")
         
         model_path = os.path.join(model_dir, model_variant)
         
         # Run inference using the inference.py script with Hydra configuration
         cmd = [
-            sys.executable, "inference.py",
+            sys.executable, "transcriptformer/inference.py",
             "--config-name=inference_config.yaml",
             f"model.checkpoint_path={model_path}",
             f"model.inference_config.data_files.0={str(dataset.path)}",
             "model.inference_config.batch_size=32",
             "model.inference_config.precision=16-mixed"
         ]
-        
-        breakpoint()
+
         # Run the inference command
         subprocess.run(cmd, check=True)
 
-        adata = anndata.read_h5ad("inference_results/embeddings.h5ad")
+        adata = anndata.read_h5ad("transcriptformer/inference_results/embeddings.h5ad")
         embeddings = adata.obsm["embeddings"]
         
         # Set the output
