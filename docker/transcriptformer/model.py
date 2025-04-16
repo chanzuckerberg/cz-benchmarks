@@ -20,7 +20,32 @@ class TranscriptFormerValidator(BaseSingleCellValidator):
     Requires gene IDs in Ensembl format and supports both human and mouse data.
     """
 
-    available_organisms = [Organism.HUMAN, Organism.MOUSE]
+    available_organisms = [
+        Organism.HUMAN,
+        Organism.MOUSE,
+        Organism.TROPICAL_CLAWED_FROG,
+        Organism.AFRICAN_CLAWED_FROG,
+        Organism.ZEBRAFISH,
+        Organism.WILD_BOAR,
+        Organism.RHESUS_MACAQUE,
+        Organism.PLATYPUS,
+        Organism.OPOSSUM,
+        Organism.GORILLA,
+        Organism.CHIMPANZEE,
+        Organism.MARMOSET,
+        Organism.CHICKEN,
+        Organism.RABBIT,
+        Organism.FRUIT_FLY,
+        Organism.RAT,
+        Organism.NAKED_MOLE_RAT,
+        Organism.CAENORHABDITIS_ELEGANS,
+        Organism.YEAST,
+        Organism.MALARIA_PARASITE,
+        Organism.SEA_LAMPREY,
+        Organism.FRESHWATER_SPONGE,
+        Organism.CORAL,
+        Organism.SEA_URCHIN,
+    ]
     required_obs_keys = []
     required_var_keys = ["ensembl_id"]
     model_type = ModelType.TRANSCRIPTFORMER
