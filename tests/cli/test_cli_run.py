@@ -18,7 +18,6 @@ from czbenchmarks.cli.cli_run import (
     TaskArgs,
     TaskResult,
 )
-from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.models.types import ModelType
@@ -442,7 +441,12 @@ def test_get_processed_dataset_cache_path() -> None:
     )
 
 
-def test_set_processed_datasets_cache() -> None:
+def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
+    mock_cache_path = MagicMock()
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_path",
+        return_value=mock_cache_path,
+    )
     mock_dataset = MagicMock()
     set_processed_datasets_cache(
         dataset=mock_dataset,
@@ -451,14 +455,6 @@ def test_set_processed_datasets_cache() -> None:
         model_args={"model_variant": "homo_sapiens"},
     )
     mock_dataset.unload_data.assert_called_once()
-    mock_dataset.serialize.assert_called_once_with(
-        str(
-            (
-                Path(PROCESSED_DATASETS_CACHE_PATH)
-                / "tsv2_heart_SCVI_model_variant-homo_sapiens.dill"
-            )
-            .expanduser()
-            .absolute()
-        )
-    )
+    mock_dataset.serialize.assert_called_once_with(str(mock_cache_path))
     mock_dataset.load_data.assert_called_once()
+    mock_cache_path.parent.mkdir.assert_called_once_with(parents=True, exist_ok=True)

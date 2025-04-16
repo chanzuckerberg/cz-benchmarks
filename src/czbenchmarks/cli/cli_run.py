@@ -513,6 +513,7 @@ def set_processed_datasets_cache(
     try:
         # "Unload" the source data so we only cache the results
         dataset.unload_data()
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
         dataset.serialize(str(cache_path))
     except Exception as e:
         # Log the exception, but don't raise if we can't write to the cache for some reason
