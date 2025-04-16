@@ -47,7 +47,7 @@ class TranscriptFormerValidator(BaseSingleCellValidator):
 class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
     def __init__(self):
         super().__init__()
-        
+
         # TranscriptFormer operates directly on data files stored on disk rather than loading data into memory
         self.load_data = False
 
@@ -91,20 +91,21 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         model_dir = str(self.model_weights_dir)
-        
+
         # Get model variant
         model_variant = self.parse_args().replace("-", "_")
-        
+
         model_path = os.path.join(model_dir, model_variant)
-        
+
         # Run inference using the inference.py script with Hydra configuration
         cmd = [
-            sys.executable, "transcriptformer/inference.py",
+            sys.executable,
+            "transcriptformer/inference.py",
             "--config-name=inference_config.yaml",
             f"model.checkpoint_path={model_path}",
             f"model.inference_config.data_files.0={str(dataset.path)}",
             "model.inference_config.batch_size=32",
-            "model.inference_config.precision=16-mixed"
+            "model.inference_config.precision=16-mixed",
         ]
 
         # Run the inference command
@@ -112,7 +113,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
 
         adata = anndata.read_h5ad("transcriptformer/inference_results/embeddings.h5ad")
         embeddings = adata.obsm["embeddings"]
-        
+
         # Set the output
         dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
 

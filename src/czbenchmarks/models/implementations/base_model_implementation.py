@@ -42,7 +42,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     datasets: List[BaseDataset]
     model_weights_dir: str
-    
+
     def __init__(self):
         super().__init__()
         self.load_data = True

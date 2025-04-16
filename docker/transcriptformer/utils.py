@@ -1,7 +1,3 @@
-import pandas as pd
-import scanpy as sc
-
-
 def filter_adata_by_ensembl_ids(adata, ensembl_ids):
     """Filter AnnData object to include only genes with specified Ensembl IDs.
 
