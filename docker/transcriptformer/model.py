@@ -70,12 +70,6 @@ class TranscriptFormerValidator(BaseSingleCellValidator):
 
 
 class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
-    def __init__(self):
-        super().__init__()
-
-        # TranscriptFormer operates directly on data files stored on disk rather than loading data into memory
-        self.load_data = False
-
     def parse_args(self):
         """Parse command line arguments to select model variant.
 
@@ -129,6 +123,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         batch_size = args.batch_size
 
         if batch_size is None:
+            # These defaults have been emperically selected for fitting on a Tesla T4
             if model_variant == "tf_sapiens":
                 batch_size = 32
             elif model_variant == "tf_exemplar":
