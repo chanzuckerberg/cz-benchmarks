@@ -139,6 +139,8 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         model_path = os.path.join(model_dir, model_variant)
 
         # Run inference using the inference.py script with Hydra configuration
+        organism = dataset.organism.name
+
         cmd = [
             sys.executable,
             "transcriptformer/inference.py",
@@ -147,6 +149,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
             f"model.inference_config.data_files.0={str(dataset.path)}",
             f"model.inference_config.batch_size={batch_size}",
             "model.inference_config.precision=16-mixed",
+            f"model.inference_config.pretrained_embedding={str(model_dir)}/all_embeddings/{organism}_gene.h5",
         ]
 
         # Run the inference command
