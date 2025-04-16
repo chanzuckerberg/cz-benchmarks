@@ -1,33 +1,35 @@
 import argparse
+from pathlib import Path
 from unittest.mock import MagicMock, call
 
 from pytest_mock import MockFixture
+
+from czbenchmarks import runner
 from czbenchmarks.cli.cli_run import (
+    get_model_arg_permutations,
+    get_processed_dataset_cache_path,
+    main,
     ModelArgs,
     ModelArgsDict,
+    run_task,
+    run_with_inference,
+    run_without_inference,
+    set_processed_datasets_cache,
     TaskArgs,
     TaskResult,
-    get_model_arg_permutations,
-    main,
-    run_task,
-    run_without_inference,
-    run_with_inference,
 )
-from czbenchmarks import runner
+from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
-from czbenchmarks.datasets import utils as dataset_utils
 
 
 def test_main(mocker: MockFixture) -> None:
     # Setup mocks
     mock_task_results = []
-    mock_processed_datasets = []
     mock_run = mocker.patch(
-        "czbenchmarks.cli.cli_run.run",
-        return_value=(mock_processed_datasets, mock_task_results),
+        "czbenchmarks.cli.cli_run.run", return_value=mock_task_results
     )
     mock_write_results = mocker.patch(
         "czbenchmarks.cli.cli_run.write_results",
@@ -46,7 +48,7 @@ def test_main(mocker: MockFixture) -> None:
             datasets=[],
             output_file=None,
             output_format=None,
-            save_processed_datasets=None,
+            batch_json=[],
         )
     )
     mock_run.assert_called_once_with(dataset_names=[], model_args=[], task_args=[])
@@ -73,7 +75,7 @@ def test_main(mocker: MockFixture) -> None:
             datasets=["tsv2_blood", "tsv2_heart"],
             output_file="output_file.yaml",
             output_format="yaml",
-            save_processed_datasets=None,
+            batch_json=[""],
         )
     )
     mock_run.assert_called_once_with(
@@ -91,6 +93,56 @@ def test_main(mocker: MockFixture) -> None:
     )
     assert mock_parse_task_args.call_count == 2
 
+    # Reset mocked functions
+    mock_parse_task_args.reset_mock()
+    mock_run.reset_mock()
+    mock_write_results.reset_mock()
+
+    # Handle batch inputs
+    main(
+        argparse.Namespace(
+            models=["SCGENEPT"],
+            tasks=["perturbation"],
+            datasets=[],
+            output_file="output_file.yaml",
+            output_format="yaml",
+            batch_json=[
+                '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
+                '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
+            ],
+        )
+    )
+    mock_run.assert_has_calls(
+        [
+            call(
+                dataset_names=["adamson_perturb"],
+                model_args=[
+                    ModelArgs(
+                        name="SCGENEPT",
+                        args={
+                            "dataset_name": ["adamson"],
+                            "gene_pert": ["AEBPB+ctrl", "AEBPB+dox"],
+                        },
+                    )
+                ],
+                task_args=[mock_task_args],
+            ),
+            call(
+                dataset_names=["norman_perturb"],
+                model_args=[
+                    ModelArgs(
+                        name="SCGENEPT",
+                        args={
+                            "dataset_name": ["norman"],
+                            "gene_pert": ["NTGC+ctrl", "NTGC+dox"],
+                        },
+                    )
+                ],
+                task_args=[mock_task_args],
+            ),
+        ]
+    )
+
 
 def test_run_with_inference(mocker: MockFixture) -> None:
     # Setup mocks
@@ -104,10 +156,6 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     mock_task_results = [MagicMock()]
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
-    )
-    mock_processed_dataset = MagicMock()
-    mocker.patch(
-        "czbenchmarks.cli.cli_run.ProcessedDataset", return_value=mock_processed_dataset
     )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     model_args = [
@@ -130,7 +178,7 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     task_args = [embedding_task_args, clustering_task_args]
 
     # Run tasks with mocked data
-    processed_datasets, task_results = run_with_inference(
+    task_results = run_with_inference(
         dataset_names=dataset_names,
         model_args=model_args,
         task_args=task_args,
@@ -138,7 +186,6 @@ def test_run_with_inference(mocker: MockFixture) -> None:
 
     # Verify results
     assert mock_load_dataset.call_count == 6  # 2 datasets * 3 model variants
-    assert len(processed_datasets) == 6
     assert len(task_results) == 12  # # 2 datasets * 3 model variants * 2 tasks
 
     # Check that inference was run for each model variant, for each dataset
@@ -238,10 +285,6 @@ def test_run_without_inference(mocker: MockFixture) -> None:
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
     )
-    mock_processed_dataset = MagicMock()
-    mocker.patch(
-        "czbenchmarks.cli.cli_run.ProcessedDataset", return_value=mock_processed_dataset
-    )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     embedding_task_args = TaskArgs(
         name="embedding",
@@ -256,14 +299,13 @@ def test_run_without_inference(mocker: MockFixture) -> None:
     task_args = [embedding_task_args, clustering_task_args]
 
     # Run tasks with mocked data
-    processed_datasets, task_results = run_without_inference(
+    task_results = run_without_inference(
         dataset_names=dataset_names,
         task_args=task_args,
     )
 
     # Verify results
     assert mock_load_dataset.call_count == 2  # once for each dataset
-    assert len(processed_datasets) == 2
     assert len(task_results) == 4  # # 2 datasets * 2 tasks
 
     # Check that each task was run for each dataset
@@ -374,3 +416,45 @@ def test_get_model_arg_permutations(mocker: MockFixture) -> None:
             {"model_variant": "adamson", "gene_pert": "CEBPB+dox"},
         ]
     }
+
+
+def test_get_processed_dataset_cache_path() -> None:
+    # The cache key for a model with no args is {dataset_name}_{model_name}.dill
+    assert (
+        get_processed_dataset_cache_path("tsv2_heart", model_name="SCVI", model_args={})
+        == Path("~/.cz-benchmarks/processed_datasets/tsv2_heart_SCVI.dill")
+        .expanduser()
+        .absolute()
+    )
+    # Model args are sorted and included in the cache key
+    assert (
+        get_processed_dataset_cache_path(
+            "norman_perturb",
+            model_name="SCGENEPT",
+            model_args={"model_variant": "norman", "gene_pert": "CEBPB+ctrl"},
+        )
+        == Path(
+            "~/.cz-benchmarks/processed_datasets/norman_perturb_SCGENEPT_gene_pert-CEBPB+ctrl_model_variant-norman.dill"
+        )
+        .expanduser()
+        .absolute()
+    )
+
+
+def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
+    mock_cache_path = MagicMock()
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_path",
+        return_value=mock_cache_path,
+    )
+    mock_dataset = MagicMock()
+    set_processed_datasets_cache(
+        dataset=mock_dataset,
+        dataset_name="tsv2_heart",
+        model_name="SCVI",
+        model_args={"model_variant": "homo_sapiens"},
+    )
+    mock_dataset.unload_data.assert_called_once()
+    mock_dataset.serialize.assert_called_once_with(str(mock_cache_path))
+    mock_dataset.load_data.assert_called_once()
+    mock_cache_path.parent.mkdir.assert_called_once_with(parents=True, exist_ok=True)
