@@ -68,8 +68,14 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
             default="tf-sapiens",
             help="TranscriptFormer model variant to use",
         )
-        args = parser.parse_args()
-        return args.model_variant
+        parser.add_argument(
+            "--batch-size",
+            type=int,
+            default=None,
+            help="Batch size for inference. If None, uses model-specific defaults (sapiens: 32, exemplar: 8, metazoa: 2)",
+        )
+
+        return parser.parse_args()
 
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         return ""
@@ -93,7 +99,17 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         model_dir = str(self.model_weights_dir)
 
         # Get model variant
-        model_variant = self.parse_args().replace("-", "_")
+        args = self.parse_args()
+        model_variant = args.model_variant.replace("-", "_")
+        batch_size = args.batch_size
+
+        if batch_size is None:
+            if model_variant == "tf_sapiens":
+                batch_size = 32
+            elif model_variant == "tf_exemplar":
+                batch_size = 8
+            elif model_variant == "tf_metazoa":
+                batch_size = 2
 
         model_path = os.path.join(model_dir, model_variant)
 
@@ -104,14 +120,14 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
             "--config-name=inference_config.yaml",
             f"model.checkpoint_path={model_path}",
             f"model.inference_config.data_files.0={str(dataset.path)}",
-            "model.inference_config.batch_size=32",
+            f"model.inference_config.batch_size={batch_size}",
             "model.inference_config.precision=16-mixed",
         ]
 
         # Run the inference command
         subprocess.run(cmd, check=True)
 
-        adata = anndata.read_h5ad("transcriptformer/inference_results/embeddings.h5ad")
+        adata = anndata.read_h5ad("inference_results/embeddings.h5ad")
         embeddings = adata.obsm["embeddings"]
 
         # Set the output
