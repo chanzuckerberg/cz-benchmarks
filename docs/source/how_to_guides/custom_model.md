@@ -1,8 +1,6 @@
 # Run with Your Own Model
 
-## How to Add
-
-### A New Model
+## How to Add a new Model
 
 1.  Create directory under `docker/your_model/`
 2.  Add:
