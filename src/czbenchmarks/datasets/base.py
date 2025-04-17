@@ -131,6 +131,7 @@ class BaseDataset(ABC):
         self._validate()
 
     @abstractmethod
+    # pragma: no cover
     def load_data(self) -> None:
         """
         Load the dataset into memory.
@@ -145,6 +146,7 @@ class BaseDataset(ABC):
         """
 
     @abstractmethod
+    # pragma: no cover
     def unload_data(self) -> None:
         """
         Unload the dataset from memory.

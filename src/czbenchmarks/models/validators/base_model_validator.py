@@ -56,6 +56,7 @@ class BaseModelValidator(ABC):
             )
 
     @abstractmethod
+    # pragma: no cover
     def _validate_dataset(self, dataset: BaseDataset):
         """Perform model-specific dataset validation.
 
@@ -68,6 +69,7 @@ class BaseModelValidator(ABC):
 
     @property
     @abstractmethod
+    # pragma: no cover
     def inputs(self) -> Set[DataType]:
         """Required input data types this model requires.
 
@@ -77,6 +79,7 @@ class BaseModelValidator(ABC):
 
     @property
     @abstractmethod
+    # pragma: no cover
     def outputs(self) -> Set[DataType]:
         """Output data types produced by this model.
 

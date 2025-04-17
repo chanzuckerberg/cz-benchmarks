@@ -21,6 +21,7 @@ class BaseTask(ABC):
 
     @property
     @abstractmethod
+    # pragma: no cover
     def required_inputs(self) -> Set[DataType]:
         """Required input data types this task requires.
 
@@ -30,6 +31,7 @@ class BaseTask(ABC):
 
     @property
     @abstractmethod
+    # pragma: no cover
     def required_outputs(self) -> Set[DataType]:
         """Required output types from models this task requires
 
@@ -72,6 +74,7 @@ class BaseTask(ABC):
         data.validate()
 
     @abstractmethod
+    # pragma: no cover
     def _run_task(self, data: BaseDataset, model_type: ModelType):
         """Run the task's core computation.
 
@@ -86,6 +89,7 @@ class BaseTask(ABC):
         """
 
     @abstractmethod
+    # pragma: no cover
     def _compute_metrics(self) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 

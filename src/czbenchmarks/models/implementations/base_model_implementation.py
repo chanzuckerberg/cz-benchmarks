@@ -44,6 +44,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     model_weights_dir: str
 
     @abstractmethod
+    # pragma: no cover
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         """Get subdirectory for model variant weights.
 
@@ -55,6 +56,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """
 
     @abstractmethod
+    # pragma: no cover
     def _download_model_weights(self, dataset: BaseDataset):
         """Download model weights if needed.
 
@@ -86,10 +88,12 @@ class BaseModelImplementation(BaseModelValidator, ABC):
             logger.info("Model weights already downloaded...")
 
     @abstractmethod
+    # pragma: no cover
     def run_model(self, dataset: BaseDataset) -> None:
         """Implement model-specific inference logic"""
 
     @abstractmethod
+    # pragma: no cover
     def parse_args(self):
         """Parse model-specific command line arguments."""
 
