@@ -1,163 +1,113 @@
 # Quick Start Guide
 
+Welcome to **CZ-Benchmarks**! This guide will help you get started with installation, setup, and running your first benchmark in just a few steps.
+
 ## Requirements
 
--   🐍 **Python 3.10+**: Ensure you have Python 3.10 or later installed.
--   🐳 **Docker**: Required for container-based execution.
--   ⚙️ **Optional**: Install `uv` for managing dependencies.
+Before you begin, ensure you have the following installed:
 
-## Installation from Source
+- 🐍 **[Python 3.10+](https://www.python.org/downloads/)**:  3.10+**: Ensure you have Python 3.10 or later installed. [Download Python]
+- 🐳 **[Docker](https://docs.docker.com/get-started/get-docker/)**: Required for container-based execution.
+- 💻 **Hardware**: Intel/AMD64 architecture CPU with NVIDIA GPU, running Linux with [NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html).
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/chanzuckerberg/cz-benchmarks)
 
-To install the package from source, follow these steps:
+## Installation
+
+You can install the library using one of the following methods:
+
+### Option 1: Install from PyPI (Recommended - WIP)
+
+The easiest way to install the library is via PyPI:
+
+```bash
+pip install czbenchmarks
+```
+
+### Option 2: Install from Source (For Development)
+
+If you plan to contribute or debug the library, install it from source:
 
 1. Clone the repository:
 
-    ```
+    ```bash
     git clone https://github.com/chanzuckerberg/cz-benchmarks.git
     cd cz-benchmarks
     ```
 
 2. Install the package:
 
-    ```
+    ```bash
     pip install .
     ```
 
 3. For development, install in editable mode with development dependencies:
 
-    ```
+    ```bash
     pip install -e ".[dev]"
     ```
-
-### Using `uv` for Dependency Management
-
-For managing dependencies with `uv`, follow these steps:
-
-1. Install `uv` using pip or follow the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/) :
-
-    ```
-    pip install uv
-    ```
-
-2. Install python version
-
-    ```
-    uv python install
-    ```
-
-3. Sync all extras:
-
-    ```
-    uv sync --all-extras
-    ```
-
-⚠️ **Note**: Ensure Docker is logged out of public ECR to avoid authentication issues:
-
-```
-docker logout public.ecr.aws
-```
-
-### macOS Development Setup
-
-For macOS users, ensure the following prerequisites are installed:
-
-1. **Conda**: Install Conda (e.g., [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution)).
-2. **Compiler Tools**: Install Xcode Command Line Tools:
-
-    ```
-    xcode-select --install
-    ```
-
-Once the prerequisites are installed, proceed with the setup:
-
-1. Install `hnswlib` using Conda:
-
-    ```
-    conda install -c conda-forge hnswlib
-    ```
-
-2. Install the package in editable mode with development dependencies:
-
-    ```
-    pip install -e ".[dev]"
-    ```
-
-### Additional Installation Notes
-
-- It is highly recommended to create a virtual environment before installing dependencies. This ensures a clean and isolated Python environment, avoiding conflicts with system-wide packages. To create and activate a virtual environment:
-
-    ```
-    python -m venv venv
-    source venv/bin/activate  # On macOS/Linux
-    venv\Scripts\activate     # On Windows
-    ```
-
-  Once activated, proceed with the installation steps.
-- For detailed installation instructions using `uv`, refer to the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
-- Ensure all dependencies are installed before running the benchmarks.
-- Docker is required for container-based execution, so verify that Docker is properly installed and configured.
-- If you encounter issues, consult the [GitHub repository](https://github.com/chanzuckerberg/cz-benchmarks) for troubleshooting and support.
-
-
 
 ## Running Benchmarks
 
-To run the benchmark with CLI `czbenchmarks`, use the following command to run a benchmark:
+You can run benchmarks using the CLI or programmatically in Python.
 
+### 💻 Using the CLI
+
+The CLI simplifies running benchmarks. Below are common commands:
+
+#### 🔍 List Available Benchmark Assets
+
+```bash
+czbenchmarks list models
+czbenchmarks list datasets
+czbenchmarks list tasks
 ```
+
+#### 🏃 Run a Benchmark
+
+```bash
 czbenchmarks run \
-    --models SCVI \
-    --datasets tsv2_bladder \
-    --tasks clustering \
-    --label-key cell_type \
-    --output-file results.json
+  --models SCVI \
+  --datasets tsv2_bladder \
+  --tasks clustering \
+  --label-key cell_type \
+  --output-file results.json
 ```
 
-This command runs the `clustering` task using the `SCVI` model on the `tsv2_bladder` dataset, with results saved to `results.json`.
+#### 🔧 CLI Run Options
 
-### CLI Usage
+Below are the key options available for running benchmarks via the CLI:
 
-The `czbenchmarks` CLI provides several commands for managing and running benchmarks. Below are some common usage examples:
+- **`--models`**: Specifies the model to use (e.g., `SCVI`).
 
-- **List available options**:
-S
-    ```
-    czbenchmarks list datasets|models|tasks
-    ```
+- **`--datasets`**: Specifies the dataset to benchmark (e.g., `tsv2_bladder`).
 
-- **Run a benchmark**:
+- **`--tasks`**: Defines the evaluation task(s) to execute (e.g., `clustering`).
 
-    ```
-    czbenchmarks run \
-        --models SCVI \
-        --datasets tsv2_bladder \
-        --tasks clustering \
-        --label-key cell_type
-    ```
+- **`--label-key`**: The metadata key to use as labels for the task (e.g., `cell_type`).
 
-- **Display help information**:
+- **`--output-file`**: File path to save the benchmark results (e.g., `results.json`).
 
+> 💡 **Tip**: Combine these options to customize your benchmark runs effectively.
 
-    ```
-    czbenchmarks --help
-    ```
+> 📁 **Output**: Results will be saved to `results.json`.
 
-    or command specific help:
+#### 📖 Get Help
 
-    ```
-    czbenchmarks <command> --help
-    ```
+Use the `--help` flag to explore available commands and options:
 
-### Python Usage
+```bash
+czbenchmarks --help
+czbenchmarks <command> --help
+```
 
-The `czbenchmarks` can also be used programmatically in Python. Here's an example of how to use it:
+### 🐍 Using the Python API
+
+The library can also be used programmatically. Here's an example:
 
 ```python
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.runner import run_inference
-from czbenchmarks.tasks import ClusteringTask, EmbeddingTask
+from czbenchmarks.tasks import ClusteringTask
 
 # Load a dataset
 dataset = load_dataset("tsv2_bladder")
@@ -173,16 +123,11 @@ results = clustering.run(dataset)
 print(results)
 ```
 
-This example demonstrates how to load a dataset, run inference with a model, and execute a clustering task programmatically.
+## Next Steps
 
-### Additional Running Benchmarks Notes
+Explore the following resources to deepen your understanding:
+- **How-to Guides**: [Practical guides](./how_to_guides/index.rst) for using and extending the library.
+- **Developer Docs**: [Internal structure and extension points](./developer_guides/index.rst).
+- **GitHub Repository**: [CZ-Benchmarks](https://github.com/chanzuckerberg/cz-benchmarks) for troubleshooting and support.
 
-- Ensure all dependencies are installed before running the CLI or library commands.
-- Refer to the [GitHub repository](https://github.com/chanzuckerberg/cz-benchmarks) for more examples and troubleshooting tips.
-- For containerized execution, verify that Docker is properly installed and configured.
-- Use the `--help` flag with any command to explore additional options and configurations.
-- The `label_key` parameter should match the column name in your dataset that contains the labels for tasks like clustering.
-- Save your results to a file (e.g., `results.json`) for further analysis or sharing.
-
-
-
+Happy benchmarking! 🚀
