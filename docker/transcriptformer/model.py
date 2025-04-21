@@ -74,7 +74,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
         """Parse command line arguments to select model variant.
 
         Available variants:
-        - tf-sapiens: Default model for human data
+        - tf-sapiens: Default model trained on human data
         - tf-exemplar: Model trained on exemplar species
         - tf-metazoa: Model trained on metazoan species
         """
@@ -143,6 +143,7 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
             f"model.checkpoint_path={model_path}",
             f"model.inference_config.data_files.0={str(dataset.path)}",
             f"model.inference_config.batch_size={batch_size}",
+            f"model.data_config.gene_col_name={self.required_var_keys[0]}",  # Column name for the gene IDs
             "model.inference_config.precision=16-mixed",
             f"model.inference_config.pretrained_embedding={str(model_dir)}/all_embeddings/{organism}_gene.h5",
         ]

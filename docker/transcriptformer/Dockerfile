@@ -20,6 +20,5 @@ COPY README.md /app/package/README.md
 RUN pip install -e /app/package
 
 COPY docker/transcriptformer/model.py .
-COPY docker/transcriptformer/utils.py .
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"] 
