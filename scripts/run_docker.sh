@@ -22,7 +22,7 @@ EVAL_CMD="bash" # Example evaluation commands:
 # "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
 # "python3 -u /app/examples/example_interactive.py" for all other models
 # TODO: update when docker containers are simplified
-RUN_AS_ROOT=true # false or true
+RUN_AS_ROOT=false # false or true
 
 ################################################################################
 # Function definitions

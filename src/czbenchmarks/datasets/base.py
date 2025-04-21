@@ -116,7 +116,7 @@ class BaseDataset(ABC):
     def _validate(self) -> None:
         pass
 
-    def validate(self, **kwargs) -> None:
+    def validate(self) -> None:
         if not os.path.exists(self.path):
             raise ValueError("Dataset path does not exist")
 
@@ -128,7 +128,7 @@ class BaseDataset(ABC):
             for data_type, value in model_outputs.items():
                 self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
 
-        self._validate(**kwargs)
+        self._validate()
 
     @abstractmethod
     def load_data(self) -> None:
