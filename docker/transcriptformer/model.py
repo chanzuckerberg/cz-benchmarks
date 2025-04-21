@@ -82,13 +82,13 @@ class TranscriptFormer(TranscriptFormerValidator, BaseModelImplementation):
 
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            "--model-variant",
+            "--model_variant",
             choices=["tf-sapiens", "tf-exemplar", "tf-metazoa"],
             default="tf-sapiens",
             help="TranscriptFormer model variant to use",
         )
         parser.add_argument(
-            "--batch-size",
+            "--batch_size",
             type=int,
             default=None,
             help="Batch size for inference. If None, uses model-specific defaults (sapiens: 32, exemplar: 8, metazoa: 2)",
