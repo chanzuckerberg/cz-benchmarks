@@ -1,0 +1,22 @@
+FROM nvidia/cuda:12.6.1-cudnn-runtime-ubuntu22.04
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip git
+
+# Copy and install TranscriptFormer
+COPY transcriptformer-public /app/transcriptformer
+RUN pip install -e /app/transcriptformer
+
+# Copy and install your package
+COPY cz-benchmarks/src /app/package/src
+COPY cz-benchmarks/pyproject.toml /app/package/pyproject.toml
+COPY cz-benchmarks/README.md /app/package/README.md
+RUN pip install -e /app/package
+
+# Copy additional scripts
+COPY cz-benchmarks/docker/transcriptformer/model.py .
+
+ENTRYPOINT ["python3", "-u", "/app/model.py"]
+
