@@ -38,7 +38,7 @@ Model implementations are defined in Docker containers and executed either progr
 Model Validators
 ----------------
 
-Validators define the constraints that a dataset must meet for a model to be applicable.
+Validators define the constraints that a dataset must meet for it to be applicable for a model.
 
 All validators must inherit from one of the following:
 
