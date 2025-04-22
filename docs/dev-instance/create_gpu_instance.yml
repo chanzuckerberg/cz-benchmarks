@@ -50,6 +50,21 @@
         wait: yes
       register: ec2
 
+    - name: Wait for instance to be in running state
+      amazon.aws.ec2_instance_info:
+        instance_ids:
+          - "{{ ec2.instances[0].instance_id }}"
+        region: "{{ aws_region }}"
+        profile: "{{ aws_profile }}"
+      register: instance_info
+      until: instance_info.instances[0].state.name == "running"
+      retries: 30
+      delay: 10
+
     - name: Print instance information
       debug:
-        var: ec2.instances[0].public_ip 
+        msg:
+          - "Instance Name: {{ instance_info.instances[0].tags.Name }}"
+          - "Instance ID: {{ instance_info.instances[0].instance_id }}"
+          - "Status: {{ instance_info.instances[0].state.name }}"
+          - "Instance Type: {{ instance_info.instances[0].instance_type }}" 
