@@ -1,0 +1,55 @@
+---
+- name: Create AWS GPU Instance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    - name: Find private AMI by name
+      amazon.aws.ec2_ami_info:
+        filters:
+          name: "{{ ami_name }}"
+          state: available
+        owners: "{{ ami_owner_id }}"
+        region: "{{ aws_region }}"
+        profile: "{{ aws_profile }}"
+      register: ami_info
+
+    - name: Fail if no AMI found
+      fail:
+        msg: "No AMI found with name '{{ ami_name }}'. Please check the AMI name and try again."
+      when: ami_info.images | length == 0
+
+    - name: Create security group without any rules
+      amazon.aws.ec2_security_group:
+        name: "{{ instance_name }}-sg"
+        description: Security group for {{ instance_name }}
+        region: "{{ aws_region }}"
+        profile: "{{ aws_profile }}"
+        state: present
+      register: security_group
+
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "{{ instance_name }}"
+        image_id: "{{ ami_info.images[0].image_id }}"
+        instance_type: "{{ instance_type }}"
+        security_groups: "{{ security_group.group_name }}"
+        iam_instance_profile: "{{ iam_instance_profile }}"
+        volumes:
+          - device_name: /dev/xvda
+            ebs:
+              volume_size: "{{ volume_size }}"
+              volume_type: "{{ volume_type }}"
+        region: "{{ aws_region }}"
+        profile: "{{ aws_profile }}"
+        state: present
+        wait: yes
+      register: ec2
+
+    - name: Print instance information
+      debug:
+        var: ec2.instances[0].public_ip 

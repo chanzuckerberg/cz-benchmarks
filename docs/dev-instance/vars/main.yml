@@ -1,0 +1,17 @@
+---
+# Instance Configuration
+instance_name: wcampos-gpu
+instance_type: g4dn.8xlarge
+volume_size: 200
+volume_type: gp3
+
+# AWS Configuration
+aws_profile: virtual-cells-dev-poweruser
+aws_region: us-west-2
+
+# AMI Configuration
+ami_name: benchmarking-dev
+ami_owner_id: 058264139299
+
+# IAM Configuration
+iam_instance_profile: atar-ssm 
