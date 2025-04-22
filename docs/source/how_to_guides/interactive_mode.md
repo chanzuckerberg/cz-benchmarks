@@ -1,6 +1,6 @@
 # Running a Docker Container in Interactive Mode
 
-This guide explains how launch an interactive docker container with cz-benchmarks and run benchmarks for a model.
+This guide explains how to launch an interactive docker container with cz-benchmarks and run benchmarks for a model.
 
 ## Command Line Flags
 
