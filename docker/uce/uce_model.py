@@ -70,7 +70,7 @@ class UCE(UCEValidator, BaseModelImplementation):
         return ""
 
     def _download_model_weights(self, _dataset: BaseDataset):
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
 
@@ -85,7 +85,7 @@ class UCE(UCEValidator, BaseModelImplementation):
 
         model_variant = self.args.model_variant
 
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         assert model_variant in config.model_config, (
             f"Model {model_variant} not found in config.yaml. "
             f"Valid models are: {list(config.model_config.keys())}"

@@ -58,7 +58,7 @@ class GeneformerValidator(BaseSingleCellValidator):
 class Geneformer(GeneformerValidator, BaseModelImplementation):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.config = OmegaConf.load("config.yaml")
+        self.config = OmegaConf.load("/app/config.yaml")
 
         if self.args.model_variant not in self.config.models:
             logging.error(f"Model {self.args.model_variant} not found in config.")

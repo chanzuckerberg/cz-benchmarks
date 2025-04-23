@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
-RUN pip install -e /app/package
+RUN pip install -e /app/package[interactive]
 
 COPY docker/geneformer/model.py .
 COPY docker/geneformer/config.yaml .
