@@ -19,7 +19,7 @@ BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull
 EVAL_CMD="bash" 
 # Example evaluation commands:
 # "bash"
-# "jupyter-lab --notebook-dir=examples --ip=0.0.0.0 --port=8888 --no-browser --allow-root"
+# "jupyter-lab --notebook-dir=/app/examples --port=8888 --no-browser --allow-root"
 # "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
 # "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
 # "python3 -u /app/examples/example_interactive.py" for all other models
