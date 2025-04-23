@@ -1,6 +1,6 @@
 # Default target
 .PHONY: all
-all: scvi uce scgpt scgenept
+all: scvi uce scgpt scgenept aido geneformer
 
 # Build the scvi image
 .PHONY: scvi
@@ -26,6 +26,11 @@ scgenept:
 .PHONY: geneformer
 geneformer:
 	docker build -t cz-benchmarks-models:geneformer -f docker/geneformer/Dockerfile .
+
+# Build the geneformer image
+.PHONY: aido
+aido:
+	docker build -t cz-benchmarks-models:aido -f docker/aido/Dockerfile .
 
 # Clean up images
 .PHONY: clean
