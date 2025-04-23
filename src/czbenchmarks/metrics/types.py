@@ -29,7 +29,7 @@ class MetricType(Enum):
     MEAN_FOLD_AUROC = "mean_fold_auroc"
 
     MEAN_SQUARED_ERROR = "mean_squared_error"
-    R2_SCORE = "r2_score"
+    PEARSON_CORRELATION = "PEARSON_CORRELATION"
     JACCARD = "jaccard"
 
 
