@@ -16,7 +16,7 @@ MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks c
 
 # Container related settings
 BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull public image
-EVAL_CMD="jupyter-lab --notebook-dir=examples --ip=0.0.0.0 --port=8888 --no-browser --allow-root" 
+EVAL_CMD="bash" 
 # Example evaluation commands:
 # "bash"
 # "jupyter-lab --notebook-dir=examples --ip=0.0.0.0 --port=8888 --no-browser --allow-root"
