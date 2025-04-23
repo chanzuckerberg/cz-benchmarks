@@ -5,9 +5,9 @@ from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
     silhouette_score,
-    r2_score,
     mean_squared_error,
 )
+from scipy.stats import pearsonr
 from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 
 from .types import MetricRegistry, MetricType
@@ -76,9 +76,9 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.R2_SCORE,
-    func=r2_score,
-    required_args={"y_true", "y_pred"},
+    MetricType.PEARSON_CORRELATION,
+    func=pearsonr,
+    required_args={"x", "y"},
     description="Pearson correlation between true and predicted values",
     tags={"perturbation"},
 )

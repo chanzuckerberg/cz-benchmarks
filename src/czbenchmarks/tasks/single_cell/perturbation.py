@@ -74,7 +74,7 @@ class PerturbationTask(BaseTask):
         avg_perturbation_control = self.avg_perturbation_ctrl
 
         mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR
-        r2_score_metric = MetricType.R2_SCORE
+        pearson_correlation_metric = MetricType.PEARSON_CORRELATION
         jaccard_metric = MetricType.JACCARD
 
         if self.gene_pert in self.perturbation_truth.keys():
@@ -154,12 +154,12 @@ class PerturbationTask(BaseTask):
                 y_pred=avg_perturbation_pred[intersecting_genes],
             )
             delta_pearson_corr_all = metrics_registry.compute(
-                r2_score_metric,
-                y_true=avg_perturbation_truth[intersecting_genes]
+                pearson_correlation_metric,
+                x=avg_perturbation_truth[intersecting_genes]
                 - avg_perturbation_control[intersecting_genes],
-                y_pred=avg_perturbation_pred[intersecting_genes]
+                y=avg_perturbation_pred[intersecting_genes]
                 - avg_perturbation_control[intersecting_genes],
-            )
+            ).statistic
 
             # 2. Calculate metrics for top 20 DE genes
             top20_de_genes = (
@@ -177,12 +177,12 @@ class PerturbationTask(BaseTask):
                 y_pred=avg_perturbation_pred[top20_de_genes],
             )
             delta_pearson_corr_top20 = metrics_registry.compute(
-                r2_score_metric,
-                y_true=avg_perturbation_truth[top20_de_genes]
+                pearson_correlation_metric,
+                x=avg_perturbation_truth[top20_de_genes]
                 - avg_perturbation_control[top20_de_genes],
-                y_pred=avg_perturbation_pred[top20_de_genes]
+                y=avg_perturbation_pred[top20_de_genes]
                 - avg_perturbation_control[top20_de_genes],
-            )
+            ).statistic
 
             # 3. Calculate metrics for top 100 DE genes
             top100_de_genes = (
@@ -200,12 +200,12 @@ class PerturbationTask(BaseTask):
                 y_pred=avg_perturbation_pred[top100_de_genes],
             )
             delta_pearson_corr_top100 = metrics_registry.compute(
-                r2_score_metric,
-                y_true=avg_perturbation_truth[top100_de_genes]
+                pearson_correlation_metric,
+                x=avg_perturbation_truth[top100_de_genes]
                 - avg_perturbation_control[top100_de_genes],
-                y_pred=avg_perturbation_pred[top100_de_genes]
+                y=avg_perturbation_pred[top100_de_genes]
                 - avg_perturbation_control[top100_de_genes],
-            )
+            ).statistic
 
             # Calculate Jaccard similarity for top DE genes
             top20_pred_de_genes = set(
@@ -249,7 +249,7 @@ class PerturbationTask(BaseTask):
                     params={"subset": "all"},
                 ),
                 MetricResult(
-                    metric_type=r2_score_metric,
+                    metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_all,
                     params={"subset": "all"},
                 ),
@@ -259,7 +259,7 @@ class PerturbationTask(BaseTask):
                     params={"subset": "top20"},
                 ),
                 MetricResult(
-                    metric_type=r2_score_metric,
+                    metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top20,
                     params={"subset": "top20"},
                 ),
@@ -269,7 +269,7 @@ class PerturbationTask(BaseTask):
                     params={"subset": "top100"},
                 ),
                 MetricResult(
-                    metric_type=r2_score_metric,
+                    metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top100,
                     params={"subset": "top100"},
                 ),
