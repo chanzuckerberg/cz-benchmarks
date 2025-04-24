@@ -1,6 +1,9 @@
 ---
+# User Configuration
+username: <your-username>
+
 # Instance Configuration
-instance_name: wcampos-gpu
+instance_name: "{{ username }}-gpu"
 instance_type: g4dn.8xlarge
 volume_size: 200
 volume_type: gp3
@@ -14,4 +17,4 @@ ami_name: benchmarking-dev
 ami_owner_id: 058264139299
 
 # IAM Configuration
-iam_instance_profile: atar-ssm 
+iam_instance_profile: atar-ssm

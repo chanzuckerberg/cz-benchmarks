@@ -39,6 +39,9 @@
         instance_type: "{{ instance_type }}"
         security_groups: "{{ security_group.group_name }}"
         iam_instance_profile: "{{ iam_instance_profile }}"
+        tags:
+          Name: "{{ instance_name }}"
+          role: gpu-dev-instance
         volumes:
           - device_name: /dev/xvda
             ebs:
@@ -67,4 +70,5 @@
           - "Instance Name: {{ instance_info.instances[0].tags.Name }}"
           - "Instance ID: {{ instance_info.instances[0].instance_id }}"
           - "Status: {{ instance_info.instances[0].state.name }}"
-          - "Instance Type: {{ instance_info.instances[0].instance_type }}" 
+          - "Instance Type: {{ instance_info.instances[0].instance_type }}"
+          - "Role: {{ instance_info.instances[0].tags.role }}" 

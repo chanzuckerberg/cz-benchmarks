@@ -1,6 +1,6 @@
 # AWS GPU Instance Management
 
-This repository contains Ansible playbooks to manage AWS GPU instances. It provides commands to create, connect to, and remove GPU instances with specific configurations.
+This repository contains Ansible playbooks to manage AWS GPU instances. It provides commands to create, connect to, and manage GPU instances with specific configurations.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ This repository contains Ansible playbooks to manage AWS GPU instances. It provi
 
 2. Install required Ansible collections:
    ```bash
-   ansible-galaxy collection install amazon.aws
+   make setup
    ```
 
 3. Review and modify variables in `vars/main.yml` as needed (see Configuration Variables section below)
@@ -39,7 +39,8 @@ Before running the playbooks, review the variables in `vars/main.yml`. The follo
 
 | Variable | Change Required | Example | Notes |
 |----------|----------------|---------|-------|
-| `instance_name` | Yes | `<your-user-name>-gpu` | Must be unique, use your username |
+| `username` | Yes | `<your-username>` | Your username for instance naming |
+| `instance_name` | No | `{{ username }}-gpu-dev` | Automatically generated from username |
 | `instance_type` | Optional | `g4dn.8xlarge` | Can be changed based on needs |
 | `volume_size` | Optional | `200` | Storage size in GB |
 | `volume_type` | Optional | `gp3` | Storage type |
@@ -51,8 +52,11 @@ Before running the playbooks, review the variables in `vars/main.yml`. The follo
 
 Example configuration in `vars/main.yml`:
 ```yaml
+# User Configuration
+username: <your-username>        # MUST CHANGE to your username
+
 # Instance Configuration
-instance_name: <your-user-name>-gpu        # MUST CHANGE to your username
+instance_name: "{{ username }}-gpu-dev"  # Automatically generated
 instance_type: g4dn.8xlarge      # optional
 volume_size: 200                 # optional
 volume_type: gp3                 # optional
@@ -67,36 +71,56 @@ ami_owner_id: 058264139299               # keep as it is
 
 # IAM Configuration
 iam_instance_profile: atar-ssm            # keep as it is
+
 ```
 
 ## Usage
 
 The following commands are available:
 
-```bash
-# Create a new GPU instance
-make create
+1. Create the EC2 instance:
+   ```bash
+   make create
+   ```
 
-# Connect to the instance using AWS SSM
-make connect
+2. Connect to the instance:
+   ```bash
+   make connect
+   ```
 
-# Remove the instance and its security group
-make remove
+3. Check instance status:
+   ```bash
+   make status
+   ```
 
-# Show available commands
-make help
-```
+4. Stop the instance:
+   ```bash
+   make stop
+   ```
+
+5. Start the instance:
+   ```bash
+   make start
+   ```
+
+6. Terminate the instance when done:
+   ```bash
+   make terminate
+   ```
 
 ## Instance Configuration
 
 The playbook creates an instance with the following specifications:
-- Name: <your-user-name>-gpu (configurable)
+- Name: {username}-gpu-dev (automatically generated)
 - AMI: benchmarking-dev (fixed)
 - Instance type: g4dn.8xlarge (configurable)
 - Storage: 200 GB (configurable)
 - Region: us-west-2 (fixed)
 - IAM Instance Profile: atar-ssm (fixed)
 - Security Group: No inbound/outbound rules
+- Tags:
+  - Name: {username}-gpu-dev
+  - role: gpu-dev-instance
 
 ## Troubleshooting
 
@@ -113,4 +137,4 @@ The playbook creates an instance with the following specifications:
    - Try installing with `--force` flag:
      ```bash
      ansible-galaxy collection install amazon.aws --force
-     ``` 
+     ```
