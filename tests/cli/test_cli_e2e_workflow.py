@@ -14,7 +14,7 @@ def test_cli_e2e_workflow(mocker: MockFixture):
     Test end-to-end workflow using CLI with model and dataset.
 
     This test verifies that the complete code path to run a benchmark works,
-    focusing on a single dataset/model/task combination. Specifically using 
+    focusing on a single dataset/model/task combination. Specifically using
     the CLI "entrypoint" method czbenchmarks.cli.cli_run.run_with_inference
 
     It is not intended to verify that a model's output (embeddings)
@@ -23,21 +23,17 @@ def test_cli_e2e_workflow(mocker: MockFixture):
     """
     # region: Setup model and task arguments
     mock_processed_data = MagicMock()
-    mocker.patch.object(
-        dataset_utils, "load_dataset", return_value=mock_processed_data
-    )
-    mocker.patch.object(
-        runner, "run_inference", return_value=mock_processed_data
-    )
+    mocker.patch.object(dataset_utils, "load_dataset", return_value=mock_processed_data)
+    mocker.patch.object(runner, "run_inference", return_value=mock_processed_data)
     mock_task_results = [MagicMock()]
     mock_task_results[0].task_name = "embedding"
     mock_task_results[0].model_type = "SCGPT"
     mock_task_results[0].dataset_name = "chicken_spermatogenesis"
     mock_task_results[0].model_args = {}
-    mock_task_results[0].metrics = [MetricResult(metric_type=MetricType.SILHOUETTE_SCORE, value=0.5, params={})]
-    mocker.patch(
-        "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
-    )
+    mock_task_results[0].metrics = [
+        MetricResult(metric_type=MetricType.SILHOUETTE_SCORE, value=0.5, params={})
+    ]
+    mocker.patch("czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results)
     model_args = [
         ModelArgs(name="SCGPT", args={}),
         ModelArgs(
@@ -67,22 +63,22 @@ def test_cli_e2e_workflow(mocker: MockFixture):
     # region: Verify results
     # Verify we got results for the task
     assert len(task_results) == 3, "Expected results for embedding task"
-    
+
     # Verify task result
     task_result = task_results[0]
     print(f"task_result: {task_result}")
-    
+
     # Verify basic task result fields
     assert task_result.task_name == "embedding"
     assert task_result.model_type == "SCGPT"
     assert task_result.dataset_name == dataset_name
     assert task_result.model_args == {}, "Expected empty model args"
-    
+
     # Verify metrics
     assert isinstance(task_result.metrics, list)
     assert len(task_result.metrics) > 0
     assert all(isinstance(r, MetricResult) for r in task_result.metrics)
-    
+
     # Verify specific metric values
     metric = task_result.metrics[0]
     assert metric.metric_type == MetricType.SILHOUETTE_SCORE
