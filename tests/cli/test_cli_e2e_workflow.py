@@ -31,7 +31,6 @@ def has_nvidia_cli():
 
 def test_cli_e2e_workflow(mocker: MockFixture):
     """
-    VC-2361: E2E test
     Test end-to-end workflow using CLI with model and dataset.
 
     This test verifies that the complete code path to run a benchmark works,
