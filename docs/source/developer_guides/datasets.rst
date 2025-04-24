@@ -16,7 +16,7 @@ Key Components
   
   - Storing typed inputs and model outputs (`set_input`, `set_output`)
   - Type validation via `DataType` enums
-  - Serialization and deserialization (`.dill`-based)
+  - Serialization and deserialization ([dill](https://dill.readthedocs.io/en/latest/) based)
   - Loading/unloading memory-intensive data
 
   All dataset types must inherit from `BaseDataset`.
