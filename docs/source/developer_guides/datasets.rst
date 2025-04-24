@@ -55,7 +55,7 @@ Key Components
   with expected Python types (`AnnData`, `pd.DataFrame`, `np.ndarray`, etc.)
 
 -  :doc:`Organism <../autoapi/czbenchmarks/datasets/types/index>`   
-  Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG`).
+  Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
 Adding a New Dataset
 ---------------------
