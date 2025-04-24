@@ -26,13 +26,14 @@ class ClusteringTask(BaseTask):
     def __init__(
         self,
         label_key: str,
-        random_seed: int = RANDOM_SEED,
         n_iterations: int = N_ITERATIONS,
         flavor: str = FLAVOR,
         key_added: str = KEY_ADDED,
+        *,
+        random_seed: int = RANDOM_SEED,
     ):
+        super().__init__(random_seed=random_seed)
         self.label_key = label_key
-        self.random_seed = random_seed
         self.n_iterations = n_iterations
         self.flavor = flavor
         self.key_added = key_added
@@ -97,6 +98,7 @@ class ClusteringTask(BaseTask):
                     labels_true=self.input_labels,
                     labels_pred=self.predicted_labels,
                 ),
+                params={},
             )
             for metric_type in [
                 MetricType.ADJUSTED_RAND_INDEX,

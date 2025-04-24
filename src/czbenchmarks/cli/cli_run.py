@@ -11,12 +11,20 @@ from collections.abc import Mapping
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
-from pydantic import BaseModel, computed_field
 from secrets import token_hex
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from czbenchmarks import runner
-from czbenchmarks.cli import cli
+import czbenchmarks.cli.utils as cli_utils
+from czbenchmarks.cli.types import (
+    CacheOptions,
+    DatasetDetail,
+    ModelArgs,
+    ModelArgsDict,
+    TaskArgs,
+    TaskResult,
+    TaskType,
+)
 from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.datasets.base import BaseDataset
@@ -25,7 +33,6 @@ from czbenchmarks.metrics.types import MetricResult
 from czbenchmarks.models import utils as model_utils
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.tasks import utils as task_utils
-from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
@@ -37,71 +44,9 @@ from czbenchmarks import utils
 
 log = logging.getLogger(__name__)
 
+
 VALID_OUTPUT_FORMATS = ["json", "yaml"]
 DEFAULT_OUTPUT_FORMAT = "json"
-
-TaskType = TypeVar("TaskType", bound=BaseTask)
-ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
-RuntimeMetricsDict = dict[
-    str, str | int | float
-]  # runtime metrics like elapsed time or CPU count, not implemented yet
-
-
-class ModelArgs(BaseModel):
-    name: str  # Upper-case model name e.g. SCVI
-    args: dict[str, list[str | int]]  # Args forwarded to the model container
-
-
-class TaskArgs(BaseModel, Generic[TaskType]):
-    model_config = {"arbitrary_types_allowed": True}  # Required to support TaskType
-    name: str  # Lower-case task name e.g. embedding
-    task: TaskType
-    set_baseline: bool
-    baseline_args: dict[str, Any]
-
-
-class DatasetDetail(BaseModel):
-    name: str
-    organism: str
-
-    @computed_field
-    @property
-    def name_display(self) -> str:
-        return dataset_utils.dataset_to_display_name(self.name)
-
-
-class TaskResult(BaseModel):
-    task_name: str
-    task_name_display: str
-    model_type: ModelType
-    datasets: list[DatasetDetail]
-    model_args: ModelArgsDict
-    metrics: list[MetricResult]
-    runtime_metrics: RuntimeMetricsDict = {}  # not implementing any of these for now
-
-    @computed_field
-    @property
-    def model_name_display(self) -> str:
-        return model_utils.model_to_display_name(self.model_type, self.model_args)
-
-
-class CacheOptions(BaseModel):
-    download_embeddings: bool
-    upload_embeddings: bool
-    upload_results: bool
-    remote_cache_url: str
-
-    @classmethod
-    def from_args(cls, args: argparse.Namespace) -> "CacheOptions":
-        remote_cache_url = args.remote_cache_url or ""
-        return cls(
-            remote_cache_url=remote_cache_url,
-            download_embeddings=bool(remote_cache_url)
-            and args.remote_cache_download_embeddings,
-            upload_embeddings=bool(remote_cache_url)
-            and args.remote_cache_upload_embeddings,
-            upload_results=bool(remote_cache_url) and args.remote_cache_upload_results,
-        )
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -266,6 +211,13 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Batch size for AIDO model inference (optional)",
     )
 
+    # universal task arguments
+    parser.add_argument(
+        "--random-seed",
+        type=int,
+        help="Random seed for reproducibility (optional)",
+    )
+
     # Extra arguments for clustering task
     parser.add_argument(
         "--clustering-task-label-key",
@@ -302,11 +254,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--label-prediction-task-n-folds",
         type=int,
         help="Number of cross-validation folds (optional)",
-    )
-    parser.add_argument(
-        "--label-prediction-task-seed",
-        type=int,
-        help="Random seed for reproducibility (optional)",
     )
     parser.add_argument(
         "--label-prediction-task-min-class-size",
@@ -352,8 +299,30 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--batch-json",
         "-b",
         nargs="+",
-        default=[""],
+        default=[],
         help='Override CLI arguments from the given JSON, e.g. \'{"output_file": "..."}\'. Can be set multiple times to run complex "batch" jobs.',
+    )
+
+    parser.add_argument(
+        "--batch-random-seeds",
+        nargs="+",
+        type=int,
+        default=[],
+        help=(
+            "Batch together multiple runs that are identical except for a random seed. "
+            "Shortcut for --batch-json '{\"random_seed\": 1}' '{\"random_seed\": 2}' ..."
+        ),
+    )
+
+    parser.add_argument(
+        "--batch-aggregate-metrics",
+        action="store_true",
+        default=False,
+        help=(
+            "Aggregate the metrics from tasks that use the same model and dataset if they are run multiple times in a batch job. "
+            "For example, if --batch-json is used to specify multiple random seeds for a task, the metrics reported will provide "
+            "an estimate of the mean performance at that task and the uncertainty."
+        ),
     )
 
 
@@ -366,7 +335,9 @@ def main(parsed_args: argparse.Namespace) -> None:
     the generated outputs.
     """
     task_results: list[TaskResult] = []
-    batch_args = parse_batch_json(parsed_args.batch_json)
+    batch_args = parse_batch_json(
+        parsed_args.batch_json, parsed_args.batch_random_seeds
+    )
     cache_options = CacheOptions.from_args(parsed_args)
 
     for batch_idx, batch_dict in enumerate(batch_args):
@@ -408,6 +379,9 @@ def main(parsed_args: argparse.Namespace) -> None:
             cache_options=cache_options,
         )
         task_results.extend(task_result)
+
+    if args.batch_aggregate_metrics:
+        task_results = cli_utils.aggregate_task_results(task_results)
 
     # Write the results to the specified output
     write_results(
@@ -729,7 +703,7 @@ def write_results(
     Format and write results to the given directory or file.
     """
     results_dict = {
-        "czbenchmarks_version": cli.get_version(),
+        "czbenchmarks_version": cli_utils.get_version(),
         "args": "czbenchmarks " + " ".join(sys.argv[1:]),
         "task_results": [result.model_dump(mode="json") for result in task_results],
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -782,7 +756,7 @@ def write_results(
 def get_result_url_for_remote(remote_prefix_url: str) -> str:
     nonce = token_hex(4)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    version = cli.get_version()
+    version = cli_utils.get_version()
     return f"{remote_prefix_url.rstrip('/')}/{version}/results/{timestamp}-{nonce}.json"
 
 
@@ -919,7 +893,7 @@ def try_processed_datasets_cache(
 
 def get_remote_cache_prefix(cache_options: CacheOptions):
     """get the prefix ending in '/' that the remote processed datasets go under"""
-    return f"{cache_options.remote_cache_url.rstrip('/')}/{cli.get_version()}/processed-datasets/"
+    return f"{cache_options.remote_cache_url.rstrip('/')}/{cli_utils.get_version()}/processed-datasets/"
 
 
 def get_processed_dataset_cache_filename(
@@ -973,6 +947,9 @@ def parse_task_args(
     task_args: dict[str, Any] = {}
     baseline_args: dict[str, Any] = {}
 
+    if args.random_seed is not None:
+        task_args["random_seed"] = args.random_seed
+
     for k, v in vars(args).items():
         if v is not None and k.startswith(prefix):
             trimmed_k = k.removeprefix(prefix)
@@ -991,12 +968,22 @@ def parse_task_args(
     )
 
 
-def parse_batch_json(batch_json_list: list[str]) -> list[dict[str, Any]]:
+def parse_batch_json(
+    batch_json_list: list[str], batch_random_seeds: list[int]
+) -> list[dict[str, Any]]:
     """
-    Parse the `--batch-json` argument.
+    Parse the `--batch-json` and `--batch-random-seeds` argument.
     Returns a list of dicts where each entry is a batch of CLI arguments.
     """
     batches: list[dict[str, Any]] = []
+
+    if batch_random_seeds and batch_json_list:
+        raise ValueError(
+            "Can only specify one of `--batch-json` and `--batch-random-seeds`"
+        )
+
+    if batch_random_seeds:
+        return [{"random_seed": random_seed} for random_seed in batch_random_seeds]
 
     if not batch_json_list:
         return [{}]

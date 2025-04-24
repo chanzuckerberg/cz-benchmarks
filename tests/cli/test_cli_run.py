@@ -48,6 +48,11 @@ def test_main(mocker: MockFixture) -> None:
     mock_parse_task_args = mocker.patch(
         "czbenchmarks.cli.cli_run.parse_task_args", return_value=mock_task_args
     )
+    mock_aggregated_results = MagicMock()
+    mock_aggregate_results = mocker.patch(
+        "czbenchmarks.cli.cli_run.cli_utils.aggregate_task_results",
+        return_value=mock_aggregated_results,
+    )
 
     # Handle empty inputs
     main(
@@ -58,6 +63,7 @@ def test_main(mocker: MockFixture) -> None:
             output_file=None,
             output_format=None,
             batch_json=[],
+            batch_aggregate_metrics=False,
             remote_cache_url=None,
             remote_cache_upload="never",
             remote_cache_upload_results=False,
@@ -82,11 +88,13 @@ def test_main(mocker: MockFixture) -> None:
         cache_options=expected_cache_options,
     )
     mock_parse_task_args.assert_not_called()
+    mock_aggregate_results.assert_not_called()
 
     # Reset mocked functions
     mock_parse_task_args.reset_mock()
     mock_run.reset_mock()
     mock_write_results.reset_mock()
+    mock_aggregate_results.reset_mock()
 
     # Handle complex inputs
     main(
@@ -102,6 +110,7 @@ def test_main(mocker: MockFixture) -> None:
             output_file="output_file.yaml",
             output_format="yaml",
             batch_json=[""],
+            batch_aggregate_metrics=False,
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
             remote_cache_upload_embeddings=True,
             remote_cache_upload_results=True,
@@ -132,11 +141,13 @@ def test_main(mocker: MockFixture) -> None:
         cache_options=expected_cache_options,
     )
     assert mock_parse_task_args.call_count == 2
+    mock_aggregate_results.assert_not_called()
 
     # Reset mocked functions
     mock_parse_task_args.reset_mock()
     mock_run.reset_mock()
     mock_write_results.reset_mock()
+    mock_aggregate_results.reset_mock()
 
     # Handle batch inputs
     main(
@@ -150,6 +161,7 @@ def test_main(mocker: MockFixture) -> None:
                 '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
                 '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
             ],
+            batch_aggregate_metrics=True,
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
             remote_cache_download_embeddings=True,
             remote_cache_upload_embeddings=True,
@@ -194,6 +206,7 @@ def test_main(mocker: MockFixture) -> None:
             ),
         ]
     )
+    mock_aggregate_results.assert_called_once_with(mock_task_results)
 
 
 def test_run_with_inference(mocker: MockFixture) -> None:
@@ -216,7 +229,7 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         return_value="test_dataset.dill",
     )
     mocker.patch(
-        "czbenchmarks.cli.cli_run.cli.get_version",
+        "czbenchmarks.cli.cli_run.cli_utils.get_version",
         return_value="0.0.0+test",
     )
     mocker.patch(
@@ -435,7 +448,9 @@ def test_run_task() -> None:
     mock_task_run_result = {
         ModelType.SCVI: [
             MetricResult(
-                metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.1, params={}
+                metric_type=MetricType.ADJUSTED_RAND_INDEX,
+                value=0.1,
+                params={"random_seed": 42},
             )
         ]
     }
@@ -457,7 +472,9 @@ def test_run_task() -> None:
             model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
-                    metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.1, params={}
+                    metric_type=MetricType.ADJUSTED_RAND_INDEX,
+                    value=0.1,
+                    params={"random_seed": 42},
                 )
             ],
         )
@@ -590,7 +607,7 @@ def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
     )
     mock_dataset = MagicMock()
     mocker.patch(
-        "czbenchmarks.cli.cli_run.cli.get_version",
+        "czbenchmarks.cli.cli_run.cli_utils.get_version",
         return_value="0.0.0+test",
     )
     set_processed_datasets_cache(
