@@ -71,7 +71,7 @@ The example script will:
 - The container has GPU support enabled by default and is configured with appropriate memory settings
 - The script validates that all required directories exist before starting the container and that a valid model is provided
 - The script will automatically ensure the appropriate container is downloaded and current
-- When using AWS ECR images, the script automatically handles authentication and image pulling
+- When using AWS ECR images, the script automatically handles image pulling
 
 ## Limitations
 
