@@ -26,7 +26,7 @@ For macOS users, follow these steps to set up your development environment:
 ### Setting Up the Environment
 
 1. **Create a Virtual Environment**  
-    It is highly recommended to create a virtual environment to isolate your project dependencies. Run the following commands:
+    It is highly recommended to create a virtual environment to isolate your project dependencies. The steps vary dependeing on the tool, one example is provided below for `pip` and `venv`:
 
     ```bash
     python -m venv venv
