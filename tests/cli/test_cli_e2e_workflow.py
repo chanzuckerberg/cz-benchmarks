@@ -48,7 +48,7 @@ def test_cli_e2e_workflow(mocker: MockFixture):
 
     It is not intended to verify that a model's output (embeddings)
     or that a task's metrics are being computed correctly. That will be
-    done in the unit tests.
+    verified by separate model regression tests .
     """
     # region: Select a dataset
     all_datasets = list_available_datasets()
