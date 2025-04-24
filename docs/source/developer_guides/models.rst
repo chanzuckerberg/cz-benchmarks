@@ -23,6 +23,7 @@ Model implementations are defined in Docker containers and executed either progr
 - Clean up any temporary files
 
 **Common Utilities:**
+
 - Use `sync_s3_to_local()` from `czbenchmarks.utils` to download from S3.
 - Use `get_model_weights_subdir()` to route weights per variant or organism.
 - Use `parse_args()` to register model-specific CLI arguments (e.g., `--model_variant`, `--gene_pert`).
@@ -47,6 +48,7 @@ All validators must inherit from one of the following:
   
 - :doc:`BaseSingleCellValidator <../autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index>`  
   Provides standard checks for single-cell models such as validating:
+
   - `Organism` compatibility
   - Required keys in `.obs` and `.var`
   - Gene naming conventions (e.g., `ENSG` prefix for human)
