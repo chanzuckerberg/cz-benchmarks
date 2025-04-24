@@ -18,3 +18,8 @@ ami_owner_id: 058264139299
 
 # IAM Configuration
 iam_instance_profile: atar-ssm
+
+# Schedule Configuration
+ec2_schedule: true
+schedule_start: "0 8 * * 1-5"  # Run at 8 AM Monday through Friday
+schedule_stop: "0 18 * * 1-5"  # Run at 6 PM Monday through Friday

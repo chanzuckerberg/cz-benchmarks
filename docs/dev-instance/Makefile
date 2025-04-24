@@ -1,4 +1,4 @@
-.PHONY: create terminate connect help setup status stop start
+.PHONY: create terminate connect help setup status stop start setup-schedule
 
 setup:
 	ansible-galaxy collection install amazon.aws community.aws
@@ -102,6 +102,9 @@ start:
 		--instance-ids $$INSTANCE_ID \
 		--profile virtual-cells-dev-poweruser
 
+setup-schedule:
+	ansible-playbook setup_schedule.yml
+
 help:
 	@echo "Available targets:"
 	@echo "  setup      - Install required Ansible collections"
@@ -111,4 +114,5 @@ help:
 	@echo "  status     - Show the current status of the instance"
 	@echo "  stop       - Stop the running instance"
 	@echo "  start      - Start the stopped instance"
+	@echo "  setup-schedule - Setup the EC2 instance schedule"
 	@echo "  help       - Show this help message" 

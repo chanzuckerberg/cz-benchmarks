@@ -11,7 +11,7 @@ This repository contains Ansible playbooks to manage AWS GPU instances. It provi
 
 2. Install required packages:
    ```bash
-   brew install ansible awscli aws-oidc
+   brew install ansible awscli aws-oidc rsync
    ```
 
 3. Install AWS SSM Session Manager plugin:
@@ -73,6 +73,26 @@ ami_owner_id: 058264139299               # keep as it is
 iam_instance_profile: atar-ssm            # keep as it is
 
 ```
+
+## Features
+
+- **Automatic Scheduling**: The instance can be configured to automatically start and stop on a schedule:
+  - Starts at 4:00 AM EST (8:00 AM UTC) every weekday
+  - Stops at 2:00 PM EST (6:00 PM UTC) every weekday
+  - Schedule is automatically set up when creating the instance
+  - Schedule can be disabled by setting `ec2_schedule: false` in `vars/main.yml`
+
+## Commands
+
+- `make setup` - Install required Ansible collections
+- `make create` - Create the GPU instance and set up automatic scheduling
+- `make terminate` - Terminate the GPU instance and its security group
+- `make connect` - Connect to the instance using AWS SSM
+- `make status` - Show the current status of the instance
+- `make stop` - Stop the running instance
+- `make start` - Start the stopped instance
+- `make setup-schedule` - Manually set up the instance schedule (not needed if using `make create`)
+- `make help` - Show this help message
 
 ## Usage
 
