@@ -6,7 +6,7 @@ The `czbenchmarks.datasets` module defines the dataset abstraction used across a
 Overview
 --------
 
-CZ Benchmarks currently supports single-cell RNA-seq data stored in the AnnData (H5AD) format. The dataset system is extensible and can be used for other data modalities by creating new dataset types.
+CZ Benchmarks currently supports single-cell RNA-seq data stored in the [AnnData](https://anndata.readthedocs.io/en/stable/) (H5AD) format. The dataset system is extensible and can be used for other data modalities by creating new dataset types.
 
 Key Components
 --------------
