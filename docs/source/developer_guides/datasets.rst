@@ -26,7 +26,7 @@ Key Components
 
   Responsibilities:
   - Loads anndata files via `anndata.read_h5ad`
-  - Stores `.obs` as metadata and `.X` as the expression matrix
+  - Stores metadata as `.obs` or `.var` and the expression matrix as `.X`
   - Performs organism-based validation using the `Organism` enum
   - Validates gene name prefixes and presence of expected columns
 
