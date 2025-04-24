@@ -16,7 +16,7 @@ At the core of this module is a centralized registry, `MetricRegistry`, which st
 Key Components
 --------------
 
-- doc:`MetricRegistry <../autoapi/czbenchmarks/metrics/types/index>`  
+- :doc:`MetricRegistry <../autoapi/czbenchmarks/metrics/types/index>`  
   A class that registers and manages metric functions, performs argument validation, and handles invocation.
 
 - :doc:`MetricType <../autoapi/czbenchmarks/metrics/types/index>`  
