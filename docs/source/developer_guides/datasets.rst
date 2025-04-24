@@ -110,7 +110,7 @@ Use the following methods for safe access:
 Serialization Support
 ---------------------
 
-Datasets can be serialized to disk after model inference. Internally, `.dill` is used to support complex Python objects like `AnnData`.
+Datasets can be serialized to disk after model inference. Internally, [dill](https://dill.readthedocs.io/en/latest/) is used to support complex Python objects like `AnnData`.
 
 .. code-block:: python
 
