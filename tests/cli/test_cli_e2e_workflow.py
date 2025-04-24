@@ -1,10 +1,15 @@
 from czbenchmarks.tasks import (
     EmbeddingTask,
 )
+from pytest_mock import MockFixture
+from unittest.mock import MagicMock
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs
+from czbenchmarks.datasets import utils as dataset_utils
+from czbenchmarks import runner
 
-def test_cli_e2e_workflow():
+
+def test_cli_e2e_workflow(mocker: MockFixture):
     """
     Test end-to-end workflow using CLI with model and dataset.
 
@@ -17,8 +22,29 @@ def test_cli_e2e_workflow():
     verified by separate model regression tests.
     """
     # region: Setup model and task arguments
-    # Use SCPT model type
-    model_args = [ModelArgs(name="SCGPT", args={})]
+    mock_processed_data = MagicMock()
+    mocker.patch.object(
+        dataset_utils, "load_dataset", return_value=mock_processed_data
+    )
+    mocker.patch.object(
+        runner, "run_inference", return_value=mock_processed_data
+    )
+    mock_task_results = [MagicMock()]
+    mock_task_results[0].task_name = "embedding"
+    mock_task_results[0].model_type = "SCGPT"
+    mock_task_results[0].dataset_name = "chicken_spermatogenesis"
+    mock_task_results[0].model_args = {}
+    mock_task_results[0].metrics = [MetricResult(metric_type=MetricType.SILHOUETTE_SCORE, value=0.5, params={})]
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
+    )
+    model_args = [
+        ModelArgs(name="SCGPT", args={}),
+        ModelArgs(
+            name="SCVI",
+            args={"model_variant": ["homo_sapiens", "mus_musculus"]},
+        ),
+    ]
     task_args = [
         TaskArgs(
             name="embedding",
@@ -40,7 +66,7 @@ def test_cli_e2e_workflow():
 
     # region: Verify results
     # Verify we got results for the task
-    assert len(task_results) == 1, "Expected results for embedding task"
+    assert len(task_results) == 3, "Expected results for embedding task"
     
     # Verify task result
     task_result = task_results[0]
