@@ -140,3 +140,5 @@ Example Skeleton
        def run(self):
            super().run()  # Handles I/O, validation, and execution
 
+Note: the example above is specifinc to Single Cell Transcriptomics domain space
+
