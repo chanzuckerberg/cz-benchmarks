@@ -39,19 +39,23 @@ The repository includes two example scripts (`examples/example_interactive.py`) 
    bash scripts/run_docker.sh -m MODEL_NAME
    ```
 
-2. Inside the container, run the example script:
+2. Inside the container, run the example script with one of the following commands:
+   
+   For perturbation tasks with scGenePT:
+
    ```bash
-   # For perturbation tasks with scGenePT
    python3 examples/example_interactive_perturb.py
    ```
-or
+
+   For UCE:
+
    ```bash
-   # For UCE
    /opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py
    ```
-or
+
+   Or all other models: 
+   
    ```bash
-   # Or all other models
    python3 examples/example_interactive.py
    ```
 
