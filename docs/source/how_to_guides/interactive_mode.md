@@ -32,7 +32,7 @@ The script also includes user-configurable variables at the top of the file:
 
 ## Running the Interactive Example
 
-The repository includes two example scripts (`examples/example_interactive.py`) and (`examples/example_interactive_perturb.py`, for perturbation tasks) that demonstrate how to run various tasks on a dataset with the user-selected model. To use this example:
+The repository includes two example scripts (`examples/example_interactive.py` and `examples/example_interactive_perturb.py`, for perturbation tasks) that demonstrate how to run various tasks on a dataset with the user-selected model. To use this example:
 
 1. Launch the container with the appropriate model:
    ```bash
