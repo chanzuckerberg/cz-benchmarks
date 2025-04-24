@@ -51,6 +51,6 @@ dataset = load_dataset("my_dataset", config_path="custom.yaml")
 ## Tips for Customization
 
 - **Preprocessing:** If your dataset requires specialized preprocessing, consider subclassing `BaseDataset` in your project.
-- **Validation:** Ensure organism-specific validations (e.g., gene name prefixes) are met.
+- **Validation:** Ensure organism-specific validations (e.g. gene name prefixes) are met.
 - **Testing:** Verify that your dataset loads correctly and includes all required metadata.
 
