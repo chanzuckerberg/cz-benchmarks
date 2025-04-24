@@ -27,7 +27,7 @@ The script also includes user-configurable variables at the top of the file:
 
 ### Container Execution Settings
 - `BUILD_DEV_CONTAINER`: true to use prebuilt container from AWS ECR, false to build a container with development code.
-- `EVAL_CMD`: Command to execute when the container starts (`bash` or `python3 -u examples/example_interactive.py`). 
+- `EVAL_CMD`: Command to execute when the container starts (e.g. `bash`, `python3 -u examples/example_interactive.py`, etc.). See inline comments in `run_docker.sh` for more examples.
 - `RUN_AS_ROOT`: Whether to run the container as root. Options: `false` (default) or `true`
 
 ## Running the Interactive Example
