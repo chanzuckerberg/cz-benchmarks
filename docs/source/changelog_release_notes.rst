@@ -1,4 +1,4 @@
-Change Log & Release Notes 
+Changelog & Release Notes 
 ==========================
 
 .. include:: ../../CHANGELOG.md
