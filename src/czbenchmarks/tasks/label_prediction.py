@@ -181,6 +181,7 @@ class MetadataLabelPredictionTask(BaseTask):
         results_df = pd.DataFrame(self.results)
         metrics_list = []
 
+        common_params = {"random_seed": self.random_seed}
         # Calculate overall metrics across all classifiers
         metrics_list.extend(
             [
@@ -189,36 +190,42 @@ class MetadataLabelPredictionTask(BaseTask):
                     value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_ACCURACY, results_df=results_df
                     ),
+                    params=common_params,
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_F1_SCORE,
                     value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_F1_SCORE, results_df=results_df
                     ),
+                    params=common_params,
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_PRECISION,
                     value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_PRECISION, results_df=results_df
                     ),
+                    params=common_params,
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_RECALL,
                     value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_RECALL, results_df=results_df
                     ),
+                    params=common_params,
                 ),
                 MetricResult(
                     metric_type=MetricType.MEAN_FOLD_AUROC,
                     value=metrics_registry.compute(
                         MetricType.MEAN_FOLD_AUROC, results_df=results_df
                     ),
+                    params=common_params,
                 ),
             ]
         )
 
         # Calculate per-classifier metrics
         for clf in results_df["classifier"].unique():
+            params = {"classifier": clf, **common_params}
             metrics_list.extend(
                 [
                     MetricResult(
@@ -228,7 +235,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             results_df=results_df,
                             classifier=clf,
                         ),
-                        params={"classifier": clf},
+                        params=params,
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_F1_SCORE,
@@ -237,7 +244,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             results_df=results_df,
                             classifier=clf,
                         ),
-                        params={"classifier": clf},
+                        params=params,
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_PRECISION,
@@ -246,7 +253,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             results_df=results_df,
                             classifier=clf,
                         ),
-                        params={"classifier": clf},
+                        params=params,
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_RECALL,
@@ -255,7 +262,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             results_df=results_df,
                             classifier=clf,
                         ),
-                        params={"classifier": clf},
+                        params=params,
                     ),
                     MetricResult(
                         metric_type=MetricType.MEAN_FOLD_AUROC,
@@ -264,7 +271,7 @@ class MetadataLabelPredictionTask(BaseTask):
                             results_df=results_df,
                             classifier=clf,
                         ),
-                        params={"classifier": clf},
+                        params=params,
                     ),
                 ]
             )

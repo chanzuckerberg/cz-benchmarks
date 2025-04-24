@@ -348,7 +348,9 @@ def test_run_task() -> None:
     mock_task_run_result = {
         ModelType.SCVI: [
             MetricResult(
-                metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.1, params={}
+                metric_type=MetricType.ADJUSTED_RAND_INDEX,
+                value=0.1,
+                params={"random_seed": 42},
             )
         ]
     }
@@ -369,7 +371,9 @@ def test_run_task() -> None:
             model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
-                    metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.1, params={}
+                    metric_type=MetricType.ADJUSTED_RAND_INDEX,
+                    value=0.1,
+                    params={"random_seed": 42},
                 )
             ],
         )

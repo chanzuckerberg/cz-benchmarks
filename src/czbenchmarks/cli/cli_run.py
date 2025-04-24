@@ -158,6 +158,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset",
     )
+    parser.add_argument(
+        "--clustering-task-random-seed",
+        type=int,
+        help="Random seed for reproducibility (optional)",
+    )
 
     # Extra arguments for embedding task
     parser.add_argument(
@@ -186,7 +191,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Number of cross-validation folds (optional)",
     )
     parser.add_argument(
-        "--label-prediction-task-seed",
+        "--label-prediction-task-random-seed",
         type=int,
         help="Random seed for reproducibility (optional)",
     )
