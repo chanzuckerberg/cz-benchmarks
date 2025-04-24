@@ -25,12 +25,14 @@ Key Components
   A concrete implementation of `BaseDataset` for single-cell data.
 
   Responsibilities:
+
   - Loads anndata files via `anndata.read_h5ad`
   - Stores metadata as `.obs` or `.var` and the expression matrix as `.X`
   - Performs organism-based validation using the `Organism` enum
   - Validates gene name prefixes and presence of expected columns
 
   Automatically sets:
+
   - `DataType.ANNDATA`
   - `DataType.METADATA`
   - `DataType.ORGANISM`
@@ -39,6 +41,7 @@ Key Components
   Subclass of `SingleCellDataset` designed for perturbation benchmarks.
 
   Responsibilities:
+
   - Validates presence of `condition_key` and `split_key` (e.g., `condition`, `split`)
   - Stores control and perturbed cells
   - Computes and stores `DataType.PERTURBATION_TRUTH` as ground-truth reference
@@ -46,6 +49,7 @@ Key Components
   Automatically filters `adata` to only include control cells for inference.
 
   Example valid perturbation formats:
+
   - `"ctrl"`: control
   - `"GENE+ctrl"`: single-gene perturbation
   - `"GENE1+GENE2"`: combinatorial perturbation
