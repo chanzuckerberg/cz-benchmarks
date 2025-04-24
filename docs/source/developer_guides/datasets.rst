@@ -25,7 +25,7 @@ Key Components
   A concrete implementation of `BaseDataset` for single-cell data.
 
   Responsibilities:
-  - Loads `.h5ad` files via `anndata.read_h5ad`
+  - Loads anndata files via `anndata.read_h5ad`
   - Stores `.obs` as metadata and `.X` as the expression matrix
   - Performs organism-based validation using the `Organism` enum
   - Validates gene name prefixes and presence of expected columns
