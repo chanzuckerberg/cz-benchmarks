@@ -104,5 +104,5 @@ To add a new model, you will:
 
 ## Additional Notes
 
-- Refer to existing implementations like SCVI or SCGPT for inspiration.
+- Refer to existing implementations like scVI or scGPT for inspiration.
 - Use the `assets/` directory to store any additional files required by your model, such as pre-trained weights or vocabularies.
