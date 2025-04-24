@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Set, Union
 
+from .constants import RANDOM_SEED
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
 from ..metrics.types import MetricResult
@@ -17,7 +18,17 @@ class BaseTask(ABC):
 
     Tasks should store any intermediate results as instance variables
     to be used in metric computation.
+
+    Args:
+        random_seed (int): Random seed for reproducibility
     """
+
+    def __init__(
+        self,
+        *,
+        random_seed: int = RANDOM_SEED,
+    ):
+        self.random_seed = random_seed
 
     @property
     @abstractmethod

@@ -1,4 +1,9 @@
-from typing import Union
+from .types import AggregatedMetricResult, MetricResult
+
+import collections
+import statistics
+from typing import Iterable, Union
+
 import numpy as np
 import pandas as pd
 
@@ -117,3 +122,31 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     else:
         df = results_df
     return df[metric].mean()
+
+
+def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricResult]:
+    """aggregate a collection of MetricResults by their type and parameters"""
+    grouped_results = collections.defaultdict(list)
+    for result in results:
+        grouped_results[result.aggregation_key].append(result)
+
+    aggregated = []
+    for results_to_agg in grouped_results.values():
+        values_raw = [result.value for result in results_to_agg]
+        value_mean = statistics.mean(values_raw)
+        try:
+            value_std_dev = statistics.stdev(values_raw, xbar=value_mean)
+        except statistics.StatisticsError:
+            # we only had one result so we can't compute it
+            value_std_dev = None
+        aggregated.append(
+            AggregatedMetricResult(
+                metric_type=results_to_agg[0].metric_type,
+                params=results_to_agg[0].params,
+                value=value_mean,
+                value_std_dev=value_std_dev,
+                values_raw=values_raw,
+                n_values=len(values_raw),
+            )
+        )
+    return aggregated
