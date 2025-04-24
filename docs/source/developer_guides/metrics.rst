@@ -24,6 +24,7 @@ Key Components
 
 - **Tags:**  
   Each metric is tagged with its associated category to allow filtering:
+
   - `clustering`: ARI, NMI
   - `embedding`: Silhouette Score
   - `integration`: Entropy per Cell, Batch Silhouette
