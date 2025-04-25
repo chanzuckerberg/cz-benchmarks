@@ -22,9 +22,9 @@ First, define your new metric type in the `MetricType` enum.
 ---
 
 ### 2. Implement the Metric Function
-Next, create a function that computes the value of your metric.
+Next, register a function that computes the value of your metric.
 
-1. Define the function in an appropriate module. For example:
+1. Define the function in implementation :doc:`../autoapi/czbenchmarks/metrics/index`. class. For example:
     ```python
     def your_new_metric_func(y_true, y_pred):
          """
@@ -69,7 +69,7 @@ Register your metric with the `MetricRegistry` to make it available for use.
 ---
 
 ### 4. Use the Metric
-Once registered, you can compute your metric anywhere in the codebase.
+Once registered, you can compute your metric in czbenchmarks/tasks module in the codebase.
 
 1. Import the necessary components:
     ```python
