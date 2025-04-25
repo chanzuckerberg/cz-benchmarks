@@ -1,24 +1,20 @@
 import argparse
-import os
 import logging
-from typing import Tuple, List
+import os
+from typing import List, Tuple
 
 import anndata as ad
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import torch
-from torch.cuda.amp import autocast
-from modelgenerator.tasks import Embed
-
 from czbenchmarks.datasets import BaseDataset, DataType
-from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
-from czbenchmarks.models.validators import BaseSingleCellValidator
-from czbenchmarks.models.types import ModelType
 from czbenchmarks.datasets.single_cell import Organism
-from czbenchmarks.datasets.utils import load_dataset
-
-import scanpy as sc
+from czbenchmarks.models.implementations.base_model_implementation import \
+    BaseModelImplementation
+from czbenchmarks.models.types import ModelType
+from czbenchmarks.models.validators import BaseSingleCellValidator
+from modelgenerator.tasks import Embed
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +25,7 @@ def align_cells_to_model(
     adata: ad.AnnData,
     model_gene_file: str,
     feature_col: str = "feature_name",
-    model_csv_gene_column: str = "gene_name"
+    model_csv_gene_column: str = "gene_name",
 ) -> Tuple[ad.AnnData, np.ndarray]:
     """
     Align an AnnData object's genes to the model's gene list.
@@ -43,7 +39,9 @@ def align_cells_to_model(
 
     # Step 2: Load model genes from the specified column in the TSV file
     try:
-        model_genes_df = pd.read_csv(model_gene_file, sep="\t", usecols=[model_csv_gene_column])
+        model_genes_df = pd.read_csv(
+            model_gene_file, sep="\t", usecols=[model_csv_gene_column]
+        )
         model_genes = model_genes_df[model_csv_gene_column].tolist()
     except Exception as e:
         logger.error("Error loading model gene file '%s': %s", model_gene_file, str(e))
@@ -55,7 +53,11 @@ def align_cells_to_model(
     model_gene_to_index = {gene: idx for idx, gene in enumerate(model_genes)}
     common_genes = [gene for gene in model_genes if gene in input_gene_to_index]
 
-    logger.info("Found %d / %d model genes in input AnnData.", len(common_genes), len(model_genes))
+    logger.info(
+        "Found %d / %d model genes in input AnnData.",
+        len(common_genes),
+        len(model_genes),
+    )
     if not common_genes:
         raise ValueError("No overlap between input AnnData genes and model gene set.")
 
@@ -68,18 +70,24 @@ def align_cells_to_model(
         raise TypeError(f"Unsupported AnnData.X type: {type(adata.X)}")
 
     # Step 5: Build the aligned matrix with zero-padding for missing genes
-    aligned_matrix = np.zeros((input_matrix.shape[0], len(model_genes)), dtype=input_matrix.dtype)
+    aligned_matrix = np.zeros(
+        (input_matrix.shape[0], len(model_genes)), dtype=input_matrix.dtype
+    )
     for gene in common_genes:
-        aligned_matrix[:, model_gene_to_index[gene]] = input_matrix[:, input_gene_to_index[gene]]
+        aligned_matrix[:, model_gene_to_index[gene]] = input_matrix[
+            :, input_gene_to_index[gene]
+        ]
 
     aligned_adata = ad.AnnData(
         X=sp.csr_matrix(aligned_matrix),
         obs=adata.obs.copy(),
-        var=pd.DataFrame(index=model_genes)
+        var=pd.DataFrame(index=model_genes),
     )
 
     # Step 6: Create a boolean mask indicating which model genes are present
-    gene_presence_mask = np.array([gene in common_genes for gene in model_genes], dtype=bool)
+    gene_presence_mask = np.array(
+        [gene in common_genes for gene in model_genes], dtype=bool
+    )
 
     return aligned_adata, gene_presence_mask
 
@@ -90,7 +98,7 @@ def get_gene_embeddings_from_model(
     mask: np.ndarray,
     batch_size: int,
     device: torch.device,
-    use_amp: bool = True
+    use_amp: bool = True,
 ) -> np.ndarray:
     """
     Batch-wise inference: apply model, mask genes, and average embeddings.
@@ -117,14 +125,22 @@ def get_gene_embeddings_from_model(
         batch_tensor = torch.from_numpy(batch_np).to(device=device, dtype=torch.float16)
 
         # Prepare attention mask
-        attention_mask = torch.tensor(mask, dtype=torch.bool, device=device).unsqueeze(0).expand(batch_tensor.size(0), -1)
+        attention_mask = (
+            torch.tensor(mask, dtype=torch.bool, device=device)
+            .unsqueeze(0)
+            .expand(batch_tensor.size(0), -1)
+        )
 
         # Perform inference
-        with torch.amp.autocast('cuda', dtype=torch.float16, enabled=use_amp):
+        with torch.amp.autocast("cuda", dtype=torch.float16, enabled=use_amp):
             try:
-                out = model(batch_tensor, attention_mask=attention_mask)  # Pass attention_mask to the model
+                out = model(
+                    batch_tensor, attention_mask=attention_mask
+                )  # Pass attention_mask to the model
             except Exception as e:
-                logger.error(f"Error during model execution for batch {i} to {end}: {e}")
+                logger.error(
+                    f"Error during model execution for batch {i} to {end}: {e}"
+                )
                 raise
 
         # Validate gene dimension
@@ -138,7 +154,9 @@ def get_gene_embeddings_from_model(
 
         # Collapse genes by averaging
         emb2d = out_masked.mean(dim=1)  # [batch x dim]
-        embeddings_list.append(emb2d.detach().cpu().numpy())  # Detach before converting to NumPy
+        embeddings_list.append(
+            emb2d.detach().cpu().numpy()
+        )  # Detach before converting to NumPy
 
     # Concatenate and sanitize
     embeddings = np.concatenate(embeddings_list, axis=0)
@@ -151,7 +169,7 @@ def get_gene_embeddings_from_model(
 class AIDOValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
-    required_var_keys = ['feature_name']
+    required_var_keys = ["feature_name"]
     model_type = ModelType.AIDO
 
     @property
@@ -165,6 +183,7 @@ class AIDOValidator(BaseSingleCellValidator):
 
 class AIDO(AIDOValidator, BaseModelImplementation):
     """AIDO single-cell embedding model."""
+
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         pass
 
@@ -177,14 +196,14 @@ class AIDO(AIDOValidator, BaseModelImplementation):
             "--batch_size",
             type=int,
             default=16,
-            help="Batch size for processing data (default: 2)"
+            help="Batch size for processing data (default: 16)",
         )
         parser.add_argument(
             "--model_variant",
             type=str,
-            choices=["aido_cell_3m", "aido_cell_10m" "aido_cell_100m"],
-            default="aido_cell_3m",
-            help="Model variant to use (default: aido_cell_3m)"
+            choices=["aido_cell_3m", "aido_cell_10m", "aido_cell_100m"],
+            default="aido_cell_100m",
+            help="Model variant to use (default: aido_cell_100m)",
         )
         args = parser.parse_args()
         return args
@@ -197,25 +216,20 @@ class AIDO(AIDOValidator, BaseModelImplementation):
             adata: ad.AnnData = dataset.adata
 
             logger.info(
-                "AIDO: Running %s on %d cells × %d genes",
-                variant, *adata.shape
+                "AIDO: Running %s on %d cells × %d genes", variant, *adata.shape
             )
 
             # Align genes
             gene_file = os.path.join(
-                os.path.dirname(__file__),
-                "OS_scRNA_gene_index.19264.tsv"
+                os.path.dirname(__file__), "OS_scRNA_gene_index.19264.tsv"
             )
-            aligned_adata, mask = align_cells_to_model(
-                adata, model_gene_file=gene_file
-            )
+            aligned_adata, mask = align_cells_to_model(adata, model_gene_file=gene_file)
 
             # Load model
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            model = Embed.from_config({
-                "model.backbone": variant,
-                "model.batch_size": batch_size
-            }).backbone
+            model = Embed.from_config(
+                {"model.backbone": variant, "model.batch_size": batch_size}
+            ).backbone
             model = model.eval().to(device).to(torch.float16)
 
             # Batch inference with dynamic batch size adjustment
@@ -226,22 +240,22 @@ class AIDO(AIDOValidator, BaseModelImplementation):
                         aligned_adata=aligned_adata,
                         mask=mask,
                         batch_size=batch_size,
-                        device=device
+                        device=device,
                     )
                     break  # Exit loop if successful
                 except torch.cuda.OutOfMemoryError:
-                    logger.warning(f"Out of memory with batch size {batch_size}. Reducing batch size by half.")
+                    logger.warning(
+                        f"Out of memory with batch size {batch_size}. Reducing batch size by half."
+                    )
                     batch_size = max(1, batch_size // 2)  # Reduce batch size by half
                     if batch_size == 1:
-                        logger.error("Batch size reduced to 1, but still out of memory.")
+                        logger.error(
+                            "Batch size reduced to 1, but still out of memory."
+                        )
                         raise
 
             # Set output
-            dataset.set_output(
-                self.model_type,
-                DataType.EMBEDDING,
-                embeddings
-            )
+            dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
             logger.info("AIDO: Completed embedding of %d cells.", embeddings.shape[0])
 
         except Exception:
@@ -251,4 +265,3 @@ class AIDO(AIDOValidator, BaseModelImplementation):
 
 if __name__ == "__main__":
     AIDO().run()
-
