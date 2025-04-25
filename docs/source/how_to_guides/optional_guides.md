@@ -6,8 +6,10 @@ For macOS users, follow these steps to set up your development environment:
 
 ### Prerequisites
 
-1. **Install Conda**  
-    Download and install either [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution). These tools help manage Python environments and dependencies.
+1. **Install Tool for Python Environment and Dependency Management**  
+    There are multiple tools for managing Python environments and dependencies. Popular ones include [pip and venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/), [Miniconda](https://docs.conda.io/en/latest/miniconda.html), and [Anaconda](https://www.anaconda.com/products/distribution). An alternative, [uv](https://docs.astral.sh/uv/getting-started/installation/), is described below.
+    
+Choose your favorite and sure it is correctly installed.
 
 2. **Install Xcode Command Line Tools**  
     Xcode provides essential compiler tools for macOS. Run the following command in your terminal to install it:
