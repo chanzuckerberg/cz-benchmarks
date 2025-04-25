@@ -5,7 +5,7 @@ This guide explains how to integrate your own dataset into CZ Benchmarks.
 ## Requirements
 
 - For single-cell models, the dataset must conform to AnnData standards in `.h5ad` file format.
-- Ensure the dataset includes required metadata columns (e.g., `obs` for metadata, `var` for gene names, etc.).
+- Ensure the dataset meets the validation requirements of the models the dataset will be used to benchmark. For AnnData datasets, this means ensuring that `obs` and `var` each contain the required metadata columns, as specified by each model's `available_organisms`, `required_obs_keys` and `required_var_keys` properties.
 
 
 ## Steps to Add Your Dataset
