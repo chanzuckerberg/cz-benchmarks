@@ -39,11 +39,7 @@ Choose your favorite and make sure it is correctly installed.
 2. **Install Dependencies**  
     Install the required Python packages:
 
-    - Install `hnswlib` using Conda:
-
-      ```bash
-      conda install -c conda-forge hnswlib
-      ```
+Mac requires an additional dependency, `hnswlib`, which should be installed with the package manager.
 
     - Install the package in editable mode with development dependencies:
 
