@@ -7,6 +7,7 @@ from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.datasets.types import DataType
 import numpy as np
+from unittest.mock import patch, MagicMock
 
 
 class SimpleModel:
@@ -35,7 +36,8 @@ class SimpleModel:
         return mock_processed_data
 
 
-def test_cli_e2e_workflow():
+@patch('czbenchmarks.runner.ContainerRunner')
+def test_cli_e2e_workflow(mock_runner):
     """
     Test end-to-end workflow using CLI with model and dataset.
 
@@ -56,6 +58,11 @@ def test_cli_e2e_workflow():
     # Create and run simple model
     model = SimpleModel()
     dataset = model.run_inference(dataset)
+
+    # Mock the ContainerRunner instance to avoid a nvidia runtime error at run_with_inference
+    mock_runner_instance = MagicMock()
+    mock_runner_instance.run.return_value = dataset
+    mock_runner.return_value = mock_runner_instance
 
     task_name = "embedding"
     model_name = "SCGPT"
