@@ -12,19 +12,20 @@ from unittest.mock import patch, MagicMock
 
 class SimpleModel:
     """A simple model that generates random embeddings.
-    
+
     This is a dummy implementation that doesn't do any real model inference.
     It just generates random embeddings of the correct shape for testing purposes.
     """
+
     def __init__(self):
         self.model_type = ModelType.SCGPT
 
     def run_inference(self, dataset):
         """Generate random embeddings for the dataset.
-        
+
         Args:
             dataset: The dataset to generate embeddings for
-            
+
         Returns:
             The dataset with random embeddings added to its outputs
         """
@@ -36,7 +37,7 @@ class SimpleModel:
         return mock_processed_data
 
 
-@patch('czbenchmarks.runner.ContainerRunner')
+@patch("czbenchmarks.runner.ContainerRunner")
 def test_cli_e2e_workflow(mock_runner):
     """
     Test end-to-end workflow using CLI with model and dataset.
