@@ -31,8 +31,6 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86
 RUN git clone https://github.com/genbio-ai/ModelGenerator.git && \
     mv ModelGenerator/* /app && rm -rf ModelGenerator
 
-
-   
 # Install the modelgenerator package and its dependencies.
 # NOTE: Installing from AIDO repo is causing issues as the changes are causing problem running AIDO.Cell
 # /opt/venv_aido/bin/pip install ".[flash_attn]" && \
@@ -43,7 +41,7 @@ RUN /opt/venv_aido/bin/pip install torch torchvision torchaudio --index-url http
     /opt/venv_aido/bin/pip install -r /app/experiments/AIDO.Cell/requirements.txt
 
 
-COPY docker/aido/cell_utils.py /app/cell_utils.py
+# COPY docker/aido/cell_utils.py /app/cell_utils.py
 COPY docker/aido/OS_scRNA_gene_index.19264.tsv /app/OS_scRNA_gene_index.19264.tsv
 COPY docker/aido/model.py /app/model.py
 
