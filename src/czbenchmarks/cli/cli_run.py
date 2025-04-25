@@ -231,6 +231,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--cross-species-task-label-key",
         help="Label key to use for cross species integration task",
     )
+    
+    # Extra arguments for perturbation task
+    parser.add_argument(
+        "--perturbation-task-set-baseline",
+        action="store_true",
+        help="Use mean and median predictions as the BASELINE model output in the dataset",
+    )
+
     # Advanced feature: define multiple batches of jobs using JSON
     parser.add_argument(
         "--batch-json",
