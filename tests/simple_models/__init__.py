@@ -1,2 +1,1 @@
-"""Simple model implementations for testing purposes.
-"""
+"""Simple model implementations for testing purposes."""
