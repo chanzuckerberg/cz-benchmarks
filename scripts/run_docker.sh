@@ -16,8 +16,10 @@ MOUNT_FRAMEWORK_CODE=true # true or false -- whether to mount the czbenchmarks c
 
 # Container related settings
 BUILD_DEV_CONTAINER=true # true or false -- true to build locally, false to pull public image
-EVAL_CMD="bash" # Example evaluation commands:
+EVAL_CMD="bash" 
+# Example evaluation commands:
 # "bash"
+# "jupyter-lab --notebook-dir=/app/examples --port=8888 --no-browser --allow-root"
 # "/opt/conda/envs/uce/bin/python -u /app/examples/example_interactive.py" for uce
 # "python3 -u /app/examples/example_interactive_perturb.py" for scGenePT
 # "python3 -u /app/examples/example_interactive.py" for all other models
@@ -247,6 +249,9 @@ create_docker_run_command() {
     --env TMPDIR=/tmp \\
     --env NUMBA_CACHE_DIR=/tmp \\
     --env MPLCONFIGDIR=/tmp \\
+    --env IPYTHONDIR=/tmp \\
+    --env JUPYTER_DATA_DIR=/tmp \\
+    --env JUPYTER_CONFIG_DIR=/tmp \\
     --env SHELL=bash \\"
 
     # User-specific settings if not running as root, NOTE: untested on WSL
