@@ -14,6 +14,7 @@ TASK_NAMES = [
     "embedding",
     "label_prediction",
     "integration",
+    "cross_species",
     "perturbation",
 ]
 

@@ -27,6 +27,7 @@ from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
+from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 
 log = logging.getLogger(__name__)
@@ -210,7 +211,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--integration-task-batch-key",
         help="Key to access batch labels in metadata",
     )
-
+    # Extra arguments for cross species integration task
+    parser.add_argument(
+        "--cross-species-task-label-key",
+        help="Label key to use for cross species integration task",
+    )
     # Advanced feature: define multiple batches of jobs using JSON
     parser.add_argument(
         "--batch-json",
@@ -258,6 +263,8 @@ def main(parsed_args: argparse.Namespace) -> None:
             task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
         if "perturbation" in args.tasks:
             task_args.append(parse_task_args("perturbation", PerturbationTask, args))
+        if "cross_species" in args.tasks:
+            task_args.append(parse_task_args("cross_species", CrossSpeciesIntegrationTask, args))
 
         # Run the tasks
         task_result = run(
