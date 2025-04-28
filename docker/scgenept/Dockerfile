@@ -14,7 +14,7 @@ RUN git clone https://github.com/czi-ai/scGenePT.git && \
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
-RUN pip install -e /app/package && \
+RUN pip install -e /app/package[interactive] && \
     pip install cell-gears==0.0.2
 
 COPY docker/scgenept/model.py .

@@ -53,13 +53,13 @@ class ScGPT(ScGPTValidator, BaseModelImplementation):
         return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         selected_model = config.models[self.args.model_variant]
         model_variant = selected_model.model_name
         return model_variant
 
     def _download_model_weights(self, _dataset: BaseDataset):
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         selected_model = config.models[self.args.model_variant]
         model_uri = selected_model.model_uri
 
