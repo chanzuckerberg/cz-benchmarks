@@ -1,37 +1,33 @@
-"""Simple model implementation for testing purposes.
-
-This module contains a simple model that generates random embeddings.
-It's useful for testing the framework's functionality without requiring
-real model inference or Docker containers.
-"""
+"""Simple model for testing"""
 
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.datasets.types import DataType
-import numpy as np
+import scanpy as sc
 
 
 class SimpleModel:
-    """A simple model that generates random embeddings.
-
-    This is a dummy implementation that doesn't do any real model inference.
-    It just generates random embeddings of the correct shape for testing purposes.
-    """
+    """A model that generates embeddings on the dataset outputs"""
 
     def __init__(self):
         self.model_type = ModelType.SCGPT
 
     def run_inference(self, dataset):
-        """Generate random embeddings for the dataset.
-
-        Args:
-            dataset: The dataset to generate embeddings for
-
-        Returns:
-            The dataset with random embeddings added to its outputs
-        """
-        mock_processed_data = dataset
-        n_cells = dataset.adata.n_obs
-        dummy_embeddings = np.random.normal(size=(n_cells, 100))
-        model_type = self.model_type
-        mock_processed_data.outputs[model_type] = {DataType.EMBEDDING: dummy_embeddings}
-        return mock_processed_data 
+        """Generate embeddings on the dataset outputs"""
+        # Get the raw data
+        adata = dataset.adata.copy()
+        
+        # Standard preprocessing
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        sc.pp.log1p(adata)
+        
+        # Find highly variable genes
+        sc.pp.highly_variable_genes(adata, n_top_genes=1000)
+        adata = adata[:, adata.var.highly_variable]
+        
+        # Use PCA as embeddings
+        sc.pp.scale(adata)
+        sc.tl.pca(adata, n_comps=100)
+        embeddings = adata.obsm['X_pca']
+        
+        dataset.outputs[self.model_type] = {DataType.EMBEDDING: embeddings}
+        return dataset 

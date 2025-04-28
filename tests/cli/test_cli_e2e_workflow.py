@@ -18,10 +18,10 @@ def test_cli_e2e_workflow(mock_runner):
     focusing on a single dataset/model/task combination. Specifically using
     the CLI "entrypoint" method czbenchmarks.cli.cli_run.run_with_inference.
 
-    Note: This test uses random embeddings and is not meant to verify model output
-    correctness. Its purpose is to verify that the framework components work together
-    correctly in an end-to-end workflow. Model output and metric correctness will be
-    verified by separate model regression tests.
+    Note: This test uses a simple model that generates embeddings on the dataset outputs
+    and is not meant to verify model output correctness. Its purpose is to verify that
+    the framework components work together correctly in an end-to-end workflow. Model
+    output and metric correctness will be verified by separate model regression tests.
     """
     # region: Setup dataset, model, and task arguments
     dataset_name = "chicken_spermatogenesis"
