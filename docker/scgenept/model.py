@@ -88,7 +88,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         assert (
             f"{self.args.model_variant}__{self.args.dataset_name}" in config.models
         ), (
@@ -97,7 +97,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         return f"{self.args.model_variant}/{self.args.dataset_name}"
 
     def _download_model_weights(self, _dataset: BaseDataset):
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
 
         # Sync the finetuned model weights from S3 to the local model weights directory
         model_uri = config.models[
