@@ -3,7 +3,8 @@ import logging
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Any
+from argparse import ArgumentParser, Namespace
 
 from ...constants import (
     INPUT_DATA_PATH_DOCKER,
@@ -42,6 +43,21 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     datasets: List[BaseDataset]
     model_weights_dir: str
+    args: Namespace
+
+    def __init__(self, **user_kwargs):
+        super().__init__()
+
+        # User supplied arguments take precedence over CLI arguments
+        # This allows for easy overriding of default values
+        # while still allowing for CLI argument parsing
+        cli_args = self.parse_args()
+
+        self.args = self._merge_arguments(
+            cli_args=vars(cli_args), user_args=user_kwargs
+        )
+
+        self.args = Namespace(**self.args)
 
     @abstractmethod
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
@@ -89,9 +105,23 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     def run_model(self, dataset: BaseDataset) -> None:
         """Implement model-specific inference logic"""
 
-    @abstractmethod
-    def parse_args(self):
-        """Parse model-specific command line arguments."""
+    def parse_args(self) -> Namespace:
+        """Centralized argument parsing using subclass-defined parser"""
+        parser = self.create_parser()
+        args = Namespace()
+        if parser:
+            args = parser.parse_known_args()[0]
+        return args
+
+    def _merge_arguments(
+        self, cli_args: dict[str, Any], user_args: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Merge arguments with user input as priority"""
+        return {**cli_args, **user_args}
+
+    def create_parser(self) -> ArgumentParser | None:
+        """Subclasses implement to define their CLI arguments"""
+        return None
 
     def run(self, datasets: Optional[BaseDataset | List[BaseDataset]] = None):
         """Run the full model pipeline.
