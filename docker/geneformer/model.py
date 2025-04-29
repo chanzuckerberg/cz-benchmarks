@@ -136,8 +136,10 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         temp_dir = tempfile.TemporaryDirectory()
         temp_dir = Path(temp_dir.name) / "h5ad_data"
         temp_dir.mkdir(parents=True, exist_ok=True)
-            
-        with tempfile.NamedTemporaryFile(suffix=".h5ad", dir=temp_dir, delete=False) as tmp_file:
+
+        with tempfile.NamedTemporaryFile(
+            suffix=".h5ad", dir=temp_dir, delete=False
+        ) as tmp_file:
             temp_path = Path(tmp_file.name)
             dataset.adata.write_h5ad(temp_path)
         return temp_path
