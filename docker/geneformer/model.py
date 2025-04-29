@@ -251,7 +251,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
     def _cleanup_temp_files(self, temp_path: Path):
         """Remove temporary files and directories."""
         try:
-            shutil.rmtree(temp_path.parent, ignore_errors=True)
+            shutil.rmtree(temp_path.parent.parent, ignore_errors=True)
         finally:
             logging.info("Run complete. Temporary files cleaned up.")
 
