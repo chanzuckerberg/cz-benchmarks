@@ -360,7 +360,7 @@ def run_with_inference(
     embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
     for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
         log.info(
-            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for dataset "{dataset_name}"'
+            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
         )
         task_result = run_multi_dataset_task(dataset_names, embeddings, {}, task_arg)
         task_results.extend(task_result)
@@ -440,7 +440,7 @@ def run_without_inference(
     embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
     for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
         log.info(
-            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for dataset "{dataset_name}"'
+            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
         )
         task_result = run_multi_dataset_task(dataset_names, embeddings, {}, task_arg)
         task_results.extend(task_result)
