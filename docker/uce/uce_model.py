@@ -112,22 +112,6 @@ class UCE(UCEValidator, BaseModelImplementation):
             f"{self.model_weights_dir}/model_files/species_chrom.csv"
         )
 
-        # Create symbolic link for protein embeddings directory
-        protein_embeddings_source = pathlib.Path(
-            config.model_config[model_variant].protein_embeddings_dir
-        )
-        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
-        protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
-        if protein_embeddings_target.exists():
-            protein_embeddings_target.unlink()
-        protein_embeddings_target.symlink_to(protein_embeddings_source)
-
-        if protein_embeddings_target.exists():
-            for path in protein_embeddings_target.rglob("*"):
-                logger.info(f"{path.relative_to(protein_embeddings_target)}\n")
-        else:
-            logger.warning("Directory does not exist\n")
-
         adata = dataset.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))
         with tempfile.TemporaryDirectory() as tmp_dir:
