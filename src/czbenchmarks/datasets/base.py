@@ -86,11 +86,20 @@ class BaseDataset(ABC):
         self._inputs[data_type] = value
 
     def set_output(
-        self, model_type: ModelType, data_type: DataType, value: DataValue
+        self, model_type: ModelType | None, data_type: DataType, value: DataValue
     ) -> None:
-        """Safely set an output with type checking."""
+        """Safely set an output with type checking.
+        Args:
+            model_type (ModelType | None): The type of model associated with the output.
+                This parameter is used to differentiate between outputs
+                from various models. It can be set to `None` if the output
+                is not tied to a specific model type defined in the `ModelType` enum.
+            data_type (DataType): Specifies the data type of the output.
+            value (Any): The value to assign to the output.
+        """
         if data_type.is_input:
             raise ValueError(f"Cannot set input type as output: {data_type.name}")
+
         self._validate_type(value, data_type.dtype, f"Output {data_type.name}")
         if model_type not in self._outputs:
             self._outputs[model_type] = {}
@@ -102,8 +111,19 @@ class BaseDataset(ABC):
             raise KeyError(f"Input {data_type.name} not found")
         return self._inputs[data_type]
 
-    def get_output(self, model_type: ModelType, data_type: DataType) -> DataValue:
-        """Safely get an output with error handling."""
+    def get_output(
+        self, model_type: ModelType | None, data_type: DataType
+    ) -> DataValue:
+        """Safely get an output with error handling.
+        Args:
+            model_type (ModelType | None): The type of model associated with the output.
+                This parameter is used to differentiate between outputs
+                from various models. It can be set to `None` if the output
+                is not tied to a specific model type defined in the `ModelType` enum.
+            data_type (DataType): Specifies the data type of the output.
+        Returns:
+            DataValue: The value of the output.
+        """
         if model_type not in self._outputs:
             raise KeyError(f"Outputs for model {model_type.name} not found")
         if data_type not in self._outputs[model_type]:

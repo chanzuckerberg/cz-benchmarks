@@ -61,16 +61,16 @@ class UCEValidator(BaseSingleCellValidator):
 
 
 class UCE(UCEValidator, BaseModelImplementation):
-    def parse_args(self):
+    def create_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_variant", type=str, default="4l")
-        return parser.parse_args()
+        return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         return ""
 
     def _download_model_weights(self, _dataset: BaseDataset):
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
 
@@ -83,10 +83,9 @@ class UCE(UCEValidator, BaseModelImplementation):
     def run_model(self, dataset: BaseDataset):
         from evaluate import AnndataProcessor
 
-        args = self.parse_args()
-        model_variant = args.model_variant
+        model_variant = self.args.model_variant
 
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         assert model_variant in config.model_config, (
             f"Model {model_variant} not found in config.yaml. "
             f"Valid models are: {list(config.model_config.keys())}"

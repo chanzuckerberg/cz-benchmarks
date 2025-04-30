@@ -49,9 +49,6 @@ class SCVIValidator(BaseSingleCellValidator):
 
 
 class SCVI(SCVIValidator, BaseModelImplementation):
-    def parse_args(self):
-        pass
-
     def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
         return dataset.organism.name
 
@@ -59,7 +56,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
 
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         s3_path = config[dataset.organism.name]["model_dir"]
         bucket = s3_path.split("/")[2]
         path = "/".join(s3_path.split("/")[3:])
