@@ -18,7 +18,7 @@ COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
 
-RUN uv pip install -e /app/package
+RUN . /app/transcriptformer/.venv/bin/activate && uv pip install -e /app/package
 
 COPY docker/transcriptformer/model.py .
 
