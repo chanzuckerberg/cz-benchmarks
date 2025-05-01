@@ -1,6 +1,6 @@
-# Add a New Metric
+# Add a Custom Metric
 
-This guide explains how to add a new metric to the CZ Benchmarks metrics system. Follow the steps below to implement and register your custom metric.
+This guide explains how to add your own metric to the CZ Benchmarks metrics system. Follow the steps below to implement and register your custom metric.
 
 ---
 
@@ -9,7 +9,8 @@ This guide explains how to add a new metric to the CZ Benchmarks metrics system.
 ### 1. Define a New Metric Type
 First, define your new metric type in the `MetricType` enum.
 
-1. Open the file: `czbenchmarks/metrics/types.py`.
+1. Open the file: [`czbenchmarks/metrics/types.py`](../autoapi/czbenchmarks/metrics/types/index.rst).
+
 2. Add a new entry to the `MetricType` enum. For example:
     ```python
     from enum import Enum
@@ -23,8 +24,8 @@ First, define your new metric type in the `MetricType` enum.
 
 ### 2. Implement the Metric Function
 Next, register a function that computes the value of your metric.
+1. Define the function in the [`czbenchmarks/metrics/implementations.py`](../autoapi/czbenchmarks/metrics/implementations/index.rst). For example: 
 
-1. Define the function in implementation :doc:`../autoapi/czbenchmarks/metrics/index`. class. For example:
     ```python
     def your_new_metric_func(y_true, y_pred):
          """
@@ -50,7 +51,8 @@ Next, register a function that computes the value of your metric.
 ### 3. Register the Metric
 Register your metric with the `MetricRegistry` to make it available for use.
 
-1. Open the file: `czbenchmarks/metrics/implementations.py`.
+1. Open the file: [`czbenchmarks/metrics/implementations.py`](../autoapi/czbenchmarks/metrics/implementations/index.rst).
+
 2. Add the registration code:
     ```python
     from czbenchmarks.metrics.registry import metrics_registry
@@ -69,21 +71,28 @@ Register your metric with the `MetricRegistry` to make it available for use.
 ---
 
 ### 4. Use the Metric
-Once registered, you can compute your metric in czbenchmarks/tasks module in the codebase.
+Once your metric is registered, you can use it within the [`czbenchmarks/tasks`](../autoapi/czbenchmarks/tasks/index.rst) directory by integrating it into a relevant task file. Here's how:
 
-1. Import the necessary components:
+1. Navigate to the appropriate task file in the [`czbenchmarks/tasks`](../autoapi/czbenchmarks/tasks/index.rst) directory or create a new task file.
+
+2. Import the necessary components:
     ```python
     from czbenchmarks.metrics.types import MetricType, metrics_registry
     ```
 
-2. Compute the metric:
+3. Compute your custom metric by calling the `compute` method:
     ```python
-    value = metrics_registry.compute(
-         MetricType.YOUR_NEW_METRIC,
-         y_true=true_values,
-         y_pred=pred_values
+    metric_value = metrics_registry.compute(
+        MetricType.YOUR_NEW_METRIC,
+        y_true=true_values,
+        y_pred=pred_values
     )
     ```
+
+4. Use the computed `metric_value` as needed in your task logic.
+
+This allows you to seamlessly integrate your custom metric into the existing benchmarking workflow.
+
 
 ---
 

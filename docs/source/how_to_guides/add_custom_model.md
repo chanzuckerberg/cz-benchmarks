@@ -1,6 +1,6 @@
 # Add a Custom Model
 
-This guide provides a step-by-step process to integrate a new model into CZ Benchmarks.
+This guide provides a step-by-step process to integrate your own model into CZ Benchmarks.
 
 ---
 
@@ -24,8 +24,8 @@ To add a new model, you will:
     docker/your_model/
     ├── Dockerfile          # Define the container environment
     ├── model.py            # Implementation of your model inference code
+    ├── config.yaml         # Configuration file for your model
     ├── requirements.txt    # (Optional) List Python dependencies
-    ├── config.yaml         # (Optional) Configuration file for your model
     └── assets/             # (Optional) Store model weights, vocabularies, etc.
     ```
 
@@ -92,17 +92,43 @@ To add a new model, you will:
          YourModel().run()
     ```
 
+3. Create config file for the model
+
+    Example:
+
+    ```yaml
+     _target_: model.YourModel
+
+    ```
+    Config file may include additional parameters required by model
+
 ---
 
 ## Step 4: Test Your Model
 
-1. Ensure all dependencies are listed in `requirements.txt`.
-2. Build and test the Docker container using the `Dockerfile`.
-3. Validate the model's functionality by running it on a sample dataset.
+1. Ensure all required dependencies for your model are listed in the `requirements.txt` file. This ensures the Docker container has everything it needs to run your model.
+
+2. Build the Docker container using the `Dockerfile` you created. Run the following command, replacing `your_model_name` and `your_model` with the appropriate values:
+
+     ```sh
+     docker build -t cz-benchmarks-models:your_model_name -f docker/yourmodelpath/Dockerfile .
+     ```
+
+3. Add the Docker build command to your project's `Makefile` for easier execution. For example:
+
+     ```makefile
+     .PHONY: your_model_name
+     your_model_name:
+          docker build -t cz-benchmarks-models:your_model_name -f docker/yourmodelpath/Dockerfile .
+     ```
+
+4. Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset.
+5. Verify that your model works as expected by testing it on a sample dataset. Ensure the outputs are correct and align with the intended task and metric.
 
 ---
 
 ## Additional Notes
 
-- Refer to existing implementations like scVI or scGPT for inspiration.
-- Use the `assets/` directory to store any additional files required by your model, such as pre-trained weights or vocabularies.
+- For guidance, review existing implementations such as `scVI` or `scGPT`. These examples can help you understand best practices and common patterns.
+- Use the `assets/` directory to store supplementary files your model might need, such as pre-trained weights, vocabularies, or other resources. Keeping these files organized ensures your model remains portable and easy to manage.
+

@@ -12,4 +12,4 @@ The How To Guides offer step-by-step instructions for common customizations and 
    add_new_metric
    interactive_mode
    visualize_results
-   optional_guides
+   setup_guides

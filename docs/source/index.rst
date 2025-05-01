@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-CZ-Benchmarks Documentation
+CZ Benchmarks Documentation
 ===========================
 
 CZ Benchmarks is a reproducible benchmarking package designed for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. It supports plug-and-play benchmarking of models and tasks using Docker containers, with support for custom models, datasets, and evaluation metrics.
@@ -32,13 +32,22 @@ Why Choose CZ Benchmarks?
 
    ** 🚧 Under Development** - This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support. Feedback and contributions are welcome, but user support is limited for now.
 
+
+**Project Roadmap:**
+
+For upcoming features and plans, see the :doc:`Project Roadmap <roadmap>`.
+
+
 .. toctree::
    :maxdepth: 1
 
    quick_start
    how_to_guides/index
    developer_guides/index
+   api_reference
    policy/index
+   roadmap
    legal
    changelog_release_notes
+
 

@@ -70,6 +70,7 @@ docs = [
     "sphinx-autodoc-typehints",
     "sphinx-markdown-builder",
     "myst-parser",
+    "sphinxcontrib.mermaid", 
     "sphinx-rtd-theme",
     "sphinx-copybutton",
     "nbsphinx",

@@ -24,6 +24,7 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx_markdown_builder",
     "myst_parser",
+    "sphinxcontrib.mermaid",
     "autoapi.extension",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
@@ -58,8 +59,11 @@ autoapi_keep_files = True
 
 
 napoleon_google_docstring = True
-napoleon_numpy_docstring = False
+napoleon_numpy_docstring = True
 
+myst_fence_as_directive = ["mermaid"]
+
+mermaid_d3_zoom = True
 
 myst_enable_extensions = [
     "dollarmath",
@@ -113,3 +117,8 @@ inheritance_node_attrs = dict(
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
 html_css_files = ["custom.css"]
+
+
+# html_js_files = [
+#     "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
+# ]

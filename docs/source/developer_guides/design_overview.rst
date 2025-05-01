@@ -8,8 +8,8 @@ CZ Benchmarks is designed with modularity and reproducibility in mind. Its core 
     See :doc:`datasets` for more details.
 
 - **Models**:  
-    Encapsulated in Docker containers, models implement the `BaseModelImplementation` interface and are validated by corresponding validator classes.  
-    See :doc:`models` for more details.
+    Models are packaged in Docker containers and follow the `BaseModelImplementation` interface. Each model is checked for correctness using dedicated validator classes.  
+    For more information, see :doc:`models`.
 
 - **Tasks**:  
     Define evaluation operations such as clustering, embedding evaluation, label prediction, and perturbation assessment. Tasks extend the `BaseTask` class and serve as blueprints for benchmarking.  
@@ -39,9 +39,6 @@ Key Design Concepts
   Custom type definitions in the datasets and validators enforce that the data and model outputs meet expected standards.
 
 
-.. raw:: html
-
-    <br><br>
 
 
 .. Flowchart
@@ -66,12 +63,41 @@ Key Design Concepts
 Class Diagrams
 ----------------
 
-.. raw:: html
 
-    <br><br><br>
+.. .. mermaid::
+..    :zoom:
+
+.. .. autoclasstree:: czbenchmarks.datasets czbenchmarks.models.implementations czbenchmarks.models.validators czbenchmarks.tasks czbenchmarks.tasks.single_cell czbenchmarks.metrics.implementations czbenchmarks.metrics.types
+..    :name: class-diagram
+..    :alt: Class diagram for CZ Benchmarks components
+..    :zoom:
 
 
-.. container:: class-diagram-container 
 
-    .. inheritance-diagram::  czbenchmarks.datasets.types czbenchmarks.datasets.base czbenchmarks.datasets.single_cell czbenchmarks.models.types czbenchmarks.models.implementations.base_model_implementation czbenchmarks.models.validators.base_model_validator czbenchmarks.models.validators.base_single_cell_model_validator czbenchmarks.tasks.base czbenchmarks.tasks.clustering czbenchmarks.tasks.embedding czbenchmarks.tasks.integration czbenchmarks.tasks.label_prediction czbenchmarks.tasks.single_cell.cross_species czbenchmarks.tasks.single_cell.perturbation czbenchmarks.metrics.types czbenchmarks.metrics.implementations 
-        :parts: -1
+.. autoclasstree::  czbenchmarks.datasets 
+   :name: class-diagram
+   :alt: Class diagram for CZ Benchmarks Datasets
+   :zoom:
+
+.. autoclasstree:: czbenchmarks.models.implementations czbenchmarks.models.validators
+   :name: class-diagram
+   :alt: Class diagram for CZ Benchmarks Models
+   :zoom:
+
+.. autoclasstree:: czbenchmarks.tasks czbenchmarks.tasks.single_cell
+   :name: class-diagram
+   :alt: Class diagram for CZ Benchmarks Tasks
+   :zoom:
+
+
+.. autoclasstree:: czbenchmarks.metrics.implementations czbenchmarks.metrics.types
+   :name: class-diagram
+   :alt: Class diagram for CZ Benchmarks Metrics
+   :zoom:
+
+
+.. .. container:: class-diagram-container 
+
+..    .. inheritance-diagram::  czbenchmarks.datasets.types czbenchmarks.datasets.base czbenchmarks.datasets.single_cell czbenchmarks.models.types czbenchmarks.models.implementations.base_model_implementation czbenchmarks.models.validators.base_model_validator czbenchmarks.models.validators.base_single_cell_model_validator czbenchmarks.tasks.base czbenchmarks.tasks.clustering czbenchmarks.tasks.embedding czbenchmarks.tasks.integration czbenchmarks.tasks.label_prediction czbenchmarks.tasks.single_cell.cross_species czbenchmarks.tasks.single_cell.perturbation czbenchmarks.metrics.types czbenchmarks.metrics.implementations 
+..        :parts: -1
+

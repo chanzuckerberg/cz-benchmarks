@@ -1,12 +1,12 @@
 # Quick Start Guide
 
-Welcome to **CZ-Benchmarks**! This guide will help you get started with installation, setup, and running your first benchmark in just a few steps.
+Welcome to **CZ Benchmarks**! This guide will help you get started with installation, setup, and running your first benchmark in just a few steps.
 
 ## Requirements
 
 Before you begin, ensure you have the following installed:
 
-- 🐍 **[Python 3.10+](https://www.python.org/downloads/)**:  Ensure you have Python 3.10 or later installed. [Download Python]
+- 🐍 **[Python 3.10+](https://www.python.org/downloads/)**:  3.10+**: Ensure you have Python 3.10 or later installed.
 - 🐳 **[Docker](https://docs.docker.com/get-started/get-docker/)**: Required for container-based execution.
 - 💻 **Hardware**: Intel/AMD64 architecture CPU with NVIDIA GPU, running Linux with [NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html).
 
@@ -127,7 +127,8 @@ print(results)
 
 Explore the following resources to deepen your understanding:
 - **How-to Guides**: [Practical guides](./how_to_guides/index.rst) for using and extending the library.
+- **Setup Guides**: [Setup Guides](./how_to_guides/setup_guides.md)
 - **Developer Docs**: [Internal structure and extension points](./developer_guides/index.rst).
-- **GitHub Repository**: [CZ-Benchmarks](https://github.com/chanzuckerberg/cz-benchmarks) for troubleshooting and support.
+- **GitHub Repository**: [cz-benchmarks](https://github.com/chanzuckerberg/cz-benchmarks) for troubleshooting and support.
 
 Happy benchmarking! 🚀
