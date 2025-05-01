@@ -22,4 +22,4 @@ RUN pip install -e /app/package
 
 COPY docker/transcriptformer/model.py .
 
-ENTRYPOINT ["python3", "-u", "/app/model.py"] 
+ENTRYPOINT ["/app/transcriptformer/.venv/bin/python", "-u", "/app/model.py"]
