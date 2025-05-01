@@ -5,9 +5,14 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip git
 
-RUN git clone https://github.com/czi-ai/transcriptformer && \
+# Clone the repository and install
+RUN apt-get install -y curl && \
+    pip install uv && \
+    git clone https://github.com/czi-ai/transcriptformer.git && \
     cd transcriptformer && \
-    pip install -e .
+    uv venv --python=3.11 && \
+    . .venv/bin/activate && \
+    uv pip install -e .
 
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
