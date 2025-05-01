@@ -20,7 +20,7 @@ You can install the library using one of the following methods:
 The easiest way to install the library is via PyPI:
 
 ```bash
-pip install czbenchmarks
+pip install cz-benchmarks
 ```
 
 ### Option 2: Install from Source (For Development)
