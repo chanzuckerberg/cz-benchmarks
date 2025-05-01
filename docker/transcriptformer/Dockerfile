@@ -5,13 +5,8 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip git
 
-# Install TranscriptFormer using build args for authentication
-ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
-RUN git config --global url."https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" && \
-    git clone https://github.com/czi-ai/transcriptformer-public transcriptformer && \
-    cd transcriptformer && \
-    pip install -e .
+# Install TranscriptFormer
+RUN pip install transcriptformer
 
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
