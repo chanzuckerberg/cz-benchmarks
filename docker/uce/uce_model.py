@@ -61,16 +61,16 @@ class UCEValidator(BaseSingleCellValidator):
 
 
 class UCE(UCEValidator, BaseModelImplementation):
-    def parse_args(self):
+    def create_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("--model_variant", type=str, default="4l")
-        return parser.parse_args()
+        return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         return ""
 
     def _download_model_weights(self, _dataset: BaseDataset):
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         model_dir = pathlib.Path(self.model_weights_dir)
         model_dir.mkdir(exist_ok=True)
 
@@ -83,10 +83,9 @@ class UCE(UCEValidator, BaseModelImplementation):
     def run_model(self, dataset: BaseDataset):
         from evaluate import AnndataProcessor
 
-        args = self.parse_args()
-        model_variant = args.model_variant
+        model_variant = self.args.model_variant
 
-        config = OmegaConf.load("config.yaml")
+        config = OmegaConf.load("/app/config.yaml")
         assert model_variant in config.model_config, (
             f"Model {model_variant} not found in config.yaml. "
             f"Valid models are: {list(config.model_config.keys())}"
@@ -112,22 +111,6 @@ class UCE(UCEValidator, BaseModelImplementation):
         ].spec_chrom_csv_path = (
             f"{self.model_weights_dir}/model_files/species_chrom.csv"
         )
-
-        # Create symbolic link for protein embeddings directory
-        protein_embeddings_source = pathlib.Path(
-            config.model_config[model_variant].protein_embeddings_dir
-        )
-        protein_embeddings_target = pathlib.Path("model_files/protein_embeddings")
-        protein_embeddings_target.parent.mkdir(parents=True, exist_ok=True)
-        if protein_embeddings_target.exists():
-            protein_embeddings_target.unlink()
-        protein_embeddings_target.symlink_to(protein_embeddings_source)
-
-        if protein_embeddings_target.exists():
-            for path in protein_embeddings_target.rglob("*"):
-                logger.info(f"{path.relative_to(protein_embeddings_target)}\n")
-        else:
-            logger.warning("Directory does not exist\n")
 
         adata = dataset.adata
         adata.var_names = pd.Index(list(adata.var["feature_name"]))

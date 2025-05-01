@@ -12,6 +12,7 @@ from czbenchmarks.cli.cli_run import (
     ModelArgs,
     ModelArgsDict,
     run_task,
+    run_multi_dataset_task,
     run_with_inference,
     run_without_inference,
     set_processed_datasets_cache,
@@ -371,6 +372,49 @@ def test_run_task() -> None:
                 MetricResult(
                     metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.1, params={}
                 )
+            ],
+        )
+    ]
+
+
+def test_run_multi_dataset_task() -> None:
+    # Setup mocks
+    mock_embedded_datasets = MagicMock()
+    model_args: dict[str, ModelArgsDict] = {
+        ModelType.UCE.value: {"model_variant": "4l"}
+    }
+    mock_task_args = MagicMock()
+    mock_task_args.name = "cross_species"
+    mock_task_args.set_baseline = False
+    mock_dataset_names = ["human_spermatogenesis", "mouse_spermatogenesis"]
+    mock_task_run_result = {
+        ModelType.UCE: [
+            MetricResult(metric_type=MetricType.ENTROPY_PER_CELL, value=0.1, params={}),
+            MetricResult(metric_type=MetricType.BATCH_SILHOUETTE, value=0.1, params={}),
+        ]
+    }
+    mock_task_args.task.run.return_value = mock_task_run_result
+
+    # Run task and check results
+    task_results = run_multi_dataset_task(
+        dataset_names=mock_dataset_names,
+        embeddings=mock_embedded_datasets,
+        model_args=model_args,
+        task_args=mock_task_args,
+    )
+    assert task_results == [
+        TaskResult(
+            task_name="cross_species",
+            model_type="UCE",
+            dataset_name=",".join(mock_dataset_names),
+            model_args={"model_variant": "4l"},
+            metrics=[
+                MetricResult(
+                    metric_type=MetricType.ENTROPY_PER_CELL, value=0.1, params={}
+                ),
+                MetricResult(
+                    metric_type=MetricType.BATCH_SILHOUETTE, value=0.1, params={}
+                ),
             ],
         )
     ]
