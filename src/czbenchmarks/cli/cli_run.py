@@ -499,7 +499,7 @@ def run_task(
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
 
     if isinstance(result, list):
-        raise ValueError("Expected a single task result, got list")
+        raise TypeError("Expected a single task result, got list")
 
     for model_type, metrics in result.items():
         task_result = TaskResult(
