@@ -56,10 +56,9 @@ class GeneformerValidator(BaseSingleCellValidator):
 
 
 class Geneformer(GeneformerValidator, BaseModelImplementation):
-    def __init__(self):
-        super().__init__()
-        self.args = self.parse_args()
-        self.config = OmegaConf.load("config.yaml")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config = OmegaConf.load("/app/config.yaml")
 
         if self.args.model_variant not in self.config.models:
             logging.error(f"Model {self.args.model_variant} not found in config.")
@@ -68,12 +67,12 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         self.selected_model = self.config.models[self.args.model_variant]
         self.token_config = self.selected_model.token_config
 
-    def parse_args(self):
+    def create_parser(self):
         parser = argparse.ArgumentParser(
             description="Run Geneformer model on input dataset."
         )
-        parser.add_argument("--model_variant", type=str, default="gf_12L_30M")
-        return parser.parse_args()
+        parser.add_argument("--model-variant", type=str, default="gf_12L_30M")
+        return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
         """Get the model weights subdirectory for the selected model."""
@@ -134,15 +133,20 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
     def _save_dataset_temp(self, dataset: BaseDataset) -> Path:
         """Save dataset to a temporary file."""
-        with tempfile.NamedTemporaryFile(suffix=".h5ad", delete=False) as tmp_file:
-            temp_path = Path(tmp_file.name)
+        temp_dir = tempfile.TemporaryDirectory()
+        temp_dir = Path(temp_dir.name) / "h5ad_data"
+        temp_dir.mkdir(parents=True, exist_ok=True)
 
-        dataset.adata.write_h5ad(temp_path)
+        with tempfile.NamedTemporaryFile(
+            suffix=".h5ad", dir=temp_dir, delete=False
+        ) as tmp_file:
+            temp_path = Path(tmp_file.name)
+            dataset.adata.write_h5ad(temp_path)
         return temp_path
 
     def _tokenize_dataset(self, temp_path: Path) -> Path:
         """Tokenize dataset and return the tokenized dataset path."""
-        dataset_dir = Path("dataset")
+        dataset_dir = temp_path.parent.parent / "dataset"
         dataset_dir.mkdir(parents=True, exist_ok=True)
         model_weights_dir_parent = Path(self.model_weights_dir).parent
         tk = TranscriptomeTokenizer(
@@ -244,11 +248,10 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
 
         dataset.set_output(self.model_type, DataType.EMBEDDING, emb_array)
 
-    def _cleanup_temp_files(self, temp_path: Path, dataset_dir: Path):
+    def _cleanup_temp_files(self, temp_path: Path):
         """Remove temporary files and directories."""
         try:
-            temp_path.unlink(missing_ok=True)
-            shutil.rmtree(dataset_dir, ignore_errors=True)
+            shutil.rmtree(temp_path.parent.parent, ignore_errors=True)
         finally:
             logging.info("Run complete. Temporary files cleaned up.")
 
@@ -265,7 +268,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         self._ensure_correct_dtype(tokenized_dataset, tokenized_dataset_path)
         self._extract_embeddings(tokenized_dataset_path, dataset)
 
-        self._cleanup_temp_files(temp_path, Path("dataset"))
+        self._cleanup_temp_files(temp_path)
 
 
 if __name__ == "__main__":

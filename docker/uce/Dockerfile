@@ -34,11 +34,14 @@ RUN git clone https://github.com/giovp/UCE && \
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
-RUN /opt/conda/envs/uce/bin/pip install -e /app/package
+RUN /opt/conda/envs/uce/bin/pip install -e /app/package[interactive]
 
 # Create model_files directory and empty CSV file for species protein embeddings
 RUN mkdir -p /app/model_files && \
     echo "species,path" > /app/model_files/new_species_protein_embeddings.csv
+
+# Create protein embeddings directory
+RUN ln -s /weights/model_files/protein_embeddings /app/model_files/protein_embeddings
 
 # Install base requirements
 COPY docker/uce/requirements.txt .

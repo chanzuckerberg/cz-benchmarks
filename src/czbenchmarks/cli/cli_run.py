@@ -7,6 +7,7 @@ import sys
 import yaml
 
 from collections import defaultdict
+from collections.abc import Mapping
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,7 @@ from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
+from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 
 log = logging.getLogger(__name__)
@@ -224,6 +226,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Key to access batch labels in metadata",
     )
 
+    # Extra arguments for cross species integration task
+    parser.add_argument(
+        "--cross-species-task-label-key",
+        help="Label key to use for cross species integration task",
+    )
     # Advanced feature: define multiple batches of jobs using JSON
     parser.add_argument(
         "--batch-json",
@@ -271,6 +278,10 @@ def main(parsed_args: argparse.Namespace) -> None:
             task_args.append(parse_task_args("integration", BatchIntegrationTask, args))
         if "perturbation" in args.tasks:
             task_args.append(parse_task_args("perturbation", PerturbationTask, args))
+        if "cross_species" in args.tasks:
+            task_args.append(
+                parse_task_args("cross_species", CrossSpeciesIntegrationTask, args)
+            )
 
         # Run the tasks
         task_result = run(
@@ -314,6 +325,18 @@ def run_with_inference(
     """
     task_results: list[TaskResult] = []
 
+    single_dataset_task_names = set(task_utils.TASK_NAMES) - set(
+        task_utils.MULTI_DATASET_TASK_NAMES
+    )
+    single_dataset_tasks: list[TaskArgs] = [
+        t for t in task_args if t.name in single_dataset_task_names
+    ]
+    multi_dataset_tasks: list[TaskArgs] = [
+        t for t in task_args if t.name in task_utils.MULTI_DATASET_TASK_NAMES
+    ]
+
+    embeddings_for_multi_dataset_tasks: dict[str, BaseDataset] = {}
+
     # Get all unique combinations of model arguments: each requires a separate inference run
     model_arg_permutations = get_model_arg_permutations(model_args)
 
@@ -331,9 +354,13 @@ def run_with_inference(
                 processed_dataset = run_inference_or_load_from_cache(
                     dataset_name, model_name=model_name, model_args=args
                 )
+                # NOTE: accumulating datasets with attached embeddings in memory
+                # can be memory intensive
+                if multi_dataset_tasks:
+                    embeddings_for_multi_dataset_tasks[dataset_name] = processed_dataset
 
-                # Run each task against the processed dataset
-                for task_arg_idx, task_arg in enumerate(task_args):
+                # Run each single-dataset task against the processed dataset
+                for task_arg_idx, task_arg in enumerate(single_dataset_tasks):
                     log.info(
                         f'Starting task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for '
                         f'dataset "{dataset_name}" and model "{model_name}" ({task_arg})'
@@ -342,6 +369,15 @@ def run_with_inference(
                         dataset_name, processed_dataset, {model_name: args}, task_arg
                     )
                     task_results.extend(task_result)
+
+    # Run multi-dataset tasks
+    embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
+    for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
+        log.info(
+            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
+        )
+        task_result = run_multi_dataset_task(dataset_names, embeddings, {}, task_arg)
+        task_results.extend(task_result)
 
     return task_results
 
@@ -385,18 +421,80 @@ def run_without_inference(
     """
     task_results: list[TaskResult] = []
 
+    single_dataset_task_names = set(task_utils.TASK_NAMES) - set(
+        task_utils.MULTI_DATASET_TASK_NAMES
+    )
+    single_dataset_tasks: list[TaskArgs] = [
+        t for t in task_args if t.name in single_dataset_task_names
+    ]
+    multi_dataset_tasks: list[TaskArgs] = [
+        t for t in task_args if t.name in task_utils.MULTI_DATASET_TASK_NAMES
+    ]
+
+    embeddings_for_multi_dataset_tasks: dict[str, BaseDataset] = {}
+
     for dataset_idx, dataset_name in enumerate(dataset_names):
         log.info(
             f'Processing dataset "{dataset_name}" ({dataset_idx + 1}/{len(dataset_names)})'
         )
         dataset = dataset_utils.load_dataset(dataset_name)
+        # NOTE: accumulating datasets with attached embeddings in memory
+        # can be memory intensive
+        if multi_dataset_tasks:
+            embeddings_for_multi_dataset_tasks[dataset_name] = dataset
 
-        for task_arg_idx, task_arg in enumerate(task_args):
+        for task_arg_idx, task_arg in enumerate(single_dataset_tasks):
             log.info(
                 f'Starting task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for dataset "{dataset_name}"'
             )
             task_result = run_task(dataset_name, dataset, {}, task_arg)
             task_results.extend(task_result)
+
+    # Run multi-dataset tasks
+    embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
+    for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
+        log.info(
+            f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
+        )
+        task_result = run_multi_dataset_task(dataset_names, embeddings, {}, task_arg)
+        task_results.extend(task_result)
+
+    return task_results
+
+
+def run_multi_dataset_task(
+    dataset_names: list[str],
+    embeddings: list[BaseDataset],
+    model_args: dict[str, ModelArgsDict],
+    task_args: TaskArgs,
+) -> list[TaskResult]:
+    """
+    Run a task and return the results.
+    """
+    task_results: list[TaskResult] = []
+
+    if task_args.set_baseline:
+        raise ValueError("Baseline embedding run not allowed for multi-dataset tasks")
+
+    result: dict[ModelType, list[MetricResult]] = task_args.task.run(embeddings)
+
+    if not isinstance(result, Mapping):
+        raise TypeError("Expect a Map ADT for a task result")
+
+    # sorting the dataset_names for the purposes of using it as a
+    # cache key and uniform presentation to the user
+    dataset_names.sort()
+
+    for model_type, metrics in result.items():
+        task_result = TaskResult(
+            task_name=task_args.name,
+            model_type=model_type.value,
+            dataset_name=",".join(dataset_names),
+            model_args=model_args.get(model_type.value) or {},
+            metrics=metrics,
+        )
+        task_results.append(task_result)
+        log.info(task_result)
 
     return task_results
 
@@ -419,7 +517,7 @@ def run_task(
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
 
     if isinstance(result, list):
-        raise ValueError("Expected a single task result, got list")
+        raise TypeError("Expected a single task result, got list")
 
     for model_type, metrics in result.items():
         task_result = TaskResult(
