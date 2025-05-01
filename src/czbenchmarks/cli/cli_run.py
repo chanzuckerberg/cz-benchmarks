@@ -468,6 +468,10 @@ def run_multi_dataset_task(
     if not isinstance(result, Mapping):
         raise TypeError("Expect a Map ADT for a task result")
 
+    # sorting the dataset_names for the purposes of using it as a
+    # cache key and uniform presentation to the user
+    dataset_names.sort()
+
     for model_type, metrics in result.items():
         task_result = TaskResult(
             task_name=task_args.name,
