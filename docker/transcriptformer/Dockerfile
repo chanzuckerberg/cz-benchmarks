@@ -5,8 +5,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip git
 
-# Install TranscriptFormer
-RUN pip install transcriptformer
+RUN git clone https://github.com/czi-ai/transcriptformer && \
+    cd transcriptformer && \
+    pip install .
 
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
