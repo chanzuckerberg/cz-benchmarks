@@ -5,8 +5,7 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip git
 
-RUN git clone https://github.com/czi-ai/transcriptformer && \
-    cd transcriptformer
+RUN git clone https://github.com/czi-ai/transcriptformer
 
 RUN pip install transcriptformer
 
