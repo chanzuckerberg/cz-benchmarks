@@ -7,6 +7,7 @@ import sys
 import yaml
 
 from collections import defaultdict
+from collections.abc import Mapping
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -464,8 +465,8 @@ def run_multi_dataset_task(
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(embeddings)
 
-    if isinstance(result, list):
-        raise ValueError("Expected a single task result, got list")
+    if not isinstance(result, Mapping):
+        raise TypeError("Expect a Map ADT for a task result")
 
     for model_type, metrics in result.items():
         task_result = TaskResult(
