@@ -30,6 +30,13 @@ uv python install
 uv sync --all-extras
 ```
 
+To accelerate scikit-learn with GPUs, optionally install cuML:
+```bash
+uv pip install --extra-index-url=https://pypi.nvidia.com "cz-benchmarks[gpu]"
+```
+* Using cuML here brings the time down to perform common algorithms used in this library by > 50x according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)
+
+
 ## CLI Usage
 
 ```sh

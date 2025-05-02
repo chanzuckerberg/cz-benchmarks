@@ -43,6 +43,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+gpu = [
+    "cuml-cu12==25.4.*",
+]
+
 interactive = [
     "jupyterlab>=4.0.0",
 ]
