@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.0...v0.6.1) (2025-05-02)
+
+
+### Bug Fixes
+
+* Push transcriptformer docker image to ECR ([#188](https://github.com/chanzuckerberg/cz-benchmarks/issues/188)) ([e5eea6f](https://github.com/chanzuckerberg/cz-benchmarks/commit/e5eea6f025c6bf138a4f2084efb4aea89433317b))
+
 ## [0.6.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.5.0...v0.6.0) (2025-05-02)
 
 
