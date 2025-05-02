@@ -40,6 +40,9 @@ RUN /opt/conda/envs/uce/bin/pip install -e /app/package[interactive]
 RUN mkdir -p /app/model_files && \
     echo "species,path" > /app/model_files/new_species_protein_embeddings.csv
 
+# Create protein embeddings directory
+RUN ln -s /weights/model_files/protein_embeddings /app/model_files/protein_embeddings
+
 # Install base requirements
 COPY docker/uce/requirements.txt .
 RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt

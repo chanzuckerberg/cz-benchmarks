@@ -103,7 +103,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Determine scoring metrics based on number of classes
         n_classes = len(labels.unique())
-        target_type = "binary" if n_classes == 2 else "weighted"
+        target_type = "binary" if n_classes == 2 else "macro"
         logger.info(
             f"Found {n_classes} classes, using {target_type} averaging for metrics"
         )
