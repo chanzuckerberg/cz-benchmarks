@@ -150,6 +150,19 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Variant of the uce model to use (see docker/uce/config.yaml)",
     )
 
+    # Extra arguments for transcriptformer model
+    parser.add_argument(
+        "--transcriptformer-model-variant",
+        nargs="+",
+        choices=["tf-sapiens", "tf-exemplar", "tf-metazoa"],
+        help="Variant of the transcriptformer model to use (tf-sapiens, tf-exemplar, tf-metazoa)",
+    )
+    parser.add_argument(
+        "--transcriptformer-batch-size",
+        type=int,
+        nargs="+",
+        help="Batch size for transcriptformer model inference",
+    )
     # Extra arguments for clustering task
     parser.add_argument(
         "--clustering-task-label-key",

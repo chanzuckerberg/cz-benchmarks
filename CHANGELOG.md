@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.6.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.5.0...v0.6.0) (2025-05-02)
+
+
+### Features
+
+* CLI ([#148](https://github.com/chanzuckerberg/cz-benchmarks/issues/148)) ([4cd7947](https://github.com/chanzuckerberg/cz-benchmarks/commit/4cd7947784c5a3dcd351b1d79d191dd52604912d))
+* CLI batch jobs ([#161](https://github.com/chanzuckerberg/cz-benchmarks/issues/161)) ([af0bd1a](https://github.com/chanzuckerberg/cz-benchmarks/commit/af0bd1a63c590266946cb5f05cde5d161ebb6d0c))
+* enable minimal model developer workflow ([#163](https://github.com/chanzuckerberg/cz-benchmarks/issues/163)) ([f552bf3](https://github.com/chanzuckerberg/cz-benchmarks/commit/f552bf3a45e3622fad21ba4248d4640a2ae49fbf))
+* support perturbation in CLI ([#156](https://github.com/chanzuckerberg/cz-benchmarks/issues/156)) ([e14391d](https://github.com/chanzuckerberg/cz-benchmarks/commit/e14391d14dbd8d75f40ff529e1fc7f9efef8ef23))
+* transcriptformer ([#165](https://github.com/chanzuckerberg/cz-benchmarks/issues/165)) ([173d1e7](https://github.com/chanzuckerberg/cz-benchmarks/commit/173d1e770631ad436c624a6a9901d98d492942a4))
+
+
+### Bug Fixes
+
+* Add scGenePT / Perturbation compatibility to developer workflow ([#155](https://github.com/chanzuckerberg/cz-benchmarks/issues/155)) ([feaa4fe](https://github.com/chanzuckerberg/cz-benchmarks/commit/feaa4fe53bcb0000c32507aa277025b2b44f5183))
+* Make Geneformer and UCE work in interactive mode again ([#181](https://github.com/chanzuckerberg/cz-benchmarks/issues/181)) ([5128953](https://github.com/chanzuckerberg/cz-benchmarks/commit/512895355a884dc1b0be94c9b8ebafbec3ac3693))
+* reload dataset after caching ([#166](https://github.com/chanzuckerberg/cz-benchmarks/issues/166)) ([19ac92b](https://github.com/chanzuckerberg/cz-benchmarks/commit/19ac92b0f1733ba232cabd8816f331a91f83234e))
+* use macro, not weighted F1 score (VC-2551) ([#186](https://github.com/chanzuckerberg/cz-benchmarks/issues/186)) ([11dfc05](https://github.com/chanzuckerberg/cz-benchmarks/commit/11dfc0565b9a76e50557826aa22cd5e838b47462))
+
+
+### Documentation
+
+* docs based on review comments from pr-160 ([#169](https://github.com/chanzuckerberg/cz-benchmarks/issues/169)) ([5e26b84](https://github.com/chanzuckerberg/cz-benchmarks/commit/5e26b84b8a3f2753c104b7ddb226d50ff0949b79))
+* Nc docs structure ([#158](https://github.com/chanzuckerberg/cz-benchmarks/issues/158)) ([deaee6f](https://github.com/chanzuckerberg/cz-benchmarks/commit/deaee6f2aeb18f6c85044a217eb19adbb80424be))
+
 ## [0.5.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.4...v0.5.0) (2025-04-03)
 
 
