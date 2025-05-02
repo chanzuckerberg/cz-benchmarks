@@ -11,6 +11,7 @@ class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
     MOUSE = ("mus_musculus", "ENSMUSG")
     TROPICAL_CLAWED_FROG = ("xenopus_tropicalis", "ENSXETG")
+    AFRICAN_CLAWED_FROG = ("xenopus_laevis", "ENSXLAG")
     ZEBRAFISH = ("danio_rerio", "ENSDARG")
     MOUSE_LEMUR = ("microcebus_murinus", "ENSMICG")
     WILD_BOAR = ("sus_scrofa", "ENSSSCG")
@@ -22,6 +23,17 @@ class Organism(Enum):
     CHIMPANZEE = ("pan_troglodytes", "ENSPTRG")
     MARMOSET = ("callithrix_jacchus", "ENSCJAG")
     CHICKEN = ("gallus_gallus", "ENSGALG")
+    RABBIT = ("oryctolagus_cuniculus", "ENSOCUG")
+    FRUIT_FLY = ("drosophila_melanogaster", "FBgn")
+    RAT = ("rattus_norvegicus", "ENSRNOG")
+    NAKED_MOLE_RAT = ("heterocephalus_glaber", "ENSHGLG")
+    CAENORHABDITIS_ELEGANS = ("caenorhabditis_elegans", "WBGene")
+    YEAST = ("saccharomyces_cerevisiae", "")
+    MALARIA_PARASITE = ("plasmodium_falciparum", "PF3D7")
+    SEA_LAMPREY = ("petromyzon_marinus", "ENSPMAG")
+    FRESHWATER_SPONGE = ("spongilla_lacustris", "ENSLPGG")
+    CORAL = ("stylophora_pistillata", "LOC")
+    SEA_URCHIN = ("lytechinus_variegatus", "")  # Mixed prefixes: LOC and GeneID
 
     # Todo: add other organisms
     def __init__(self, name: str, prefix: str):
