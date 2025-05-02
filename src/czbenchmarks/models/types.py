@@ -10,6 +10,7 @@ class ModelType(Enum):
     GENEFORMER = "GENEFORMER"
     SCGENEPT = "SCGENEPT"
     UCE = "UCE"
+    TRANSCRIPTFORMER = "TRANSCRIPTFORMER"
 
     def __hash__(self):
         return hash(self.name)
