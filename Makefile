@@ -1,6 +1,6 @@
 # Default target
 .PHONY: all
-all: scvi uce scgpt scgenept aido geneformer
+all: scvi uce scgpt scgenept geneformer transcriptformer aido
 
 # Build the scvi image
 .PHONY: scvi
@@ -32,6 +32,11 @@ geneformer:
 aido:
 	docker build -t cz-benchmarks-models:aido -f docker/aido/Dockerfile .
 
+# Build the transcriptformer image
+.PHONY: transcriptformer
+transcriptformer:
+	docker build -t cz-benchmarks-models:transcriptformer -f docker/transcriptformer/Dockerfile .
+
 # Clean up images
 .PHONY: clean
 clean:
@@ -40,7 +45,7 @@ clean:
 	docker rmi cz-benchmarks-models:scgpt || true
 	docker rmi cz-benchmarks-models:scgenept || true
 	docker rmi cz-benchmarks-models:geneformer || true
-
+	docker rmi cz-benchmarks-models:transcriptformer || true
 # Helper target to rebuild everything from scratch
 .PHONY: rebuild
 rebuild: clean all

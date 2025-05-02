@@ -35,6 +35,8 @@ jobs:
             custom_tag: scgpt
           - dockerfile: docker/geneformer/Dockerfile
             custom_tag: geneformer
+          - dockerfile: docker/transcriptformer/Dockerfile
+            custom_tag: transcriptformer
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v4

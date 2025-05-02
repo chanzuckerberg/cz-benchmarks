@@ -3,8 +3,8 @@ Policy
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
 
    governance.md
+   code_of_conduct
    assets.md

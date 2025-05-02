@@ -11,6 +11,7 @@ class ModelType(Enum):
     SCGENEPT = "SCGENEPT"
     UCE = "UCE"
     AIDO = "AIDO"
+    TRANSCRIPTFORMER = "TRANSCRIPTFORMER"
 
     def __hash__(self):
         return hash(self.name)

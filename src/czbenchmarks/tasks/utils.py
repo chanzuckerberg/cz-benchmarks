@@ -9,13 +9,17 @@ from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
 
-TASK_NAMES = [
-    "clustering",
-    "embedding",
-    "label_prediction",
-    "integration",
-    "perturbation",
-]
+MULTI_DATASET_TASK_NAMES = frozenset(["cross_species"])
+
+TASK_NAMES = frozenset(
+    {
+        "clustering",
+        "embedding",
+        "label_prediction",
+        "integration",
+        "perturbation",
+    }.union(MULTI_DATASET_TASK_NAMES)
+)
 
 
 # TODO: Later we can add cluster parameters as kwargs here and add them
