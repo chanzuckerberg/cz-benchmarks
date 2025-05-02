@@ -4,7 +4,6 @@ from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
-    silhouette_score,
     r2_score,
     mean_squared_error,
 )
