@@ -6,7 +6,7 @@ import scanpy as sc
 
 
 class SimpleModel:
-    """A model that generates embeddings on the dataset outputs"""
+    """A model that generates embeddings on the dataset outputs. For use in tests."""
 
     def __init__(self):
         self.model_type = ModelType.SCGPT
