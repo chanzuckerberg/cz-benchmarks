@@ -10,8 +10,9 @@ import scipy.sparse as sp
 import torch
 from czbenchmarks.datasets import BaseDataset, DataType
 from czbenchmarks.datasets.single_cell import Organism
-from czbenchmarks.models.implementations.base_model_implementation import \
-    BaseModelImplementation
+from czbenchmarks.models.implementations.base_model_implementation import (
+    BaseModelImplementation,
+)
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.models.validators import BaseSingleCellValidator
 from modelgenerator.tasks import Embed
@@ -32,19 +33,21 @@ def align_cells_to_model(
     """
     # Step 1: Map feature_col to var_names
     if feature_col in adata.var.columns:
-        adata.var_names = adata.var[feature_col].astype(str)  # Ensure strings
+        adata.var_names = adata.var[feature_col].astype(str)
     else:
-        logger.error("Missing '%s' in adata.var; cannot align genes.", feature_col)
+        logger.error(
+            "AIDO: Missing '%s' in adata.var; cannot align genes.", feature_col
+        )
         raise KeyError(f"Required column '{feature_col}' not found in adata.var.")
 
-    # Step 2: Load model genes from the specified column in the TSV file
+    # Step 2: Load model genes from specified column in the TSV file
     try:
         model_genes_df = pd.read_csv(
             model_gene_file, sep="\t", usecols=[model_csv_gene_column]
         )
         model_genes = model_genes_df[model_csv_gene_column].tolist()
     except Exception as e:
-        logger.error("Error loading model gene file '%s': %s", model_gene_file, str(e))
+        logger.error("AIDO: Error loading gene file '%s': %s", model_gene_file, str(e))
         raise
 
     # Step 3: Prepare index mappings for input and model genes
@@ -54,12 +57,14 @@ def align_cells_to_model(
     common_genes = [gene for gene in model_genes if gene in input_gene_to_index]
 
     logger.info(
-        "Found %d / %d model genes in input AnnData.",
+        "AIDO: Found %d / %d model genes in input AnnData.",
         len(common_genes),
         len(model_genes),
     )
     if not common_genes:
-        raise ValueError("No overlap between input AnnData genes and model gene set.")
+        raise ValueError(
+            "AIDO: No overlap between input AnnData genes and model gene set."
+        )
 
     # Step 4: Extract the numeric matrix from AnnData
     if sp.issparse(adata.X):
@@ -67,7 +72,7 @@ def align_cells_to_model(
     elif isinstance(adata.X, np.ndarray):
         input_matrix = adata.X
     else:
-        raise TypeError(f"Unsupported AnnData.X type: {type(adata.X)}")
+        raise TypeError(f"AIDO: Unsupported AnnData.X type: {type(adata.X)}")
 
     # Step 5: Build the aligned matrix with zero-padding for missing genes
     aligned_matrix = np.zeros(
@@ -119,7 +124,7 @@ def get_gene_embeddings_from_model(
     # Process data in batches
     for i in range(0, num_cells, batch_size):
         end = min(i + batch_size, num_cells)
-        logger.info("Processing batch %d to %d", i, end)
+        logger.info("AIDO: Processing batch %d to %d", i, end)
 
         batch_np = data[i:end]
         batch_tensor = torch.from_numpy(batch_np).to(device=device, dtype=torch.float16)
@@ -138,9 +143,7 @@ def get_gene_embeddings_from_model(
                     batch_tensor, attention_mask=attention_mask
                 )  # Pass attention_mask to the model
             except Exception as e:
-                logger.error(
-                    f"Error during model execution for batch {i} to {end}: {e}"
-                )
+                logger.error(f"Error in model execution for batch {i} to {end}: {e}")
                 raise
 
         # Validate gene dimension
@@ -153,15 +156,13 @@ def get_gene_embeddings_from_model(
         out_masked = out[:, mask]  # Select only valid genes based on the mask
 
         # Collapse genes by averaging
-        emb2d = out_masked.mean(dim=1)  # [batch x dim]
-        embeddings_list.append(
-            emb2d.detach().cpu().numpy()
-        )  # Detach before converting to NumPy
+        emb2d = out_masked.mean(dim=1)
+        embeddings_list.append(emb2d.detach().cpu().numpy())
 
     # Concatenate and sanitize
     embeddings = np.concatenate(embeddings_list, axis=0)
     if np.isnan(embeddings).any():
-        logger.warning("NaN values detected; replacing with zero.")
+        logger.warning("AIDO: NaN values detected; replacing with zero.")
         embeddings = np.nan_to_num(embeddings)
     return embeddings
 
@@ -219,11 +220,16 @@ class AIDO(AIDOValidator, BaseModelImplementation):
                 "AIDO: Running %s on %d cells × %d genes", variant, *adata.shape
             )
 
-            # Align genes
             gene_file = os.path.join(
-                os.path.dirname(__file__), "OS_scRNA_gene_index.19264.tsv"
+                "/app/experiments/AIDO.Cell", "OS_scRNA_gene_index.19264.tsv"
             )
+
             aligned_adata, mask = align_cells_to_model(adata, model_gene_file=gene_file)
+
+            logger.info(
+                "AIDO: Aligned %d genes to model gene list.",
+                len(aligned_adata.var_names),
+            )
 
             # Load model
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -245,12 +251,12 @@ class AIDO(AIDOValidator, BaseModelImplementation):
                     break  # Exit loop if successful
                 except torch.cuda.OutOfMemoryError:
                     logger.warning(
-                        f"Out of memory with batch size {batch_size}. Reducing batch size by half."
+                        f"OOM: batch size {batch_size}. Reducing batch size by half."
                     )
-                    batch_size = max(1, batch_size // 2)  # Reduce batch size by half
+                    batch_size = max(1, batch_size // 2)
                     if batch_size == 1:
                         logger.error(
-                            "Batch size reduced to 1, but still out of memory."
+                            "AIDO: Batch size reduced to 1, but still out of memory."
                         )
                         raise
 
@@ -259,7 +265,7 @@ class AIDO(AIDOValidator, BaseModelImplementation):
             logger.info("AIDO: Completed embedding of %d cells.", embeddings.shape[0])
 
         except Exception:
-            logger.exception("Error in AIDO run_model")
+            logger.exception("AIDO: Error in AIDO run_model")
             raise
 
 

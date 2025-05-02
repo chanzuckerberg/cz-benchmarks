@@ -32,7 +32,6 @@ RUN /opt/venv_aido/bin/pip install /app && \
 
 
 # COPY docker/aido/cell_utils.py /app/cell_utils.py
-COPY docker/aido/OS_scRNA_gene_index.19264.tsv /app/OS_scRNA_gene_index.19264.tsv
 COPY docker/aido/model.py /app/model.py
 
 # Install the cz-benchmarks package.
