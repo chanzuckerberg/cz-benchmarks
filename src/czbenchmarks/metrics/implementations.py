@@ -37,7 +37,6 @@ metrics_registry.register(
     MetricType.SILHOUETTE_SCORE,
     func=silhouette_label,
     required_args={"X", "labels"},
-    default_params={"metric": "euclidean"},
     description="Silhouette score for clustering evaluation",
     tags={"embedding"},
 )
