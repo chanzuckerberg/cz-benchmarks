@@ -30,12 +30,21 @@ uv python install
 uv sync --all-extras
 ```
 
-To accelerate scikit-learn with GPUs, optionally install cuML:
+#### Accelerating tasks with GPUs (optional)
+For significant performance improvements on tasks, you can reduce the time operations take in scikit-learn by up to 50x using GPU acceleration (according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)) with cuML.
+
+Here's how to install cuML:
+1. Ensure the `nvidia-cuda-toolkit` is installed: `sudo apt-get update && sudo apt-get install -y nvidia-cuda-toolkit`
+2. Install cuML with one of the commands below
 ```bash
+# Run this if installing from source
+uv pip install --extra-index-url=https://pypi.nvidia.com -e ".[gpu]"
+
+#  Run this if installing from PyPi
 uv pip install --extra-index-url=https://pypi.nvidia.com "cz-benchmarks[gpu]"
 ```
-* Using cuML here brings the time down to perform common algorithms used in this library by > 50x according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)
 
+If you do not have GPUs available, scikit-learn will continue to operate using only CPU.
 
 ## CLI Usage
 
