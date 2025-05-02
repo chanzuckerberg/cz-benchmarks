@@ -27,11 +27,11 @@ Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install d
 
 ```bash
 uv python install
-uv sync --all-extras
+uv pip install -e ".[dev]"
 ```
 
 #### Accelerating tasks with GPUs (optional)
-For significant performance improvements on tasks, you can reduce the time operations take in scikit-learn by up to 50x using GPU acceleration (according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)) with cuML.
+For significant performance improvements on tasks, you can significantly reduce the time operations take in scikit-learn by using GPU acceleration (according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)) with cuML.
 
 Here's how to install cuML:
 1. Ensure the `nvidia-cuda-toolkit` is installed: `sudo apt-get update && sudo apt-get install -y nvidia-cuda-toolkit`

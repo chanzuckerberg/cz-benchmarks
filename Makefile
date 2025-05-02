@@ -48,37 +48,37 @@ rebuild: clean all
 # Run all unit tests
 .PHONY: test
 test:
-	uv run pytest
+	uv run --extra-index-url=https://pypi.nvidia.com pytest
 
 # Run all unit tests with coverage
 .PHONY: test-coverage
 test-coverage:
-	uv run pytest --cov=czbenchmarks --cov-report=term-missing tests/
+	uv run --extra-index-url=https://pypi.nvidia.com pytest --cov=czbenchmarks --cov-report=term-missing tests/
 
 # Check formatting with ruff
 .PHONY: ruff-fmt-check
 ruff-fmt-check:
-	uv run ruff format --check .
+	uv run --extra-index-url=https://pypi.nvidia.com ruff format --check .
 
 # Fix formatting with ruff
 .PHONY: ruff-fmt
 ruff-fmt:
-	uv run ruff format .
+	uv run --extra-index-url=https://pypi.nvidia.com ruff format .
 
 # Run ruff to check the code
 .PHONY: ruff-check
 ruff-check:
-	uv run ruff check .
+	uv run --extra-index-url=https://pypi.nvidia.com ruff check .
 
 # Run ruff with auto-fix
 .PHONY: ruff-fix
 ruff-fix:
-	uv run ruff check . --fix
+	uv run --extra-index-url=https://pypi.nvidia.com ruff check . --fix
 
 # Run mypy type checking
 .PHONY: mypy-check
 mypy-check:
-	uv run mypy .
+	uv run --extra-index-url=https://pypi.nvidia.com mypy .
 
 # Run all linters and checkers # TODO: enable mypy-check
 .PHONY: lint
