@@ -31,7 +31,6 @@ RUN /opt/venv_aido/bin/pip install /app && \
     /opt/venv_aido/bin/pip install -r /app/experiments/AIDO.Cell/requirements.txt
 
 
-# COPY docker/aido/cell_utils.py /app/cell_utils.py
 COPY docker/aido/model.py /app/model.py
 
 # Install the cz-benchmarks package.
