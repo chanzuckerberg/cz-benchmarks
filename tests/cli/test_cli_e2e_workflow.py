@@ -28,7 +28,7 @@ def test_cli_e2e_workflow(mock_runner):
     dataset = load_dataset(dataset_name)
     dataset.load_data()
 
-    # Create and run simple model
+    # Create and run simple model to produce the embedding output that will be returned by the mocked ContainerRunner.
     model = SimpleModel()
     dataset = model.run_inference(dataset)
 
