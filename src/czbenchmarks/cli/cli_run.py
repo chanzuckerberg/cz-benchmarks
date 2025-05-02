@@ -168,7 +168,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--aido-model-variant",
         nargs="*",
-        choices=["aido_cell_3m","aido_cell_10m","aido_cell_100m"],
+        choices=["aido_cell_3m", "aido_cell_10m", "aido_cell_100m"],
         default="aido_cell_3m",
         help="Variant of the aido model to use. Default is aido_cell_3m",
     )
