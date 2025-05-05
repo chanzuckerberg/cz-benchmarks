@@ -10,7 +10,7 @@ This guide explains how to create and integrate your own evaluation task into CZ
 
 #### Example:
 ```python
-from typing import Set
+from typing import List, Set
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import DataType
 from czbenchmarks.metrics.types import MetricResult
@@ -35,7 +35,7 @@ class MyTask(BaseTask):
         # Implement your task logic here
         # e.g., calculate some predictions or transform embeddings
 
-    def _compute_metrics(self) -> [MetricResult]:
+    def _compute_metrics(self) -> List[MetricResult]:
         # Compute and return a list of MetricResult objects
         metric_value = ...  # Replace with actual computation
         return [MetricResult(metric_type="my_metric", value=metric_value)]
