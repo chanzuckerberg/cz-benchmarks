@@ -198,6 +198,35 @@ from czbenchmarks.datasets.utils import load_dataset
 dataset = load_dataset("your_dataset", config_path="custom.yaml")
 ```
 
+## Building the Documentation
+
+### Install Dependencies
+
+Install the required dependencies for building the documentation:
+
+```bash
+pip install -e ".[docs]"
+```
+
+### Generate and View Documentation
+
+1. Navigate to the `docs` directory and build the documentation:
+
+    ```bash
+    cd docs
+    make html
+    ```
+
+2. Open the generated `index.html` file in the `build/html` directory to view the documentation:
+
+    ```bash
+    open build/html/index.html  # macOS/Linux
+    start build/html/index.html # Windows
+    ```
+
+For more details on building and contributing to the documentation, refer to the [Documentation Guide](docs/README.md).
+
+
 ## Contributing
 This project adheres to the Contributor Covenant code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
