@@ -42,7 +42,6 @@ In the `src.czbenchmarks.models.types.ModelType` enum, add a value for your mode
           YOUR_MODEL = "YOUR_MODEL"
      ```
 
-
 ## Step 3: Implement the Model Class
 
 1. Create a model class that extends `BaseModelImplementation`.
@@ -96,7 +95,7 @@ Note that you can access any arguments specified in the `config.yaml` or via com
 
 ---
 
-## Step 3: (Optional) Extend `BaseSingleCellValidator`
+## Step 4: (Optional) Extend `BaseSingleCellValidator`
 
 If your model is a single-cell transcriptomic model and accepts AnnData objects as input, then it can extend `BaseSingleCellValidator`. This will enable the class to validate that the input `Dataset` provides the required organisms, obs keys, and var keys.
 
@@ -128,7 +127,7 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 4: Create a Config File for the Model
+## Step 5: Create a Config File for the Model
 
 1. Create a `config.yaml` file in your model's directory. This file will define the configuration parameters required for your model.
 2. Include the `_target_` key to specify the model class and any additional parameters your model requires.
@@ -145,12 +144,14 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 5: Add `requirements.txt`
+## Step 6: Add `requirements.txt`
 
-1. Create a `requirements.txt` under `docker/your_model`.
+1. Create a `requirements.txt` file under `docker/your_model`.
 2. Add required Python packages
 
-## Step 6: Create a `Dockerfile`
+---
+
+## Step 7: Create a `Dockerfile`
 
 1. Create a new file `docker/your_model/Dockerfile`
 2. Specify Docker commands to build the Docker image, per the requirments of the model.
@@ -180,7 +181,21 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
      ENTRYPOINT ["python3", "-u", "/app/model.py"]
      ``` 
 
-## Step 5: Build and Test Your Model
+3. Add an entry for your model's Docker image location in `src/czbenchmarks/conf/models.yaml`:
+
+     Example:
+
+     ```
+     models:
+          YOUR_MODEL:
+          model_image_uri: cz-benchmarks-models-public:YOUR_MODEL
+
+     ...
+     ```
+
+---
+
+## Step 8: Build Your Model
 
 1. Build the Docker container using the `Dockerfile` you created. Run the following command, replacing `your_model` with the appropriate values:
 
@@ -188,7 +203,7 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
      docker build -t cz-benchmarks-models:your_model -f docker/your_model/Dockerfile .
      ```
 
-3. Add the Docker build command to your project's `Makefile` for easier execution. For example:
+2. Optionally, add the Docker build command to your project's `Makefile` for easier execution. For example:
 
      ```makefile
      .PHONY: your_model
@@ -196,9 +211,31 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
           docker build -t cz-benchmarks-models:your_model -f docker/your_model/Dockerfile .
      ```
 
-4. Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset.
-5. Verify that your model works as expected by testing it on a sample dataset. Ensure the outputs are correct and align with the intended task and metric.
+---
 
+## Step 9: Test Your Model
+
+Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset using the `czbenchmarks.runner.run_inference()` method.
+
+     Example:
+
+     ```python
+     import logging
+     import sys
+     from czbenchmarks.datasets.utils import load_dataset
+     from czbenchmarks.runner import run_inference
+
+     if __name__ == "__main__":
+          logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+          dataset = load_dataset("tsv2_bone_marrow")  # Specify a dataset from models.yaml that can be used as input to your model
+
+          dataset = run_inference("YOUR_MODEL", dataset)
+
+          print(dataset.get_output("YOUR_MODEL", "EMBEDDING"))
+     ```
+     
+     For details on creating a custom dataset, refer to the [Add a Custom Dataset](../how_to_guides/add_custom_dataset.md) guide.
+     
 ---
 
 ## Additional Notes
