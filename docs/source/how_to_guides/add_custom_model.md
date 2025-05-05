@@ -8,9 +8,8 @@ This guide provides a step-by-step process to integrate your own model into CZ B
 
 To add a new model, you will:
 1. Create a directory for your model.
-2. Implement the necessary files and classes.
-3. Extend the base classes for validation and implementation.
-4. Test and integrate your model.
+2. Implement the necessary files and classes, extending the base classes for model implementation and input validation.
+3. Test and integrate your model.
 
 ---
 
@@ -31,95 +30,170 @@ To add a new model, you will:
 
 ---
 
-## Step 2: Implement the Model Validator
+## Step 2: Add a new ModelType
 
-1. Create a validator class that extends `BaseModelValidator` or a specific validator like `BaseSingleCellValidator`.
-2. Define the required properties and methods for validation.
+In the `src.czbenchmarks.models.types.ModelType` enum, add a value for your model:
 
-    Example:
+     Example:
 
-    ```python
-    from czbenchmarks.models.validators.base_single_cell_model_validator import BaseSingleCellValidator
-    from czbenchmarks.models.data_types import DataType
+     ```
+     class ModelType(Enum):
+          ...
+          YOUR_MODEL = "YOUR_MODEL"
+     ```
 
-    class YourModelValidator(BaseSingleCellValidator):
-         available_organisms = ["HUMAN", "MOUSE"]  # Use appropriate Organism enums
-         required_obs_keys = []
-         required_var_keys = ["feature_name"]
-         model_type = "YOUR_MODEL_TYPE"
-
-         @property
-         def inputs(self):
-              return {DataType.ANNDATA}
-
-         @property
-         def outputs(self):
-              return {DataType.EMBEDDING}
-    ```
-
----
 
 ## Step 3: Implement the Model Class
 
-1. Create a model class that extends both the validator and `BaseModelImplementation`.
+1. Create a model class that extends `BaseModelImplementation`.
 2. Implement the required methods, such as `run_model`.
 
-    Example:
+     Example:
 
-    ```python
-    import argparse
-    from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+     ```python
+     import argparse
+     from typing import Set
+     from czbenchmarks.datasets.types import DataType
+     from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
+     from czbenchmarks.models.types import ModelType
 
-    class YourModel(YourModelValidator, BaseModelImplementation):
-         def parse_args(self):
-              parser = argparse.ArgumentParser(description="Run YourModel on input dataset.")
-              parser.add_argument("--your_param", type=int, default=32, help="Description of your_param")
-              return parser.parse_args()
 
-         def get_model_weights_subdir(self, dataset):
-              return "your_model"
+     class YourModel(BaseModelImplementation):
+          def parse_args(self):
+               parser = argparse.ArgumentParser(description="Run YourModel on input dataset.")
+               parser.add_argument("--your_param", type=int, default=32, help="Description of your_param")
+               return parser.parse_args()
 
-         def _download_model_weights(self, dataset):
-              # Implement your model weight download or verification logic here.
-              pass
+          model_type = ModelType.YOUR_MODEL
 
-         def run_model(self, dataset):
-              # Implement inference logic:
-              embeddings = ...  # Run inference to produce embeddings
-              dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
+          @property
+          def inputs(self) -> Set[DataType]:
+                # Specify appropriate `DataType`s below
+               return { }
 
-    if __name__ == "__main__":
-         YourModel().run()
-    ```
+          @property
+          def outputs(self) -> Set[DataType]:
+               # Specify appropriate `DataType`s below (embeddings are a typical model output)
+               return { DataType.EMBEDDING }  
 
-3. Create config file for the model
+          def get_model_weights_subdir(self, dataset) -> str:
+               return "your_model"
 
-    Example:
+          def _download_model_weights(self, dataset) -> None:
+               # Implement your model weight download or verification logic here.
+               pass
 
-    ```yaml
-     _target_: model.YourModel
+          def run_model(self, dataset):
+               # Implement inference logic:
+               embeddings = ...  # Run inference to produce embeddings
+               dataset.set_output(self.model_type, DataType.EMBEDDING, embeddings)
 
-    ```
-    Config file may include additional parameters required by model
+     if __name__ == "__main__":
+           YourModel().run()
+     ```
+
+Note that you can access any arguments specified in the `config.yaml` or via command-line options using `self.args`.
 
 ---
 
-## Step 4: Test Your Model
+## Step 3: (Optional) Extend `BaseSingleCellValidator`
 
-1. Ensure all required dependencies for your model are listed in the `requirements.txt` file. This ensures the Docker container has everything it needs to run your model.
+If your model is a single-cell transcriptomic model and accepts AnnData objects as input, then it can extend `BaseSingleCellValidator`. This will enable the class to validate that the input `Dataset` provides the required organisms, obs keys, and var keys.
 
-2. Build the Docker container using the `Dockerfile` you created. Run the following command, replacing `your_model_name` and `your_model` with the appropriate values:
+1. Add `BaseSingleCellValidator` as a parent class.
+2. Specify the required organisms, obs keys, and var keys that are defined as class variables.
+3. Specify `DataType.ANNDATA` as the model's input type via the `inputs()` method.
+    Example:
+
+     ```python
+     ...
+     from czbenchmarks.datasets.types import Organism
+     from czbenchmarks.models.validators.base_single_cell_model_validator import BaseSingleCellValidator
+
+
+     class YourModel(BaseModelImplementation, BaseSingleCellValidator):
+
+          ...
+
+          available_organisms = [Organism.HUMAN, Organism.MOUSE]  # Use appropriate Organism enums
+          required_obs_keys = []  # Specify required obs keys, as needed
+          required_var_keys = ["feature_name"]  # Use appropriate feature name
+
+          @property
+          def inputs(self) -> Set[DataType]:
+               return { DataType.ANNDATA }
+
+          ...
+     ```
+
+---
+
+## Step 4: Create a Config File for the Model
+
+1. Create a `config.yaml` file in your model's directory. This file will define the configuration parameters required for your model.
+2. Include the `_target_` key to specify the model class and any additional parameters your model requires.
+
+     Example:
+
+     ```yaml
+     _target_: model.YourModel
+     your_param: 32
+     another_param: "value"
+     ```
+
+    The config file may include any additional parameters required by your model.
+
+---
+
+## Step 5: Add `requirements.txt`
+
+1. Create a `requirements.txt` under `docker/your_model`.
+2. Add required Python packages
+
+## Step 6: Create a `Dockerfile`
+
+1. Create a new file `docker/your_model/Dockerfile`
+2. Specify Docker commands to build the Docker image, per the requirments of the model.
+
+     Example:
+     ```
+     FROM nvidia/cuda:12.6.1-cudnn-runtime-ubuntu22.04
+
+     WORKDIR /app
+
+     RUN apt-get update && \
+     apt-get install -y python3 python3-pip
+
+     COPY docker/your_model/requirements.txt .
+     RUN pip install --no-cache-dir -r requirements.txt
+
+     COPY src /app/package/src
+     COPY pyproject.toml /app/package/pyproject.toml
+     COPY README.md /app/package/README.md
+
+     RUN pip install -e /app/package[interactive]
+
+     COPY docker/your_model/model.py .
+     COPY docker/your_model/config.yaml .
+     # Specify additional files here, as neeeded
+
+     ENTRYPOINT ["python3", "-u", "/app/model.py"]
+     ``` 
+
+## Step 5: Build and Test Your Model
+
+1. Build the Docker container using the `Dockerfile` you created. Run the following command, replacing `your_model` with the appropriate values:
 
      ```sh
-     docker build -t cz-benchmarks-models:your_model_name -f docker/yourmodelpath/Dockerfile .
+     docker build -t cz-benchmarks-models:your_model -f docker/your_model/Dockerfile .
      ```
 
 3. Add the Docker build command to your project's `Makefile` for easier execution. For example:
 
      ```makefile
-     .PHONY: your_model_name
-     your_model_name:
-          docker build -t cz-benchmarks-models:your_model_name -f docker/yourmodelpath/Dockerfile .
+     .PHONY: your_model
+     your_model:
+          docker build -t cz-benchmarks-models:your_model -f docker/your_model/Dockerfile .
      ```
 
 4. Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset.
@@ -129,6 +203,6 @@ To add a new model, you will:
 
 ## Additional Notes
 
-- For guidance, review existing implementations such as `scVI` or `scGPT`. These examples can help you understand best practices and common patterns.
+- For guidance, review existing implementations such as `docker/scvi` or `docker/scgpt`. These examples can help you understand best practices and common patterns.
 - Use the `assets/` directory to store supplementary files your model might need, such as pre-trained weights, vocabularies, or other resources. Keeping these files organized ensures your model remains portable and easy to manage.
 
