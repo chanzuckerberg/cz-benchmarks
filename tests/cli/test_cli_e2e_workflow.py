@@ -48,6 +48,7 @@ def test_cli_e2e_workflow(mock_runner):
             name=task_name,
             task=EmbeddingTask(label_key="cell_type"),
             set_baseline=False,
+            baseline_args={},
         ),
     ]
     # endregion: Setup dataset, model, and task arguments
