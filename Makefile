@@ -32,6 +32,11 @@ geneformer:
 transcriptformer:
 	docker build -t cz-benchmarks-models:transcriptformer -f docker/transcriptformer/Dockerfile .
 
+.PHONY: simple
+simple:
+	docker build -t cz-benchmarks-models:simple -f docker/simple/Dockerfile .
+
+
 # Clean up images
 .PHONY: clean
 clean:
