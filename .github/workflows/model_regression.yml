@@ -63,11 +63,23 @@ jobs:
         run: |
           source .venv/bin/activate
           MODEL_INPUT="${{ github.event.inputs.model }}"
+          MOCK_CONTAINER_INPUT="${{ github.event.inputs.mock_container }}"
           if [ -z "$MODEL_INPUT" ]; then
             MODEL_INPUT="all"
           fi
+          if [ -z "$MOCK_CONTAINER_INPUT" ]; then
+            MOCK_CONTAINER_INPUT=true
+          fi
           if [ "$MODEL_INPUT" = "all" ]; then
-            pytest "tests/models/test_cli_model_regression.py" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
+            if [ "$MOCK_CONTAINER_INPUT" = true ]; then
+              pytest "tests/models/test_cli_model_regression.py" -vv -s --mock-container-runner
+            else
+              pytest "tests/models/test_cli_model_regression.py" -vv -s
+            fi
           else
-            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${MODEL_INPUT}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
+            if [ "$MOCK_CONTAINER_INPUT" = true ]; then
+              pytest "tests/models/test_cli_model_regression.py::test_model_regression[${MODEL_INPUT}-human-human_spermatogenesis-clustering]" -vv -s --mock-container-runner
+            else
+              pytest "tests/models/test_cli_model_regression.py::test_model_regression[${MODEL_INPUT}-human-human_spermatogenesis-clustering]" -vv -s
+            fi
           fi 
