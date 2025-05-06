@@ -42,15 +42,15 @@ class MyTask(BaseTask):
 ```
 
 ### 2. Understand Required Inputs and Outputs
-- Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.
+- Use the `required_inputs` and `required_outputs` properties to specify the data types your task depends upon. The `Dataset` object that is passed to your `Task` will be validated against these requirements.
 - Example:
   - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
-  - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).
+  - `required_outputs`: Data output by a model that your task depends on (e.g., `DataType.EMBEDDING`).
 
 ### 3. Implement Task Logic
 - Use `data.get_input()` and `data.get_output()` to retrieve the necessary inputs and outputs.
 - Implement the `_run_task` method to define the core logic of your task.
-- Use the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects.
+- Use the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a `Metric` that is not already supported by `cz-benchmarks`, refer to [Adding a New Metric](../how_to_guides/add_new_metric.md).
 
 ### 4. Reference Base Files
 - Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
