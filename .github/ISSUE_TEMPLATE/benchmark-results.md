@@ -1,5 +1,5 @@
 ---
-name: Benchmark Results
+name: Benchmark Results Issue
 about: For reporting issues with benchmark results
 title: ''
 labels: ''
@@ -13,9 +13,9 @@ assignees: ''
 Please fill out this template with your feedback about benchmark results generated for specific datasets, models, tasks, or metrics
 -->
 
-**Model name and variant**: [e.g., ResNet50 v2, BERT-base-cased]
+**Model name and variant**: [e.g. TranscriptFormer, SCVI, etc.]
 
-**Dataset name**: [e.g. TranscriptFormer, SCVI, etc.]
+**Dataset name**: [e.g. tsv2_blood, adamson_perturb, etc.]
 
 **Task name**: [e.g., clustering, embedding, label_prediction, etc.]
 
