@@ -1,14 +1,16 @@
 ---
 name: Package Issue
-about: For reporting issues with the cz-benchmarks package code usage (documentation,
-  usability, extensibility, etc.)
+about: For user feedback about the cz-benchmarks package
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-<!-- Fill out this section if you are reporting a bug or issue with the benchmarking package itself. Otherwise, remove this section. -->
+<!--
+Please fill out this template with your feedback about any aspect of cz-benchmarks package, including code, tests, documentation, usability, extensibility, etc.
+-->
+
 **Description of bug/issue/request**:  
 <!-- Describe the bug, usage problem, feature request, or documentation gap in detail. -->
 
