@@ -17,7 +17,7 @@ on:
           - UCE
           - TRANSCRIPTFORMER
       mock_container:
-        description: 'Whether to mock container runner'
+        description: 'Whether to mock the container runner'
         required: true
         type: boolean
         default: true
