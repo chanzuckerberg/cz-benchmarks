@@ -21,15 +21,6 @@ pip install .
 docker logout public.ecr.aws 
 ```
 
-### macOS Development Setup
-
-Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
-
-```bash
-uv python install
-uv pip install -e ".[dev]"
-```
-
 #### Accelerating tasks with GPUs (optional)
 For significant performance improvements on tasks, you can significantly reduce the time operations take in scikit-learn by using GPU acceleration (according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)) with cuML.
 
@@ -45,6 +36,15 @@ uv pip install --extra-index-url=https://pypi.nvidia.com "cz-benchmarks[gpu]"
 ```
 
 If you do not have GPUs available, scikit-learn will continue to operate using only CPU.
+
+### macOS Development Setup
+
+Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
+
+```bash
+uv python install
+uv pip install -e ".[dev]"
+```
 
 ## CLI Usage
 
