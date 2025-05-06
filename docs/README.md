@@ -11,9 +11,9 @@ This guide explains how to set up, build, view, and update the documentation for
 It is recommended to use a virtual environment to isolate dependencies.
 
 ```bash
-python -m venv venv_sphinx
-source venv_sphinx/bin/activate  # On macOS/Linux
-venv\Scripts\activate     # On Windows
+cd docs # Ensure you are in docs directory
+python -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
 ```
 
 ### Step 2: Install Documentation Dependencies
@@ -35,7 +35,6 @@ This project uses **AutoAPI** to automatically generate documentation for the Py
 Run the following command to build the documentation:
 
 ```bash
-cd docs # Ensure you are in docs directory
 make html
 ```
 
@@ -47,12 +46,11 @@ To view the generated documentation, open the `index.html` file in the `build/ht
 
 ```bash
 open build/html/index.html  # macOS/Linux
-start build/html/index.html # Windows
 ```
 
 ### Step 3: (Optional) Serve and View Documentation Locally
 
-To view the documentation in your browser with a local HTTP server, follow these steps:
+To view the documentation in your browser with a local HTTP server, in case a plugin using Javascript ES6 imports, follow these steps:
 
 1. Start a local HTTP server from the `build/html` directory:
     ```bash
@@ -87,11 +85,11 @@ If you add new Python modules to the project, **AutoAPI** will automatically inc
 After making changes, rebuild the documentation using:
 
 ```bash
-make clean
-make html
+make clean html
 ```
 
-The `make clean` command ensures that old build files are removed before generating new ones.
+The `clean` target ensures that old build files are removed before generating new ones.
+
 
 ---
 
