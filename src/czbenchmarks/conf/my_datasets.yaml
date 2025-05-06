@@ -1,5 +1,1 @@
 datasets:
-  healthy_human_liver:
-    _target_: czbenchmarks.datasets.SingleCellDataset
-    path: ~/cz-benchmarks/75907d1c-6ff7-43e3-aa4a-420339a70116.h5ad
-    organism: ${organism:HUMAN}

@@ -211,3 +211,8 @@ datasets:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
+
+  healthy_human_liver:
+    _target_: czbenchmarks.datasets.SingleCellDataset
+    path: ~/cz-benchmarks/75907d1c-6ff7-43e3-aa4a-420339a70116.h5ad
+    organism: ${organism:HUMAN}
