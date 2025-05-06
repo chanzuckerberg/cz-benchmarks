@@ -2,7 +2,6 @@ import pytest
 import json
 from pathlib import Path
 from czbenchmarks.models import utils as model_utils
-from czbenchmarks.tasks import utils as task_utils
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results
 from czbenchmarks.tasks import ClusteringTask
