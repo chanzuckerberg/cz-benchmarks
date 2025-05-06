@@ -1,0 +1,64 @@
+name: Model Regression Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Model to test'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - SCGPT
+          - SCVI
+          - GENEFORMER
+          - SCGENEPT
+          - UCE
+          - TRANSCRIPTFORMER
+      mock_container:
+        description: 'Whether to mock container runner'
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  model_regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenMP
+        run: sudo apt-get update && sudo apt-get install -y libomp-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e ".[dev]"
+
+      - name: Run model regression test
+        run: |
+          source .venv/bin/activate
+          if [ "${{ github.event.inputs.model }}" = "all" ]; then
+            pytest "tests/models/test_cli_model_regression.py" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
+          else
+            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${{ github.event.inputs.model }}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }} 

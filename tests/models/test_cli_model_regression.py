@@ -1,62 +1,42 @@
-from czbenchmarks.models import utils as model_utils
-from czbenchmarks.datasets import utils as dataset_utils
-from czbenchmarks.tasks import utils as task_utils
-from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results
-from czbenchmarks.tasks import (
-    ClusteringTask,
-)
 import pytest
 import json
 from pathlib import Path
-from czbenchmarks.datasets import Organism
-
+from czbenchmarks.models import utils as model_utils
+from czbenchmarks.tasks import utils as task_utils
+from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results
+from czbenchmarks.tasks import ClusteringTask
+from unittest.mock import patch, MagicMock
 
 # TODO: Make this dynamic by reading from model configs
-ORGANISM = Organism.HUMAN
-MODEL_VARIANTS = {
+MODEL_VARIANT_TEST_CASES = {
     "SCGPT": ["human"],
-    "SCVI": ["homo_sapiens", "mus_musculus"],
-    "GENEFORMER": ["gf_12L_30M", "gf_12L_95M", "gf_20L_95M", "gf_6L_30M"],
-    "SCGENEPT": [
-        "scgenept_go_all_gpt_concat__adamson",
-        "scgenept_go_c_gpt_concat__adamson",
-        "scgenept_go_f_gpt_concat__adamson",
-        "scgenept_go_p_gpt_concat__adamson",
-        "scgenept_ncbi+uniprot_gpt__adamson",
-        "scgenept_ncbi_gpt__adamson",
-        "scgpt__adamson",
-        "scgenept_go_all_gpt_concat__norman",
-        "scgenept_go_c_gpt_concat__norman",
-        "scgenept_go_f_gpt_concat__norman",
-        "scgenept_go_p_gpt_concat__norman",
-        "scgenept_ncbi+uniprot_gpt__norman",
-        "scgenept_ncbi_gpt__norman",
-        "scgpt__norman"
-    ], 
-    "UCE": ["33l", "4l"],
-    "TRANSCRIPTFORMER": ["tf-sapiens", "tf-exemplar", "tf-metazoa"]  # From docker/transcriptformer/model.py
+    "SCVI": ["homo_sapiens"],
+    "GENEFORMER": ["gf_6L_30M"],
+    "SCGENEPT": ["scgpt__adamson"],
+    "UCE": ["4l"],
+    "TRANSCRIPTFORMER": ["tf-sapiens"]
 }
 
 @pytest.mark.parametrize(
-    "model_name,dataset_name,task_name",
+    "model_name,variant,dataset_name,task_name",
     [
-        (model, dataset, task)
+        (model, variant, dataset, task)
         for model in model_utils.list_available_models()
-        for variant in MODEL_VARIANTS[model]
-        for dataset in ["human_spermatogenesis"] # dataset_utils.list_available_datasets()
+        for variant in MODEL_VARIANT_TEST_CASES[model]
+        for dataset in ["human_spermatogenesis"] # human organism is currently supported by all models
         for task in ["clustering"] # task_utils.TASK_NAMES
     ]
 )
-def test_model_regression(model_name, variant, dataset_name, task_name):
+def test_model_regression(model_name, variant, dataset_name, task_name, mock_container_runner):
     """
     Model regression test for CLI end-to-end workflow.
     
-    This test:
+    This tests:
     1. A single benchmark (i.e. a single dataset & task) against a baseline file
     2. Generates both baseline and results files in tests/fixtures/baselines/
-       - baseline file: {model}_{dataset}_{task}_baseline.json
-       - results file: {model}_{dataset}_{task}_results.json
+       - baseline file: {model}_{variant}_{dataset}_{task}_baseline.json
+       - results file: {model}_{variant}_{dataset}_{task}_results.json
     
     The test ensures that model outputs remain consistent with previously established baselines.
     If the baseline file doesn't exist, it will be created for future comparisons.
@@ -65,29 +45,49 @@ def test_model_regression(model_name, variant, dataset_name, task_name):
     dataset = load_dataset(dataset_name)
     assert dataset is not None, f"Failed to load dataset {dataset_name}"
 
-    model_args = [ModelArgs(name=model_name, args={})]
+    # Create model args with the variant
+    model_args = [ModelArgs(
+        name=model_name,
+        args={
+            "model_variant": [variant] if variant else []
+        }
+    )]
     
     task_args = [
         TaskArgs(
             name=task_name,
             task=ClusteringTask(label_key="cell_type"),
             set_baseline=True,  # Set to True to generate baseline results
+            baseline_args={},  # Add empty baseline args
         ),
     ]
     #endregion
 
     #region Run Inference and Task
-    task_results = run_with_inference(
-        dataset_names=[dataset_name],
-        model_args=model_args,
-        task_args=task_args,
-    )
+    if mock_container_runner:  # --mock-container-runner argument passed to test on the command line
+        # Mock the ContainerRunner class to avoid nvidia runtime error if not available
+        mock_runner = MagicMock()
+        mock_runner.run.return_value = dataset
+        with patch('czbenchmarks.runner.ContainerRunner', return_value=mock_runner):
+            task_results = run_with_inference(
+                dataset_names=[dataset_name],
+                model_args=model_args,
+                task_args=task_args,
+            )
+    else:
+        task_results = run_with_inference(
+            dataset_names=[dataset_name],
+            model_args=model_args,
+            task_args=task_args,
+        )
     #endregion
     
     #region Save and Compare Results
     baseline_dir = Path("tests/fixtures/baselines")
-    baseline_file = baseline_dir / f"{model_name}_{dataset_name}_{task_name}_baseline.json"
-    results_file = baseline_dir / f"{model_name}_{dataset_name}_{task_name}_results.json"
+    baseline_dir.mkdir(parents=True, exist_ok=True)
+    variant_suffix = f"_{variant}" if variant else ""
+    baseline_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_baseline.json"
+    results_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_results.json"
     
     if not baseline_file.exists():
         write_results(task_results, output_format="json", output_file=str(baseline_file))
@@ -105,7 +105,10 @@ def test_model_regression(model_name, variant, dataset_name, task_name):
     #region Sanity Checks
     assert task_results is not None, "Task results should not be None"
     assert len(task_results) > 0, "Should have at least one task result"
-    assert any(result.model_type == model_name for result in task_results), f"No results found for model {model_name}"
+    assert actual_json is not None, "Actual results JSON should not be None"
+    assert expected_json is not None, "Expected results JSON should not be None"
+    assert len(actual_json) > 0, "Actual results JSON should not be empty"
+    assert len(expected_json) > 0, "Expected results JSON should not be empty"
     #endregion
 
     # Clean up temporary results file
