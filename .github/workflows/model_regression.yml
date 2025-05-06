@@ -65,4 +65,5 @@ jobs:
           if [ "${{ github.event.inputs.model }}" = "all" ]; then
             pytest "tests/models/test_cli_model_regression.py" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
           else
-            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${{ github.event.inputs.model }}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }} 
+            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${{ github.event.inputs.model }}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
+          fi 
