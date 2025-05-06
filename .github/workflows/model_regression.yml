@@ -62,8 +62,12 @@ jobs:
       - name: Run model regression test
         run: |
           source .venv/bin/activate
-          if [ "${{ github.event.inputs.model }}" = "all" ]; then
+          MODEL_INPUT="${{ github.event.inputs.model }}"
+          if [ -z "$MODEL_INPUT" ]; then
+            MODEL_INPUT="all"
+          fi
+          if [ "$MODEL_INPUT" = "all" ]; then
             pytest "tests/models/test_cli_model_regression.py" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
           else
-            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${{ github.event.inputs.model }}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
+            pytest "tests/models/test_cli_model_regression.py::test_model_regression[${MODEL_INPUT}-human-human_spermatogenesis-clustering]" -vv -s ${{ github.event.inputs.mock_container && '--mock-container-runner' || '' }}
           fi 
