@@ -1,10 +1,9 @@
 """Implementation of metric functions and registration with the registry."""
 
-from scib_metrics import silhouette_batch
+from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
-    silhouette_score,
     mean_squared_error,
 )
 from scipy.stats import pearsonr
@@ -36,9 +35,8 @@ metrics_registry.register(
 # Register embedding quality metrics
 metrics_registry.register(
     MetricType.SILHOUETTE_SCORE,
-    func=silhouette_score,
+    func=silhouette_label,
     required_args={"X", "labels"},
-    default_params={"metric": "euclidean"},
     description="Silhouette score for clustering evaluation",
     tags={"embedding"},
 )
