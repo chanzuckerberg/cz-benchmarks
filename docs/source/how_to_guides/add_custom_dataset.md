@@ -19,10 +19,12 @@ This guide explains how to integrate your own dataset into CZ Benchmarks.
 
 ### 2. Create a Custom Configuration File
 
-- Create a YAML file (e.g., `custom.yaml`) with the following structure:
+- Update `src/czbenchmarks/conf/datasets.yaml`) by adding a new dataset entry:
 
 ```yaml
 datasets:
+  ...
+
   my_dataset:
     _target_: czbenchmarks.datasets.SingleCellDataset
     path: ~/path_to_your_data/my_data.h5ad
@@ -45,8 +47,8 @@ datasets:
 ```python
 from czbenchmarks.datasets.utils import load_dataset
 
-# Instantiate the `SingleCellDataset` object from the configuration specified in `custom.yaml`
-dataset = load_dataset("my_dataset", config_path="custom.yaml")
+# Instantiate the `SingleCellDataset` object from the configuration specified in `datasets.yaml`
+dataset = load_dataset("my_dataset")
 
 # Load the H5AD file into memory as an AnnData object, storing in the `ANNDATA` input "slot" of the dataset.
 dataset.load_data()
