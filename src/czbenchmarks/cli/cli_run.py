@@ -50,6 +50,7 @@ class TaskArgs(BaseModel, Generic[TaskType]):
     name: str  # Lower-case task name e.g. embedding
     task: TaskType
     set_baseline: bool
+    baseline_args: dict[str, Any]
 
 
 class TaskResult(BaseModel):
@@ -231,6 +232,19 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--cross-species-task-label-key",
         help="Label key to use for cross species integration task",
     )
+
+    # Extra arguments for perturbation task
+    parser.add_argument(
+        "--perturbation-task-set-baseline",
+        action="store_true",
+        help="Use mean and median predictions as the BASELINE model output in the dataset",
+    )
+    parser.add_argument(
+        "--perturbation-task-baseline-gene-pert",
+        type=str,
+        help="Gene perturbation to use for baseline",
+    )
+
     # Advanced feature: define multiple batches of jobs using JSON
     parser.add_argument(
         "--batch-json",
@@ -512,7 +526,7 @@ def run_task(
 
     if task_args.set_baseline:
         dataset.load_data()
-        task_args.task.set_baseline(dataset)
+        task_args.task.set_baseline(dataset, **task_args.baseline_args)
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
 
@@ -520,11 +534,16 @@ def run_task(
         raise TypeError("Expected a single task result, got list")
 
     for model_type, metrics in result.items():
+        if model_type == ModelType.BASELINE:
+            model_args_to_store = task_args.baseline_args
+        else:
+            model_args_to_store = model_args.get(model_type.value) or {}
+
         task_result = TaskResult(
             task_name=task_args.name,
             model_type=model_type.value,
             dataset_name=dataset_name,
-            model_args=model_args.get(model_type.value) or {},
+            model_args=model_args_to_store,
             metrics=metrics,
         )
         task_results.append(task_result)
@@ -693,15 +712,23 @@ def parse_task_args(
     """
     prefix = f"{task_name.lower()}_task_"
     task_args: dict[str, Any] = {}
+    baseline_args: dict[str, Any] = {}
 
     for k, v in vars(args).items():
         if v is not None and k.startswith(prefix):
-            task_args[k.removeprefix(prefix)] = v
+            trimmed_k = k.removeprefix(prefix)
+            if trimmed_k.startswith("baseline_"):
+                baseline_args[trimmed_k.removeprefix("baseline_")] = v
+            else:
+                task_args[trimmed_k] = v
 
     set_baseline = task_args.pop("set_baseline", False)
 
     return TaskArgs(
-        name=task_name, task=TaskCls(**task_args), set_baseline=set_baseline
+        name=task_name,
+        task=TaskCls(**task_args),
+        set_baseline=set_baseline,
+        baseline_args=baseline_args,
     )
 
 
