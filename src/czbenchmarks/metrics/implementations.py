@@ -131,3 +131,11 @@ metrics_registry.register(
     default_params={"metric": "auroc", "classifier": None},
     tags={"label_prediction"},
 )
+
+metrics_registry.register(
+    MetricType.SIMPLE,
+    func=lambda: 1.0,
+    required_args=set(),
+    description="A simple metric that always returns 1.0",
+    tags={"embedding"},
+)

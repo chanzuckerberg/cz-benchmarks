@@ -26,4 +26,4 @@ class SimpleTask(BaseTask):
     def _compute_metrics(self) -> List[MetricResult]:
         # Compute and return a list of MetricResult objects
         metric_value = 1.0
-        return [MetricResult(metric_type="simple_metric", value=metric_value)]
+        return [MetricResult(metric_type="simple", value=metric_value)]

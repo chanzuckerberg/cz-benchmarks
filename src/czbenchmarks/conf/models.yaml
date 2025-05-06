@@ -23,3 +23,6 @@ models:
 
   TRANSCRIPTFORMER:
     model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:transcriptformer
+
+  SIMPLE:
+    model_image_uri: cz-benchmarks-models:simple

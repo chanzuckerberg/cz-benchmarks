@@ -12,7 +12,7 @@ class Simple(BaseModelImplementation, BaseSingleCellValidator):
         parser.add_argument("--batch-size", type=int, default=32, help="Batch size for processing the dataset.")
         return parser.parse_args()
 
-    model_type = ModelType.YOUR_MODEL
+    model_type = ModelType.SIMPLE
     available_organisms = [Organism.HUMAN, Organism.MOUSE]  # Use appropriate Organism enums
     required_obs_keys = []  # Specify required obs keys, as needed
     required_var_keys = ["feature_name"]  # Use appropriate feature name
