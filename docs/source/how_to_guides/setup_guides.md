@@ -105,3 +105,7 @@ Mac requires an additional dependency, `hnswlib`, which should be installed with
 
 5. **Dependency Conflicts**  
     Ensure all dependencies are installed in a clean virtual environment. Recreate the environment if needed.
+
+6. **hnswlib package installation error**
+
+    If the `hnswlib` package fails to install with an error like `fatal error: Python.h: No such file or directory`, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via `sudo apt-get install python3-dev`.
