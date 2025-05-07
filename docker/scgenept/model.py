@@ -23,7 +23,7 @@ from czbenchmarks.models.implementations.base_model_implementation import (
 )
 from czbenchmarks.models.validators import BaseSingleCellValidator
 from czbenchmarks.models.types import ModelType
-from czbenchmarks.utils import download_s3_file, sync_s3_to_local
+from czbenchmarks.utils import download_file_from_remote, sync_s3_to_local
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,6 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
 
         # Copy the vocab.json file from S3 to local model weights directory
         vocab_uri = config.models["vocab_uri"]
-        vocab_key = "/".join(vocab_uri.split("/")[3:])
 
         vocab_dir = (
             pathlib.Path(self.model_weights_dir).parent.parent / "pretrained" / "scgpt"
@@ -125,7 +124,7 @@ class ScGenePT(ScGenePTValidator, BaseModelImplementation):
         vocab_dir.mkdir(parents=True, exist_ok=True)
         vocab_file = vocab_dir / "vocab.json"
 
-        download_s3_file(bucket, vocab_key, str(vocab_file))
+        download_file_from_remote(vocab_uri, vocab_dir, "vocab.json")
         logger.info(f"Downloaded vocab.json from {vocab_uri} to {vocab_file}")
 
         # Copy the gene_embeddings directory from S3 to local model weights directory

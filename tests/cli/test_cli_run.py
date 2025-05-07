@@ -5,7 +5,9 @@ from unittest.mock import MagicMock, call
 from pytest_mock import MockFixture
 
 from czbenchmarks import runner
+from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.cli.cli_run import (
+    CacheOptions,
     get_model_arg_permutations,
     get_processed_dataset_cache_path,
     main,
@@ -51,11 +53,28 @@ def test_main(mocker: MockFixture) -> None:
             output_file=None,
             output_format=None,
             batch_json=[],
+            remote_cache_url=None,
+            remote_cache_upload="never",
+            remote_cache_upload_results=False,
         )
     )
-    mock_run.assert_called_once_with(dataset_names=[], model_args=[], task_args=[])
+    expected_cache_options = CacheOptions(
+        use_remote_cache=False,
+        remote_cache_url="",
+        upload_strategy="never",
+        upload_results=False,
+    )
+    mock_run.assert_called_once_with(
+        dataset_names=[],
+        model_args=[],
+        task_args=[],
+        cache_options=expected_cache_options,
+    )
     mock_write_results.assert_called_once_with(
-        mock_task_results, output_format=None, output_file=None
+        mock_task_results,
+        output_format=None,
+        output_file=None,
+        cache_options=expected_cache_options,
     )
     mock_parse_task_args.assert_not_called()
 
@@ -78,7 +97,16 @@ def test_main(mocker: MockFixture) -> None:
             output_file="output_file.yaml",
             output_format="yaml",
             batch_json=[""],
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            remote_cache_upload="if_not_exists",
+            remote_cache_upload_results=True,
         )
+    )
+    expected_cache_options = CacheOptions(
+        use_remote_cache=True,
+        remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+        upload_strategy="if_not_exists",
+        upload_results=True,
     )
     mock_run.assert_called_once_with(
         dataset_names=["tsv2_blood", "tsv2_heart"],
@@ -89,9 +117,13 @@ def test_main(mocker: MockFixture) -> None:
             ),
         ],
         task_args=[mock_task_args, mock_task_args],
+        cache_options=expected_cache_options,
     )
     mock_write_results.assert_called_once_with(
-        mock_task_results, output_format="yaml", output_file="output_file.yaml"
+        mock_task_results,
+        output_format="yaml",
+        output_file="output_file.yaml",
+        cache_options=expected_cache_options,
     )
     assert mock_parse_task_args.call_count == 2
 
@@ -112,7 +144,16 @@ def test_main(mocker: MockFixture) -> None:
                 '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
                 '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
             ],
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            remote_cache_upload="overwrite",
+            remote_cache_upload_results=False,
         )
+    )
+    expected_cache_options = CacheOptions(
+        use_remote_cache=True,
+        remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+        upload_strategy="overwrite",
+        upload_results=False,
     )
     mock_run.assert_has_calls(
         [
@@ -128,6 +169,7 @@ def test_main(mocker: MockFixture) -> None:
                     )
                 ],
                 task_args=[mock_task_args],
+                cache_options=expected_cache_options,
             ),
             call(
                 dataset_names=["norman_perturb"],
@@ -141,6 +183,7 @@ def test_main(mocker: MockFixture) -> None:
                     )
                 ],
                 task_args=[mock_task_args],
+                cache_options=expected_cache_options,
             ),
         ]
     )
@@ -158,6 +201,17 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     mock_task_results = [MagicMock()]
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
+    )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename",
+        return_value="test_dataset.dill",
+    )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.cli.get_version",
+        return_value="0.0.0+test",
+    )
+    mock_download = mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.download_file_from_remote"
     )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     model_args = [
@@ -186,6 +240,12 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         dataset_names=dataset_names,
         model_args=model_args,
         task_args=task_args,
+        cache_options=CacheOptions(
+            use_remote_cache=True,
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            upload_strategy="never",
+            upload_results=False,
+        ),
     )
 
     # Verify results
@@ -201,6 +261,12 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         call("SCVI", mock_processed_data, gpu=True, model_variant="homo_sapiens"),
         call("SCVI", mock_processed_data, gpu=True, model_variant="mus_musculus"),
     ]
+
+    # Check that the cache was used
+    mock_download.assert_called_with(
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed_datasets/test_dataset.dill",
+        Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute(),
+    )
 
     # Check that each task was run for each model variant, for each dataset
     assert mock_run_task.call_args_list == [
@@ -502,19 +568,40 @@ def test_get_processed_dataset_cache_path() -> None:
 
 
 def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
-    mock_cache_path = MagicMock()
     mocker.patch(
-        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_path",
-        return_value=mock_cache_path,
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename",
+        return_value="test_dataset.dill",
+    )
+    mock_upload = mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.upload_file_to_remote",
     )
     mock_dataset = MagicMock()
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.cli.get_version",
+        return_value="0.0.0+test",
+    )
     set_processed_datasets_cache(
         dataset=mock_dataset,
         dataset_name="tsv2_heart",
         model_name="SCVI",
         model_args={"model_variant": "homo_sapiens"},
+        cache_options=CacheOptions(
+            use_remote_cache=True,
+            upload_strategy="overwrite",
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            upload_results=False,
+        ),
+    )
+    expected_serialize_path = (
+        (Path(PROCESSED_DATASETS_CACHE_PATH) / "test_dataset.dill")
+        .expanduser()
+        .absolute()
     )
     mock_dataset.unload_data.assert_called_once()
-    mock_dataset.serialize.assert_called_once_with(str(mock_cache_path))
+    mock_dataset.serialize.assert_called_once_with(str(expected_serialize_path))
     mock_dataset.load_data.assert_called_once()
-    mock_cache_path.parent.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+    mock_upload.assert_called_once_with(
+        expected_serialize_path,
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed_datasets/",
+        overwrite_existing=True,
+    )

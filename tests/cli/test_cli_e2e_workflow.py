@@ -2,7 +2,12 @@ from czbenchmarks.tasks import (
     EmbeddingTask,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
-from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs
+from czbenchmarks.cli.cli_run import (
+    run_with_inference,
+    CacheOptions,
+    ModelArgs,
+    TaskArgs,
+)
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.models.types import ModelType
 from unittest.mock import patch, MagicMock
@@ -51,6 +56,12 @@ def test_cli_e2e_workflow(mock_runner):
             baseline_args={},
         ),
     ]
+    cache_options = CacheOptions(
+        use_remote_cache=False,
+        upload_strategy="never",
+        remote_cache_url="",
+        upload_results=False,
+    )
     # endregion: Setup dataset, model, and task arguments
 
     # region: Run with inference
@@ -59,6 +70,7 @@ def test_cli_e2e_workflow(mock_runner):
         dataset_names=[dataset_name],
         model_args=model_args,
         task_args=task_args,
+        cache_options=cache_options,
     )
     # endregion: Run with inference
 

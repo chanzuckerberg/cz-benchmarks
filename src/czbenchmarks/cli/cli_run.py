@@ -9,10 +9,11 @@ import yaml
 from collections import defaultdict
 from collections.abc import Mapping
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from pydantic import BaseModel, computed_field
-from typing import Any, Generic, TypeVar
+from secrets import token_hex
+from typing import Any, Generic, get_args as typing_get_args, Literal, TypeVar
 
 from czbenchmarks import runner
 from czbenchmarks.cli import cli
@@ -30,6 +31,8 @@ from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks import utils
+
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +75,23 @@ class TaskResult(BaseModel):
         return model_utils.model_to_display_name(self.model_type, self.model_args)
 
 
+class CacheOptions(BaseModel):
+    use_remote_cache: bool
+    upload_strategy: Literal["never", "if_not_exists", "overwrite"]
+    remote_cache_url: str
+    upload_results: bool
+
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> "CacheOptions":
+        remote_cache_url = args.remote_cache_url or ""
+        return cls(
+            use_remote_cache=bool(remote_cache_url),
+            remote_cache_url=remote_cache_url,
+            upload_strategy=args.remote_cache_upload,
+            upload_results=args.remote_cache_upload_results,
+        )
+
+
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     """
     Add run command arguments to the parser.
@@ -109,6 +129,27 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--output-file",
         "-o",
         help="Path to file or directory to save results (default is stdout)",
+    )
+    parser.add_argument(
+        "--remote-cache-url",
+        help=(
+            "AWS S3 URL prefix for caching embeddings and storing output "
+            "(example: s3://cz-benchmarks-example/). "
+            "If specified, any embeddings missing from the local cache will "
+            "be downloaded from the remote cache rather than computed"
+        ),
+    )
+    parser.add_argument(
+        "--remote-cache-upload",
+        choices=typing_get_args(CacheOptions.__annotations__["upload_strategy"]),
+        help="When to upload processed embeddings to the remote cache",
+        default="never",
+    )
+    parser.add_argument(
+        "--remote-cache-upload-results",
+        action="store_true",
+        help="Upload the results to the remote cache",
+        default=False,
     )
 
     # Extra arguments for geneformer model
@@ -293,6 +334,7 @@ def main(parsed_args: argparse.Namespace) -> None:
     """
     task_results: list[TaskResult] = []
     batch_args = parse_batch_json(parsed_args.batch_json)
+    cache_options = CacheOptions.from_args(parsed_args)
 
     for batch_idx, batch_dict in enumerate(batch_args):
         log.info(f"Starting batch {batch_idx + 1}/{len(parsed_args.batch_json)}")
@@ -330,19 +372,24 @@ def main(parsed_args: argparse.Namespace) -> None:
             dataset_names=args.datasets,
             model_args=model_args,
             task_args=task_args,
+            cache_options=cache_options,
         )
         task_results.extend(task_result)
 
     # Write the results to the specified output
     write_results(
         task_results,
+        cache_options=cache_options,
         output_format=args.output_format,
         output_file=args.output_file,
     )
 
 
 def run(
-    dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
+    dataset_names: list[str],
+    model_args: list[ModelArgs],
+    task_args: list[TaskArgs],
+    cache_options: CacheOptions,
 ) -> list[TaskResult]:
     """
     Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.
@@ -352,11 +399,16 @@ def run(
     )
     if not model_args:
         return run_without_inference(dataset_names, task_args)
-    return run_with_inference(dataset_names, model_args, task_args)
+    return run_with_inference(
+        dataset_names, model_args, task_args, cache_options=cache_options
+    )
 
 
 def run_with_inference(
-    dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs]
+    dataset_names: list[str],
+    model_args: list[ModelArgs],
+    task_args: list[TaskArgs],
+    cache_options: CacheOptions,
 ) -> list[TaskResult]:
     """
     Execute a series of tasks using multiple models on a collection of datasets.
@@ -400,7 +452,10 @@ def run_with_inference(
                     f'for dataset "{dataset_name}"  ({args})'
                 )
                 processed_dataset = run_inference_or_load_from_cache(
-                    dataset_name, model_name=model_name, model_args=args
+                    dataset_name,
+                    model_name=model_name,
+                    model_args=args,
+                    cache_options=cache_options,
                 )
                 # NOTE: accumulating datasets with attached embeddings in memory
                 # can be memory intensive
@@ -438,13 +493,20 @@ def run_with_inference(
 
 
 def run_inference_or_load_from_cache(
-    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+    dataset_name: str,
+    *,
+    model_name: str,
+    model_args: ModelArgsDict,
+    cache_options: CacheOptions,
 ) -> BaseDataset:
     """
     Load the processed dataset from the cache if it exists, else run inference and save to cache.
     """
     processed_dataset = try_processed_datasets_cache(
-        dataset_name, model_name=model_name, model_args=model_args
+        dataset_name,
+        model_name=model_name,
+        model_args=model_args,
+        cache_options=cache_options,
     )
     if processed_dataset:
         log.info("Processed dataset is cached: skipping inference")
@@ -463,6 +525,7 @@ def run_inference_or_load_from_cache(
         dataset_name,
         model_name=model_name,
         model_args=model_args,
+        cache_options=cache_options,
     )
 
     return processed_dataset
@@ -623,12 +686,12 @@ def get_model_arg_permutations(
 def write_results(
     task_results: list[TaskResult],
     *,
+    cache_options: CacheOptions,
     output_format: str = DEFAULT_OUTPUT_FORMAT,
     output_file: str | None = None,  # Writes to stdout if None
-) -> Path | None:
+) -> None:
     """
     Format and write results to the given directory or file.
-    Returns the path to the written file, or None if writing only to stdout.
     """
     results_dict = {
         "czbenchmarks_version": cli.get_version(),
@@ -646,31 +709,45 @@ def write_results(
     elif output_format not in VALID_OUTPUT_FORMATS:
         raise ValueError(f"Invalid output format: {output_format}")
 
-    # Dump the results to a string
-    result_str = ""
+    results_str = ""
     if output_format == "json":
-        result_str = json.dumps(results_dict, indent=2)
+        results_str = json.dumps(results_dict, indent=2)
     else:
-        result_str = yaml.dump(results_dict)
+        results_str = yaml.dump(results_dict)
 
-    # Write to stdout if not otherwise specified
-    if not output_file:
-        sys.stdout.write(f"{result_str}\n")
-        return None
+    if cache_options.use_remote_cache and cache_options.upload_results:
+        remote_url = get_result_url_for_remote(cache_options.remote_cache_url)
+        try:
+            utils.upload_blob_to_remote(
+                results_str.encode("utf-8"), remote_url, overwrite_existing=False
+            )
+        except (utils.RemoteError, utils.RemoteAlreadyExists):
+            log.exception(f"Failed to upload results to {remote_url!r}")
+        log.info("Uploaded results to %r", remote_url)
 
     # Generate a unique filename if we were passed a directory
-    if os.path.isdir(output_file) or output_file.endswith("/"):
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if output_file and (os.path.isdir(output_file) or output_file.endswith("/")):
+        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         output_file = os.path.join(
             output_file, f"czbenchmarks_results_{current_time}.{output_format}"
         )
 
-    # Write the results to the specified file
-    with open(output_file, "w") as f:
-        f.write(f"{result_str}\n")
+    if output_file:
+        with open(output_file, "w") as f:
+            f.write(results_str)
+            f.write("\n")
+        log.info("Wrote results to %r", output_file)
+    else:
+        # Write to stdout if not otherwise specified
+        sys.stdout.write(results_str)
+        sys.stdout.write("\n")
 
-    log.info("Wrote results to %s", output_file)
-    return Path(output_file)
+
+def get_result_url_for_remote(remote_prefix_url: str) -> str:
+    nonce = token_hex(4)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    version = cli.get_version()
+    return f"{remote_prefix_url.rstrip('/')}/{version}/results/{timestamp}-{nonce}.json"
 
 
 def set_processed_datasets_cache(
@@ -679,24 +756,58 @@ def set_processed_datasets_cache(
     *,
     model_name: str,
     model_args: ModelArgsDict,
+    cache_options: CacheOptions,
 ) -> None:
     """
-    Write a dataset to disk in the cache directory.
+    Write a dataset to the cache
     A "processed" dataset has been run with model inference for the given arguments.
     """
-    cache_path = get_processed_dataset_cache_path(
+    dataset_filename = get_processed_dataset_cache_filename(
         dataset_name, model_name=model_name, model_args=model_args
     )
+    cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
+    cache_file = cache_dir / dataset_filename
+
     try:
         # "Unload" the source data so we only cache the results
         dataset.unload_data()
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        dataset.serialize(str(cache_path))
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        dataset.serialize(str(cache_file))
+        succeeded = True
     except Exception as e:
         # Log the exception, but don't raise if we can't write to the cache for some reason
         log.exception(
-            f'Failed to serialize processed dataset to cache "{cache_path}": {e}'
+            f'Failed to serialize processed dataset to cache "{cache_file}": {e}'
         )
+        succeeded = False
+
+    if succeeded and cache_options.use_remote_cache:
+        remote_prefix = get_remote_cache_prefix(cache_options)
+        try:
+            if cache_options.upload_strategy == "overwrite":
+                utils.upload_file_to_remote(
+                    cache_file, remote_prefix, overwrite_existing=True
+                )
+                log.info(
+                    f"Uploaded processed dataset from {cache_file} to {remote_prefix}"
+                )
+            elif cache_options.upload_strategy == "if_not_exists":
+                try:
+                    utils.upload_file_to_remote(
+                        cache_file,
+                        remote_prefix,
+                        overwrite_existing=False,
+                    )
+                    log.info(
+                        f"Uploaded processed dataset from {cache_file} to {remote_prefix}"
+                    )
+                except utils.RemoteAlreadyExists:
+                    log.info(
+                        "Processed dataset already cached remotely. Skipping upload."
+                    )
+        except utils.RemoteError:
+            log.exception("Unable to upload processed dataset to remote cache")
+
     dataset.load_data()
 
 
@@ -705,24 +816,71 @@ def try_processed_datasets_cache(
     *,
     model_name: str,
     model_args: ModelArgsDict,
+    cache_options: CacheOptions,
 ) -> BaseDataset | None:
     """
     Deserialize and return a processed dataset from the cache if it exists, else return None.
     """
-    cache_path = get_processed_dataset_cache_path(
+    dataset_filename = get_processed_dataset_cache_filename(
         dataset_name, model_name=model_name, model_args=model_args
     )
-    if cache_path.exists():
+    cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
+    cache_file = cache_dir / dataset_filename
+
+    if cache_options.use_remote_cache and not cache_file.exists():
+        remote_url = f"{get_remote_cache_prefix(cache_options)}{dataset_filename}"
+        try:
+            utils.download_file_from_remote(remote_url, cache_dir)
+            log.info(f"Downloaded cached embeddings from {remote_url} to {cache_dir}")
+        except utils.RemoteError:
+            # not a great way to handle this, but maybe the cache bucket is not public
+            try:
+                log.warning(
+                    "Unsigned request for cached embeddings failed. Trying signed request."
+                )
+                utils.download_file_from_remote(
+                    remote_url, cache_dir, make_unsigned_request=False
+                )
+                log.info(
+                    f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
+                )
+            except utils.RemoteError:
+                log.warning(
+                    f"Unable to retrieve embeddings from remote cache at {remote_url!r}"
+                )
+
+    if cache_file.exists():
         # Load the original dataset
         dataset = dataset_utils.load_dataset(dataset_name)
         dataset.load_data()
 
         # Attach the cached results to the dataset
-        processed_dataset = BaseDataset.deserialize(str(cache_path))
+        processed_dataset = BaseDataset.deserialize(str(cache_file))
         dataset._outputs = processed_dataset._outputs
         return dataset
 
     return None
+
+
+def get_remote_cache_prefix(cache_options: CacheOptions):
+    """get the prefix ending in '/' that the remote processed datasets go under"""
+    return f"{cache_options.remote_cache_url.rstrip('/')}/{cli.get_version()}/processed_datasets/"
+
+
+def get_processed_dataset_cache_filename(
+    dataset_name: str, *, model_name: str, model_args: ModelArgsDict
+) -> str:
+    """
+    generate a unique filename for the given dataset and model arguments
+    """
+    if model_args:
+        model_args_str = f"{model_name}_" + "_".join(
+            f"{k}-{v}" for k, v in sorted(model_args.items())
+        )
+    else:
+        model_args_str = model_name
+    filename = f"{dataset_name}_{model_args_str}.dill"
+    return filename
 
 
 def get_processed_dataset_cache_path(
@@ -732,11 +890,10 @@ def get_processed_dataset_cache_path(
     Return a unique file path in the cache directory for the given dataset and model arguments.
     """
     cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
-    filename = f"{dataset_name}_{model_name}"
-    if model_args:
-        model_args_str = "_".join(f"{k}-{v}" for k, v in sorted(model_args.items()))
-        filename = f"{filename}_{model_args_str}"
-    return cache_dir / f"{filename}.dill"
+    filename = get_processed_dataset_cache_filename(
+        dataset_name, model_name=model_name, model_args=model_args
+    )
+    return cache_dir / filename
 
 
 def parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs:

@@ -1,10 +1,12 @@
-import os
 from datetime import datetime
+import mimetypes
+import os
+from pathlib import Path
+import logging
 
 import boto3
 from botocore.config import Config
 import botocore
-import logging
 import hydra
 from omegaconf import OmegaConf
 
@@ -58,31 +60,6 @@ def import_class_from_config(config_path: str):
     return class_obj
 
 
-def download_s3_file(bucket, key, local_path, unsigned=True):
-    """
-    Downloads a single file from S3 to a local path.
-
-    :param bucket: S3 bucket name
-    :param key: S3 key (file path) to download
-    :param local_path: Local file path to save to
-    :param unsigned: Whether to use unsigned requests (default: True)
-    """
-    s3 = boto3.client(
-        "s3",
-        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
-    )
-
-    # Create directory if it doesn't exist
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
-
-    try:
-        s3.download_file(bucket, key, local_path)
-        logger.info(f"Downloaded {key} from s3://{bucket} to {local_path}")
-    except Exception as e:
-        logger.error(f"Failed to download {key} from s3://{bucket}: {str(e)}")
-        raise
-
-
 def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
     """
     Syncs files from an S3 bucket prefix to a local directory.
@@ -133,3 +110,135 @@ def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
                 if s3_time > local_time:
                     s3.download_file(bucket, key, local_file_path)
                     logger.info(f"Updated: {relative_key} at {local_file_path}")
+
+
+class RemoteError(Exception):
+    pass
+
+
+class RemoteAlreadyExists(Exception):
+    pass
+
+
+def _get_s3_client(make_unsigned_request: bool = False):
+    if make_unsigned_request:
+        return boto3.client("s3", config=Config(signature_version=botocore.UNSIGNED))
+    else:
+        return boto3.client("s3")
+
+
+def upload_file_to_remote(
+    local_file: str | Path,
+    remote_prefix_url: str,
+    make_unsigned_request: bool = False,
+    overwrite_existing: bool = False,
+) -> None:
+    """Upload a local file to an s3 prefix, preserving the filename remotely"""
+    local_file = Path(local_file)
+    if not local_file.is_file():
+        raise FileNotFoundError(f"{local_file!r} does not exist")
+    filename = local_file.name
+
+    if not remote_prefix_url.endswith("/"):
+        raise ValueError(
+            f"Remote URL {remote_prefix_url!r} should be a prefix ending in '/'"
+        )
+    else:
+        bucket, key_prefix = remote_prefix_url.removeprefix("s3://").split("/", 1)
+
+    remote_key = f"{key_prefix.rstrip('/')}/{filename}"
+    s3 = _get_s3_client(make_unsigned_request)
+
+    if not overwrite_existing:
+        try:
+            s3.head_object(Bucket=bucket, Key=remote_key)
+            raise RemoteAlreadyExists(
+                f"Remote file already exists at 's3://{bucket}/{remote_key}'"
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] != "404":
+                raise RemoteError(
+                    f"Error checking for existence of 's3://{bucket}/{remote_key}'"
+                ) from e
+        except botocore.exceptions.BotoCoreError as e:
+            raise RemoteError(
+                f"Error checking for existence of 's3://{bucket}/{remote_key}'"
+            ) from e
+    try:
+        s3.upload_file(str(local_file), bucket, remote_key)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        raise RemoteError(
+            f"Failed to upload {local_file!r} to 's3://{bucket}/{remote_key}'"
+        ) from e
+
+
+def upload_blob_to_remote(
+    blob: bytes,
+    remote_url: str,
+    make_unsigned_request: bool = False,
+    overwrite_existing: bool = False,
+) -> None:
+    """Upload the contents of a text buffer to the exact S3 location given by remote_url."""
+    try:
+        bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
+    except ValueError:
+        raise ValueError(
+            f"Remote URL {remote_url!r} is missing a key to a specific object"
+        )
+
+    s3 = _get_s3_client(make_unsigned_request)
+    if not overwrite_existing:
+        try:
+            s3.head_object(Bucket=bucket, Key=remote_key)
+            raise RemoteAlreadyExists(
+                f"Remote file already exists at 's3://{bucket}/{remote_key}'"
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] != "404":
+                raise RemoteError(
+                    f"Error checking existence of 's3://{bucket}/{remote_key}'"
+                ) from e
+        except botocore.exceptions.BotoCoreError as e:
+            raise RemoteError(
+                f"Error checking existence of 's3://{bucket}/{remote_key}'"
+            ) from e
+
+    try:
+        content_type, _ = mimetypes.guess_type(remote_key)
+        s3.put_object(
+            Bucket=bucket,
+            Key=remote_key,
+            Body=blob,
+            ContentType=content_type or "application/octet-stream",
+        )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        raise RemoteError(f"Failed to upload to 's3://{bucket}/{remote_key}'") from e
+
+
+def download_file_from_remote(
+    remote_url: str,
+    local_directory: str | Path,
+    local_filename: str | None = None,
+    make_unsigned_request: bool = True,
+) -> None:
+    """Download a remote file from s3 to a local directory, preserving the filename if not specified"""
+    try:
+        bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
+    except ValueError:
+        raise ValueError(
+            f"Remote URL {remote_url!r} is missing a key to a specific object"
+        )
+
+    local_directory = Path(local_directory)
+    local_directory.mkdir(parents=True, exist_ok=True)
+    if local_filename is None:
+        _, local_filename = remote_url.rsplit("/", 1)
+
+    local_file = local_directory / local_filename
+    s3 = _get_s3_client(make_unsigned_request)
+    try:
+        s3.download_file(bucket, remote_key, str(local_file))
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        raise RemoteError(
+            f"Failed to download 's3://{bucket}/{remote_key}' to {local_file!r}"
+        ) from e

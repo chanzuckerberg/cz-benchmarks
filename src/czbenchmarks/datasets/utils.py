@@ -1,39 +1,12 @@
 import os
 import hydra
 from hydra.utils import instantiate
-import boto3
-import botocore
-from botocore.config import Config
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
 from ..constants import DATASETS_CACHE_PATH
-from ..utils import initialize_hydra
+from ..utils import initialize_hydra, download_file_from_remote
 from .base import BaseDataset
-
-
-def _download_dataset(uri: str, output_path: str, unsigned=True):
-    """
-    Download a dataset from the manifest file to the specified output path.
-
-    Args:
-        uri: S3 URI of dataset
-        output_path: Local path where dataset should be downloaded
-        unsigned: Whether to use unsigned requests (default: True)
-    """
-    # Create output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-    # Parse S3 URL
-    bucket = uri.split("/")[2]
-    key = "/".join(uri.split("/")[3:])
-
-    # Download from S3
-    s3_client = boto3.client(
-        "s3",
-        config=Config(signature_version=botocore.UNSIGNED) if unsigned else None,
-    )
-    s3_client.download_file(bucket, key, output_path)
 
 
 def load_dataset(
@@ -93,7 +66,7 @@ def load_dataset(
 
         # Only download if file doesn't exist
         if not os.path.exists(cache_file):
-            _download_dataset(original_path, cache_file)
+            download_file_from_remote(original_path, cache_path, f"{dataset_name}.h5ad")
 
         # Update path to cached file
         dataset_info.path = cache_file
