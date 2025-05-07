@@ -170,11 +170,13 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         name="embedding",
         task=EmbeddingTask(label_key="cell_type"),
         set_baseline=False,
+        baseline_args={},
     )
     clustering_task_args = TaskArgs(
         name="clustering",
         task=ClusteringTask(label_key="cell_type"),
         set_baseline=True,
+        baseline_args={},
     )
     task_args = [embedding_task_args, clustering_task_args]
 
@@ -291,11 +293,13 @@ def test_run_without_inference(mocker: MockFixture) -> None:
         name="embedding",
         task=EmbeddingTask(label_key="cell_type"),
         set_baseline=False,
+        baseline_args={},
     )
     clustering_task_args = TaskArgs(
         name="clustering",
         task=ClusteringTask(label_key="cell_type"),
         set_baseline=True,
+        baseline_args={},
     )
     task_args = [embedding_task_args, clustering_task_args]
 
