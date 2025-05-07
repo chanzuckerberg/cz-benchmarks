@@ -37,6 +37,7 @@ def test_main(mocker: MockFixture) -> None:
         return_value=None,
     )
     mock_task_args = MagicMock()
+    mock_task_args.task = MagicMock()
     mock_parse_task_args = mocker.patch(
         "czbenchmarks.cli.cli_run.parse_task_args", return_value=mock_task_args
     )
@@ -350,6 +351,8 @@ def test_run_task() -> None:
     }
     mock_task_args = MagicMock()
     mock_task_args.name = "clustering"
+    mock_task_args.task = MagicMock()
+    mock_task_args.task.display_name = "clustering"
     mock_task_run_result = {
         ModelType.SCVI: [
             MetricResult(
@@ -369,8 +372,10 @@ def test_run_task() -> None:
     assert task_results == [
         TaskResult(
             task_name="clustering",
+            task_name_display="clustering",
             model_type="SCVI",
-            dataset_name="tsv2_heart",
+            dataset_names=["tsv2_heart"],
+            dataset_names_display=["Tabula Sapiens 2.0 - Heart"],
             model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
@@ -390,6 +395,8 @@ def test_run_multi_dataset_task() -> None:
     mock_task_args = MagicMock()
     mock_task_args.name = "cross_species"
     mock_task_args.set_baseline = False
+    mock_task_args.task = MagicMock()
+    mock_task_args.task.display_name = "cross-species integration"
     mock_dataset_names = ["human_spermatogenesis", "mouse_spermatogenesis"]
     mock_task_run_result = {
         ModelType.UCE: [
@@ -409,8 +416,13 @@ def test_run_multi_dataset_task() -> None:
     assert task_results == [
         TaskResult(
             task_name="cross_species",
+            task_name_display="cross-species integration",
             model_type="UCE",
-            dataset_name=",".join(mock_dataset_names),
+            dataset_names=list(sorted(mock_dataset_names)),
+            dataset_names_display=[
+                "Spermatogenesis - Homo sapiens",
+                "Spermatogenesis - Mus musculus",
+            ],
             model_args={"model_variant": "4l"},
             metrics=[
                 MetricResult(

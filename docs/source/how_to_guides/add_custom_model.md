@@ -42,6 +42,8 @@ In the `src.czbenchmarks.models.types.ModelType` enum, add a value for your mode
           YOUR_MODEL = "YOUR_MODEL"
      ```
 
+---
+
 ## Step 3: Implement the Model Class
 
 1. Create a model class that extends `BaseModelImplementation`.
@@ -58,10 +60,10 @@ In the `src.czbenchmarks.models.types.ModelType` enum, add a value for your mode
 
 
      class YourModel(BaseModelImplementation):
-          def parse_args(self):
+          def create_parser(self):
                parser = argparse.ArgumentParser(description="Run YourModel on input dataset.")
                parser.add_argument("--your_param", type=int, default=32, help="Description of your_param")
-               return parser.parse_args()
+               return parser
 
           model_type = ModelType.YOUR_MODEL
 
@@ -95,7 +97,29 @@ Note that you can access any arguments specified in the `config.yaml` or via com
 
 ---
 
-## Step 4: (Optional) Extend `BaseSingleCellValidator`
+## Step 4: (Optional) Add a display name for your Model
+
+In `src.czbenchmarks.models.utils`, add a display name for your model if you would
+like a prettier display name than the one you used in the `ModelType` enum.
+
+As currently implemented, the display name can be customized based on the value in the
+`ModelType` enum as well as the `model-variant` and (fine-tuning) `dataset` arguments
+passed to your model (defined in the `create_parser` method).
+
+
+    Example:
+
+     ```python
+     _MODEL_VARIANT_FINETUNE_TO_DISPLAY_NAME = {
+         ...
+         ("YOUR_MODEL", "1M10L", None): "YourModel (1 million cells, 10 layers)",
+         ...
+     }
+     ```
+
+---
+
+## Step 5: (Optional) Extend `BaseSingleCellValidator`
 
 If your model is a single-cell transcriptomic model and accepts AnnData objects as input, then it can extend `BaseSingleCellValidator`. This will enable the class to validate that the input `Dataset` provides the required organisms, obs keys, and var keys.
 
@@ -127,7 +151,7 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 5: Create a Config File for the Model
+## Step 6: Create a Config File for the Model
 
 1. Create a `config.yaml` file in your model's directory. This file will define the configuration parameters required for your model.
 2. Include the `_target_` key to specify the model class and any additional parameters your model requires.
@@ -144,14 +168,14 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 6: Add `requirements.txt`
+## Step 7: Add `requirements.txt`
 
 1. Create a `requirements.txt` file under `docker/your_model`.
 2. Add required Python packages
 
 ---
 
-## Step 7: Create a `Dockerfile`
+## Step 8: Create a `Dockerfile`
 
 1. Create a new file `docker/your_model/Dockerfile`
 2. Specify Docker commands to build the Docker image, per the requirments of the model.
@@ -195,7 +219,7 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 8: Build Your Model
+## Step 9: Build Your Model
 
 1. Build the Docker container using the `Dockerfile` you created. Run the following command, replacing `your_model` with the appropriate values:
 
@@ -213,7 +237,7 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 ---
 
-## Step 9: Test Your Model
+## Step 10: Test Your Model
 
 Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset using the `czbenchmarks.runner.run_inference()` method.
 

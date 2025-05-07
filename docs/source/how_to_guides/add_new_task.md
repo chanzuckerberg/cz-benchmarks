@@ -22,6 +22,10 @@ This guide explains how to create and integrate your own evaluation task into cz
             self.my_param = my_param
 
         @property
+        def display_name(self) -> str:
+            return "My Example Task"
+
+        @property
         def required_inputs(self) -> Set[DataType]:
             return {DataType.METADATA}
 
@@ -43,6 +47,7 @@ This guide explains how to create and integrate your own evaluation task into cz
     ```
 
 - Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
+- Use `display_name` to provide a human-readable name for use when displaying your task
 - Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.
     - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
     - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).
