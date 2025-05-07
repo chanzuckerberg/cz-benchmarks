@@ -137,7 +137,9 @@ class MetadataLabelPredictionTask(BaseTask):
             "knn": Pipeline(
                 [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
             ),
-            "rf": Pipeline([("rf", RandomForestClassifier())]),
+            "rf": Pipeline(
+                [("rf", RandomForestClassifier(random_state=self.random_seed))]
+            ),
         }
         logger.info(f"Created classifiers: {list(classifiers.keys())}")
 
