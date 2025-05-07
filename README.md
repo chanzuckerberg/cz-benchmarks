@@ -1,205 +1,61 @@
 # CZ Benchmarks
 
-**PROJECT STATUS: UNSTABLE**
-
-**This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support.**
-
 CZ Benchmarks is a package for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. The package provides a modular architecture for running containerized models, executing evaluation tasks, and computing performance metrics.
 
-## Installation Instructions
+## Key Features of CZ Benchmarks:
 
-⚠️ Warning: The provided model images are based on NVIDIA base images and require an NVIDIA GPU. They will only run on linux/amd64 systems with the NVIDIA Container Runtime enabled.
+- ✅ **Modular and Customizable**: Effortlessly integrate new models, datasets, tasks, and metrics to suit your research needs.
+- 🤜 **Extensible for Innovation**: Build and expand custom benchmarks tailored to cutting-edge computational biology challenges.
+- 📊 **Metrics-rich Evaluation**: Benchmark models across diverse tasks, including clustering, embedding, integration, perturbation prediction, and label prediction, using a wide array of metrics.
+- 🧬 **Single-cell Native**: Designed to work seamlessly with AnnData and biological datasets, making it a perfect fit for single-cell transcriptomics research. Image modality coming soon.
+- 🚀 **Scalable and Efficient**: Leverage container-based execution with GPU support for high-performance benchmarking.
 
-### From Source
 
-```bash
-git clone https://github.com/chanzuckerberg/cz-benchmarks.git
-cd cz-benchmarks
-pip install .
+## Why Choose CZ Benchmarks?
 
-# The library pulls model images from a Public ECR repo so this clears any old, expired, or conflicting credentials that may cause errors. Public ECR doesn't require credentials
-docker logout public.ecr.aws 
-```
+- **Reproducibility at Its Core**: Docker-based environments ensure uniformity and reproducibility across experiments.
+- **Comprehensive and Insightful**: Gain deep insights into model performance with task-specific evaluations and detailed metrics.
+- **User-friendly for Scientists**: Intuitive command-line interface and a well-documented Python API make it accessible for computational biologists and data scientists alike.
 
-### macOS Development Setup
+## Table of contents
 
-Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
+### Getting Started
+- [Quick Start Guide](docs/source/quick_start.md)
 
-```bash
-uv python install
-uv sync --all-extras
-```
+### How-To Guides
+- [Add a Custom Dataset](docs/source/how_to_guides/add_custom_dataset.md)
+- [Add a Custom Model](docs/source/how_to_guides/add_custom_model.md)
+- [Add a New Metric](docs/source/how_to_guides/add_new_metric.md)
+- [Add a New Task](docs/source/how_to_guides/add_new_task.md)
+- [Interactive Mode](docs/source/how_to_guides/interactive_mode.md)
+- [Visualize Results](docs/source/how_to_guides/visualize_results.md)
 
-## CLI Usage
+### Developer Guides
+- [Datasets](docs/source/developer_guides/datasets.md)
+- [Metrics](docs/source/developer_guides/metrics.md)
+- [Models](docs/source/developer_guides/models.md)
+- [Tasks](docs/source/developer_guides/tasks.md)
+- [Writing Test](tests/README.md)
+- [Writing Documentation](docs/README.md)
 
-```sh
-# List available models, datasets, or tasks
-czbenchmarks list [models|datasets|tasks]
 
-# Run benchmarking workflow for the given model(s), dataset(s), and task(s) for the given label
-czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name>
+### Policies
+- [Assets](docs/source/policy/assets.md)
+- [Governance](docs/source/policy/governance.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
-# For example
-czbenchmarks run --models SCGPT --scgpt-model-variant human --datasets tsv2_bladder --tasks clustering --clustering-task-label-key cell_type
+### Additional Resources
+- [Changelog & Release Notes](CHANGELOG.md)
+- [Roadmap](docs/source/roadmap.md)
+- [Legal](docs/source/legal.md)
 
-# View the full list of options
-czbenchmarks --help
-czbenchmarks run --help
-```
+**Project Status: UNSTABLE**
 
-## Library Usage
+>   ** 🚧 Under Development** - This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support. Feedback and contributions are welcome, but user support is limited for now.
 
-```python
-from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.runner import run_inference
-from czbenchmarks.tasks import ClusteringTask, EmbeddingTask, MetadataLabelPredictionTask
-
-# Load dataset with custom configuration
-dataset = load_dataset("example", config_path="custom.yaml")
-
-# Run model
-dataset = run_inference("SCVI", dataset)
-
-# Run evaluation tasks
-task = ClusteringTask(label_key="cell_type")
-clustering_results = task.run(dataset)
-
-task = EmbeddingTask(label_key="cell_type")
-embedding_results = task.run(dataset)
-
-task = MetadataLabelPredictionTask(label_key="cell_type")
-prediction_results = task.run(dataset)
-```
-
-## Architecture Overview
-
-This is a benchmarking framework for machine learning models (with a focus on single-cell data), built around Docker containers and a modular architecture. Here are the key components:
-
-### Core Components
-
-#### Base Classes
-
-- `czbenchmarks.datasets.base.BaseDataset`: Abstract base class for all datasets
-- `czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation`: Abstract base class for all model implementations
-- `czbenchmarks.models.validators.base_model_validator.BaseModelValidator`: Abstract base class for model validation
-- `czbenchmarks.tasks.base.BaseTask`: Abstract base class for evaluation tasks
-
-#### Container System
-
-- Uses Docker for model execution
-- Models are packaged as Docker containers with standardized interfaces
-- Each model container includes:
-  - Model implementation inheriting from `BaseModelImplementation`
-  - Model-specific validator inheriting from `BaseModelValidator`
-  - Configuration file (config.yaml)
-  - Requirements file (requirements.txt)
-
-### Available Models
-
-The framework currently supports the following models:
-
-- scVI: Variational inference for single-cell RNA-seq data
-- scGPT: Single-cell GPT model for transcriptomics
-- Geneformer: Transformer model for gene expression
-- scGenePT: Single-cell Gene Prediction Transformer
-- UCE: Universal Cell Embedding model
-
-## Contributing New Components
-
-### Adding a New Model
-
-1. Create a new directory under `docker/your_model/` with:
-
-```markdown
-docker/your_model/
-├── Dockerfile
-├── model.py
-├── config.yaml
-└── requirements.txt
-```
-
-Refer to the template docker directory as a starting point (`docker/template/`)!
-
-2. Implement your model validator in `src/czbenchmarks/models/validators/`. This should inherit from `BaseModelValidator` or `BaseSingleCellValidator` and implement:
-   - Required data type specifications
-   - Model-specific validation rules
-   - Supported organisms and data requirements
-
-3. Implement your model class in `model.py` (see template):
-
-```python
-from czbenchmarks.models.implementations.base_model_implementation import BaseModelImplementation
-from czbenchmarks.models.validators.your_model import YourModelValidator
-
-class YourModel(YourModelValidator, BaseModelImplementation):
-    def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
-        """Specify subdirectory for model weights."""
-        return dataset.organism.name
-
-    def _download_model_weights(self, dataset: BaseDataset):
-        """Download model weights from your source."""
-        # Implement model weight downloading logic
-        pass
-
-    def run_model(self, dataset: BaseDataset):
-        """Implement your model's inference logic."""
-        # Access input data via dataset.adata
-        # Set output embedding via dataset.set_output()
-        pass
-
-    def parse_args(self):
-        """Parse model-specific arguments."""
-        pass
-
-if __name__ == "__main__":
-    YourModel().run()
-```
-
-### Adding New Tasks
-
-1. Create a task class inheriting from `czbenchmarks.tasks.base.BaseTask`. For example:
-
-```python
-from czbenchmarks.tasks.base import BaseTask
-
-class ClusteringTask(BaseTask):
-
-    def __init__(self, label_key: str):
-        self.label_key = label_key
-
-    def validate(self, data: SingleCellDataset):
-        return data.output_embedding is not None and self.label_key in data.sample_metadata.columns
-
-    def _run_task(self, data: SingleCellDataset) -> SingleCellDataset:
-        adata = data.adata
-        adata.obsm["emb"] = data.output_embedding
-        self.input_labels = data.sample_metadata[self.label_key]
-        self.predicted_labels = your_label_prediction_function(...)
-        return data
-
-    def _compute_metrics(self) -> Dict[str, float]:
-        return {
-            "adjusted_rand_index": adjusted_rand_index(self.input_labels, self.predicted_labels),
-            "normalized_mutual_info": normalized_mutual_info(self.input_labels, self.predicted_labels),
-        }
-```
-
-## Using Custom Data
-
-To use your own data:
-
-1. Prepare your data in a compatible format (AnnData for single-cell)
-2. Create a custom configuration file (e.g., `custom.yaml`)
-3. Load using the appropriate dataset type:
-
-```python
-from czbenchmarks.datasets.utils import load_dataset
-
-dataset = load_dataset("your_dataset", config_path="custom.yaml")
-```
 
 ## Contributing
-This project adheres to the Contributor Covenant code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
+This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
 ## Reporting Security Issues
 Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@chanzuckerberg.com.
