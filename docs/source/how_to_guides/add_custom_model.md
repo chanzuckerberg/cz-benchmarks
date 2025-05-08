@@ -104,26 +104,26 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 3. Specify `DataType.ANNDATA` as the model's input type via the `inputs()` method.
     Example:
 
-     ```python
-     ...
-     from czbenchmarks.datasets.types import Organism
-     from czbenchmarks.models.validators.base_single_cell_model_validator import BaseSingleCellValidator
+    ```python
+    ...
+    from czbenchmarks.datasets.types import Organism
+    from czbenchmarks.models.validators.base_single_cell_model_validator import BaseSingleCellValidator
 
 
-     class YourModel(BaseModelImplementation, BaseSingleCellValidator):
+    class YourModel(BaseModelImplementation, BaseSingleCellValidator):
 
-          ...
+         ...
 
-          available_organisms = [Organism.HUMAN, Organism.MOUSE]  # Use appropriate Organism enums
-          required_obs_keys = []  # Specify required obs keys, as needed
-          required_var_keys = ["feature_name"]  # Use appropriate feature name
+         available_organisms = [Organism.HUMAN, Organism.MOUSE]  # Use appropriate Organism enums
+         required_obs_keys = []  # Specify required obs keys, as needed
+         required_var_keys = ["feature_name"]  # Use appropriate feature name
 
-          @property
-          def inputs(self) -> Set[DataType]:
-               return { DataType.ANNDATA }
+         @property
+         def inputs(self) -> Set[DataType]:
+              return { DataType.ANNDATA }
 
-          ...
-     ```
+         ...
+    ```
 
 ---
 
@@ -217,24 +217,24 @@ If your model is a single-cell transcriptomic model and accepts AnnData objects 
 
 Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset using the `czbenchmarks.runner.run_inference()` method.
 
-     Example:
+Example:
 
-     ```python
-     import logging
-     import sys
-     from czbenchmarks.datasets.utils import load_dataset
-     from czbenchmarks.runner import run_inference
+```python
+import logging
+import sys
+from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.runner import run_inference
 
-     if __name__ == "__main__":
-          logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-          dataset = load_dataset("tsv2_bone_marrow")  # Specify a dataset from models.yaml that can be used as input to your model
+if __name__ == "__main__":
+     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+     dataset = load_dataset("tsv2_bone_marrow")  # Specify a dataset from models.yaml that can be used as input to your model
 
-          dataset = run_inference("YOUR_MODEL", dataset)
+     dataset = run_inference("YOUR_MODEL", dataset)
 
-          print(dataset.get_output("YOUR_MODEL", "EMBEDDING"))
-     ```
-     
-     For details on creating a custom dataset, refer to the [Add a Custom Dataset](../how_to_guides/add_custom_dataset.md) guide.
+     print(dataset.get_output("YOUR_MODEL", "EMBEDDING"))
+```
+
+For details on creating a custom dataset, refer to the [Add a Custom Dataset](../how_to_guides/add_custom_dataset.md) guide.
      
 ---
 
