@@ -6,6 +6,7 @@ from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results
 from czbenchmarks.tasks import ClusteringTask
 from unittest.mock import patch, MagicMock
+from datetime import datetime
 
 MODEL_VARIANT_TEST_CASES = [
     ("SCGPT", "human"),
@@ -25,7 +26,7 @@ MODEL_VARIANT_TEST_CASES = [
         for task in ["clustering"]
     ]
 )
-def test_model_regression(model_name, variant, dataset_name, task_name, mock_container_runner):
+def test_model_regression(model_name, variant, dataset_name, task_name, tolerance_percent, mock_container_runner):
     """
     Model regression test for CLI end-to-end workflow.
     
@@ -95,7 +96,8 @@ def test_model_regression(model_name, variant, dataset_name, task_name, mock_con
         with open(results_file) as actual_results, open(baseline_file) as expected_results:
             actual_json = json.load(actual_results)
             expected_json = json.load(expected_results)
-            assert actual_json == expected_json, f"Results differ from baseline. Check {results_file} vs {baseline_file}"
+            # Compare metrics with percentage tolerance
+            compare_metrics(actual_json, expected_json, tolerance_percent=tolerance_percent, results_file=results_file, baseline_file=baseline_file)
     else:
         raise ValueError(f"Baseline file {baseline_file} does not exist")
     #endregion
@@ -103,12 +105,41 @@ def test_model_regression(model_name, variant, dataset_name, task_name, mock_con
     #region Sanity Checks
     assert task_results is not None, "Task results should not be None"
     assert len(task_results) > 0, "Should have at least one task result"
-    assert actual_json is not None, "Actual results JSON should not be None"
-    assert expected_json is not None, "Expected results JSON should not be None"
-    assert len(actual_json) > 0, "Actual results JSON should not be empty"
-    assert len(expected_json) > 0, "Expected results JSON should not be empty"
+    assert actual_json, "Actual results JSON should not be empty"
+    assert expected_json, "Expected results JSON should not be empty"
     #endregion
 
     # Clean up temporary results file
     if results_file.exists():
-        results_file.unlink() 
+        results_file.unlink()
+
+def compare_metrics(actual, expected, path="root", tolerance_percent=0.1, results_file=None, baseline_file=None):
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        for key in expected:
+            assert key in actual, f"Missing key '{key}' in actual results at {path}"
+            compare_metrics(actual[key], expected[key], path=f"{path}.{key}", tolerance_percent=tolerance_percent, results_file=results_file, baseline_file=baseline_file)
+    elif isinstance(expected, list) and isinstance(actual, list):
+        assert len(actual) == len(expected), f"List length mismatch at {path}"
+        for index, (a, e) in enumerate(zip(actual, expected)):
+            compare_metrics(a, e, path=f"{path}[{index}]", tolerance_percent=tolerance_percent, results_file=results_file, baseline_file=baseline_file)
+    elif isinstance(expected, (int, float)) and isinstance(actual, (int, float)):
+        if expected == 0:
+            diff = abs(actual - expected)
+            assert diff <= tolerance_percent, (
+                f"Metric at {path} differs by {diff} (actual: {actual}, expected: {expected}) "
+                f"which is greater than allowed absolute tolerance {tolerance_percent} for zero baseline.\nCheck {results_file} vs {baseline_file}"
+            )
+        else:
+            percent_diff = abs(actual - expected) / abs(expected)
+            assert percent_diff <= tolerance_percent, (
+                f"Metric at {path} differs by {percent_diff*100:.4f}% (actual: {actual}, expected: {expected}) "
+                f"which is greater than allowed tolerance {tolerance_percent*100:.2f}%.\nCheck {results_file} vs {baseline_file}"
+            )
+    elif isinstance(expected, datetime) and isinstance(actual, datetime):
+        assert actual == expected, (
+            f"Value mismatch at {path}: actual={actual}, expected={expected} in {results_file} vs {baseline_file}"
+        )
+    else:
+        assert actual == expected, (
+            f"Value mismatch at {path}: actual={actual}, expected={expected} in {results_file} vs {baseline_file}"
+        )

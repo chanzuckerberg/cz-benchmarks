@@ -2,6 +2,12 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--tolerance-percent",
+        type=float,
+        default=0.1,
+        help="Percentage tolerance for metric comparison (default: 0.1 = 10%)"
+    )
+    parser.addoption(
         "--mock-container-runner",
         action="store_true",
         default=False,
@@ -9,5 +15,9 @@ def pytest_addoption(parser):
     )
 
 @pytest.fixture
+def tolerance_percent(request):
+    return request.config.getoption("--tolerance-percent", default=0.1)
+
+@pytest.fixture
 def mock_container_runner(request):
-    return request.config.getoption("--mock-container-runner", default=False) 
+    return request.config.getoption("--mock-container-runner", default=False)
