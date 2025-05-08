@@ -40,7 +40,7 @@ COPY README.md /app/package/README.md
 RUN /opt/venv_aido/bin/pip install -e /app/package[interactive]
 
 ENV PYTHONPATH="/app/package/src:$PYTHONPATH"
-# # Specify entrypoint so that the model is executed when the container starts.
+# Specify entrypoint so that the model is executed when the container starts.
 ENTRYPOINT ["/opt/venv_aido/bin/python3", "-u", "/app/model.py"]
 
 
