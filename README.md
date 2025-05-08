@@ -1,6 +1,6 @@
 # CZ Benchmarks
 
-CZ Benchmarks is a package for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. The package provides a modular architecture for running containerized models, executing evaluation tasks, and computing performance metrics.
+CZ Benchmarks is a package for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. The package provides a modular architecture for loading datasets, running containerized models, executing evaluation tasks, and computing performance metrics.
 
 ## Key Features of CZ Benchmarks:
 
