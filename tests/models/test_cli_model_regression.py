@@ -7,24 +7,22 @@ from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, wr
 from czbenchmarks.tasks import ClusteringTask
 from unittest.mock import patch, MagicMock
 
-# TODO: Make this dynamic by reading from model configs
-MODEL_VARIANT_TEST_CASES = {
-    "SCGPT": ["human"],
-    "SCVI": ["homo_sapiens"],
-    "GENEFORMER": ["gf_6L_30M"],
-    "SCGENEPT": ["scgpt__adamson"],
-    "UCE": ["4l"],
-    "TRANSCRIPTFORMER": ["tf-sapiens"]
-}
+MODEL_VARIANT_TEST_CASES = [
+    ("SCGPT", "human"),
+    ("SCVI", "homo_sapiens"),
+    ("GENEFORMER", "gf_6L_30M"),
+    ("SCGENEPT", "scgpt__adamson"),
+    ("UCE", "4l"),
+    ("TRANSCRIPTFORMER", "tf-sapiens"),
+]
 
 @pytest.mark.parametrize(
     "model_name,variant,dataset_name,task_name",
     [
         (model, variant, dataset, task)
-        for model in model_utils.list_available_models()
-        for variant in MODEL_VARIANT_TEST_CASES[model]
-        for dataset in ["human_spermatogenesis"] # human organism is currently supported by all models
-        for task in ["clustering"] # task_utils.TASK_NAMES
+        for model, variant in MODEL_VARIANT_TEST_CASES
+        for dataset in ["human_spermatogenesis"]
+        for task in ["clustering"]
     ]
 )
 def test_model_regression(model_name, variant, dataset_name, task_name, mock_container_runner):
