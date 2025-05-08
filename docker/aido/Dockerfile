@@ -37,7 +37,7 @@ COPY docker/aido/model.py /app/model.py
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
-RUN /opt/venv_aido/bin/pip install -e /app/package
+RUN /opt/venv_aido/bin/pip install -e /app/package[interactive]
 
 ENV PYTHONPATH="/app/package/src:$PYTHONPATH"
 # # Specify entrypoint so that the model is executed when the container starts.
