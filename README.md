@@ -21,13 +21,29 @@ pip install .
 docker logout public.ecr.aws 
 ```
 
+#### Accelerating tasks with GPUs (optional)
+For significant performance improvements on tasks, you can significantly reduce the time operations take in scikit-learn by using GPU acceleration (according to [cuML Zero Code Change Accelerration Benchmarks](https://docs.rapids.ai/api/cuml/stable/zero-code-change-benchmarks/)) with cuML.
+
+Here's how to install cuML:
+1. Ensure the `nvidia-cuda-toolkit` is installed: `sudo apt-get update && sudo apt-get install -y nvidia-cuda-toolkit`
+2. Install cuML with one of the commands below
+```bash
+# Run this if installing from source
+uv pip install --extra-index-url=https://pypi.nvidia.com -e ".[gpu]"
+
+#  Run this if installing from PyPi
+uv pip install --extra-index-url=https://pypi.nvidia.com "cz-benchmarks[gpu]"
+```
+
+If you do not have GPUs available, scikit-learn will continue to operate using only CPU.
+
 ### macOS Development Setup
 
 Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install dependencies for local development.
 
 ```bash
 uv python install
-uv sync --all-extras
+uv pip install -e ".[dev]"
 ```
 
 ## CLI Usage
