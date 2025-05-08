@@ -8,53 +8,50 @@ This guide explains how to create and integrate your own evaluation task into CZ
 - Extend the `BaseTask` class to define your custom task.
 - Create a new Python file in the `czbenchmarks/tasks/` directory (or in a subdirectory if the task is modality-specific).
 
-#### Example:
-```python
-from typing import Set
-from czbenchmarks.tasks.base import BaseTask
-from czbenchmarks.datasets import DataType
-from czbenchmarks.metrics.types import MetricResult
-from czbenchmarks.models.types import ModelType
+    Example:
 
-class MyTask(BaseTask):
-    def __init__(self, my_param: int = 10):
-        self.my_param = my_param
+    ```python
+    from typing import List, Set
+    from czbenchmarks.tasks.base import BaseTask
+    from czbenchmarks.datasets import DataType
+    from czbenchmarks.metrics.types import MetricResult
+    from czbenchmarks.models.types import ModelType
 
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        return {DataType.METADATA}
+    class MyTask(BaseTask):
+        def __init__(self, my_param: int = 10):
+            self.my_param = my_param
 
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
+        @property
+        def required_inputs(self) -> Set[DataType]:
+            return {DataType.METADATA}
 
-    def _run_task(self, data, model_type: ModelType):
-        # Retrieve necessary data
-        self.embedding = data.get_output(model_type, DataType.EMBEDDING)
-        self.labels = data.get_input(DataType.METADATA)["cell_type"]
-        # Implement your task logic here
-        # e.g., calculate some predictions or transform embeddings
+        @property
+        def required_outputs(self) -> Set[DataType]:
+            return {DataType.EMBEDDING}
 
-    def _compute_metrics(self) -> [MetricResult]:
-        # Compute and return a list of MetricResult objects
-        metric_value = ...  # Replace with actual computation
-        return [MetricResult(metric_type="my_metric", value=metric_value)]
-```
+        def _run_task(self, data, model_type: ModelType):
+            # Retrieve necessary data
+            self.embedding = data.get_output(model_type, DataType.EMBEDDING)
+            self.labels = data.get_input(DataType.METADATA)["cell_type"]
+            # Implement your task logic here
+            # e.g., calculate some predictions or transform embeddings
 
-### 2. Understand Required Inputs and Outputs
+        def _compute_metrics(self) -> List[MetricResult]:
+            # Compute and return a list of MetricResult objects
+            metric_value = ...  # Replace with actual computation
+            return [MetricResult(metric_type="my_metric", value=metric_value)]
+    ```
+
+- Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
 - Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.
-- Example:
-  - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
-  - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).
-
-### 3. Implement Task Logic
+    - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
+    - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).
 - Use `data.get_input()` and `data.get_output()` to retrieve the necessary inputs and outputs.
 - Implement the `_run_task` method to define the core logic of your task.
-- Use the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects.
+- Use the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a `Metric` that is not already supported by `cz-benchmarks`, refer to [Adding a New Metric](../how_to_guides/add_new_metric.md).
 
-### 4. Reference Base Files
-- Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
-- Ensure your implementation adheres to the expected structure and conventions.
+### 5. Register the Task
+- In the `src.czbenchmarks.tasks.utils.TASK_NAMES` array, add a new value for your task.
 
 ## Best Practices
 - **Single Responsibility:** Ensure your task has a clear and focused purpose.
