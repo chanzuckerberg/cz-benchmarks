@@ -88,6 +88,7 @@ def test_model_regression(model_name, variant, dataset_name, task_name, mock_con
     
     if not baseline_file.exists():
         write_results(task_results, output_format="json", output_file=str(baseline_file))
+        pytest.fail(f"Baseline file {baseline_file} did not exist and was created. Please review and commit this file.")
     write_results(task_results, output_format="json", output_file=str(results_file))
     
     if baseline_file.exists():
