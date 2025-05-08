@@ -43,7 +43,7 @@ Next, register a function that computes the value of your metric.
     ```
 
 2. Ensure the function:
-    - Accepts required arguments (e.g., `y_true`, `y_pred`).
+    - Accepts any required arguments it needs to compute its output (e.g., `y_true`, `y_pred`). These can be any parameters.
     - Returns a `float` value representing the metric.
 
 ---
