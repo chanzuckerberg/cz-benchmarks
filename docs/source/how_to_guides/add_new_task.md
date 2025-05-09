@@ -1,6 +1,6 @@
 # Add a Custom Task
 
-This guide explains how to create and integrate your own evaluation task into CZ Benchmarks.
+This guide explains how to create and integrate your own evaluation task into cz-benchmarks.
 
 ## Steps to Add a New Task
 

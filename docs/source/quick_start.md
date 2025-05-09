@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Welcome to **CZ Benchmarks**! This guide will help you get started with installation, setup, and running your first benchmark in just a few steps.
+Welcome to **cz-benchmarks**! This guide will help you get started with installation, setup, and running your first benchmark in just a few steps.
 
 ## Requirements
 

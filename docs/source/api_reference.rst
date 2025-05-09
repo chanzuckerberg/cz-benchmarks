@@ -1,7 +1,7 @@
 API Reference
 ==============
 
-The CZ Benchmarks package consists of several core modules, each designed to work independently while contributing to a cohesive benchmarking workflow. Below is an overview of these modules, along with links to their detailed documentation.
+The cz-benchmarks package consists of several core modules, each designed to work independently while contributing to a cohesive benchmarking workflow. Below is an overview of these modules, along with links to their detailed documentation.
 
 Core Modules
 ------------
@@ -28,7 +28,7 @@ Additional Utilities
 --------------------
 
 - **CLI** (`czbenchmarks.cli`):  
-   Command-line interface for interacting with the CZ Benchmarks package. See the full documentation: :doc:`czbenchmarks.cli <./autoapi/czbenchmarks/cli/cli/index>`.
+   Command-line interface for interacting with the cz-benchmarks package. See the full documentation: :doc:`czbenchmarks.cli <./autoapi/czbenchmarks/cli/cli/index>`.
 
 - **Utils** (`czbenchmarks.utils`):  
    Contains utility functions and helpers used across the package. See the full documentation: :doc:`./autoapi/czbenchmarks/utils/index`.
