@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-CZ Benchmarks Documentation
+cz-benchmarks Documentation
 ===========================
 
 What is cz-benchmarks?
@@ -19,7 +19,7 @@ Last year, CZI hosted a workshop focused on benchmarking and evaluation of AI mo
 💬 Community Feedback & Contributions
 ======================================
 
-We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to open an issue on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
+We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to `open an issue <https://github.com/chanzuckerberg/cz-benchmarks/issues>`_ on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
 
 
 **Project Status: UNSTABLE**
@@ -28,10 +28,6 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 
    ** 🚧 Under Development** - This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support. Feedback and contributions are welcome, but user support is limited for now.
 
-
-**Project Roadmap:**
-
-For upcoming features and plans, see the :doc:`Roadmap <roadmap>`.
 
 
 .. toctree::

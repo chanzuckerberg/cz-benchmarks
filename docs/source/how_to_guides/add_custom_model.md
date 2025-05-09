@@ -1,6 +1,6 @@
 # Add a Custom Model
 
-This guide provides a step-by-step process to integrate your own model into CZ Benchmarks.
+This guide provides a step-by-step process to integrate your own model into cz-benchmarks.
 
 ---
 

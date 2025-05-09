@@ -7,7 +7,7 @@
 - [Data Descriptions](#data-descriptions)
 - [Task Details](#task-details)
     - [Cell Clustering (in embedding space)](#cell-clustering-in-embedding-space)
-    - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction---cell-type-classification)
+    - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
@@ -16,12 +16,12 @@
 
 ## Task Descriptions
 
-| Task                                                                                                                                                                     | Description                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| [Cell clustering](https://docs.google.com/document/d/1B8DX-7NzfDCADCJUwGJlPlFoNkVd5YxtkZcgD_Wnn-k/edit?tab=t.6iomlo9og7g7#bookmark=id.8493on9j4ca1) (in embedding space) | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                         |
-| [Cell type classification](https://docs.google.com/document/d/1B8DX-7NzfDCADCJUwGJlPlFoNkVd5YxtkZcgD_Wnn-k/edit?tab=t.6iomlo9og7g7#bookmark=id.1yn8d0r8i8tu)             | Use classifiers to predict cell type from embeddings                                                                        |
-| [Cross-Species Batch Integration](https://docs.google.com/document/d/1B8DX-7NzfDCADCJUwGJlPlFoNkVd5YxtkZcgD_Wnn-k/edit?tab=t.6iomlo9og7g7#bookmark=id.8xxikurx2rlw)      | Evaluate whether embeddings can align multiple species in a shared space                                                    |
-| [Genetic perturbation prediction](https://docs.google.com/document/d/1B8DX-7NzfDCADCJUwGJlPlFoNkVd5YxtkZcgD_Wnn-k/edit?tab=t.6iomlo9og7g7#bookmark=id.xdqk60kctxq1)      | [In progress, subject to further validation] Compare predicted vs ground-truth expression shifts under genetic perturbation |
+| Task                                                                                | Description                                                                                                                 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                         |
+| [Cell type classification](#metadata-label-prediction-cell-type-classification)   | Use classifiers to predict cell type from embeddings                                                                        |
+| [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                    |
+| [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | [In progress, subject to further validation] Compare predicted vs ground-truth expression shifts under genetic perturbation |
 
 
 ## Models Descriptions
@@ -63,7 +63,7 @@
 
 This task evaluates how well the model's embedding space separates different cell types. There is a forward pass of the data to produce embeddings. The embeddings are then clustered and compared to known cell type labels. 
 
-> Task: Cell Clustering (in embedding space)
+#### Task: Cell Clustering (in embedding space)
 
 | Mode            | Metrics                                                                                                                                                                                                                                                                                                                                                    | Metric description                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,23 +73,23 @@ This task evaluates how well the model's embedding space separates different cel
 
   
 The following models were benchmarked using the Tabula Sapiens v2 dataset, per tissue:  
-    - AIDO.Cell 3M
-    - Geneformer  gf-12L-95M-i4096
-    - Linear baseline
-    - scGenePT
-    - scGPT
-    - scVI - Census 2023-12-15
-    - Transcriptformer Examplar
-    - Transcriptformer Metazoa
-    - Transcriptformer  Sapiens
-    - UCE 33-layer 
-    - UCE 4 -layer
+- AIDO.Cell 3M
+- Geneformer  gf-12L-95M-i4096
+- Linear baseline
+- scGenePT
+- scGPT
+- scVI - Census 2023-12-15
+- Transcriptformer Examplar
+- Transcriptformer Metazoa
+- Transcriptformer  Sapiens
+- UCE 33-layer 
+- UCE 4 -layer
 
 ### Metadata label prediction - Cell type classification
 
 This task evaluates how well model embeddings capture information relevant to cell identity. This is achieved by a forward pass of the data through each model to retrieve embeddings, and then using the embeddings to train different classifiers, in this case we are using Logistic Regression, KNN, and RandomForest,to predict the cell type. To ensure a reliable evaluation, a 5-fold cross-validation strategy is employed. For each split, the classifier's predictions on the held-out data, along with the true cell type labels, are used to compute a range of classification metrics. The final benchmark output for each metric is the average across the 5 cross-validation folds.
 
-> Task: Metadata label prediction - Cell type classification
+#### Task: Metadata label prediction - Cell type classification
 
 | Metrics   | Description                                                                                                                                                                                                                                                                                                                                            |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -118,7 +118,7 @@ The following models were benchmarked using the Tabula Sapiens v2 dataset, per t
 
 This task evaluates the model's ability to learn representations that are consistent across different species. There is a forward pass of the data (each species is treated as an individual dataset) through the model. Once embeddings are generated for each species, they are concatenated into a single embedding matrix to enable cross-species comparison. Finally, the concatenated embeddings, along with the corresponding species labels, are used to compute evaluation metrics. 
 
->  Task: Cross-Species Batch Integration
+####  Task: Cross-Species Batch Integration
 
 | Metrics          | Description                                                                                                                                                                                                                                             |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -138,7 +138,7 @@ Warning: This task is still in progress. Results are subject to further validati
 
 This task evaluates the performance of models fine-tuned to predict cellular responses to genetic perturbations. The process involves applying the fine-tuned model to a test dataset and comparing its predictions with observed ground-truth perturbation profiles. Predicted gene expression profiles after perturbation are generated by running a held-out dataset through the fine-tuned model. These predicted profiles are then compared to ground-truth gene expression profiles for the applied perturbations.
 
-> Task: Cross-Species Batch Integration
+#### Task: Genetic Perturbation Prediction
 
 | Metrics                                     | Description |
 | ------------------------------------------- | ----------- |
@@ -163,9 +163,10 @@ This task evaluates the performance of models fine-tuned to predict cellular res
 
 As cz-benchmarks develops, robust governance policies will be developed to support direct community contribution.
 
-- At this stage, the cz-benchmarks project represents an initial prototype and policy and project governance are intended to provide transparency and support the project in its current phase. Initial guidelines are as follows:
-    - All content (models, tasks, metrics) included in cz-benchmarks currently represents a subset of recommendations from CZI staff.
-    - Models included within the package have been contributed by CZI, on behalf of model developers. Feedback from model developers is being sourced via direct outreach to these individuals.
-    - Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the roadmap [link]. Formal asset contribution and asset governance policies are in development.
-    - At this phase, the CZI SciTech team will guide initial decisions, coordinate updates, and ensure that all assets conform to policy requirements (licensing, versioning, etc.) through direct collaboration with working groups, composed of domain-specific experts from the broader scientific community and partners. 
-    - We value your feedback -- feel free to open a GitHub issue or reach out to us at virtualcellmodels@chanzuckerberg.com.
+At this stage, the cz-benchmarks project represents an initial prototype and policy and project governance are intended to provide transparency and support the project in its current phase. Initial guidelines are as follows:
+
+- All content (models, tasks, metrics) included in cz-benchmarks currently represents a subset of recommendations from CZI staff.
+- Models included within the package have been contributed by CZI, on behalf of model developers. Feedback from model developers is being sourced via direct outreach to these individuals.
+- Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the roadmap [link]. Formal asset contribution and asset governance policies are in development.
+- At this phase, the CZI SciTech team will guide initial decisions, coordinate updates, and ensure that all assets conform to policy requirements (licensing, versioning, etc.) through direct collaboration with working groups, composed of domain-specific experts from the broader scientific community and partners. 
+- We value your feedback -- feel free to open a GitHub issue or reach out to us at virtualcellmodels@chanzuckerberg.com.

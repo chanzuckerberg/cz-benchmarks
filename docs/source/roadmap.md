@@ -2,7 +2,7 @@
 
 👋 Welcome to the public roadmap for the cz-benchmarks package — a collaborative effort to enable the scientific community to conduct reproducible, biologically-relevant benchmarking of AI models for biology, across domains [learn more](/README.md).
 
-The roadmap reflects our initial priorities and sequencing of work. Our goals in sharing this roadmap are to enable community engagement and contribution through transparency - without this, we know that our work here cannot be successful.
+The roadmap reflects our initial priorities and sequencing of work. Our goals in sharing this roadmap are to enable community engagement and contribution through transparency without this, we know that our work here cannot be successful.
 
 However, please note that this is a very early stage project and as such, we expect the roadmap to change depending on what is learned through code development, community discussion and engagement, and internal priorities. Changes in roadmap are subject to the current governing principles of the team (see below).
 
@@ -34,7 +34,7 @@ However, please note that this is a very early stage project and as such, we exp
 
 ### Possible Candidates:
 - Refactor to better support model developer workflows, enabling more seamless use of custom assets (models, datasets)
-- Refactor to adopt standardized model packaging (MLflow)
+- Refactor to adopt standardized model packaging.
 - Refactor CLI to create a more user-friendly interface for running benchmarks
 - Enable initial contributors to add (alpha format):
   - New models
