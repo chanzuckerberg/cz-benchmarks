@@ -1,7 +1,7 @@
 Design Overview
 ===============
 
-CZ Benchmarks is designed with modularity and reproducibility in mind. Its core components include:
+cz-benchmarks is designed with modularity and reproducibility in mind. Its core components include:
 
 - **Datasets**:  
     Manage input data (AnnData objects, metadata) and ensure data integrity through type checking with custom DataType definitions. Images are supported in the future.
@@ -69,30 +69,30 @@ Class Diagrams
 
 .. .. autoclasstree:: czbenchmarks.datasets czbenchmarks.models.implementations czbenchmarks.models.validators czbenchmarks.tasks czbenchmarks.tasks.single_cell czbenchmarks.metrics.implementations czbenchmarks.metrics.types
 ..    :name: class-diagram
-..    :alt: Class diagram for CZ Benchmarks components
+..    :alt: Class diagram for cz-benchmarks components
 ..    :zoom:
 
 
 
 .. autoclasstree::  czbenchmarks.datasets 
    :name: class-diagram
-   :alt: Class diagram for CZ Benchmarks Datasets
+   :alt: Class diagram for cz-benchmarks Datasets
    :zoom:
 
 .. autoclasstree:: czbenchmarks.models.implementations czbenchmarks.models.validators
    :name: class-diagram
-   :alt: Class diagram for CZ Benchmarks Models
+   :alt: Class diagram for cz-benchmarks Models
    :zoom:
 
 .. autoclasstree:: czbenchmarks.tasks czbenchmarks.tasks.single_cell
    :name: class-diagram
-   :alt: Class diagram for CZ Benchmarks Tasks
+   :alt: Class diagram for cz-benchmarks Tasks
    :zoom:
 
 
 .. autoclasstree:: czbenchmarks.metrics.implementations czbenchmarks.metrics.types
    :name: class-diagram
-   :alt: Class diagram for CZ Benchmarks Metrics
+   :alt: Class diagram for cz-benchmarks Metrics
    :zoom:
 
 

@@ -1,6 +1,6 @@
 # Add a Custom Dataset
 
-This guide explains how to integrate your own dataset into CZ Benchmarks.
+This guide explains how to integrate your own dataset into cz-benchmarks.
 
 ## Requirements
 
