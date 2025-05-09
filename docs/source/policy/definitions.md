@@ -1,10 +1,4 @@
-# Governance
-
-## Philosophy
-
-The development of AI-driven virtual cells represents one of the most ambitious frontiers in biological modeling. These computational representations of cellular function aim to integrate multi-scale, multi-modal data to simulate the behavior of molecules, cells, and tissues across diverse biological states (Bunne et al). Such advancements promise to accelerate discoveries, guide experimental studies, and enable high-fidelity simulations that will transform biomedical research and therapeutic development. However, realizing this vision requires reliable, standardized, and biologically meaningful evaluation methods to assess AI models. Benchmarking plays a crucial role in ensuring that these models are not only powerful but also trustworthy, reproducible, and biologically relevant. 
-
-The Chan Zuckerberg Initiative (CZI) recognizes benchmarking as a foundational step in making AI-driven biological modeling both scientifically credible and widely applicable. We aim to create a collaborative, reproducible framework for benchmarking across domains in AI x Biology, starting with a static set of benchmark assets for single-cell transcriptomics. Our long-term goal is to empower the community to contribute datasets, models, tasks, and metrics that reflect real-world scientific challenges across multiple domains in service of Virtual Cell evaluation.
+# Definitions
 
 ## Definition of Terms
 
@@ -19,14 +13,3 @@ The Chan Zuckerberg Initiative (CZI) recognizes benchmarking as a foundational s
 | **Platform**          | The ecosystem that hosts and integrates benchmarking assets, providing tools for dataset integration, model evaluation, and result visualization. The platform facilitates collaboration by enabling the research community to contribute and refine benchmarks.                                                                                                |
 | **Domain**            | The specific biological context or application area in which benchmarking is conducted. Domains may include transcriptomics, imaging, genomics, and multi-modal methods, each with unique datasets, models, and tasks.                                                                                                                                           |
 
-## Governance
-
-As cz-benchmarks develops, robust governance policies will be developed to support direct community contribution. 
-
-At this stage, the cz-benchmarks project represents an initial prototype and policy and project governance are intended to provide transparency and support the project in its current phase. Initial guidelines are as follows:
-
-- All content included in cz-benchmarks currently represents a subset of recommendations from CZI staff. 
-- Models included within the package have been contributed by CZI, on behalf of model developers. Feedback from model developers is being sourced via direct outreach to these individuals.
-- Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the roadmap [link].
-- At this phase, the CZI SciTech team will guide initial decisions, coordinate updates, and ensure that all assets conform to policy requirements (licensing, versioning, etc.) through direct collaboration with community working groups and partners. 
-- We value user suggestions to refine these policies. Please submit feedback on policy or assets via this form [link to airtable].

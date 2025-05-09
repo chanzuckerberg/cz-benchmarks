@@ -6,25 +6,21 @@
 CZ Benchmarks Documentation
 ===========================
 
-CZ Benchmarks is a reproducible benchmarking package designed for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. It supports plug-and-play benchmarking of models and tasks using Docker containers, with support for custom models, datasets, and evaluation metrics.
+What is cz-benchmarks?
+=======================
 
+cz-benchmarks is a package for standardized evaluation and comparison of machine learning models for biological applications (first, in the single-cell transcriptomics domain, with future plans to expand to additional domains). The package provides a toolkit for running containerized models, executing biologically-relevant tasks, and computing performance metrics. We see this tool as a step towards ensuring that large-scale AI models can be harnessed to deliver genuine biological insights -- by building trust, accelerating development, and bridging the gap between ML and biology communities.
 
-Key Features of CZ Benchmarks:
-------------------------------
+Why benchmarking? Why now?
+==========================
 
-- ✅ **Modular and Customizable**: Effortlessly integrate new models, datasets, tasks, and metrics to suit your research needs.
-- 🤜 **Extensible for Innovation**: Build and expand custom benchmarks tailored to cutting-edge computational biology challenges.
-- 📊 **Metrics-rich Evaluation**: Benchmark models across diverse tasks, including clustering, embedding, integration, perturbation prediction, and label prediction, using a wide array of metrics.
-- 🧬 **Single-cell Native**: Designed to work seamlessly with AnnData and biological datasets, making it a perfect fit for single-cell transcriptomics research. Image modality coming soon.
-- 🚀 **Scalable and Efficient**: Leverage container-based execution with GPU support for high-performance benchmarking.
+Last year, CZI hosted a workshop focused on benchmarking and evaluation of AI models in biology, and the `insights gained <https://virtualcellmodels.cziscience.com/micro-pub/benchmarking-workshop>`_ have reinforced our commitment to supporting the development of a robust benchmarking infrastructure, which we see as critical to achieving our Virtual Cell vision.
 
+💬 Community Feedback & Contributions
+======================================
 
-Why Choose CZ Benchmarks?
--------------------------
+We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to open an issue on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
 
-- **Reproducibility at Its Core**: Docker-based environments ensure uniformity and reproducibility across experiments.
-- **Comprehensive and Insightful**: Gain deep insights into model performance with task-specific evaluations and detailed metrics.
-- **User-friendly for Scientists**: Intuitive command-line interface and a well-documented Python API make it accessible for computational biologists and data scientists alike.
 
 **Project Status: UNSTABLE**
 
@@ -35,7 +31,7 @@ Why Choose CZ Benchmarks?
 
 **Project Roadmap:**
 
-For upcoming features and plans, see the :doc:`Project Roadmap <roadmap>`.
+For upcoming features and plans, see the :doc:`Roadmap <roadmap>`.
 
 
 .. toctree::
@@ -45,6 +41,7 @@ For upcoming features and plans, see the :doc:`Project Roadmap <roadmap>`.
    how_to_guides/index
    developer_guides/index
    api_reference
+   assets
    policy/index
    roadmap
    legal

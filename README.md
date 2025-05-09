@@ -1,21 +1,18 @@
 # CZ Benchmarks
 
-CZ Benchmarks is a package for standardized evaluation and comparison of biology-oriented machine learning models (starting with single-cell transcriptomics) across various tasks and metrics. The package provides a modular architecture for loading datasets, running containerized models, executing evaluation tasks, and computing performance metrics.
+## PROJECT STATUS: UNSTABLE
 
-## Key Features of CZ Benchmarks:
+⚠️ **Warning:** Repository under active development and is in the alpha phase of development, subject to major refactors as outlined in the public-facing [roadmap](docs/source/roadmap.md).
 
-- ✅ **Modular and Customizable**: Effortlessly integrate new models, datasets, tasks, and metrics to suit your research needs.
-- 🤜 **Extensible for Innovation**: Build and expand custom benchmarks tailored to cutting-edge computational biology challenges.
-- 📊 **Metrics-rich Evaluation**: Benchmark models across diverse tasks, including clustering, embedding, integration, perturbation prediction, and label prediction, using a wide array of metrics.
-- 🧬 **Single-cell Native**: Designed to work seamlessly with AnnData and biological datasets, making it a perfect fit for single-cell transcriptomics research. Image modality coming soon.
-- 🚀 **Scalable and Efficient**: Leverage container-based execution with GPU support for high-performance benchmarking.
+### What is cz-benchmarks?
+cz-benchmarks is a package for standardized evaluation and comparison of machine learning models for biological applications (first, in the single-cell transcriptomics domain, with future plans to expand to additional domains). The package provides a toolkit for running containerized models, executing biologically-relevant tasks, and computing performance metrics. We see this tool as a step towards ensuring that large-scale AI models can be harnessed to deliver genuine biological insights -- by building trust, accelerating development, and bridging the gap between ML and biology communities.
 
+### Why benchmarking? Why now?
+Last year, CZI hosted a workshop focused on benchmarking and evaluation of AI models in biology, and the [insights gained](https://virtualcellmodels.cziscience.com/micro-pub/benchmarking-workshop) have reinforced our commitment to supporting the development of a robust benchmarking infrastructure, which we see as critical to achieving our Virtual Cell vision.
 
-## Why Choose CZ Benchmarks?
+### 💬 Community Feedback & Contributions
+We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to open an issue on GitHub or reach out to us at [virtualcellmodels@chanzuckerberg.com](mailto:virtualcellmodels@chanzuckerberg.com).
 
-- **Reproducibility at Its Core**: Docker-based environments ensure uniformity and reproducibility across experiments.
-- **Comprehensive and Insightful**: Gain deep insights into model performance with task-specific evaluations and detailed metrics.
-- **User-friendly for Scientists**: Intuitive command-line interface and a well-documented Python API make it accessible for computational biologists and data scientists alike.
 
 ## Table of contents
 
@@ -38,31 +35,12 @@ CZ Benchmarks is a package for standardized evaluation and comparison of biology
 - [Writing Test](tests/README.md)
 - [Writing Documentation](docs/README.md)
 
-
 ### Policies
-- [Assets](docs/source/policy/assets.md)
-- [Governance](docs/source/policy/governance.md)
+- [Assets](docs/source/assets.md)
+- [Governance](docs/source/policy/definitions.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ### Additional Resources
 - [Changelog & Release Notes](CHANGELOG.md)
 - [Roadmap](docs/source/roadmap.md)
 - [Legal](docs/source/legal.md)
-
-**Project Status: UNSTABLE**
-
->   ** 🚧 Under Development** - This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support. Feedback and contributions are welcome, but user support is limited for now.
-
-
-## Contributing
-This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
-
-## Reporting Security Issues
-Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@chanzuckerberg.com.
-
-## License Notice for Dependencies
-This repository is licensed under the MIT License; however, it relies on certain third-party dependencies that are licensed under the GNU General Public License (GPL). Specifically:
-- igraph (v0.11.8) is licensed under the GNU General Public License (GPL).
-- leidenalg (v0.10.2) is licensed under the GNU General Public License v3 or later (GPLv3+).
-
-These libraries are not included in this repository but must be installed separately by users. Please be aware that the GPL license terms apply to these dependencies, and certain uses of GPL-licensed code may have licensing implications for your own software.

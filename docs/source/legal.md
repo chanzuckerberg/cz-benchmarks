@@ -1,6 +1,6 @@
 # Legal
 
-## License for the package
+## License for the cz-benchmarks package
 
 This package is licensed under the MIT License:
 
@@ -26,3 +26,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## License Notice for Dependencies
+
+```
+This repository is licensed under the MIT License; however, it relies on certain third-party dependencies that are licensed under the GNU General Public License (GPL). Specifically:
+
+- igraph (v0.11.8) is licensed under the GNU General Public License (GPL).
+- leidenalg (v0.10.2) is licensed under the GNU General Public License v3 or later (GPLv3+).
+
+These libraries are not included in this repository but must be installed separately by users. Please be aware that the GPL license terms apply to these dependencies, and certain uses of GPL-licensed code may have licensing implications for your own software.
+```
