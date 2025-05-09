@@ -58,7 +58,7 @@ However, please note that this is a very early stage project and as such, we exp
 
 Our goal is to work towards a community developed benchmarking resource that will be useful for the scientific community. In the short term, to get an alpha release initiated and stable, we currently operate using a simple governance model as follows:
 
-- **Roadmap Leads**: Katrina, Olivia (CZI) and Laksshman, TJ (NVIDIA)
-- **Tech Leads**: Sanchit, Andrew (CZI) and Ankit, Michelle (NVIDIA)
+- **Roadmap Leads**: Katrina Kalantar, Olivia Holmes (CZI) and Laksshman Sundaram, TJ Chen (NVIDIA)
+- **Tech Leads**: Sanchit Gupta, Andrew Tolopko (CZI) and Ankit Sethia, Michelle Gill (NVIDIA)
 
 Roadmap alignment and decision making are completed by the Roadmap Leads, in close collaboration with the Tech Leads, by consensus wherever possible. CZI SciTech currently maintains ownership of the repository and holds final decision-making authority. We will be working in close collaboration with NVIDIA to execute the roadmap and will continue to evolve the governance structure based on project needs, community growth, and resourcing. Guidelines and governance for included assets are available [here](docs/source/assets.md).
