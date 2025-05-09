@@ -30,3 +30,7 @@ jobs:
         with:
           token: ${{ steps.generate_token.outputs.token }}
           release-type: python
+          # optional. customize path to release-please-config.json
+          config-file: release-please-config.json
+          # optional. customize path to .release-please-manifest.json
+          manifest-file: .release-please-manifest.json
