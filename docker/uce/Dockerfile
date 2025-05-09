@@ -23,11 +23,13 @@ RUN conda create -n uce python=3.11 -y && \
     conda init bash && \
     echo "conda activate uce" >> ~/.bashrc
 
-# Clone the UCE repository and install UCE
-# TODO: clone / install somewhere that won't be squashed by code mounting
-RUN git clone https://github.com/giovp/UCE && \
+# # Clone the UCE repository and install UCE
+# # TODO: clone / install somewhere that won't be squashed by code mounting
+RUN git clone --depth 1 https://github.com/giovp/UCE && \
     cd UCE && \
-    /opt/conda/envs/uce/bin/pip install . && \
+    git fetch --depth=1 origin dc5421593920b821f789a21a7aae308ac237f908 && \
+    git checkout dc5421593920b821f789a21a7aae308ac237f908 \
+    pip install . && \
     cd ..
 
 # Install the czbenchmarks package
