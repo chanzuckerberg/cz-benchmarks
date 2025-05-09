@@ -29,13 +29,13 @@ RUN git clone --depth 1 https://github.com/giovp/UCE && \
     (cd UCE && \
      git fetch --depth=1 origin dc5421593920b821f789a21a7aae308ac237f908 && \
      git checkout dc5421593920b821f789a21a7aae308ac237f908) && \
-    pip install UCE
+    /opt/conda/envs/uce/bin/pip install UCE
 
 # Install the czbenchmarks package
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
-RUN pip install -e /app/package[interactive]
+RUN /opt/conda/envs/uce/bin/pip install -e /app/package[interactive]
 
 # Create model_files directory and empty CSV file for species protein embeddings
 RUN mkdir -p /app/model_files && \
@@ -47,7 +47,7 @@ RUN ln -s /weights/model_files/protein_embeddings /app/model_files/protein_embed
 # Install base requirements
 # Note: this overrides some package versions specified by the UCE repo that were previously installed.
 COPY docker/uce/requirements.txt .
-RUN pip install -r requirements.txt
+RUN /opt/conda/envs/uce/bin/pip install -r requirements.txt
 
 # Copy model files
 # TODO: change filename to model.py
