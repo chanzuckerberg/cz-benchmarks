@@ -19,7 +19,7 @@ Last year, CZI hosted a workshop focused on benchmarking and evaluation of AI mo
 💬 Community Feedback & Contributions
 ======================================
 
-We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to open an issue on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
+We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to `open an issue <https://github.com/chanzuckerberg/cz-benchmarks/issues>`_ on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
 
 
 **Project Status: UNSTABLE**
