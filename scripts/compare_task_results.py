@@ -134,7 +134,7 @@ def compare_task_results(
                 )
             elif not compare_decimals(val_a, val_b, tol):
                 print(
-                    f"🔁 Metric value differs for {key} | {m_key} | ground-truth-file: {ground_truth_filename}={val_a}, eval-file: {eval_filename}={val_b}"
+                    f"🧮 Metric value differs (tolerance:{tol}) for {key} | {m_key} | ground-truth-file: {ground_truth_filename}={val_a}, eval-file: {eval_filename}={val_b}"
                 )
 
         for m_key in metrics_a:
@@ -168,6 +168,12 @@ and compares all matching metrics by type and params, using a decimal-based floa
         required=True,
         help="The result file to verify (e.g. FileB.yaml or FileB.json)",
     )
+
+    # It might be the case there might be multiple ground truth files. For example:
+    # 1. The ground truth for a particular run maybe too expensive to generate and thus
+    #    split over multiple runs
+    # 2. The comparison might want to legitimately compare against data from
+    #    previous runs
     parser.add_argument(
         "--ground-truth-files",
         nargs="+",
