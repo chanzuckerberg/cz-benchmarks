@@ -28,7 +28,7 @@ RUN conda create -n uce python=3.11 -y && \
 RUN git clone --depth 1 https://github.com/giovp/UCE && \
     cd UCE && \
     git fetch --depth=1 origin dc5421593920b821f789a21a7aae308ac237f908 && \
-    git checkout dc5421593920b821f789a21a7aae308ac237f908 \
+    git checkout dc5421593920b821f789a21a7aae308ac237f908 && \
     pip install . && \
     cd ..
 
