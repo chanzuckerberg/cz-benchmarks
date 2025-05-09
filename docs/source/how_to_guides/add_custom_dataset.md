@@ -1,6 +1,6 @@
 # Add a Custom Dataset
 
-This guide explains how to integrate your own dataset into CZ Benchmarks.
+This guide explains how to integrate your own dataset into cz-benchmarks.
 
 ## Requirements
 
@@ -23,7 +23,7 @@ For single-cell datasets:
 
 ### 2. Create a Custom Configuration File
 
-- Update `src/czbenchmarks/conf/datasets.yaml`) by adding a new dataset entry:
+- Update `src/czbenchmarks/conf/datasets.yaml` by adding a new dataset entry:
 
 ```yaml
 datasets:

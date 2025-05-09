@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from typing import Any, Generic, TypeVar
 
 from czbenchmarks import runner
@@ -38,6 +38,9 @@ DEFAULT_OUTPUT_FORMAT = "json"
 
 TaskType = TypeVar("TaskType", bound=BaseTask)
 ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
+RuntimeMetricsDict = dict[
+    str, str | int | float
+]  # runtime metrics like elapsed time or CPU count, not implemented yet
 
 
 class ModelArgs(BaseModel):
@@ -55,10 +58,18 @@ class TaskArgs(BaseModel, Generic[TaskType]):
 
 class TaskResult(BaseModel):
     task_name: str
-    model_type: str
-    dataset_name: str
+    task_name_display: str
+    model_type: ModelType
+    dataset_names: list[str]
+    dataset_names_display: list[str]
     model_args: ModelArgsDict
     metrics: list[MetricResult]
+    runtime_metrics: RuntimeMetricsDict = {}  # not implementing any of these for now
+
+    @computed_field
+    @property
+    def model_name_display(self) -> str:
+        return model_utils.model_to_display_name(self.model_type, self.model_args)
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -502,8 +513,12 @@ def run_multi_dataset_task(
     for model_type, metrics in result.items():
         task_result = TaskResult(
             task_name=task_args.name,
+            task_name_display=task_args.task.display_name,
             model_type=model_type.value,
-            dataset_name=",".join(dataset_names),
+            dataset_names=dataset_names,
+            dataset_names_display=[
+                dataset_utils.dataset_to_display_name(ds) for ds in dataset_names
+            ],
             model_args=model_args.get(model_type.value) or {},
             metrics=metrics,
         )
@@ -541,8 +556,10 @@ def run_task(
 
         task_result = TaskResult(
             task_name=task_args.name,
+            task_name_display=task_args.task.display_name,
             model_type=model_type.value,
-            dataset_name=dataset_name,
+            dataset_names=[dataset_name],
+            dataset_names_display=[dataset_utils.dataset_to_display_name(dataset_name)],
             model_args=model_args_to_store,
             metrics=metrics,
         )

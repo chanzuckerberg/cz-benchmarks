@@ -26,6 +26,11 @@ class BatchIntegrationTask(BaseTask):
         self.batch_key = batch_key
 
     @property
+    def display_name(self) -> str:
+        """A pretty name to use when displaying task results"""
+        return "batch integration"
+
+    @property
     def required_inputs(self) -> Set[DataType]:
         """Required input data types.
 

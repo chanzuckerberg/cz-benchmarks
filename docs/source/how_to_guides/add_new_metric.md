@@ -1,6 +1,6 @@
 # Add a Custom Metric
 
-This guide explains how to add your own metric to the CZ Benchmarks metrics system. Follow the steps below to implement and register your custom metric.
+This guide explains how to add your own metric to the cz-benchmarks metrics system. Follow the steps below to implement and register your custom metric.
 
 ---
 
