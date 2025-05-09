@@ -22,7 +22,7 @@ models:
     model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:uce
 
   AIDO:
-    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models:aido
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:aido
 
   TRANSCRIPTFORMER:
     model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:transcriptformer
