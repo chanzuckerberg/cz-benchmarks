@@ -44,3 +44,4 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 - [Changelog & Release Notes](CHANGELOG.md)
 - [Roadmap](docs/source/roadmap.md)
 - [Legal](LICENSE.md)
+- [Security](SECURITY.md)
