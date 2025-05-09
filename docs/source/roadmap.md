@@ -2,7 +2,7 @@
 
 👋 Welcome to the public roadmap for the cz-benchmarks package — a collaborative effort to enable the scientific community to conduct reproducible, biologically-relevant benchmarking of AI models for biology, across domains [learn more](/README.md).
 
-The roadmap reflects our initial priorities and sequencing of work. Our goals in sharing this roadmap are to enable community engagement and contribution through transparency - without this, we know that our work here cannot be successful.
+The roadmap reflects our initial priorities and sequencing of work. Our goals in sharing this roadmap are to enable community engagement and contribution through transparency — without this, we know that our work here cannot be successful.
 
 However, please note that this is a very early stage project and as such, we expect the roadmap to change depending on what is learned through code development, community discussion and engagement, and internal priorities. Changes in roadmap are subject to the current governing principles of the team (see below).
 
@@ -11,7 +11,7 @@ However, please note that this is a very early stage project and as such, we exp
 
 - Can I load data, run, and reproduce a benchmark/task?
 - Can I use the benchmarks in my model developer workflow?
-- How can I, as a member of the community, contribute benchmarks?
+- How can I, as a member of the‰ community, contribute benchmarks?
 - (internal, exploratory) Can we build a benchmarking package that spans multiple modalities/domains?
 
 ---
