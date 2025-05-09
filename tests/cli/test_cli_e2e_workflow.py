@@ -41,7 +41,7 @@ def test_cli_e2e_workflow(mock_runner):
     model_name = "SCGPT"
     model_type = ModelType.SCGPT
     model_args = [
-        ModelArgs(name=model_name, args={}),
+        ModelArgs(name=model_name, args={"model_variant": ["human"]}),
     ]
     task_args = [
         TaskArgs(
@@ -71,9 +71,13 @@ def test_cli_e2e_workflow(mock_runner):
 
     # Verify basic task result fields
     assert task_result.task_name == task_name
+    assert task_result.task_name_display == "embedding"
     assert task_result.model_type == model_type
-    assert task_result.dataset_name == dataset_name
-    assert task_result.model_args == {}, "Expected empty model args"
+    assert task_result.dataset_names == [dataset_name]
+    assert task_result.dataset_names_display == ["Spermatogenesis - Gallus gallus"]
+    assert task_result.model_args == {"model_variant": "human"}
+    assert task_result.model_name_display == "scGPT - whole-human"
+    assert task_result.runtime_metrics == {}, "Expected no runtime metrics"
 
     # Verify metrics
     assert isinstance(task_result.metrics, list)

@@ -124,3 +124,57 @@ def list_available_datasets() -> List[str]:
     dataset_names.sort()
 
     return dataset_names
+
+
+_DATASET_TO_DISPLAY_NAME = {
+    "adamson_perturb": "Adamson",
+    "norman_perturb": "Norman",
+    "dixit_perturb": "Dixit",
+    "replogle_k562_perturb": "Replogle K562",
+    "replogle_rpe1_perturb": "Replogle RPE1",
+    "human_spermatogenesis": "Spermatogenesis - Homo sapiens",
+    "mouse_spermatogenesis": "Spermatogenesis - Mus musculus",
+    "rhesus_macaque_spermatogenesis": "Spermatogenesis - Macaca mulatta",
+    "gorilla_spermatogenesis": "Spermatogenesis - Gorilla gorilla",
+    "chimpanzee_spermatogenesis": "Spermatogenesis - Pan troglodytes",
+    "marmoset_spermatogenesis": "Spermatogenesis - Callithrix jacchus",
+    "chicken_spermatogenesis": "Spermatogenesis - Gallus gallus",
+    "opossum_spermatogenesis": "Spermatogenesis - Monodelphis domestica",
+    "platypus_spermatogenesis": "Spermatogenesis - Ornithorhynchus anatinus",
+    "tsv2_bladder": "Tabula Sapiens 2.0 - Bladder",
+    "tsv2_blood": "Tabula Sapiens 2.0 - Blood",
+    "tsv2_bone_marrow": "Tabula Sapiens 2.0 - Bone marrow",
+    "tsv2_ear": "Tabula Sapiens 2.0 - Ear",
+    "tsv2_eye": "Tabula Sapiens 2.0 - Eye",
+    "tsv2_fat": "Tabula Sapiens 2.0 - Fat",
+    "tsv2_heart": "Tabula Sapiens 2.0 - Heart",
+    "tsv2_large_intestine": "Tabula Sapiens 2.0 - Large intestine",
+    "tsv2_liver": "Tabula Sapiens 2.0 - Liver",
+    "tsv2_lung": "Tabula Sapiens 2.0 - Lung",
+    "tsv2_lymph_node": "Tabula Sapiens 2.0 - Lymph node",
+    "tsv2_mammary": "Tabula Sapiens 2.0 - Mammary",
+    "tsv2_muscle": "Tabula Sapiens 2.0 - Muscle",
+    "tsv2_ovary": "Tabula Sapiens 2.0 - Ovary",
+    "tsv2_prostate": "Tabula Sapiens 2.0 - Prostate",
+    "tsv2_salivary_gland": "Tabula Sapiens 2.0 - Salivary gland",
+    "tsv2_skin": "Tabula Sapiens 2.0 - Skin",
+    "tsv2_small_intestine": "Tabula Sapiens 2.0 - Small intestine",
+    "tsv2_spleen": "Tabula Sapiens 2.0 - Spleen",
+    "tsv2_stomach": "Tabula Sapiens 2.0 - Stomach",
+    "tsv2_testis": "Tabula Sapiens 2.0 - Testis",
+    "tsv2_thymus": "Tabula Sapiens 2.0 - Thymus",
+    "tsv2_tongue": "Tabula Sapiens 2.0 - Tongue",
+    "tsv2_trachea": "Tabula Sapiens 2.0 - Trachea",
+    "tsv2_uterus": "Tabula Sapiens 2.0 - Uterus",
+    "tsv2_vasculature": "Tabula Sapiens 2.0 - Vasculature",
+}
+
+
+def dataset_to_display_name(dataset_name: str) -> str:
+    """try to map dataset names to more uniform, pretty strings"""
+    try:
+        return _DATASET_TO_DISPLAY_NAME[dataset_name]
+    except KeyError:
+        # e.g. "my_awesome_dataset" -> "My awesome dataset"
+        parts = dataset_name.split("_")
+        return " ".join((parts[0].title(), *(part.lower() for part in parts[1:])))
