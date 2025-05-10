@@ -175,6 +175,23 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         nargs="+",
         help="Batch size for transcriptformer model inference",
     )
+
+    # Extra arguments for AIDO model
+    parser.add_argument(
+        "--aido-model-variant",
+        nargs="*",
+        choices=["aido_cell_3m", "aido_cell_10m", "aido_cell_100m"],
+        default="aido_cell_3m",
+        help="Variant of the aido model to use. Default is aido_cell_3m",
+    )
+
+    parser.add_argument(
+        "--aido-batch-size",
+        type=int,
+        nargs="*",
+        help="Batch size for AIDO model inference (optional)",
+    )
+
     # Extra arguments for clustering task
     parser.add_argument(
         "--clustering-task-label-key",
