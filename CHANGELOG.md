@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.7.0...v0.8.0) (2025-05-10)
+
+
+### Features
+
+* aido all model variants ([#175](https://github.com/chanzuckerberg/cz-benchmarks/issues/175)) ([b91ebde](https://github.com/chanzuckerberg/cz-benchmarks/commit/b91ebde908b325d53d508e524cf3f68d73dda038))
+
+
+### Documentation
+
+* Sync up docs with XFN google docs ([#203](https://github.com/chanzuckerberg/cz-benchmarks/issues/203)) ([6504333](https://github.com/chanzuckerberg/cz-benchmarks/commit/6504333dd46bd7811588b2c9b5535453ced499f4))
+* VC-2547 Updated base README ([#199](https://github.com/chanzuckerberg/cz-benchmarks/issues/199)) ([49d0d28](https://github.com/chanzuckerberg/cz-benchmarks/commit/49d0d28ae5aea5fae647bc305bb43ed8de985233))
+
 ## [0.7.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.1...v0.7.0) (2025-05-08)
 
 
