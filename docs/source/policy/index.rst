@@ -5,6 +5,5 @@ Policy
 .. toctree::
    :maxdepth: 1
 
-   governance.md
+   definitions.md
    code_of_conduct
-   assets.md

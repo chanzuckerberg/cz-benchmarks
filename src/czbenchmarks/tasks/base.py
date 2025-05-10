@@ -21,6 +21,11 @@ class BaseTask(ABC):
 
     @property
     @abstractmethod
+    def display_name(self) -> str:
+        """A pretty name to use when displaying task results"""
+
+    @property
+    @abstractmethod
     def required_inputs(self) -> Set[DataType]:
         """Required input data types this task requires.
 

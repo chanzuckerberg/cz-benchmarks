@@ -43,6 +43,7 @@ To define a new evaluation task:
 
 2. **Override the following methods:**
 
+   - `display_name`: a human-readable string naming your task, used for display purposes
    - `required_inputs`: a set of `DataType` values required as inputs
    - `required_outputs`: a set of `DataType` values expected as model outputs
    - `_run_task(data, model_type)`: executes task logic using input data and model outputs
@@ -64,6 +65,10 @@ To define a new evaluation task:
    from czbenchmarks.metrics.types import MetricResult
 
    class MyNewTask(BaseTask):
+       @property
+       def display_name(self):
+           return "My New Task"
+
        @property
        def required_inputs(self):
            return {DataType.METADATA}
