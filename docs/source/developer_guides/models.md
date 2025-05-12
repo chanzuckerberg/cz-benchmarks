@@ -12,6 +12,9 @@ The `czbenchmarks.models` module provides the infrastructure to run models in a 
 
 Model implementations are defined in Docker containers and executed either programmatically or via the CLI.
 
+> **Note:**  
+> Docker is used for model implementations to ensure reproducibility, modularity, and dependency isolation. It allows developers to package models with all their dependencies, libraries, and configurations into a portable container. This ensures that the model runs consistently across different environments, eliminates compatibility issues, and simplifies deployment. Additionally, Docker enables modularity by isolating each model implementation, making it easier to manage, test, and update individual models without affecting others.
+
 ### Responsibilities of an implementation:
 
 - Define the logic for downloading pretrained weights (`_download_model_weights`)
@@ -33,9 +36,15 @@ Model implementations are defined in Docker containers and executed either progr
 - **UCE** — uses `AnndataProcessor` and custom embedding generation logic.
 - **SCGPT**, **scGenePT** — transformers for transcriptomic data or perturbation prediction.
 
+> **Note**  
+> Concrete model implementations should be added to the `docker/` directory, not the `implementations/` directory. The `implementations/` directory is reserved for base classes and shared logic.
+
 ## Model Validators
 
 Validators enforce the constraints that a dataset must satisfy to be compatible with a given model.
+
+> **Note:**  
+> A user would need to create a custom validator when the existing validators do not fully address the specific requirements of their dataset or model. Since most validators are designed to handle common scenarios, a custom validator becomes necessary for unique use cases, such as enforcing specialized constraints on dataset structure, validating custom metadata fields, or ensuring compatibility with a novel model type. Custom validators allow users to define tailored validation logic that aligns with the specific needs of their model and dataset, ensuring accurate and reliable results.
 
 All validators must inherit from one of the following:
 
@@ -61,6 +70,56 @@ class MyModelValidator(BaseSingleCellValidator):
 class MyModel(MyModelValidator, BaseModelImplementation):
     ...
 ```
+
+### Best Practices for Validators
+
+When creating a new validator, follow these best practices:
+
+- **Document Validation Requirements Clearly**: Ensure that the purpose and requirements of the validator are well-documented.
+- **Use Descriptive Variable Names**: Choose meaningful names for variables to improve code readability.
+- **Add Logging for Validation Steps**: Include logging to track validation progress and identify issues.
+- **Follow Existing Validator Patterns**: Use existing validators as a reference to maintain consistency.
+- **Implement Comprehensive Validation Checks**: Ensure that all necessary checks are implemented to validate datasets thoroughly.
+- **Support Multiple Organisms When Possible**: Design validators to handle datasets from multiple organisms.
+- **Include Detailed Error Messages**: Provide clear and actionable error messages when validation fails.
+
+### Example Usage of Validators
+
+Here is an example of how to use a validator:
+
+```python
+from czbenchmarks.models.validators import YourModelValidator
+
+validator = YourModelValidator()
+try:
+    validator.validate_dataset(dataset)
+    print("Dataset validation passed!")
+except ValueError as e:
+    print(f"Validation failed: {e}")
+```
+
+## Model Directory Structure
+
+The `models/` directory is organized as follows:
+
+```
+models/
+├── __init__.py
+├── README.md
+├── implementations/                  # Model implementations
+│   ├── __init__.py
+│   ├── base_model_implementation.py  # Base implementation class
+│   └── README.md
+└── validators/                       # Model validators
+    ├── __init__.py
+    ├── base_model_validator.py       # Base validator class
+    ├── base_single_cell_model_validator.py
+    ├── <model-specific-validator>.py
+    └── README.md
+```
+
+- **`implementations/`**: Contains model-specific implementations.
+- **`validators/`**: Contains model-specific validation rules.
 
 ## Developer Guide: Writing a New Model
 

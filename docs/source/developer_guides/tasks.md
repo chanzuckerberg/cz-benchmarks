@@ -13,6 +13,18 @@ The `czbenchmarks.tasks` module defines **benchmarking tasks** that evaluate the
 
    It also supports multi-dataset operations (`requires_multiple_datasets`) and setting **baseline embeddings** (via PCA) for comparison with model outputs.
 
+## Task Organization
+
+Tasks in the `czbenchmarks.tasks` module are organized based on their scope and applicability:
+
+- **Generic Tasks**: Tasks that can be applied across multiple modalities (e.g., embedding evaluation, clustering, label prediction) are placed directly in the `tasks/` directory. Each task is implemented in its own file (e.g., `embedding.py`, `clustering.py`) with clear and descriptive names. Generic tasks avoid dependencies specific to any particular modality.
+
+- **Specialized Tasks**: Tasks designed for specific modalities are placed in dedicated subdirectories. For example:
+  - `single_cell/` for single-cell-specific tasks
+  - `imaging/` for imaging-related tasks. **Not implemented in current release, For future imaging models**
+
+New subdirectories can be created as needed for other modalities.
+
 ## Available Tasks
 
 Each task class implements a specific evaluation goal. All tasks are located under the `czbenchmarks.tasks` namespace or its submodules.
@@ -41,22 +53,36 @@ To define a new evaluation task:
 
 1. **Inherit from** [BaseTask](../autoapi/czbenchmarks/tasks/base/index)
 
-2. **Override the following methods:**
+2. **Choose the Right Location**:
+   - If the task is generic and works across multiple modalities, add it to the `tasks/` directory.
+   - If the task is specific to a particular modality, add it to the appropriate subdirectory (e.g., `single_cell/`, `imaging/`).
 
-   - `display_name`: a human-readable string naming your task, used for display purposes
+3. **Create the Task File**:
+   Each task should be implemented in its own file. Below is an example skeleton for creating a new task:
+
+4. **Override the following methods:**
+
    - `required_inputs`: a set of `DataType` values required as inputs
    - `required_outputs`: a set of `DataType` values expected as model outputs
    - `_run_task(data, model_type)`: executes task logic using input data and model outputs
    - `_compute_metrics()`: returns a list of `MetricResult` objects
 
-3. **Optional Features:**
+5. **Update `__init__.py`**:
+   - For generic tasks, add the new task to `tasks/__init__.py`.
+   - For specialized tasks, add the new task to the `__init__.py` file in the corresponding modality-specific subdirectory.
+
+6. **Documentation**:
+   - Add detailed docstrings to your task class and methods.
+   - Update the relevant documentation files to include the new task.
+
+7. **Optional Features:**
    - Set `requires_multiple_datasets = True` if your task operates on a list of datasets
    - Call `self.set_baseline(dataset)` in your task to enable PCA baseline comparisons
 
-4. **Return Metrics:**
+8. **Return Metrics:**
    Use the [MetricRegistry](../autoapi/czbenchmarks/metrics/types/index) to compute and return standard metrics with strong typing.
 
-5. **Example Skeleton:**
+9. **Example Skeleton:**
 
    ```python
    from czbenchmarks.tasks.base import BaseTask
@@ -65,10 +91,6 @@ To define a new evaluation task:
    from czbenchmarks.metrics.types import MetricResult
 
    class MyNewTask(BaseTask):
-       @property
-       def display_name(self):
-           return "My New Task"
-
        @property
        def required_inputs(self):
            return {DataType.METADATA}
@@ -85,3 +107,12 @@ To define a new evaluation task:
            result = ...  # your metric computation here
            return [MetricResult(metric_type="my_metric", value=result)]
    ```
+
+
+## Best Practices
+
+- Keep tasks focused and single-purpose to ensure clarity and maintainability.
+- Clearly document the input and output requirements for each task.
+- Follow the patterns and conventions established in existing tasks for consistency.
+- Use type hints to improve code readability and clarity.
+- Add logging for key steps in the task lifecycle to facilitate debugging and monitoring.
