@@ -670,11 +670,12 @@ wheels = [
 
 [[package]]
 name = "cz-benchmarks"
-version = "0.7.0"
+version = "0.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "anndata" },
     { name = "boto3" },
+    { name = "boto3-stubs-lite", extra = ["s3"] },
     { name = "dill" },
     { name = "docker" },
     { name = "h5py" },
@@ -701,7 +702,6 @@ build = [
 ]
 dev = [
     { name = "boto3-stubs" },
-    { name = "boto3-stubs-lite", extra = ["s3"] },
     { name = "botocore-stubs" },
     { name = "mypy" },
     { name = "pandas-stubs" },
@@ -734,7 +734,7 @@ requires-dist = [
     { name = "anndata", specifier = ">=0.9.0" },
     { name = "boto3", specifier = ">=1.28.0" },
     { name = "boto3-stubs", marker = "extra == 'dev'", specifier = ">=1.37.26" },
-    { name = "boto3-stubs-lite", extras = ["s3"], marker = "extra == 'dev'", specifier = ">=1.38.0" },
+    { name = "boto3-stubs-lite", extras = ["s3"], specifier = ">=1.38.0" },
     { name = "botocore-stubs", marker = "extra == 'dev'", specifier = ">=1.37.26" },
     { name = "build", marker = "extra == 'build'", specifier = ">=1.2.2.post1" },
     { name = "dill", specifier = ">=0.3.6" },

@@ -1,4 +1,5 @@
 import argparse
+import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, call
 
@@ -59,9 +60,9 @@ def test_main(mocker: MockFixture) -> None:
         )
     )
     expected_cache_options = CacheOptions(
-        use_remote_cache=False,
         remote_cache_url="",
-        upload_strategy="never",
+        download_embeddings=False,
+        upload_embeddings=False,
         upload_results=False,
     )
     mock_run.assert_called_once_with(
@@ -98,14 +99,15 @@ def test_main(mocker: MockFixture) -> None:
             output_format="yaml",
             batch_json=[""],
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
-            remote_cache_upload="if_not_exists",
+            remote_cache_upload_embeddings=True,
             remote_cache_upload_results=True,
+            remote_cache_download_embeddings=False,
         )
     )
     expected_cache_options = CacheOptions(
-        use_remote_cache=True,
         remote_cache_url="s3://cz-benchmarks-results-dev/test/",
-        upload_strategy="if_not_exists",
+        download_embeddings=False,
+        upload_embeddings=True,
         upload_results=True,
     )
     mock_run.assert_called_once_with(
@@ -145,14 +147,15 @@ def test_main(mocker: MockFixture) -> None:
                 '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
             ],
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
-            remote_cache_upload="overwrite",
+            remote_cache_download_embeddings=True,
+            remote_cache_upload_embeddings=True,
             remote_cache_upload_results=False,
         )
     )
     expected_cache_options = CacheOptions(
-        use_remote_cache=True,
         remote_cache_url="s3://cz-benchmarks-results-dev/test/",
-        upload_strategy="overwrite",
+        download_embeddings=True,
+        upload_embeddings=True,
         upload_results=False,
     )
     mock_run.assert_has_calls(
@@ -210,6 +213,10 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         "czbenchmarks.cli.cli_run.cli.get_version",
         return_value="0.0.0+test",
     )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.get_remote_last_modified",
+        return_value=datetime.datetime.now(datetime.timezone.utc),
+    )
     mock_download = mocker.patch(
         "czbenchmarks.cli.cli_run.utils.download_file_from_remote"
     )
@@ -241,9 +248,9 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         model_args=model_args,
         task_args=task_args,
         cache_options=CacheOptions(
-            use_remote_cache=True,
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
-            upload_strategy="never",
+            download_embeddings=True,
+            upload_embeddings=False,
             upload_results=False,
         ),
     )
@@ -586,9 +593,9 @@ def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
         model_name="SCVI",
         model_args={"model_variant": "homo_sapiens"},
         cache_options=CacheOptions(
-            use_remote_cache=True,
-            upload_strategy="overwrite",
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            download_embeddings=False,
+            upload_embeddings=True,
             upload_results=False,
         ),
     )

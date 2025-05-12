@@ -57,10 +57,10 @@ def test_cli_e2e_workflow(mock_runner):
         ),
     ]
     cache_options = CacheOptions(
-        use_remote_cache=False,
-        upload_strategy="never",
-        remote_cache_url="",
+        download_embeddings=False,
+        upload_embeddings=False,
         upload_results=False,
+        remote_cache_url="",
     )
     # endregion: Setup dataset, model, and task arguments
 

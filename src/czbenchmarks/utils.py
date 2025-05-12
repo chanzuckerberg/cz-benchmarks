@@ -122,18 +122,42 @@ def _get_s3_client(make_unsigned_request: bool = False) -> S3Client:
         return boto3.client("s3")
 
 
-def _does_remote_exist(s3_client: S3Client, bucket: str, key: str):
-    """return if the key exists in the remote S3 bucket"""
+def _get_remote_last_modified(
+    s3_client: S3Client, bucket: str, key: str
+) -> datetime | None:
+    """
+    Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist.
+
+    This version of the function takes an S3 client and pre-parsed bucket/key so it can
+    be reused by the upload and download methods
+    """
     try:
-        s3_client.head_object(Bucket=bucket, Key=key)
+        resp = s3_client.head_object(Bucket=bucket, Key=key)
+        return resp["LastModified"]
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            return False
+            return None
+        raise RemoteStorageError(
+            f"Error checking existence of 's3://{bucket}/{key}'"
+        ) from e
     except botocore.exceptions.BotoCoreError as e:
         raise RemoteStorageError(
-            f"Error checking for existence of 's3://{bucket}/{key}'"
+            f"Error checking existence of 's3://{bucket}/{key}'"
         ) from e
-    return True
+
+
+def get_remote_last_modified(
+    remote_url: str, make_unsigned_request: bool = True
+) -> datetime | None:
+    """Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist."""
+    try:
+        bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
+    except ValueError:
+        raise ValueError(
+            f"Remote URL {remote_url!r} is missing a key to a specific object"
+        )
+    s3 = _get_s3_client(make_unsigned_request)
+    return _get_remote_last_modified(s3, bucket, remote_key)
 
 
 def upload_file_to_remote(
@@ -159,7 +183,7 @@ def upload_file_to_remote(
     s3 = _get_s3_client(make_unsigned_request)
 
     if not overwrite_existing:
-        if _does_remote_exist(bucket, remote_key):
+        if _get_remote_last_modified(s3, bucket, remote_key) is not None:
             raise RemoteStorageObjectAlreadyExists(
                 f"Remote file already exists at 's3://{bucket}/{remote_key}'"
             )
@@ -187,7 +211,7 @@ def upload_blob_to_remote(
 
     s3 = _get_s3_client(make_unsigned_request)
     if not overwrite_existing:
-        if _does_remote_exist(bucket, remote_key):
+        if _get_remote_last_modified(s3, bucket, remote_key) is not None:
             raise RemoteStorageObjectAlreadyExists(
                 f"Remote file already exists at 's3://{bucket}/{remote_key}'"
             )

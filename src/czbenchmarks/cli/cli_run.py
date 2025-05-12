@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from pydantic import BaseModel, computed_field
 from secrets import token_hex
-from typing import Any, Generic, get_args as typing_get_args, Literal, TypeVar
+from typing import Any, Generic, TypeVar
 
 from czbenchmarks import runner
 from czbenchmarks.cli import cli
@@ -77,19 +77,21 @@ class TaskResult(BaseModel):
 
 
 class CacheOptions(BaseModel):
-    use_remote_cache: bool
-    upload_strategy: Literal["never", "if_not_exists", "overwrite"]
-    remote_cache_url: str
+    download_embeddings: bool
+    upload_embeddings: bool
     upload_results: bool
+    remote_cache_url: str
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "CacheOptions":
         remote_cache_url = args.remote_cache_url or ""
         return cls(
-            use_remote_cache=bool(remote_cache_url),
             remote_cache_url=remote_cache_url,
-            upload_strategy=args.remote_cache_upload,
-            upload_results=args.remote_cache_upload_results,
+            download_embeddings=bool(remote_cache_url)
+            and args.remote_cache_download_embeddings,
+            upload_embeddings=bool(remote_cache_url)
+            and args.remote_cache_upload_embeddings,
+            upload_results=bool(remote_cache_url) and args.remote_cache_upload_results,
         )
 
 
@@ -135,21 +137,42 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--remote-cache-url",
         help=(
             "AWS S3 URL prefix for caching embeddings and storing output "
-            "(example: s3://cz-benchmarks-example/). "
-            "If specified, any embeddings missing from the local cache will "
-            "be downloaded from the remote cache rather than computed"
+            "(example: s3://cz-benchmarks-example/). Files will be stored "
+            "underneath the current --version number. This alone will not "
+            "trigger any caching behavior unless one or more of the "
+            "--remote-cache-download-embeddings, --remote-cache-upload-embeddings "
+            "or --remote-cache-upload-results flags are specified."
         ),
     )
     parser.add_argument(
-        "--remote-cache-upload",
-        choices=typing_get_args(CacheOptions.__annotations__["upload_strategy"]),
-        help="When to upload processed embeddings to the remote cache",
-        default="never",
+        "--remote-cache-download-embeddings",
+        action="store_true",
+        help=(
+            "If specified, download embeddings from the remote cache to "
+            "PROCESSED_DATASETS_CACHE_PATH if local versions do not exist "
+            "or are older than those in the remote cache. Only embeddings "
+            "matching the current version will be downloaded."
+        ),
+        default=False,
+    )
+    parser.add_argument(
+        "--remote-cache-upload-embeddings",
+        action="store_true",
+        help=(
+            "Upload any processed embeddings produced to the remote cache, overwriting "
+            "any that may already exist there for the current version. They will be "
+            "stored under s3://<remote_cache_url>/<version>/processed_datasets/*.dill"
+        ),
+        default=False,
     )
     parser.add_argument(
         "--remote-cache-upload-results",
         action="store_true",
-        help="Upload the results to the remote cache. This allows for the cache to be shared across instances.",
+        help=(
+            "Upload the results to the remote cache. This allows results "
+            "to be shared across instances. They will be stored under ",
+            "s3://<remote_cache_url>/<version>/results/<timestamp>-<random_hex>.json",
+        ),
         default=False,
     )
 
@@ -521,6 +544,7 @@ def run_inference_or_load_from_cache(
         **model_args,  # type: ignore [arg-type]
     )
 
+    # if we ran inference, put the embeddings produced into the cache (local and possibly remote)
     set_processed_datasets_cache(
         processed_dataset,
         dataset_name,
@@ -716,7 +740,7 @@ def write_results(
     else:
         results_str = yaml.dump(results_dict)
 
-    if cache_options.use_remote_cache and cache_options.upload_results:
+    if cache_options.remote_cache_url and cache_options.upload_results:
         remote_url = get_result_url_for_remote(cache_options.remote_cache_url)
         try:
             utils.upload_blob_to_remote(
@@ -782,30 +806,14 @@ def set_processed_datasets_cache(
         )
         succeeded = False
 
-    if succeeded and cache_options.use_remote_cache:
+    if succeeded and cache_options.upload_embeddings:
+        # upload the new embeddings, overwriting any that may already exist
         remote_prefix = get_remote_cache_prefix(cache_options)
         try:
-            if cache_options.upload_strategy == "overwrite":
-                utils.upload_file_to_remote(
-                    cache_file, remote_prefix, overwrite_existing=True
-                )
-                log.info(
-                    f"Uploaded processed dataset from {cache_file} to {remote_prefix}"
-                )
-            elif cache_options.upload_strategy == "if_not_exists":
-                try:
-                    utils.upload_file_to_remote(
-                        cache_file,
-                        remote_prefix,
-                        overwrite_existing=False,
-                    )
-                    log.info(
-                        f"Uploaded processed dataset from {cache_file} to {remote_prefix}"
-                    )
-                except exceptions.RemoteStorageObjectAlreadyExists:
-                    log.info(
-                        "Processed dataset already cached remotely. Skipping upload."
-                    )
+            utils.upload_file_to_remote(
+                cache_file, remote_prefix, overwrite_existing=True
+            )
+            log.info(f"Uploaded processed dataset from {cache_file} to {remote_prefix}")
         except exceptions.RemoteStorageError:
             log.exception("Unable to upload processed dataset to remote cache")
 
@@ -828,27 +836,62 @@ def try_processed_datasets_cache(
     cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
     cache_file = cache_dir / dataset_filename
 
-    if cache_options.use_remote_cache and not cache_file.exists():
+    if cache_options.download_embeddings:
+        # check the remote cache and download the file if a local version doesn't
+        # exist, or if the remote version is newer than the local version
         remote_url = f"{get_remote_cache_prefix(cache_options)}{dataset_filename}"
+
+        local_modified: datetime | None = None
+        remote_modified: datetime | None = None
+        if cache_file.exists():
+            local_modified = datetime.fromtimestamp(
+                cache_file.stat().st_mtime, tz=timezone.utc
+            )
         try:
-            utils.download_file_from_remote(remote_url, cache_dir)
-            log.info(f"Downloaded cached embeddings from {remote_url} to {cache_dir}")
+            remote_modified = utils.get_remote_last_modified(
+                remote_url, make_unsigned_request=False
+            )
         except exceptions.RemoteStorageError:
             # not a great way to handle this, but maybe the cache bucket is not public
             try:
                 log.warning(
-                    "Unsigned request for cached embeddings failed. Trying signed request."
+                    "Unsigned request to remote storage cache failed. Trying signed request."
                 )
-                utils.download_file_from_remote(
-                    remote_url, cache_dir, make_unsigned_request=False
+                remote_modified = utils.get_remote_last_modified(
+                    remote_url, make_unsigned_request=True
                 )
+            except exceptions.RemoteStorageError:
+                pass
+        if remote_modified is None:
+            log.info("Remote cached embeddings don't exist. Skipping download.")
+        elif local_modified is not None and (remote_modified <= local_modified):
+            log.info(
+                f"Remote cached embeddings modified at {remote_modified}. "
+                f"Local cache files modified more recently at {local_modified}. "
+                "Skipping download."
+            )
+        else:
+            try:
+                utils.download_file_from_remote(remote_url, cache_dir)
                 log.info(
                     f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
                 )
             except exceptions.RemoteStorageError:
-                log.warning(
-                    f"Unable to retrieve embeddings from remote cache at {remote_url!r}"
-                )
+                # not a great way to handle this, but maybe the cache bucket is not public
+                try:
+                    log.warning(
+                        "Unsigned request to remote storage cache failed. Trying signed request."
+                    )
+                    utils.download_file_from_remote(
+                        remote_url, cache_dir, make_unsigned_request=False
+                    )
+                    log.info(
+                        f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
+                    )
+                except exceptions.RemoteStorageError:
+                    log.warning(
+                        f"Unable to retrieve embeddings from remote cache at {remote_url!r}"
+                    )
 
     if cache_file.exists():
         # Load the original dataset

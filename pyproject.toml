@@ -39,7 +39,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "hnswlib>=0.8.0",
     "tomli>=2.2.1",
-
+    "boto3-stubs-lite[s3]>=1.38.0",
 ]
 
 [project.optional-dependencies]
@@ -65,7 +65,6 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
     "types-pyyaml>=6.0.12.20250402",
-    "boto3-stubs-lite[s3]>=1.38.0",
 ]
 
 docs = [
