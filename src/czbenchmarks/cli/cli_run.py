@@ -20,6 +20,7 @@ from czbenchmarks.cli import cli
 from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.datasets.base import BaseDataset
+from czbenchmarks import exceptions
 from czbenchmarks.metrics.types import MetricResult
 from czbenchmarks.models import utils as model_utils
 from czbenchmarks.models.types import ModelType
@@ -148,7 +149,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--remote-cache-upload-results",
         action="store_true",
-        help="Upload the results to the remote cache",
+        help="Upload the results to the remote cache. This allows for the cache to be shared across instances.",
         default=False,
     )
 
@@ -721,7 +722,7 @@ def write_results(
             utils.upload_blob_to_remote(
                 results_str.encode("utf-8"), remote_url, overwrite_existing=False
             )
-        except (utils.RemoteError, utils.RemoteAlreadyExists):
+        except exceptions.RemoteStorageError:
             log.exception(f"Failed to upload results to {remote_url!r}")
         log.info("Uploaded results to %r", remote_url)
 
@@ -801,11 +802,11 @@ def set_processed_datasets_cache(
                     log.info(
                         f"Uploaded processed dataset from {cache_file} to {remote_prefix}"
                     )
-                except utils.RemoteAlreadyExists:
+                except exceptions.RemoteStorageObjectAlreadyExists:
                     log.info(
                         "Processed dataset already cached remotely. Skipping upload."
                     )
-        except utils.RemoteError:
+        except exceptions.RemoteStorageError:
             log.exception("Unable to upload processed dataset to remote cache")
 
     dataset.load_data()
@@ -832,7 +833,7 @@ def try_processed_datasets_cache(
         try:
             utils.download_file_from_remote(remote_url, cache_dir)
             log.info(f"Downloaded cached embeddings from {remote_url} to {cache_dir}")
-        except utils.RemoteError:
+        except exceptions.RemoteStorageError:
             # not a great way to handle this, but maybe the cache bucket is not public
             try:
                 log.warning(
@@ -844,7 +845,7 @@ def try_processed_datasets_cache(
                 log.info(
                     f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
                 )
-            except utils.RemoteError:
+            except exceptions.RemoteStorageError:
                 log.warning(
                     f"Unable to retrieve embeddings from remote cache at {remote_url!r}"
                 )

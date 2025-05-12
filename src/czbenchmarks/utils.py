@@ -8,7 +8,10 @@ import boto3
 from botocore.config import Config
 import botocore
 import hydra
+from mypy_boto3_s3.client import S3Client
 from omegaconf import OmegaConf
+
+from .exceptions import RemoteStorageError, RemoteStorageObjectAlreadyExists
 
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -112,19 +115,25 @@ def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
                     logger.info(f"Updated: {relative_key} at {local_file_path}")
 
 
-class RemoteError(Exception):
-    pass
-
-
-class RemoteAlreadyExists(Exception):
-    pass
-
-
-def _get_s3_client(make_unsigned_request: bool = False):
+def _get_s3_client(make_unsigned_request: bool = False) -> S3Client:
     if make_unsigned_request:
         return boto3.client("s3", config=Config(signature_version=botocore.UNSIGNED))
     else:
         return boto3.client("s3")
+
+
+def _does_remote_exist(s3_client: S3Client, bucket: str, key: str):
+    """return if the key exists in the remote S3 bucket"""
+    try:
+        s3_client.head_object(Bucket=bucket, Key=key)
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            return False
+    except botocore.exceptions.BotoCoreError as e:
+        raise RemoteStorageError(
+            f"Error checking for existence of 's3://{bucket}/{key}'"
+        ) from e
+    return True
 
 
 def upload_file_to_remote(
@@ -150,24 +159,14 @@ def upload_file_to_remote(
     s3 = _get_s3_client(make_unsigned_request)
 
     if not overwrite_existing:
-        try:
-            s3.head_object(Bucket=bucket, Key=remote_key)
-            raise RemoteAlreadyExists(
+        if _does_remote_exist(bucket, remote_key):
+            raise RemoteStorageObjectAlreadyExists(
                 f"Remote file already exists at 's3://{bucket}/{remote_key}'"
             )
-        except botocore.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] != "404":
-                raise RemoteError(
-                    f"Error checking for existence of 's3://{bucket}/{remote_key}'"
-                ) from e
-        except botocore.exceptions.BotoCoreError as e:
-            raise RemoteError(
-                f"Error checking for existence of 's3://{bucket}/{remote_key}'"
-            ) from e
     try:
         s3.upload_file(str(local_file), bucket, remote_key)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise RemoteError(
+        raise RemoteStorageError(
             f"Failed to upload {local_file!r} to 's3://{bucket}/{remote_key}'"
         ) from e
 
@@ -188,21 +187,10 @@ def upload_blob_to_remote(
 
     s3 = _get_s3_client(make_unsigned_request)
     if not overwrite_existing:
-        try:
-            s3.head_object(Bucket=bucket, Key=remote_key)
-            raise RemoteAlreadyExists(
+        if _does_remote_exist(bucket, remote_key):
+            raise RemoteStorageObjectAlreadyExists(
                 f"Remote file already exists at 's3://{bucket}/{remote_key}'"
             )
-        except botocore.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] != "404":
-                raise RemoteError(
-                    f"Error checking existence of 's3://{bucket}/{remote_key}'"
-                ) from e
-        except botocore.exceptions.BotoCoreError as e:
-            raise RemoteError(
-                f"Error checking existence of 's3://{bucket}/{remote_key}'"
-            ) from e
-
     try:
         content_type, _ = mimetypes.guess_type(remote_key)
         s3.put_object(
@@ -212,7 +200,9 @@ def upload_blob_to_remote(
             ContentType=content_type or "application/octet-stream",
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise RemoteError(f"Failed to upload to 's3://{bucket}/{remote_key}'") from e
+        raise RemoteStorageError(
+            f"Failed to upload to 's3://{bucket}/{remote_key}'"
+        ) from e
 
 
 def download_file_from_remote(
@@ -239,6 +229,6 @@ def download_file_from_remote(
     try:
         s3.download_file(bucket, remote_key, str(local_file))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        raise RemoteError(
+        raise RemoteStorageError(
             f"Failed to download 's3://{bucket}/{remote_key}' to {local_file!r}"
         ) from e

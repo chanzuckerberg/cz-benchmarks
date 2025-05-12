@@ -258,6 +258,25 @@ wheels = [
 ]
 
 [[package]]
+name = "boto3-stubs-lite"
+version = "1.38.13"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore-stubs" },
+    { name = "types-s3transfer" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d3/e8/a96edd3e1026209effd2154ad70412861e4e8355e5fa0355ec9bd18848a9/boto3_stubs_lite-1.38.13.tar.gz", hash = "sha256:cf58ba78d5de81fc3a6ff7a95c12a4c9c60b2508dccf4343b3b22c10877ac105", size = 71561, upload-time = "2025-05-09T19:47:07.143Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/36/2f/9a75cb0748bad4df5fd00882d5fe6c49dc0a8a41c196466d8f9ba1f254f3/boto3_stubs_lite-1.38.13-py3-none-any.whl", hash = "sha256:09f4c3cdfda818bf6dcea263ee05abab9cf673a71729873b67f60c282e94470a", size = 42452, upload-time = "2025-05-09T19:47:02.625Z" },
+]
+
+[package.optional-dependencies]
+s3 = [
+    { name = "mypy-boto3-s3" },
+]
+
+[[package]]
 name = "botocore"
 version = "1.37.24"
 source = { registry = "https://pypi.org/simple" }
@@ -682,6 +701,7 @@ build = [
 ]
 dev = [
     { name = "boto3-stubs" },
+    { name = "boto3-stubs-lite", extra = ["s3"] },
     { name = "botocore-stubs" },
     { name = "mypy" },
     { name = "pandas-stubs" },
@@ -714,6 +734,7 @@ requires-dist = [
     { name = "anndata", specifier = ">=0.9.0" },
     { name = "boto3", specifier = ">=1.28.0" },
     { name = "boto3-stubs", marker = "extra == 'dev'", specifier = ">=1.37.26" },
+    { name = "boto3-stubs-lite", extras = ["s3"], marker = "extra == 'dev'", specifier = ">=1.38.0" },
     { name = "botocore-stubs", marker = "extra == 'dev'", specifier = ">=1.37.26" },
     { name = "build", marker = "extra == 'build'", specifier = ">=1.2.2.post1" },
     { name = "dill", specifier = ">=0.3.6" },
@@ -1971,6 +1992,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/67/5a4268782eb77344cc613a4cf23540928e41f018a9a1ec4c6882baf20ab8/mypy-1.15.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:baefc32840a9f00babd83251560e0ae1573e2f9d1b067719479bfb0e987c6357", size = 12494348, upload-time = "2025-02-05T03:48:52.361Z" },
     { url = "https://files.pythonhosted.org/packages/83/3e/57bb447f7bbbfaabf1712d96f9df142624a386d98fb026a761532526057e/mypy-1.15.0-cp313-cp313-win_amd64.whl", hash = "sha256:b9378e2c00146c44793c98b8d5a61039a048e31f429fb0eb546d93f4b000bedf", size = 9373648, upload-time = "2025-02-05T03:49:11.395Z" },
     { url = "https://files.pythonhosted.org/packages/09/4e/a7d65c7322c510de2c409ff3828b03354a7c43f5a8ed458a7a131b41c7b9/mypy-1.15.0-py3-none-any.whl", hash = "sha256:5469affef548bd1895d86d3bf10ce2b44e33d86923c29e4d675b3e323437ea3e", size = 2221777, upload-time = "2025-02-05T03:50:08.348Z" },
+]
+
+[[package]]
+name = "mypy-boto3-s3"
+version = "1.38.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1a/04/7b7f5709a092097a4a915b23f43b6dc9cc3b8e098c81d86a384eea071984/mypy_boto3_s3-1.38.0.tar.gz", hash = "sha256:f8fe586e45123ffcd305a0c30847128f3931d888649e2b4c5a52f412183c840a", size = 73699, upload-time = "2025-04-22T21:33:36.716Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/59/24de9ac5f1974164712ab89edb510d21116a69d36373dc6588aeb26ab81d/mypy_boto3_s3-1.38.0-py3-none-any.whl", hash = "sha256:5cd9449df0ef6cf89e00e6fc9130a0ab641f703a23ab1d2146c394da058e8282", size = 80301, upload-time = "2025-04-22T21:33:32.297Z" },
 ]
 
 [[package]]
