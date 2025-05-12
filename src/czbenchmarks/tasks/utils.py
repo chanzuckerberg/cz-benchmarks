@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Literal
 
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ def cluster_embedding(
     obsm_key: str = OBSM_KEY,
     random_seed: int = RANDOM_SEED,
     n_iterations: int = 2,
-    flavor: str = FLAVOR,
+    flavor: Literal["leidenalg", "igraph"] = FLAVOR,
     key_added: str = KEY_ADDED,
 ) -> List[int]:
     """Cluster cells in embedding space using the Leiden algorithm.
@@ -103,7 +103,10 @@ def filter_minimum_class(
 
 
 def run_standard_scrna_workflow(
-    adata: AnnData, n_top_genes: int = 3000, n_pcs: int = 50, random_state: int = 42
+    adata: AnnData,
+    n_top_genes: int = 3000,
+    n_pcs: int = 50,
+    random_state: int = RANDOM_SEED,
 ) -> AnnData:
     """Run a standard preprocessing workflow for single-cell RNA-seq data.
 

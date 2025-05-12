@@ -97,6 +97,7 @@ class ClusteringTask(BaseTask):
                     labels_true=self.input_labels,
                     labels_pred=self.predicted_labels,
                 ),
+                params={"random_seed": self.random_seed},
             )
             for metric_type in [
                 MetricType.ADJUSTED_RAND_INDEX,
