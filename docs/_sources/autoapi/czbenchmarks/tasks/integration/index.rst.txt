@@ -1,0 +1,72 @@
+czbenchmarks.tasks.integration
+==============================
+
+.. py:module:: czbenchmarks.tasks.integration
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.integration.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.integration.BatchIntegrationTask
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: BatchIntegrationTask(label_key: str, batch_key: str)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating batch integration quality.
+
+   This task computes metrics to assess how well different batches are integrated
+   in the embedding space while preserving biological signals.
+
+   :param label_key: Key to access ground truth cell type labels in metadata
+   :param batch_key: Key to access batch labels in metadata
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: batch_key
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run (embedding coordinates)
+
+

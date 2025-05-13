@@ -1,0 +1,74 @@
+czbenchmarks.metrics.utils
+==========================
+
+.. py:module:: czbenchmarks.metrics.utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.metrics.utils.nearest_neighbors_hnsw
+   czbenchmarks.metrics.utils.compute_entropy_per_cell
+   czbenchmarks.metrics.utils.jaccard_score
+   czbenchmarks.metrics.utils.mean_fold_metric
+
+
+Module Contents
+---------------
+
+.. py:function:: nearest_neighbors_hnsw(data: numpy.ndarray, expansion_factor: int = 200, max_links: int = 48, n_neighbors: int = 100) -> tuple[numpy.ndarray, numpy.ndarray]
+
+   Find nearest neighbors using HNSW algorithm.
+
+   :param data: Input data matrix of shape (n_samples, n_features)
+   :param expansion_factor: Size of dynamic candidate list for search
+   :param max_links: Number of bi-directional links created for every new element
+   :param n_neighbors: Number of nearest neighbors to find
+
+   :returns:     - Indices array of shape (n_samples, n_neighbors)
+                 - Distances array of shape (n_samples, n_neighbors)
+   :rtype: Tuple containing
+
+
+.. py:function:: compute_entropy_per_cell(X: numpy.ndarray, labels: Union[pandas.Categorical, pandas.Series, numpy.ndarray]) -> numpy.ndarray
+
+   Compute entropy of batch labels in local neighborhoods.
+
+   For each cell, finds nearest neighbors and computes entropy of
+   batch label distribution in that neighborhood.
+
+   :param X: Cell embedding matrix of shape (n_cells, n_features)
+   :param labels: Series containing batch labels for each cell
+
+   :returns: Array of entropy values for each cell, normalized by log of number of batches
+
+
+.. py:function:: jaccard_score(y_true: set[str], y_pred: set[str])
+
+   Compute Jaccard similarity between true and predicted values.
+
+   :param y_true: True values
+   :param y_pred: Predicted values
+
+
+.. py:function:: mean_fold_metric(results_df, metric='accuracy', classifier=None)
+
+   Compute mean of a metric across folds.
+
+   :param results_df: DataFrame containing cross-validation results. Must have columns:
+                      - "classifier": Name of the classifier (e.g., "lr", "knn")
+                      - One of the following metric columns:
+                          - "accuracy": For accuracy scores
+                          - "f1": For F1 scores
+                          - "precision": For precision scores
+                          - "recall": For recall scores
+   :param metric: Name of metric column to average ("accuracy", "f1", etc.)
+   :param classifier: Optional classifier name to filter results
+
+   :returns: Mean value of the metric across folds
+
+   :raises KeyError: If the specified metric column is not present in results_df
+
+

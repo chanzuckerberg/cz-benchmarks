@@ -1,0 +1,24 @@
+czbenchmarks.metrics.implementations
+====================================
+
+.. py:module:: czbenchmarks.metrics.implementations
+
+.. autoapi-nested-parse::
+
+   Implementation of metric functions and registration with the registry.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.metrics.implementations.metrics_registry
+
+
+Module Contents
+---------------
+
+.. py:data:: metrics_registry
+

@@ -1,0 +1,974 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.cli.cli_run &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.cli.cli_run</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/czbenchmarks/cli/cli_run/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.cli.cli_run">
+<span id="czbenchmarks-cli-cli-run"></span><h1>czbenchmarks.cli.cli_run<a class="headerlink" href="#module-czbenchmarks.cli.cli_run" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.log" title="czbenchmarks.cli.cli_run.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS" title="czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VALID_OUTPUT_FORMATS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT" title="czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_OUTPUT_FORMAT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskType" title="czbenchmarks.cli.cli_run.TaskType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskType</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgsDict" title="czbenchmarks.cli.cli_run.ModelArgsDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelArgsDict</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.RuntimeMetricsDict" title="czbenchmarks.cli.cli_run.RuntimeMetricsDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeMetricsDict</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgs" title="czbenchmarks.cli.cli_run.ModelArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelArgs</span></code></a></p></td>
+<td><p>!!! abstract &quot;Usage Documentation&quot;</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskArgs</span></code></a></p></td>
+<td><p>!!! abstract &quot;Usage Documentation&quot;</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskResult</span></code></a></p></td>
+<td><p>!!! abstract &quot;Usage Documentation&quot;</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CacheOptions</span></code></a></p></td>
+<td><p>!!! abstract &quot;Usage Documentation&quot;</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.add_arguments" title="czbenchmarks.cli.cli_run.add_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_arguments</span></code></a>(→ None)</p></td>
+<td><p>Add run command arguments to the parser.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.main" title="czbenchmarks.cli.cli_run.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">main</span></code></a>(→ None)</p></td>
+<td><p>Execute a series of tasks using multiple models on a collection of datasets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run" title="czbenchmarks.cli.cli_run.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(→ list[TaskResult])</p></td>
+<td><p>Run a set of tasks against a set of datasets. Runs inference if any <cite>model_args</cite> are specified.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run_with_inference" title="czbenchmarks.cli.cli_run.run_with_inference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_with_inference</span></code></a>(→ list[TaskResult])</p></td>
+<td><p>Execute a series of tasks using multiple models on a collection of datasets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run_inference_or_load_from_cache" title="czbenchmarks.cli.cli_run.run_inference_or_load_from_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_inference_or_load_from_cache</span></code></a>(...)</p></td>
+<td><p>Load the processed dataset from the cache if it exists, else run inference and save to cache.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run_without_inference" title="czbenchmarks.cli.cli_run.run_without_inference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_without_inference</span></code></a>(→ list[TaskResult])</p></td>
+<td><p>Run a set of tasks directly against raw datasets without first running model inference.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run_multi_dataset_task" title="czbenchmarks.cli.cli_run.run_multi_dataset_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_multi_dataset_task</span></code></a>(→ list[TaskResult])</p></td>
+<td><p>Run a task and return the results.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.run_task" title="czbenchmarks.cli.cli_run.run_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_task</span></code></a>(→ list[TaskResult])</p></td>
+<td><p>Run a task and return the results.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.get_model_arg_permutations" title="czbenchmarks.cli.cli_run.get_model_arg_permutations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_arg_permutations</span></code></a>(→ dict[str, ...)</p></td>
+<td><p>Generate all the &quot;permutations&quot; of model arguments we want to run for each dataset:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.write_results" title="czbenchmarks.cli.cli_run.write_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_results</span></code></a>(→ None)</p></td>
+<td><p>Format and write results to the given directory or file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.get_result_url_for_remote" title="czbenchmarks.cli.cli_run.get_result_url_for_remote"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_result_url_for_remote</span></code></a>(→ str)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.set_processed_datasets_cache" title="czbenchmarks.cli.cli_run.set_processed_datasets_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_processed_datasets_cache</span></code></a>(→ None)</p></td>
+<td><p>Write a dataset to the cache</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.try_processed_datasets_cache" title="czbenchmarks.cli.cli_run.try_processed_datasets_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">try_processed_datasets_cache</span></code></a>(...)</p></td>
+<td><p>Deserialize and return a processed dataset from the cache if it exists, else return None.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.get_remote_cache_prefix" title="czbenchmarks.cli.cli_run.get_remote_cache_prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_remote_cache_prefix</span></code></a>(cache_options)</p></td>
+<td><p>get the prefix ending in '/' that the remote processed datasets go under</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename" title="czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_processed_dataset_cache_filename</span></code></a>(→ str)</p></td>
+<td><p>generate a unique filename for the given dataset and model arguments</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.get_processed_dataset_cache_path" title="czbenchmarks.cli.cli_run.get_processed_dataset_cache_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_processed_dataset_cache_path</span></code></a>(→ pathlib.Path)</p></td>
+<td><p>Return a unique file path in the cache directory for the given dataset and model arguments.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.parse_model_args" title="czbenchmarks.cli.cli_run.parse_model_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_model_args</span></code></a>(→ ModelArgs)</p></td>
+<td><p>Populate a ModelArgs instance from the given argparse namespace.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.parse_task_args" title="czbenchmarks.cli.cli_run.parse_task_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_task_args</span></code></a>(→ TaskArgs)</p></td>
+<td><p>Populate a TaskArgs instance from the given argparse namespace.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.cli.cli_run.parse_batch_json" title="czbenchmarks.cli.cli_run.parse_batch_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_batch_json</span></code></a>(→ list[dict[str, Any]])</p></td>
+<td><p>Parse the <cite>--batch-json</cite> argument.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.log">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.log" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">VALID_OUTPUT_FORMATS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['json',</span> <span class="pre">'yaml']</span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_OUTPUT_FORMAT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'json'</span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskType">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">TaskType</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskType" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgsDict">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">ModelArgsDict</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgsDict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.RuntimeMetricsDict">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">RuntimeMetricsDict</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.RuntimeMetricsDict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">ModelArgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[Models](../concepts/models.md)</p>
+</dd>
+</dl>
+<p>A base class for creating Pydantic models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__class_vars__">
+<span class="sig-name descname"><span class="pre">__class_vars__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__class_vars__" title="Link to this definition"></a></dt>
+<dd><p>The names of the class variables defined on the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__private_attributes__">
+<span class="sig-name descname"><span class="pre">__private_attributes__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__private_attributes__" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the private attributes of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_complete__">
+<span class="sig-name descname"><span class="pre">__pydantic_complete__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_complete__" title="Link to this definition"></a></dt>
+<dd><p>Whether model building is completed, or if there are still undefined fields.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_core_schema__">
+<span class="sig-name descname"><span class="pre">__pydantic_core_schema__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_core_schema__" title="Link to this definition"></a></dt>
+<dd><p>The core schema of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_custom_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_custom_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_custom_init__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model has a custom <cite>__init__</cite> function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_decorators__">
+<span class="sig-name descname"><span class="pre">__pydantic_decorators__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_decorators__" title="Link to this definition"></a></dt>
+<dd><p>Metadata containing the decorators defined on the model.
+This replaces <cite>Model.__validators__</cite> and <cite>Model.__root_validators__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_generic_metadata__">
+<span class="sig-name descname"><span class="pre">__pydantic_generic_metadata__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_generic_metadata__" title="Link to this definition"></a></dt>
+<dd><p>Metadata for generic models; contains data used for a similar purpose to
+__args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_parent_namespace__">
+<span class="sig-name descname"><span class="pre">__pydantic_parent_namespace__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_parent_namespace__" title="Link to this definition"></a></dt>
+<dd><p>Parent namespace of the model, used for automatic rebuilding of models.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_post_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_post_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_post_init__" title="Link to this definition"></a></dt>
+<dd><p>The name of the post-init method for the model, if defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_root_model__">
+<span class="sig-name descname"><span class="pre">__pydantic_root_model__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_root_model__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model is a [<cite>RootModel</cite>][pydantic.root_model.RootModel].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_serializer__">
+<span class="sig-name descname"><span class="pre">__pydantic_serializer__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_serializer__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaSerializer</cite> used to dump instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_validator__">
+<span class="sig-name descname"><span class="pre">__pydantic_validator__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_validator__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaValidator</cite> used to validate instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_extra__">
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_extra__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra]
+is set to <cite>‘allow’</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields_set__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields_set__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields_set__" title="Link to this definition"></a></dt>
+<dd><p>The names of fields explicitly set during instantiation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.__pydantic_private__">
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_private__" title="Link to this definition"></a></dt>
+<dd><p>Values of private attributes set on the model instance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.ModelArgs.args">
+<span class="sig-name descname"><span class="pre">args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.ModelArgs.args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">TaskArgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskType" title="czbenchmarks.cli.cli_run.TaskType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskType</span></code></a>]</p>
+<dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[Models](../concepts/models.md)</p>
+</dd>
+</dl>
+<p>A base class for creating Pydantic models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__class_vars__">
+<span class="sig-name descname"><span class="pre">__class_vars__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__class_vars__" title="Link to this definition"></a></dt>
+<dd><p>The names of the class variables defined on the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__private_attributes__">
+<span class="sig-name descname"><span class="pre">__private_attributes__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__private_attributes__" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the private attributes of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_complete__">
+<span class="sig-name descname"><span class="pre">__pydantic_complete__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_complete__" title="Link to this definition"></a></dt>
+<dd><p>Whether model building is completed, or if there are still undefined fields.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_core_schema__">
+<span class="sig-name descname"><span class="pre">__pydantic_core_schema__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_core_schema__" title="Link to this definition"></a></dt>
+<dd><p>The core schema of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_custom_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_custom_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_custom_init__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model has a custom <cite>__init__</cite> function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_decorators__">
+<span class="sig-name descname"><span class="pre">__pydantic_decorators__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_decorators__" title="Link to this definition"></a></dt>
+<dd><p>Metadata containing the decorators defined on the model.
+This replaces <cite>Model.__validators__</cite> and <cite>Model.__root_validators__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_generic_metadata__">
+<span class="sig-name descname"><span class="pre">__pydantic_generic_metadata__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_generic_metadata__" title="Link to this definition"></a></dt>
+<dd><p>Metadata for generic models; contains data used for a similar purpose to
+__args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_parent_namespace__">
+<span class="sig-name descname"><span class="pre">__pydantic_parent_namespace__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_parent_namespace__" title="Link to this definition"></a></dt>
+<dd><p>Parent namespace of the model, used for automatic rebuilding of models.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_post_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_post_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_post_init__" title="Link to this definition"></a></dt>
+<dd><p>The name of the post-init method for the model, if defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_root_model__">
+<span class="sig-name descname"><span class="pre">__pydantic_root_model__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_root_model__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model is a [<cite>RootModel</cite>][pydantic.root_model.RootModel].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_serializer__">
+<span class="sig-name descname"><span class="pre">__pydantic_serializer__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_serializer__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaSerializer</cite> used to dump instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_validator__">
+<span class="sig-name descname"><span class="pre">__pydantic_validator__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_validator__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaValidator</cite> used to validate instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_extra__">
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_extra__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra]
+is set to <cite>‘allow’</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields_set__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields_set__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields_set__" title="Link to this definition"></a></dt>
+<dd><p>The names of fields explicitly set during instantiation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.__pydantic_private__">
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_private__" title="Link to this definition"></a></dt>
+<dd><p>Values of private attributes set on the model instance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.task">
+<span class="sig-name descname"><span class="pre">task</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TaskType</span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.set_baseline">
+<span class="sig-name descname"><span class="pre">set_baseline</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.set_baseline" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskArgs.baseline_args">
+<span class="sig-name descname"><span class="pre">baseline_args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskArgs.baseline_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">TaskResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[Models](../concepts/models.md)</p>
+</dd>
+</dl>
+<p>A base class for creating Pydantic models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__class_vars__">
+<span class="sig-name descname"><span class="pre">__class_vars__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__class_vars__" title="Link to this definition"></a></dt>
+<dd><p>The names of the class variables defined on the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__private_attributes__">
+<span class="sig-name descname"><span class="pre">__private_attributes__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__private_attributes__" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the private attributes of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_complete__">
+<span class="sig-name descname"><span class="pre">__pydantic_complete__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_complete__" title="Link to this definition"></a></dt>
+<dd><p>Whether model building is completed, or if there are still undefined fields.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_core_schema__">
+<span class="sig-name descname"><span class="pre">__pydantic_core_schema__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_core_schema__" title="Link to this definition"></a></dt>
+<dd><p>The core schema of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_custom_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_custom_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_custom_init__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model has a custom <cite>__init__</cite> function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_decorators__">
+<span class="sig-name descname"><span class="pre">__pydantic_decorators__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_decorators__" title="Link to this definition"></a></dt>
+<dd><p>Metadata containing the decorators defined on the model.
+This replaces <cite>Model.__validators__</cite> and <cite>Model.__root_validators__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_generic_metadata__">
+<span class="sig-name descname"><span class="pre">__pydantic_generic_metadata__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_generic_metadata__" title="Link to this definition"></a></dt>
+<dd><p>Metadata for generic models; contains data used for a similar purpose to
+__args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_parent_namespace__">
+<span class="sig-name descname"><span class="pre">__pydantic_parent_namespace__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_parent_namespace__" title="Link to this definition"></a></dt>
+<dd><p>Parent namespace of the model, used for automatic rebuilding of models.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_post_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_post_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_post_init__" title="Link to this definition"></a></dt>
+<dd><p>The name of the post-init method for the model, if defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_root_model__">
+<span class="sig-name descname"><span class="pre">__pydantic_root_model__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_root_model__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model is a [<cite>RootModel</cite>][pydantic.root_model.RootModel].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_serializer__">
+<span class="sig-name descname"><span class="pre">__pydantic_serializer__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_serializer__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaSerializer</cite> used to dump instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_validator__">
+<span class="sig-name descname"><span class="pre">__pydantic_validator__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_validator__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaValidator</cite> used to validate instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_extra__">
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_extra__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra]
+is set to <cite>‘allow’</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields_set__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields_set__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields_set__" title="Link to this definition"></a></dt>
+<dd><p>The names of fields explicitly set during instantiation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.__pydantic_private__">
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.__pydantic_private__" title="Link to this definition"></a></dt>
+<dd><p>Values of private attributes set on the model instance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.task_name">
+<span class="sig-name descname"><span class="pre">task_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.task_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.task_name_display">
+<span class="sig-name descname"><span class="pre">task_name_display</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.task_name_display" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../models/types/index.html#czbenchmarks.models.types.ModelType" title="czbenchmarks.models.types.ModelType"><span class="pre">czbenchmarks.models.types.ModelType</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.model_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.dataset_names">
+<span class="sig-name descname"><span class="pre">dataset_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.dataset_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.dataset_names_display">
+<span class="sig-name descname"><span class="pre">dataset_names_display</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.dataset_names_display" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.model_args">
+<span class="sig-name descname"><span class="pre">model_args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ModelArgsDict</span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.model_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../metrics/types/index.html#czbenchmarks.metrics.types.MetricResult" title="czbenchmarks.metrics.types.MetricResult"><span class="pre">czbenchmarks.metrics.types.MetricResult</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.runtime_metrics">
+<span class="sig-name descname"><span class="pre">runtime_metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">RuntimeMetricsDict</span></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.runtime_metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.TaskResult.model_name_display">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_name_display</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.TaskResult.model_name_display" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">CacheOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[Models](../concepts/models.md)</p>
+</dd>
+</dl>
+<p>A base class for creating Pydantic models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__class_vars__">
+<span class="sig-name descname"><span class="pre">__class_vars__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__class_vars__" title="Link to this definition"></a></dt>
+<dd><p>The names of the class variables defined on the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__private_attributes__">
+<span class="sig-name descname"><span class="pre">__private_attributes__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__private_attributes__" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the private attributes of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_complete__">
+<span class="sig-name descname"><span class="pre">__pydantic_complete__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_complete__" title="Link to this definition"></a></dt>
+<dd><p>Whether model building is completed, or if there are still undefined fields.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_core_schema__">
+<span class="sig-name descname"><span class="pre">__pydantic_core_schema__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_core_schema__" title="Link to this definition"></a></dt>
+<dd><p>The core schema of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_custom_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_custom_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_custom_init__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model has a custom <cite>__init__</cite> function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_decorators__">
+<span class="sig-name descname"><span class="pre">__pydantic_decorators__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_decorators__" title="Link to this definition"></a></dt>
+<dd><p>Metadata containing the decorators defined on the model.
+This replaces <cite>Model.__validators__</cite> and <cite>Model.__root_validators__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_generic_metadata__">
+<span class="sig-name descname"><span class="pre">__pydantic_generic_metadata__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_generic_metadata__" title="Link to this definition"></a></dt>
+<dd><p>Metadata for generic models; contains data used for a similar purpose to
+__args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_parent_namespace__">
+<span class="sig-name descname"><span class="pre">__pydantic_parent_namespace__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_parent_namespace__" title="Link to this definition"></a></dt>
+<dd><p>Parent namespace of the model, used for automatic rebuilding of models.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_post_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_post_init__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_post_init__" title="Link to this definition"></a></dt>
+<dd><p>The name of the post-init method for the model, if defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_root_model__">
+<span class="sig-name descname"><span class="pre">__pydantic_root_model__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_root_model__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model is a [<cite>RootModel</cite>][pydantic.root_model.RootModel].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_serializer__">
+<span class="sig-name descname"><span class="pre">__pydantic_serializer__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_serializer__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaSerializer</cite> used to dump instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_validator__">
+<span class="sig-name descname"><span class="pre">__pydantic_validator__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_validator__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaValidator</cite> used to validate instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_extra__">
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_extra__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra]
+is set to <cite>‘allow’</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields_set__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields_set__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields_set__" title="Link to this definition"></a></dt>
+<dd><p>The names of fields explicitly set during instantiation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.__pydantic_private__">
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_private__" title="Link to this definition"></a></dt>
+<dd><p>Values of private attributes set on the model instance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.download_embeddings">
+<span class="sig-name descname"><span class="pre">download_embeddings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.download_embeddings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.upload_embeddings">
+<span class="sig-name descname"><span class="pre">upload_embeddings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.upload_embeddings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.upload_results">
+<span class="sig-name descname"><span class="pre">upload_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.upload_results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.remote_cache_url">
+<span class="sig-name descname"><span class="pre">remote_cache_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.remote_cache_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.CacheOptions.from_args">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.13)"><span class="pre">argparse.Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.CacheOptions.from_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.add_arguments">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">add_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.13)"><span class="pre">argparse.ArgumentParser</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.add_arguments" title="Link to this definition"></a></dt>
+<dd><p>Add run command arguments to the parser.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.main">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parsed_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.13)"><span class="pre">argparse.Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.main" title="Link to this definition"></a></dt>
+<dd><p>Execute a series of tasks using multiple models on a collection of datasets.</p>
+<p>This function handles the benchmarking process by iterating over the specified datasets,
+running inference with the provided models to generate results, and running the tasks to evaluate
+the generated outputs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgs" title="czbenchmarks.cli.cli_run.ModelArgs"><span class="pre">ModelArgs</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run" title="Link to this definition"></a></dt>
+<dd><p>Run a set of tasks against a set of datasets. Runs inference if any <cite>model_args</cite> are specified.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run_with_inference">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run_with_inference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgs" title="czbenchmarks.cli.cli_run.ModelArgs"><span class="pre">ModelArgs</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run_with_inference" title="Link to this definition"></a></dt>
+<dd><p>Execute a series of tasks using multiple models on a collection of datasets.</p>
+<p>This function handles the benchmarking process by iterating over the specified datasets,
+running inference with the provided models to generate results, and running the tasks to evaluate
+the generated outputs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run_inference_or_load_from_cache">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run_inference_or_load_from_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModelArgsDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset" title="czbenchmarks.datasets.base.BaseDataset"><span class="pre">czbenchmarks.datasets.base.BaseDataset</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run_inference_or_load_from_cache" title="Link to this definition"></a></dt>
+<dd><p>Load the processed dataset from the cache if it exists, else run inference and save to cache.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run_without_inference">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run_without_inference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run_without_inference" title="Link to this definition"></a></dt>
+<dd><p>Run a set of tasks directly against raw datasets without first running model inference.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run_multi_dataset_task">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run_multi_dataset_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset" title="czbenchmarks.datasets.base.BaseDataset"><span class="pre">czbenchmarks.datasets.base.BaseDataset</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ModelArgsDict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run_multi_dataset_task" title="Link to this definition"></a></dt>
+<dd><p>Run a task and return the results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.run_task">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">run_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset" title="czbenchmarks.datasets.base.BaseDataset"><span class="pre">czbenchmarks.datasets.base.BaseDataset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ModelArgsDict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.run_task" title="Link to this definition"></a></dt>
+<dd><p>Run a task and return the results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.get_model_arg_permutations">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">get_model_arg_permutations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgs" title="czbenchmarks.cli.cli_run.ModelArgs"><span class="pre">ModelArgs</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ModelArgsDict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.get_model_arg_permutations" title="Link to this definition"></a></dt>
+<dd><p>Generate all the “permutations” of model arguments we want to run for each dataset:
+E.g. Running 2 variants of scgenept at 2 chunk sizes results in 4 permutations</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.write_results">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">write_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskResult" title="czbenchmarks.cli.cli_run.TaskResult"><span class="pre">TaskResult</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_OUTPUT_FORMAT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.write_results" title="Link to this definition"></a></dt>
+<dd><p>Format and write results to the given directory or file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.get_result_url_for_remote">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">get_result_url_for_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_prefix_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.get_result_url_for_remote" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.set_processed_datasets_cache">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">set_processed_datasets_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset" title="czbenchmarks.datasets.base.BaseDataset"><span class="pre">czbenchmarks.datasets.base.BaseDataset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModelArgsDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.set_processed_datasets_cache" title="Link to this definition"></a></dt>
+<dd><p>Write a dataset to the cache
+A “processed” dataset has been run with model inference for the given arguments.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.try_processed_datasets_cache">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">try_processed_datasets_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModelArgsDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset" title="czbenchmarks.datasets.base.BaseDataset"><span class="pre">czbenchmarks.datasets.base.BaseDataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.try_processed_datasets_cache" title="Link to this definition"></a></dt>
+<dd><p>Deserialize and return a processed dataset from the cache if it exists, else return None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.get_remote_cache_prefix">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">get_remote_cache_prefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.cli.cli_run.CacheOptions" title="czbenchmarks.cli.cli_run.CacheOptions"><span class="pre">CacheOptions</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.cli.cli_run.get_remote_cache_prefix" title="Link to this definition"></a></dt>
+<dd><p>get the prefix ending in ‘/’ that the remote processed datasets go under</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">get_processed_dataset_cache_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModelArgsDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename" title="Link to this definition"></a></dt>
+<dd><p>generate a unique filename for the given dataset and model arguments</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.get_processed_dataset_cache_path">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">get_processed_dataset_cache_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModelArgsDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.get_processed_dataset_cache_path" title="Link to this definition"></a></dt>
+<dd><p>Return a unique file path in the cache directory for the given dataset and model arguments.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.parse_model_args">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">parse_model_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.13)"><span class="pre">argparse.Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#czbenchmarks.cli.cli_run.ModelArgs" title="czbenchmarks.cli.cli_run.ModelArgs"><span class="pre">ModelArgs</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.parse_model_args" title="Link to this definition"></a></dt>
+<dd><p>Populate a ModelArgs instance from the given argparse namespace.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.parse_task_args">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">parse_task_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">TaskCls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TaskType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.13)"><span class="pre">argparse.Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#czbenchmarks.cli.cli_run.TaskArgs" title="czbenchmarks.cli.cli_run.TaskArgs"><span class="pre">TaskArgs</span></a></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.parse_task_args" title="Link to this definition"></a></dt>
+<dd><p>Populate a TaskArgs instance from the given argparse namespace.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.cli.cli_run.parse_batch_json">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.cli.cli_run.</span></span><span class="sig-name descname"><span class="pre">parse_batch_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_json_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#czbenchmarks.cli.cli_run.parse_batch_json" title="Link to this definition"></a></dt>
+<dd><p>Parse the <cite>–batch-json</cite> argument.
+Returns a list of dicts where each entry is a batch of CLI arguments.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

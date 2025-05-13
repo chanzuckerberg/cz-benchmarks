@@ -1,0 +1,28 @@
+czbenchmarks.cli.cli_list
+=========================
+
+.. py:module:: czbenchmarks.cli.cli_list
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.cli_list.add_arguments
+   czbenchmarks.cli.cli_list.main
+
+
+Module Contents
+---------------
+
+.. py:function:: add_arguments(parser: argparse.ArgumentParser) -> None
+
+   Add list command arguments to the parser.
+
+
+.. py:function:: main(args: argparse.Namespace) -> None
+
+   List available datasets, models, or tasks.
+
+

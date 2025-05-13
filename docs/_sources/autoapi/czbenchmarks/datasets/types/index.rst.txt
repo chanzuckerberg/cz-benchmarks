@@ -1,0 +1,277 @@
+czbenchmarks.datasets.types
+===========================
+
+.. py:module:: czbenchmarks.datasets.types
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.types.DataValue
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.types.Organism
+   czbenchmarks.datasets.types.DataTypeSpec
+   czbenchmarks.datasets.types.DataType
+
+
+Module Contents
+---------------
+
+.. py:class:: Organism(name: str, prefix: str)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: HUMAN
+      :value: ('homo_sapiens', 'ENSG')
+
+
+
+   .. py:attribute:: MOUSE
+      :value: ('mus_musculus', 'ENSMUSG')
+
+
+
+   .. py:attribute:: TROPICAL_CLAWED_FROG
+      :value: ('xenopus_tropicalis', 'ENSXETG')
+
+
+
+   .. py:attribute:: AFRICAN_CLAWED_FROG
+      :value: ('xenopus_laevis', 'ENSXLAG')
+
+
+
+   .. py:attribute:: ZEBRAFISH
+      :value: ('danio_rerio', 'ENSDARG')
+
+
+
+   .. py:attribute:: MOUSE_LEMUR
+      :value: ('microcebus_murinus', 'ENSMICG')
+
+
+
+   .. py:attribute:: WILD_BOAR
+      :value: ('sus_scrofa', 'ENSSSCG')
+
+
+
+   .. py:attribute:: CRAB_EATING_MACAQUE
+      :value: ('macaca_fascicularis', 'ENSMFAG')
+
+
+
+   .. py:attribute:: RHESUS_MACAQUE
+      :value: ('macaca_mulatta', 'ENSMMUG')
+
+
+
+   .. py:attribute:: PLATYPUS
+      :value: ('ornithorhynchus_anatinus', 'ENSOANG')
+
+
+
+   .. py:attribute:: OPOSSUM
+      :value: ('monodelphis_domestica', 'ENSMODG')
+
+
+
+   .. py:attribute:: GORILLA
+      :value: ('gorilla_gorilla', 'ENSGGOG')
+
+
+
+   .. py:attribute:: CHIMPANZEE
+      :value: ('pan_troglodytes', 'ENSPTRG')
+
+
+
+   .. py:attribute:: MARMOSET
+      :value: ('callithrix_jacchus', 'ENSCJAG')
+
+
+
+   .. py:attribute:: CHICKEN
+      :value: ('gallus_gallus', 'ENSGALG')
+
+
+
+   .. py:attribute:: RABBIT
+      :value: ('oryctolagus_cuniculus', 'ENSOCUG')
+
+
+
+   .. py:attribute:: FRUIT_FLY
+      :value: ('drosophila_melanogaster', 'FBgn')
+
+
+
+   .. py:attribute:: RAT
+      :value: ('rattus_norvegicus', 'ENSRNOG')
+
+
+
+   .. py:attribute:: NAKED_MOLE_RAT
+      :value: ('heterocephalus_glaber', 'ENSHGLG')
+
+
+
+   .. py:attribute:: CAENORHABDITIS_ELEGANS
+      :value: ('caenorhabditis_elegans', 'WBGene')
+
+
+
+   .. py:attribute:: YEAST
+      :value: ('saccharomyces_cerevisiae', '')
+
+
+
+   .. py:attribute:: MALARIA_PARASITE
+      :value: ('plasmodium_falciparum', 'PF3D7')
+
+
+
+   .. py:attribute:: SEA_LAMPREY
+      :value: ('petromyzon_marinus', 'ENSPMAG')
+
+
+
+   .. py:attribute:: FRESHWATER_SPONGE
+      :value: ('spongilla_lacustris', 'ENSLPGG')
+
+
+
+   .. py:attribute:: CORAL
+      :value: ('stylophora_pistillata', 'LOC')
+
+
+
+   .. py:attribute:: SEA_URCHIN
+      :value: ('lytechinus_variegatus', '')
+
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:property:: name
+
+      The name of the Enum member.
+
+
+   .. py:property:: prefix
+
+
+.. py:class:: DataTypeSpec
+
+   Specification for a data type in the system
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: dtype
+      :type:  Type
+
+
+   .. py:attribute:: description
+      :type:  str
+
+
+   .. py:attribute:: is_input
+      :type:  bool
+      :value: True
+
+
+
+.. py:class:: DataType
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: METADATA
+
+
+   .. py:attribute:: ANNDATA
+
+
+   .. py:attribute:: ORGANISM
+
+
+   .. py:attribute:: EMBEDDING
+
+
+   .. py:attribute:: CONDITION_KEY
+
+
+   .. py:attribute:: SPLIT_KEY
+
+
+   .. py:attribute:: PERTURBATION_PRED
+
+
+   .. py:attribute:: PERTURBATION_TRUTH
+
+
+   .. py:property:: spec
+      :type: DataTypeSpec
+
+
+
+   .. py:property:: dtype
+      :type: Type
+
+
+
+   .. py:property:: description
+      :type: str
+
+
+
+   .. py:property:: is_input
+      :type: bool
+
+
+
+   .. py:property:: is_output
+      :type: bool
+
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+.. py:data:: DataValue
+

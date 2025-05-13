@@ -1,0 +1,145 @@
+czbenchmarks.datasets.single_cell
+=================================
+
+.. py:module:: czbenchmarks.datasets.single_cell
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.single_cell.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.single_cell.SingleCellDataset
+   czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: SingleCellDataset(path: str, organism: czbenchmarks.datasets.types.Organism)
+
+   Bases: :py:obj:`czbenchmarks.datasets.base.BaseDataset`
+
+
+   Single cell dataset containing gene expression data and metadata.
+
+   Handles loading and validation of AnnData objects with gene expression data
+   and associated metadata for a specific organism.
+
+
+   .. py:method:: load_data() -> None
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:property:: organism
+      :type: czbenchmarks.datasets.types.Organism
+
+
+
+   .. py:property:: adata
+      :type: anndata.AnnData
+
+
+
+.. py:class:: PerturbationSingleCellDataset(path: str, organism: czbenchmarks.datasets.types.Organism, condition_key: str = 'condition', split_key: str = 'split')
+
+   Bases: :py:obj:`SingleCellDataset`
+
+
+   Single cell dataset with perturbation data, containing control and
+   perturbed cells.
+
+   Input data requirements:
+   - H5AD file containing single cell gene expression data
+   - Must have a condition column in adata.obs specifying control ("ctrl") and
+     perturbed conditions.
+   - Must have a split column in adata.obs to identify test samples
+   - Condition format must be one of:
+     - "ctrl" for control samples
+     - "{gene}+ctrl" for single gene perturbations
+     - "{gene1}+{gene2}" for combinatorial perturbations
+
+
+   .. py:method:: load_data() -> None
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:property:: perturbation_truth
+      :type: Dict[str, pandas.DataFrame]
+
+
+
+   .. py:property:: condition_key
+      :type: str
+
+
+
+   .. py:property:: split_key
+      :type: str
+
+
+

@@ -1,0 +1,91 @@
+czbenchmarks.tasks.clustering
+=============================
+
+.. py:module:: czbenchmarks.tasks.clustering
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.clustering.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.clustering.ClusteringTask
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: ClusteringTask(label_key: str, random_seed: int = RANDOM_SEED, n_iterations: int = N_ITERATIONS, flavor: str = FLAVOR, key_added: str = KEY_ADDED)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating clustering performance against ground truth labels.
+
+   This task performs clustering on embeddings and evaluates the results
+   using multiple clustering metrics (ARI and NMI).
+
+   :param label_key: Key to access ground truth labels in metadata
+   :type label_key: str
+   :param random_seed: Random seed for reproducibility
+   :type random_seed: int
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: random_seed
+      :value: 42
+
+
+
+   .. py:attribute:: n_iterations
+      :value: 2
+
+
+
+   .. py:attribute:: flavor
+      :value: 'igraph'
+
+
+
+   .. py:attribute:: key_added
+      :value: 'leiden'
+
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run (embedding to cluster)
+
+

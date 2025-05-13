@@ -1,0 +1,80 @@
+czbenchmarks.utils
+==================
+
+.. py:module:: czbenchmarks.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.utils.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.utils.initialize_hydra
+   czbenchmarks.utils.import_class_from_config
+   czbenchmarks.utils.sync_s3_to_local
+   czbenchmarks.utils.get_remote_last_modified
+   czbenchmarks.utils.upload_file_to_remote
+   czbenchmarks.utils.upload_blob_to_remote
+   czbenchmarks.utils.download_file_from_remote
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: initialize_hydra(config_path='./conf')
+
+   Initialize Hydra configuration system.
+
+   :param config_path: Path to the configuration directory
+
+
+.. py:function:: import_class_from_config(config_path: str)
+
+   Import a class based on the _target_ field in a configuration file.
+
+   :param config_path: Path to the configuration file
+
+   :returns: The imported class object
+   :rtype: class_obj
+
+
+.. py:function:: sync_s3_to_local(bucket, prefix, local_dir, unsigned=True)
+
+   Syncs files from an S3 bucket prefix to a local directory.
+
+   :param bucket: S3 bucket name
+   :param prefix: S3 prefix (directory path or file) to sync from
+   :param local_dir: Local directory path to sync to
+   :param unsigned: Whether to use unsigned requests (default: True)
+
+
+.. py:function:: get_remote_last_modified(remote_url: str, make_unsigned_request: bool = True) -> datetime.datetime | None
+
+   Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist.
+
+
+.. py:function:: upload_file_to_remote(local_file: str | pathlib.Path, remote_prefix_url: str, make_unsigned_request: bool = False, overwrite_existing: bool = False) -> None
+
+   Upload a local file to an s3 prefix, preserving the filename remotely
+
+
+.. py:function:: upload_blob_to_remote(blob: bytes, remote_url: str, make_unsigned_request: bool = False, overwrite_existing: bool = False) -> None
+
+   Upload the contents of a text buffer to the exact S3 location given by remote_url.
+
+
+.. py:function:: download_file_from_remote(remote_url: str, local_directory: str | pathlib.Path, local_filename: str | None = None, make_unsigned_request: bool = True) -> None
+
+   Download a remote file from s3 to a local directory, preserving the filename if not specified
+
+

@@ -1,0 +1,51 @@
+czbenchmarks.tasks.constants
+============================
+
+.. py:module:: czbenchmarks.tasks.constants
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.constants.RANDOM_SEED
+   czbenchmarks.tasks.constants.N_FOLDS
+   czbenchmarks.tasks.constants.MIN_CLASS_SIZE
+   czbenchmarks.tasks.constants.FLAVOR
+   czbenchmarks.tasks.constants.KEY_ADDED
+   czbenchmarks.tasks.constants.OBSM_KEY
+   czbenchmarks.tasks.constants.N_ITERATIONS
+
+
+Module Contents
+---------------
+
+.. py:data:: RANDOM_SEED
+   :value: 42
+
+
+.. py:data:: N_FOLDS
+   :value: 5
+
+
+.. py:data:: MIN_CLASS_SIZE
+   :value: 10
+
+
+.. py:data:: FLAVOR
+   :value: 'igraph'
+
+
+.. py:data:: KEY_ADDED
+   :value: 'leiden'
+
+
+.. py:data:: OBSM_KEY
+   :value: 'emb'
+
+
+.. py:data:: N_ITERATIONS
+   :value: 2
+
+

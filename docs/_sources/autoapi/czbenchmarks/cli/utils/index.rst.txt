@@ -1,0 +1,32 @@
+czbenchmarks.cli.utils
+======================
+
+.. py:module:: czbenchmarks.cli.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.utils.log
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.utils.get_version
+
+
+Module Contents
+---------------
+
+.. py:data:: log
+
+.. py:function:: get_version() -> str
+
+   Get the current version of the cz-benchmarks library
+
+

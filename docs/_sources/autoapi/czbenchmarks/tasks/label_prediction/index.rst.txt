@@ -1,0 +1,99 @@
+czbenchmarks.tasks.label_prediction
+===================================
+
+.. py:module:: czbenchmarks.tasks.label_prediction
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.label_prediction.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: MetadataLabelPredictionTask(label_key: str, n_folds: int = N_FOLDS, random_seed: int = RANDOM_SEED, min_class_size: int = MIN_CLASS_SIZE)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for predicting labels from embeddings using cross-validation.
+
+   Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
+   cross-validation. Reports standard classification metrics.
+
+   :param label_key: Key to access ground truth labels in metadata
+   :param n_folds: Number of cross-validation folds
+   :param random_seed: Random seed for reproducibility
+   :param min_class_size: Minimum samples required per class
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: n_folds
+      :value: 5
+
+
+
+   .. py:attribute:: random_seed
+      :value: 42
+
+
+
+   .. py:attribute:: min_class_size
+      :value: 10
+
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run  (embedding coordinates)
+
+
+   .. py:method:: set_baseline(data: czbenchmarks.datasets.BaseDataset)
+
+      Set a baseline embedding using raw gene expression.
+
+      Instead of using embeddings from a model, this method uses the raw gene
+      expression matrix as features for classification. This provides a baseline
+      performance to compare against model-generated embeddings for classification
+      tasks.
+
+      :param data: BaseDataset containing AnnData with gene expression and metadata
+
+
+

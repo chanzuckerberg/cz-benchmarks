@@ -1,0 +1,2103 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=486e5634"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__class_vars__">__class_vars__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__class_vars__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__class_vars__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__class_vars__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__class_vars__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.__eq__">__eq__() (czbenchmarks.datasets.DataType method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.__eq__">(czbenchmarks.datasets.types.DataType method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.__eq__">(czbenchmarks.models.types.ModelType method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.__hash__">__hash__() (czbenchmarks.datasets.DataType method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.__hash__">(czbenchmarks.datasets.types.DataType method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.__hash__">(czbenchmarks.models.types.ModelType method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.__init_subclass__">__init_subclass__() (czbenchmarks.models.validators.base_model_validator.BaseModelValidator class method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator.__init_subclass__">(czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator class method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.__init_subclass__">(czbenchmarks.models.validators.BaseModelValidator class method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator.__init_subclass__">(czbenchmarks.models.validators.BaseSingleCellValidator class method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__private_attributes__">__private_attributes__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__private_attributes__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__private_attributes__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__private_attributes__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__private_attributes__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_complete__">__pydantic_complete__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_complete__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_complete__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_complete__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_complete__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_computed_fields__">__pydantic_computed_fields__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_computed_fields__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_computed_fields__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_computed_fields__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_computed_fields__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_core_schema__">__pydantic_core_schema__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_core_schema__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_core_schema__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_core_schema__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_core_schema__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_custom_init__">__pydantic_custom_init__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_custom_init__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_custom_init__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_custom_init__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_custom_init__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_decorators__">__pydantic_decorators__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_decorators__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_decorators__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_decorators__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_decorators__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_extra__">__pydantic_extra__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_extra__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_extra__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_extra__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_extra__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields__">__pydantic_fields__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_fields__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_fields_set__">__pydantic_fields_set__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_fields_set__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_fields_set__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_fields_set__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_fields_set__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_generic_metadata__">__pydantic_generic_metadata__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_generic_metadata__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_generic_metadata__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_generic_metadata__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_generic_metadata__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_parent_namespace__">__pydantic_parent_namespace__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_parent_namespace__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_parent_namespace__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_parent_namespace__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_parent_namespace__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_post_init__">__pydantic_post_init__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_post_init__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_post_init__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_post_init__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_post_init__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_private__">__pydantic_private__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_private__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_private__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_private__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_private__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_root_model__">__pydantic_root_model__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_root_model__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_root_model__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_root_model__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_root_model__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_serializer__">__pydantic_serializer__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_serializer__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_serializer__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_serializer__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_serializer__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__pydantic_validator__">__pydantic_validator__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__pydantic_validator__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__pydantic_validator__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__pydantic_validator__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__pydantic_validator__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.__repr__">__repr__() (czbenchmarks.datasets.DataType method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.__repr__">(czbenchmarks.datasets.Organism method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.__repr__">(czbenchmarks.datasets.types.DataType method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.__repr__">(czbenchmarks.datasets.types.Organism method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.__repr__">(czbenchmarks.models.types.ModelType method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.__signature__">__signature__ (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.__signature__">(czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.__signature__">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.__signature__">(czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.__signature__">(czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.__str__">__str__() (czbenchmarks.datasets.DataType method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.__str__">(czbenchmarks.datasets.Organism method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.__str__">(czbenchmarks.datasets.types.DataType method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.__str__">(czbenchmarks.datasets.types.Organism method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.__str__">(czbenchmarks.models.types.ModelType method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.SingleCellDataset.adata">adata (czbenchmarks.datasets.single_cell.SingleCellDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.SingleCellDataset.adata">(czbenchmarks.datasets.SingleCellDataset property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_list/index.html#czbenchmarks.cli.cli_list.add_arguments">add_arguments() (in module czbenchmarks.cli.cli_list)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.add_arguments">(in module czbenchmarks.cli.cli_run)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.ADJUSTED_RAND_INDEX">ADJUSTED_RAND_INDEX (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.AFRICAN_CLAWED_FROG">AFRICAN_CLAWED_FROG (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.AFRICAN_CLAWED_FROG">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.AIDO">AIDO (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.ANNDATA">ANNDATA (czbenchmarks.datasets.DataType attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.ANNDATA">(czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.app_mount_dir">app_mount_dir (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.args">args (czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.args">(czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.args">(czbenchmarks.models.implementations.BaseModelImplementation attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.ARTIFACTS_PATH_DOCKER">ARTIFACTS_PATH_DOCKER (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator.available_organisms">available_organisms (czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator.available_organisms">(czbenchmarks.models.validators.BaseSingleCellValidator attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset">BaseDataset (class in czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset">(class in czbenchmarks.datasets.base)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.BASELINE">BASELINE (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.baseline_args">baseline_args (czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation">BaseModelImplementation (class in czbenchmarks.models.implementations)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation">(class in czbenchmarks.models.implementations.base_model_implementation)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator">BaseModelValidator (class in czbenchmarks.models.validators)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator">(class in czbenchmarks.models.validators.base_model_validator)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator">BaseSingleCellValidator (class in czbenchmarks.models.validators)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator">(class in czbenchmarks.models.validators.base_single_cell_model_validator)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask">BaseTask (class in czbenchmarks.tasks.base)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask.batch_key">batch_key (czbenchmarks.tasks.BatchIntegrationTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask.batch_key">(czbenchmarks.tasks.integration.BatchIntegrationTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.BATCH_SILHOUETTE">BATCH_SILHOUETTE (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask">BatchIntegrationTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask">(class in czbenchmarks.tasks.integration)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions">CacheOptions (class in czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.CAENORHABDITIS_ELEGANS">CAENORHABDITIS_ELEGANS (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.CAENORHABDITIS_ELEGANS">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.CHICKEN">CHICKEN (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.CHICKEN">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.CHIMPANZEE">CHIMPANZEE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.CHIMPANZEE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.cli_args">cli_args (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.client">client (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.cluster_embedding">cluster_embedding() (in module czbenchmarks.tasks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask">ClusteringTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask">(class in czbenchmarks.tasks.clustering)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricRegistry.compute">compute() (czbenchmarks.metrics.types.MetricRegistry method)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#czbenchmarks.metrics.utils.compute_entropy_per_cell">compute_entropy_per_cell() (in module czbenchmarks.metrics.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.CONDITION_KEY">CONDITION_KEY (czbenchmarks.datasets.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset.condition_key">condition_key (czbenchmarks.datasets.PerturbationSingleCellDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset.condition_key">(czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.CONDITION_KEY">CONDITION_KEY (czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner">ContainerRunner (class in czbenchmarks.runner)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.CORAL">CORAL (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.CORAL">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.CRAB_EATING_MACAQUE">CRAB_EATING_MACAQUE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.CRAB_EATING_MACAQUE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.create_parser">create_parser() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.create_parser">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask">CrossSpeciesIntegrationTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask">(class in czbenchmarks.tasks.single_cell)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask">(class in czbenchmarks.tasks.single_cell.cross_species)</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/index.html#module-czbenchmarks">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.cli
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/index.html#module-czbenchmarks.cli">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.cli.cli
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli/index.html#module-czbenchmarks.cli.cli">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.cli.cli_list
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_list/index.html#module-czbenchmarks.cli.cli_list">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.cli.cli_run
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#module-czbenchmarks.cli.cli_run">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.cli.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/utils/index.html#module-czbenchmarks.cli.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.constants
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/constants/index.html#module-czbenchmarks.constants">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.datasets
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#module-czbenchmarks.datasets">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.datasets.base
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/base/index.html#module-czbenchmarks.datasets.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.datasets.single_cell
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#module-czbenchmarks.datasets.single_cell">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.datasets.types
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#module-czbenchmarks.datasets.types">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.datasets.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/utils/index.html#module-czbenchmarks.datasets.utils">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    czbenchmarks.exceptions
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/exceptions/index.html#module-czbenchmarks.exceptions">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.metrics
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/metrics/index.html#module-czbenchmarks.metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.metrics.implementations
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/metrics/implementations/index.html#module-czbenchmarks.metrics.implementations">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.metrics.types
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#module-czbenchmarks.metrics.types">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.metrics.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#module-czbenchmarks.metrics.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/index.html#module-czbenchmarks.models">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.implementations
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#module-czbenchmarks.models.implementations">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.implementations.base_model_implementation
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#module-czbenchmarks.models.implementations.base_model_implementation">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.types
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#module-czbenchmarks.models.types">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/utils/index.html#module-czbenchmarks.models.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.validators
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#module-czbenchmarks.models.validators">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.validators.base_model_validator
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#module-czbenchmarks.models.validators.base_model_validator">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.models.validators.base_single_cell_model_validator
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#module-czbenchmarks.models.validators.base_single_cell_model_validator">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.runner
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/runner/index.html#module-czbenchmarks.runner">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#module-czbenchmarks.tasks">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.base
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/base/index.html#module-czbenchmarks.tasks.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.clustering
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#module-czbenchmarks.tasks.clustering">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.constants
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#module-czbenchmarks.tasks.constants">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.embedding
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#module-czbenchmarks.tasks.embedding">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.integration
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#module-czbenchmarks.tasks.integration">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.label_prediction
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#module-czbenchmarks.tasks.label_prediction">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.single_cell
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#module-czbenchmarks.tasks.single_cell">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.single_cell.cross_species
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#module-czbenchmarks.tasks.single_cell.cross_species">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.single_cell.perturbation
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#module-czbenchmarks.tasks.single_cell.perturbation">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.tasks.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#module-czbenchmarks.tasks.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    czbenchmarks.utils
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/utils/index.html#module-czbenchmarks.utils">module</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/exceptions/index.html#czbenchmarks.exceptions.CZBenchmarksException">CZBenchmarksException</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.dataset_names">dataset_names (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.dataset_names_display">dataset_names_display (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.utils.dataset_to_display_name">dataset_to_display_name() (in module czbenchmarks.datasets.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.dataset_type">dataset_type (czbenchmarks.models.validators.base_model_validator.BaseModelValidator attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator.dataset_type">(czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.dataset_type">(czbenchmarks.models.validators.BaseModelValidator attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator.dataset_type">(czbenchmarks.models.validators.BaseSingleCellValidator attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.datasets">datasets (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation attribute)</a>, <a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#id0">[1]</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.datasets">(czbenchmarks.models.implementations.BaseModelImplementation attribute)</a>, <a href="autoapi/czbenchmarks/models/implementations/index.html#id0">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.DATASETS_CACHE_PATH">DATASETS_CACHE_PATH (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType">DataType (class in czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType">(class in czbenchmarks.datasets.types)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.DataType">(in module czbenchmarks.models.types)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataTypeSpec">DataTypeSpec (class in czbenchmarks.datasets.types)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataValue">DataValue (in module czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataValue">(in module czbenchmarks.datasets.types)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT">DEFAULT_OUTPUT_FORMAT (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo.default_params">default_params (czbenchmarks.metrics.types.MetricInfo attribute)</a>, <a href="autoapi/czbenchmarks/metrics/types/index.html#id2">[1]</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.description">description (czbenchmarks.datasets.DataType property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.description">(czbenchmarks.datasets.types.DataType property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataTypeSpec.description">(czbenchmarks.datasets.types.DataTypeSpec attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo.description">(czbenchmarks.metrics.types.MetricInfo attribute)</a>, <a href="autoapi/czbenchmarks/metrics/types/index.html#id3">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.deserialize">deserialize() (czbenchmarks.datasets.base.BaseDataset static method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.deserialize">(czbenchmarks.datasets.BaseDataset static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.display_name">display_name (czbenchmarks.tasks.base.BaseTask property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask.display_name">(czbenchmarks.tasks.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.display_name">(czbenchmarks.tasks.clustering.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.display_name">(czbenchmarks.tasks.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.display_name">(czbenchmarks.tasks.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.EmbeddingTask.display_name">(czbenchmarks.tasks.embedding.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.EmbeddingTask.display_name">(czbenchmarks.tasks.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask.display_name">(czbenchmarks.tasks.integration.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.display_name">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.display_name">(czbenchmarks.tasks.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.PerturbationTask.display_name">(czbenchmarks.tasks.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.display_name">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.display_name">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.PerturbationTask.display_name">(czbenchmarks.tasks.single_cell.perturbation.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.PerturbationTask.display_name">(czbenchmarks.tasks.single_cell.PerturbationTask property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.download_embeddings">download_embeddings (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.download_file_from_remote">download_file_from_remote() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.download_model_weights">download_model_weights() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.download_model_weights">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.dtype">dtype (czbenchmarks.datasets.DataType property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.dtype">(czbenchmarks.datasets.types.DataType property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataTypeSpec.dtype">(czbenchmarks.datasets.types.DataTypeSpec attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.EMBEDDING">EMBEDDING (czbenchmarks.datasets.DataType attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.EMBEDDING">(czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.EmbeddingTask">EmbeddingTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.EmbeddingTask">(class in czbenchmarks.tasks.embedding)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.ENTROPY_PER_CELL">ENTROPY_PER_CELL (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.environment">environment (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.filter_minimum_class">filter_minimum_class() (in module czbenchmarks.tasks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.flavor">flavor (czbenchmarks.tasks.clustering.ClusteringTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.flavor">(czbenchmarks.tasks.ClusteringTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.FLAVOR">FLAVOR (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.FRESHWATER_SPONGE">FRESHWATER_SPONGE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.FRESHWATER_SPONGE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.from_args">from_args() (czbenchmarks.cli.cli_run.CacheOptions class method)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.FRUIT_FLY">FRUIT_FLY (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.FRUIT_FLY">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo.func">func (czbenchmarks.metrics.types.MetricInfo attribute)</a>, <a href="autoapi/czbenchmarks/metrics/types/index.html#id0">[1]</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.GENEFORMER">GENEFORMER (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.get_base_name">get_base_name() (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricRegistry.get_info">get_info() (czbenchmarks.metrics.types.MetricRegistry method)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.get_input">get_input() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.get_input">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_model_arg_permutations">get_model_arg_permutations() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.get_model_weights_subdir">get_model_weights_subdir() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.get_model_weights_subdir">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.get_numbered_path">get_numbered_path() (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.get_output">get_output() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.get_output">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename">get_processed_dataset_cache_filename() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_processed_dataset_cache_path">get_processed_dataset_cache_path() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_remote_cache_prefix">get_remote_cache_prefix() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.get_remote_last_modified">get_remote_last_modified() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_result_url_for_remote">get_result_url_for_remote() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/utils/index.html#czbenchmarks.cli.utils.get_version">get_version() (in module czbenchmarks.cli.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.GORILLA">GORILLA (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.GORILLA">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.gpu">gpu (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.HUMAN">HUMAN (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.HUMAN">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.image">image (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.import_class_from_config">import_class_from_config() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.initialize_hydra">initialize_hydra() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.INPUT_DATA_PATH_DOCKER">INPUT_DATA_PATH_DOCKER (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.inputs">inputs (czbenchmarks.datasets.base.BaseDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.inputs">(czbenchmarks.datasets.BaseDataset property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.inputs">(czbenchmarks.models.validators.base_model_validator.BaseModelValidator property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.inputs">(czbenchmarks.models.validators.BaseModelValidator property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.interactive">interactive (czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.is_input">is_input (czbenchmarks.datasets.DataType property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.is_input">(czbenchmarks.datasets.types.DataType property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataTypeSpec.is_input">(czbenchmarks.datasets.types.DataTypeSpec attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.is_output">is_output (czbenchmarks.datasets.DataType property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.is_output">(czbenchmarks.datasets.types.DataType property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.JACCARD">JACCARD (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#czbenchmarks.metrics.utils.jaccard_score">jaccard_score() (in module czbenchmarks.metrics.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.key_added">key_added (czbenchmarks.tasks.clustering.ClusteringTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.key_added">(czbenchmarks.tasks.ClusteringTask attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.KEY_ADDED">KEY_ADDED (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.kwargs">kwargs (czbenchmarks.datasets.base.BaseDataset attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.kwargs">(czbenchmarks.datasets.BaseDataset attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask.label_key">label_key (czbenchmarks.tasks.BatchIntegrationTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.label_key">(czbenchmarks.tasks.clustering.ClusteringTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.label_key">(czbenchmarks.tasks.ClusteringTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.label_key">(czbenchmarks.tasks.CrossSpeciesIntegrationTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.EmbeddingTask.label_key">(czbenchmarks.tasks.embedding.EmbeddingTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.EmbeddingTask.label_key">(czbenchmarks.tasks.EmbeddingTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask.label_key">(czbenchmarks.tasks.integration.BatchIntegrationTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.label_key">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.label_key">(czbenchmarks.tasks.MetadataLabelPredictionTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.label_key">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.label_key">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.list_available_datasets">list_available_datasets() (in module czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.utils.list_available_datasets">(in module czbenchmarks.datasets.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/index.html#czbenchmarks.models.list_available_models">list_available_models() (in module czbenchmarks.models)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/utils/index.html#czbenchmarks.models.utils.list_available_models">(in module czbenchmarks.models.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricRegistry.list_metrics">list_metrics() (czbenchmarks.metrics.types.MetricRegistry method)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.load_data">load_data() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.load_data">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset.load_data">(czbenchmarks.datasets.PerturbationSingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset.load_data">(czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.SingleCellDataset.load_data">(czbenchmarks.datasets.single_cell.SingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.SingleCellDataset.load_data">(czbenchmarks.datasets.SingleCellDataset method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.load_dataset">load_dataset() (in module czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.utils.load_dataset">(in module czbenchmarks.datasets.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli/index.html#czbenchmarks.cli.cli.log">log (in module czbenchmarks.cli.cli)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.log">(in module czbenchmarks.cli.cli_run)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/utils/index.html#czbenchmarks.cli.utils.log">(in module czbenchmarks.cli.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.logger">logger (in module czbenchmarks.datasets.single_cell)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.logger">(in module czbenchmarks.models.implementations.base_model_implementation)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/utils/index.html#czbenchmarks.models.utils.logger">(in module czbenchmarks.models.utils)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.logger">(in module czbenchmarks.models.validators.base_model_validator)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.logger">(in module czbenchmarks.runner)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.logger">(in module czbenchmarks.tasks.clustering)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.logger">(in module czbenchmarks.tasks.embedding)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.logger">(in module czbenchmarks.tasks.integration)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.logger">(in module czbenchmarks.tasks.label_prediction)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.logger">(in module czbenchmarks.tasks.single_cell.perturbation)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.logger">(in module czbenchmarks.tasks.utils)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.logger">(in module czbenchmarks.utils)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli/index.html#czbenchmarks.cli.cli.main">main() (in module czbenchmarks.cli.cli)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_list/index.html#czbenchmarks.cli.cli_list.main">(in module czbenchmarks.cli.cli_list)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.main">(in module czbenchmarks.cli.cli_run)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.MALARIA_PARASITE">MALARIA_PARASITE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.MALARIA_PARASITE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.MARMOSET">MARMOSET (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.MARMOSET">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_ACCURACY">MEAN_FOLD_ACCURACY (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_AUROC">MEAN_FOLD_AUROC (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_F1_SCORE">MEAN_FOLD_F1_SCORE (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#czbenchmarks.metrics.utils.mean_fold_metric">mean_fold_metric() (in module czbenchmarks.metrics.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_PRECISION">MEAN_FOLD_PRECISION (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_RECALL">MEAN_FOLD_RECALL (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.MEAN_SQUARED_ERROR">MEAN_SQUARED_ERROR (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.METADATA">METADATA (czbenchmarks.datasets.DataType attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.METADATA">(czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask">MetadataLabelPredictionTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask">(class in czbenchmarks.tasks.label_prediction)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.metric_type">metric_type (czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo">MetricInfo (class in czbenchmarks.metrics.types)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricRegistry">MetricRegistry (class in czbenchmarks.metrics.types)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult">MetricResult (class in czbenchmarks.metrics.types)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.metrics">metrics (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/index.html#czbenchmarks.metrics.metrics_registry">metrics_registry (in module czbenchmarks.metrics)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/metrics/implementations/index.html#czbenchmarks.metrics.implementations.metrics_registry">(in module czbenchmarks.metrics.implementations)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType">MetricType (class in czbenchmarks.metrics.types)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.min_class_size">min_class_size (czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.min_class_size">(czbenchmarks.tasks.MetadataLabelPredictionTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.MIN_CLASS_SIZE">MIN_CLASS_SIZE (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.model_args">model_args (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.model_config">model_config (czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.model_name_display">model_name_display (czbenchmarks.cli.cli_run.TaskResult property)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/utils/index.html#czbenchmarks.models.utils.model_to_display_name">model_to_display_name() (in module czbenchmarks.models.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.model_type">model_type (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.model_type">(czbenchmarks.models.validators.base_model_validator.BaseModelValidator attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.model_type">(czbenchmarks.models.validators.BaseModelValidator attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.model_type">(czbenchmarks.runner.ContainerRunner attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.MODEL_WEIGHTS_CACHE_PATH">MODEL_WEIGHTS_CACHE_PATH (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.model_weights_dir">model_weights_dir (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation attribute)</a>, <a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#id1">[1]</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.model_weights_dir">(czbenchmarks.models.implementations.BaseModelImplementation attribute)</a>, <a href="autoapi/czbenchmarks/models/implementations/index.html#id1">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.MODEL_WEIGHTS_PATH_DOCKER">MODEL_WEIGHTS_PATH_DOCKER (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs">ModelArgs (class in czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgsDict">ModelArgsDict (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelOutputs">ModelOutputs (in module czbenchmarks.models.types)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType">ModelType (class in czbenchmarks.models.types)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/index.html#module-czbenchmarks">czbenchmarks</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/index.html#module-czbenchmarks.cli">czbenchmarks.cli</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli/index.html#module-czbenchmarks.cli.cli">czbenchmarks.cli.cli</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_list/index.html#module-czbenchmarks.cli.cli_list">czbenchmarks.cli.cli_list</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#module-czbenchmarks.cli.cli_run">czbenchmarks.cli.cli_run</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/utils/index.html#module-czbenchmarks.cli.utils">czbenchmarks.cli.utils</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/constants/index.html#module-czbenchmarks.constants">czbenchmarks.constants</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#module-czbenchmarks.datasets">czbenchmarks.datasets</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/base/index.html#module-czbenchmarks.datasets.base">czbenchmarks.datasets.base</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#module-czbenchmarks.datasets.single_cell">czbenchmarks.datasets.single_cell</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#module-czbenchmarks.datasets.types">czbenchmarks.datasets.types</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/utils/index.html#module-czbenchmarks.datasets.utils">czbenchmarks.datasets.utils</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/exceptions/index.html#module-czbenchmarks.exceptions">czbenchmarks.exceptions</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/index.html#module-czbenchmarks.metrics">czbenchmarks.metrics</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/implementations/index.html#module-czbenchmarks.metrics.implementations">czbenchmarks.metrics.implementations</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/types/index.html#module-czbenchmarks.metrics.types">czbenchmarks.metrics.types</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#module-czbenchmarks.metrics.utils">czbenchmarks.metrics.utils</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/index.html#module-czbenchmarks.models">czbenchmarks.models</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#module-czbenchmarks.models.implementations">czbenchmarks.models.implementations</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#module-czbenchmarks.models.implementations.base_model_implementation">czbenchmarks.models.implementations.base_model_implementation</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/types/index.html#module-czbenchmarks.models.types">czbenchmarks.models.types</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/utils/index.html#module-czbenchmarks.models.utils">czbenchmarks.models.utils</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#module-czbenchmarks.models.validators">czbenchmarks.models.validators</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#module-czbenchmarks.models.validators.base_model_validator">czbenchmarks.models.validators.base_model_validator</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#module-czbenchmarks.models.validators.base_single_cell_model_validator">czbenchmarks.models.validators.base_single_cell_model_validator</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/runner/index.html#module-czbenchmarks.runner">czbenchmarks.runner</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#module-czbenchmarks.tasks">czbenchmarks.tasks</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/base/index.html#module-czbenchmarks.tasks.base">czbenchmarks.tasks.base</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#module-czbenchmarks.tasks.clustering">czbenchmarks.tasks.clustering</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#module-czbenchmarks.tasks.constants">czbenchmarks.tasks.constants</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#module-czbenchmarks.tasks.embedding">czbenchmarks.tasks.embedding</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#module-czbenchmarks.tasks.integration">czbenchmarks.tasks.integration</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#module-czbenchmarks.tasks.label_prediction">czbenchmarks.tasks.label_prediction</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#module-czbenchmarks.tasks.single_cell">czbenchmarks.tasks.single_cell</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#module-czbenchmarks.tasks.single_cell.cross_species">czbenchmarks.tasks.single_cell.cross_species</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#module-czbenchmarks.tasks.single_cell.perturbation">czbenchmarks.tasks.single_cell.perturbation</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#module-czbenchmarks.tasks.utils">czbenchmarks.tasks.utils</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/utils/index.html#module-czbenchmarks.utils">czbenchmarks.utils</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.MOUSE">MOUSE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.MOUSE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.MOUSE_LEMUR">MOUSE_LEMUR (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.MOUSE_LEMUR">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.MULTI_DATASET_TASK_NAMES">MULTI_DATASET_TASK_NAMES (in module czbenchmarks.tasks.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.n_folds">n_folds (czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.n_folds">(czbenchmarks.tasks.MetadataLabelPredictionTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.N_FOLDS">N_FOLDS (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.n_iterations">n_iterations (czbenchmarks.tasks.clustering.ClusteringTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.n_iterations">(czbenchmarks.tasks.ClusteringTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.N_ITERATIONS">N_ITERATIONS (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.NAKED_MOLE_RAT">NAKED_MOLE_RAT (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.NAKED_MOLE_RAT">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs.name">name (czbenchmarks.cli.cli_run.ModelArgs attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.name">(czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.name">(czbenchmarks.datasets.Organism property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataTypeSpec.name">(czbenchmarks.datasets.types.DataTypeSpec attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.name">(czbenchmarks.datasets.types.Organism property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/utils/index.html#czbenchmarks.metrics.utils.nearest_neighbors_hnsw">nearest_neighbors_hnsw() (in module czbenchmarks.metrics.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.NORMALIZED_MUTUAL_INFO">NORMALIZED_MUTUAL_INFO (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.OBSM_KEY">OBSM_KEY (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.OPOSSUM">OPOSSUM (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.OPOSSUM">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism">Organism (class in czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism">(class in czbenchmarks.datasets.types)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.ORGANISM">ORGANISM (czbenchmarks.datasets.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.SingleCellDataset.organism">organism (czbenchmarks.datasets.single_cell.SingleCellDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.SingleCellDataset.organism">(czbenchmarks.datasets.SingleCellDataset property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.ORGANISM">ORGANISM (czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.OUTPUT_DATA_PATH_DOCKER">OUTPUT_DATA_PATH_DOCKER (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.outputs">outputs (czbenchmarks.datasets.base.BaseDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.outputs">(czbenchmarks.datasets.BaseDataset property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.outputs">(czbenchmarks.models.validators.base_model_validator.BaseModelValidator property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.outputs">(czbenchmarks.models.validators.BaseModelValidator property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.params">params (czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.parse_args">parse_args() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.parse_args">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_batch_json">parse_batch_json() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_model_args">parse_model_args() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_task_args">parse_task_args() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.path">path (czbenchmarks.datasets.base.BaseDataset attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.path">(czbenchmarks.datasets.BaseDataset attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.PEARSON_CORRELATION">PEARSON_CORRELATION (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.PERTURBATION_PRED">PERTURBATION_PRED (czbenchmarks.datasets.DataType attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.PERTURBATION_PRED">(czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.PERTURBATION_TRUTH">PERTURBATION_TRUTH (czbenchmarks.datasets.DataType attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset.perturbation_truth">perturbation_truth (czbenchmarks.datasets.PerturbationSingleCellDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset.perturbation_truth">(czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.PERTURBATION_TRUTH">PERTURBATION_TRUTH (czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset">PerturbationSingleCellDataset (class in czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset">(class in czbenchmarks.datasets.single_cell)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.PerturbationTask">PerturbationTask (class in czbenchmarks.tasks)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.PerturbationTask">(class in czbenchmarks.tasks.single_cell)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.PerturbationTask">(class in czbenchmarks.tasks.single_cell.perturbation)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.PLATYPUS">PLATYPUS (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.PLATYPUS">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.prefix">prefix (czbenchmarks.datasets.Organism property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.prefix">(czbenchmarks.datasets.types.Organism property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.PROCESSED_DATASETS_CACHE_PATH">PROCESSED_DATASETS_CACHE_PATH (in module czbenchmarks.constants)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.RABBIT">RABBIT (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.RABBIT">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.random_seed">random_seed (czbenchmarks.tasks.clustering.ClusteringTask attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.random_seed">(czbenchmarks.tasks.ClusteringTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.random_seed">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask attribute)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.random_seed">(czbenchmarks.tasks.MetadataLabelPredictionTask attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/constants/index.html#czbenchmarks.tasks.constants.RANDOM_SEED">RANDOM_SEED (in module czbenchmarks.tasks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.RAT">RAT (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.RAT">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/constants/index.html#czbenchmarks.constants.RAW_INPUT_DIR_PATH_DOCKER">RAW_INPUT_DIR_PATH_DOCKER (in module czbenchmarks.constants)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricRegistry.register">register() (czbenchmarks.metrics.types.MetricRegistry method)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.remote_cache_url">remote_cache_url (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/exceptions/index.html#czbenchmarks.exceptions.RemoteStorageError">RemoteStorageError</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/exceptions/index.html#czbenchmarks.exceptions.RemoteStorageObjectAlreadyExists">RemoteStorageObjectAlreadyExists</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo.required_args">required_args (czbenchmarks.metrics.types.MetricInfo attribute)</a>, <a href="autoapi/czbenchmarks/metrics/types/index.html#id1">[1]</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.required_inputs">required_inputs (czbenchmarks.tasks.base.BaseTask property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask.required_inputs">(czbenchmarks.tasks.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.required_inputs">(czbenchmarks.tasks.clustering.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.required_inputs">(czbenchmarks.tasks.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_inputs">(czbenchmarks.tasks.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.EmbeddingTask.required_inputs">(czbenchmarks.tasks.embedding.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.EmbeddingTask.required_inputs">(czbenchmarks.tasks.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask.required_inputs">(czbenchmarks.tasks.integration.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.required_inputs">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.required_inputs">(czbenchmarks.tasks.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.PerturbationTask.required_inputs">(czbenchmarks.tasks.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.required_inputs">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.required_inputs">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.PerturbationTask.required_inputs">(czbenchmarks.tasks.single_cell.perturbation.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.PerturbationTask.required_inputs">(czbenchmarks.tasks.single_cell.PerturbationTask property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator.required_obs_keys">required_obs_keys (czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator.required_obs_keys">(czbenchmarks.models.validators.BaseSingleCellValidator attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.required_outputs">required_outputs (czbenchmarks.tasks.base.BaseTask property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.BatchIntegrationTask.required_outputs">(czbenchmarks.tasks.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/clustering/index.html#czbenchmarks.tasks.clustering.ClusteringTask.required_outputs">(czbenchmarks.tasks.clustering.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.ClusteringTask.required_outputs">(czbenchmarks.tasks.ClusteringTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_outputs">(czbenchmarks.tasks.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/embedding/index.html#czbenchmarks.tasks.embedding.EmbeddingTask.required_outputs">(czbenchmarks.tasks.embedding.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.EmbeddingTask.required_outputs">(czbenchmarks.tasks.EmbeddingTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/integration/index.html#czbenchmarks.tasks.integration.BatchIntegrationTask.required_outputs">(czbenchmarks.tasks.integration.BatchIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.required_outputs">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.required_outputs">(czbenchmarks.tasks.MetadataLabelPredictionTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.PerturbationTask.required_outputs">(czbenchmarks.tasks.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.required_outputs">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.required_outputs">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.PerturbationTask.required_outputs">(czbenchmarks.tasks.single_cell.perturbation.PerturbationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.PerturbationTask.required_outputs">(czbenchmarks.tasks.single_cell.PerturbationTask property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html#czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator.required_var_keys">required_var_keys (czbenchmarks.models.validators.base_single_cell_model_validator.BaseSingleCellValidator attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseSingleCellValidator.required_var_keys">(czbenchmarks.models.validators.BaseSingleCellValidator attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.requires_multiple_datasets">requires_multiple_datasets (czbenchmarks.tasks.base.BaseTask property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.requires_multiple_datasets">(czbenchmarks.tasks.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.requires_multiple_datasets">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask property)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.requires_multiple_datasets">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.RHESUS_MACAQUE">RHESUS_MACAQUE (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.RHESUS_MACAQUE">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.run">run() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.run">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.ContainerRunner.run">(czbenchmarks.runner.ContainerRunner method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.run">(czbenchmarks.tasks.base.BaseTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run">(in module czbenchmarks.cli.cli_run)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/runner/index.html#czbenchmarks.runner.run_inference">run_inference() (in module czbenchmarks.runner)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_inference_or_load_from_cache">run_inference_or_load_from_cache() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html#czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation.run_model">run_model() (czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/implementations/index.html#czbenchmarks.models.implementations.BaseModelImplementation.run_model">(czbenchmarks.models.implementations.BaseModelImplementation method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_multi_dataset_task">run_multi_dataset_task() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.run_standard_scrna_workflow">run_standard_scrna_workflow() (in module czbenchmarks.tasks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_task">run_task() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_with_inference">run_with_inference() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_without_inference">run_without_inference() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.runtime_metrics">runtime_metrics (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.RuntimeMetricsDict">RuntimeMetricsDict (in module czbenchmarks.cli.cli_run)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.SCGENEPT">SCGENEPT (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.SCGPT">SCGPT (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.SCVI">SCVI (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.SEA_LAMPREY">SEA_LAMPREY (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.SEA_LAMPREY">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.SEA_URCHIN">SEA_URCHIN (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.SEA_URCHIN">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.serialize">serialize() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.serialize">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.set_baseline">set_baseline (czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.set_baseline">set_baseline() (czbenchmarks.tasks.base.BaseTask method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.CrossSpeciesIntegrationTask.set_baseline">(czbenchmarks.tasks.CrossSpeciesIntegrationTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask.set_baseline">(czbenchmarks.tasks.label_prediction.MetadataLabelPredictionTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.set_baseline">(czbenchmarks.tasks.MetadataLabelPredictionTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/index.html#czbenchmarks.tasks.PerturbationTask.set_baseline">(czbenchmarks.tasks.PerturbationTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html#czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask.set_baseline">(czbenchmarks.tasks.single_cell.cross_species.CrossSpeciesIntegrationTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask.set_baseline">(czbenchmarks.tasks.single_cell.CrossSpeciesIntegrationTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html#czbenchmarks.tasks.single_cell.perturbation.PerturbationTask.set_baseline">(czbenchmarks.tasks.single_cell.perturbation.PerturbationTask method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/single_cell/index.html#czbenchmarks.tasks.single_cell.PerturbationTask.set_baseline">(czbenchmarks.tasks.single_cell.PerturbationTask method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.set_input">set_input() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.set_input">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.set_output">set_output() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.set_output">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.set_processed_datasets_cache">set_processed_datasets_cache() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricType.SILHOUETTE_SCORE">SILHOUETTE_SCORE (czbenchmarks.metrics.types.MetricType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.SingleCellDataset">SingleCellDataset (class in czbenchmarks.datasets)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.SingleCellDataset">(class in czbenchmarks.datasets.single_cell)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.spec">spec (czbenchmarks.datasets.DataType property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.spec">(czbenchmarks.datasets.types.DataType property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.DataType.SPLIT_KEY">SPLIT_KEY (czbenchmarks.datasets.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset.split_key">split_key (czbenchmarks.datasets.PerturbationSingleCellDataset property)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset.split_key">(czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.DataType.SPLIT_KEY">SPLIT_KEY (czbenchmarks.datasets.types.DataType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.sync_s3_to_local">sync_s3_to_local() (in module czbenchmarks.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo.tags">tags (czbenchmarks.metrics.types.MetricInfo attribute)</a>, <a href="autoapi/czbenchmarks/metrics/types/index.html#id4">[1]</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs.task">task (czbenchmarks.cli.cli_run.TaskArgs attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.task_name">task_name (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult.task_name_display">task_name_display (czbenchmarks.cli.cli_run.TaskResult attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/tasks/utils/index.html#czbenchmarks.tasks.utils.TASK_NAMES">TASK_NAMES (in module czbenchmarks.tasks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs">TaskArgs (class in czbenchmarks.cli.cli_run)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult">TaskResult (class in czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskType">TaskType (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.TRANSCRIPTFORMER">TRANSCRIPTFORMER (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.TROPICAL_CLAWED_FROG">TROPICAL_CLAWED_FROG (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.TROPICAL_CLAWED_FROG">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.try_processed_datasets_cache">try_processed_datasets_cache() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/types/index.html#czbenchmarks.models.types.ModelType.UCE">UCE (czbenchmarks.models.types.ModelType attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.unload_data">unload_data() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.unload_data">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset.unload_data">(czbenchmarks.datasets.PerturbationSingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset.unload_data">(czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/single_cell/index.html#czbenchmarks.datasets.single_cell.SingleCellDataset.unload_data">(czbenchmarks.datasets.single_cell.SingleCellDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.SingleCellDataset.unload_data">(czbenchmarks.datasets.SingleCellDataset method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.upload_blob_to_remote">upload_blob_to_remote() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.upload_embeddings">upload_embeddings (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/utils/index.html#czbenchmarks.utils.upload_file_to_remote">upload_file_to_remote() (in module czbenchmarks.utils)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.upload_results">upload_results (czbenchmarks.cli.cli_run.CacheOptions attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS">VALID_OUTPUT_FORMATS (in module czbenchmarks.cli.cli_run)</a>
+</li>
+      <li><a href="autoapi/czbenchmarks/datasets/base/index.html#czbenchmarks.datasets.base.BaseDataset.validate">validate() (czbenchmarks.datasets.base.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.BaseDataset.validate">(czbenchmarks.datasets.BaseDataset method)</a>
+</li>
+        <li><a href="autoapi/czbenchmarks/tasks/base/index.html#czbenchmarks.tasks.base.BaseTask.validate">(czbenchmarks.tasks.base.BaseTask method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/models/validators/base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator.validate_dataset">validate_dataset() (czbenchmarks.models.validators.base_model_validator.BaseModelValidator method)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/models/validators/index.html#czbenchmarks.models.validators.BaseModelValidator.validate_dataset">(czbenchmarks.models.validators.BaseModelValidator method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricResult.value">value (czbenchmarks.metrics.types.MetricResult attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.WILD_BOAR">WILD_BOAR (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.WILD_BOAR">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.write_results">write_results() (in module czbenchmarks.cli.cli_run)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.YEAST">YEAST (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.YEAST">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/czbenchmarks/datasets/index.html#czbenchmarks.datasets.Organism.ZEBRAFISH">ZEBRAFISH (czbenchmarks.datasets.Organism attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.types.Organism.ZEBRAFISH">(czbenchmarks.datasets.types.Organism attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

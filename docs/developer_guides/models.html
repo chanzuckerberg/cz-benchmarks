@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Models &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tasks" href="tasks.html" />
+    <link rel="prev" title="Datasets" href="datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="design_overview.html">Design Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#model-implementations">Model Implementations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#responsibilities-of-an-implementation">Responsibilities of an implementation:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#common-utilities">Common Utilities:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-implementations-include">Example Implementations Include:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#model-directory-structure">Model Directory Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-validators">Model Validators</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#best-practices-for-validators">Best Practices for Validators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-usage-of-validators">Example Usage of Validators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#developer-guide-writing-a-new-model">Developer Guide: Writing a New Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example-skeleton">Example Skeleton</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#related-references">Related References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html">Interactive Debugging Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guides</a></li>
+      <li class="breadcrumb-item active">Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guides/models.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="models">
+<h1>Models<a class="headerlink" href="#models" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">czbenchmarks.models</span></code> module provides the infrastructure to run models in a modular and reproducible way. It consists of two main components:</p>
+<ol class="arabic simple">
+<li><p><strong>Model Implementations</strong></p></li>
+<li><p><strong>Model Validators</strong></p></li>
+</ol>
+<section id="model-implementations">
+<h2>Model Implementations<a class="headerlink" href="#model-implementations" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>All model implementations must extend <a class="reference internal" href="../autoapi/czbenchmarks/models/implementations/base_model_implementation/index.html"><span class="doc std std-doc">BaseModelImplementation</span></a>. This class defines the core logic for executing a model, including downloading weights, parsing arguments, validating inputs, and setting outputs.</p>
+</div></blockquote>
+<p>Model implementations are defined in Docker containers and executed either programmatically or via the CLI.</p>
+<blockquote>
+<div><p>Docker is used for model implementations to ensure reproducibility, modularity, and dependency isolation. It allows developers to package models with all their dependencies, libraries, and configurations into a portable container. This ensures that the model runs consistently across different environments, eliminates compatibility issues, and simplifies deployment. Additionally, Docker enables modularity by isolating each model implementation, making it easier to manage, test, and update individual models without affecting others.</p>
+</div></blockquote>
+<section id="responsibilities-of-an-implementation">
+<h3>Responsibilities of an implementation:<a class="headerlink" href="#responsibilities-of-an-implementation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Define the logic for downloading pretrained weights (<code class="docutils literal notranslate"><span class="pre">_download_model_weights</span></code>)</p></li>
+<li><p>Process input data as required (e.g. tokenization, filtering, transformation)</p></li>
+<li><p>Run inference and extract relevant outputs</p></li>
+<li><p>Store outputs via <code class="docutils literal notranslate"><span class="pre">dataset.set_output(...)</span></code></p></li>
+<li><p>Clean up any temporary files</p></li>
+</ul>
+</section>
+<section id="common-utilities">
+<h3>Common Utilities:<a class="headerlink" href="#common-utilities" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">sync_s3_to_local()</span></code> from <code class="docutils literal notranslate"><span class="pre">czbenchmarks.utils</span></code> to download from S3.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">get_model_weights_subdir()</span></code> to route weights per variant or organism.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">parse_args()</span></code> to register model-specific CLI arguments (e.g., <code class="docutils literal notranslate"><span class="pre">--model_variant</span></code>, <code class="docutils literal notranslate"><span class="pre">--gene_pert</span></code>).</p></li>
+</ul>
+</section>
+<section id="example-implementations-include">
+<h3>Example Implementations Include:<a class="headerlink" href="#example-implementations-include" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Geneformer</strong> — tokenizes input with <code class="docutils literal notranslate"><span class="pre">TranscriptomeTokenizer</span></code> and extracts embeddings via <code class="docutils literal notranslate"><span class="pre">EmbExtractor</span></code>.</p></li>
+<li><p><strong>SCVI</strong> — uses <code class="docutils literal notranslate"><span class="pre">scvi-tools</span></code> to load pretrained weights and extract latent representations.</p></li>
+<li><p><strong>UCE</strong> — uses <code class="docutils literal notranslate"><span class="pre">AnndataProcessor</span></code> and custom embedding generation logic.</p></li>
+<li><p><strong>SCGPT</strong>, <strong>scGenePT</strong> — transformers for transcriptomic data or perturbation prediction.</p></li>
+</ul>
+<blockquote>
+<div><p>Concrete model implementations should be added to the <code class="docutils literal notranslate"><span class="pre">docker/</span></code> directory, not the <code class="docutils literal notranslate"><span class="pre">implementations/</span></code> directory. The <code class="docutils literal notranslate"><span class="pre">implementations/</span></code> directory is reserved for base classes and shared logic.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="model-directory-structure">
+<h2>Model Directory Structure<a class="headerlink" href="#model-directory-structure" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">models/</span></code> directory is organized as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>models/
+├── __init__.py
+├── README.md
+├── implementations/                  # Model implementations
+│   ├── __init__.py
+│   ├── base_model_implementation.py  # Base implementation class
+│   └── README.md
+└── validators/                       # Model validators
+        ├── __init__.py
+        ├── base_model_validator.py       # Base validator class
+        ├── base_single_cell_model_validator.py
+        ├── &lt;model-specific-validator&gt;.py
+        └── README.md
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">implementations/</span></code></strong>: Contains model-specific implementations.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">validators/</span></code></strong>: Contains model-specific validation rules.</p></li>
+</ul>
+</section>
+<section id="model-validators">
+<h2>Model Validators<a class="headerlink" href="#model-validators" title="Link to this heading"></a></h2>
+<p>Validators enforce the constraints that a dataset must satisfy to be compatible with a given model.</p>
+<blockquote>
+<div><p>A user would need to create a custom validator when the existing validators do not fully address the specific requirements of their dataset or model. Since most validators are designed to handle common scenarios, a custom validator becomes necessary for unique use cases, such as enforcing specialized constraints on dataset structure, validating custom metadata fields, or ensuring compatibility with a novel model type. Custom validators allow users to define tailored validation logic that aligns with the specific needs of their model and dataset, ensuring accurate and reliable results.</p>
+</div></blockquote>
+<p>All validators must inherit from one of the following:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/models/validators/base_model_validator/index.html"><span class="doc std std-doc">BaseModelValidator</span></a></p>
+<ul>
+<li><p>Generic base class with support for arbitrary dataset types.</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index.html"><span class="doc std std-doc">BaseSingleCellValidator</span></a><br />
+Provides standard checks for single-cell models such as validating:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Organism</span></code> compatibility</p></li>
+<li><p>Required keys in <code class="docutils literal notranslate"><span class="pre">.obs</span></code> and <code class="docutils literal notranslate"><span class="pre">.var</span></code></p></li>
+<li><p>Gene naming conventions (e.g., <code class="docutils literal notranslate"><span class="pre">ENSG</span></code> prefix for human)</p></li>
+</ul>
+</li>
+</ul>
+<p>Validators are integrated into the implementation class using inheritance. Here’s an example of how to create a new Single Cell Validator:</p>
+<ol class="arabic">
+<li><p><strong>Add a new validator:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyModelValidator</span><span class="p">(</span><span class="n">BaseSingleCellValidator</span><span class="p">):</span>
+    <span class="n">available_organisms</span> <span class="o">=</span> <span class="p">[</span><span class="n">Organism</span><span class="o">.</span><span class="n">HUMAN</span><span class="p">]</span>
+    <span class="n">required_obs_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span>
+    <span class="n">required_var_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">]</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">MY_MODEL</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">}</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><span class="n">MyModelValidator</span><span class="p">,</span> <span class="n">BaseModelImplementation</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Update <strong>init</strong>.py:</strong></p>
+<ul class="simple">
+<li><p>Add your validator to <code class="docutils literal notranslate"><span class="pre">validators/__init__.py</span></code></p></li>
+</ul>
+</li>
+</ol>
+<section id="best-practices-for-validators">
+<h3>Best Practices for Validators<a class="headerlink" href="#best-practices-for-validators" title="Link to this heading"></a></h3>
+<p>When creating a new validator, follow these best practices:</p>
+<ul class="simple">
+<li><p><strong>Document Validation Requirements Clearly</strong>: Ensure that the purpose and requirements of the validator are well-documented.</p></li>
+<li><p><strong>Use Descriptive Variable Names</strong>: Choose meaningful names for variables to improve code readability.</p></li>
+<li><p><strong>Add Logging for Validation Steps</strong>: Include logging to track validation progress and identify issues.</p></li>
+<li><p><strong>Follow Existing Validator Patterns</strong>: Use existing validators as a reference to maintain consistency.</p></li>
+<li><p><strong>Implement Comprehensive Validation Checks</strong>: Ensure that all necessary checks are implemented to validate datasets thoroughly.</p></li>
+<li><p><strong>Support Multiple Organisms When Possible</strong>: Design validators to handle datasets from multiple organisms.</p></li>
+<li><p><strong>Include Detailed Error Messages</strong>: Provide clear and actionable error messages when validation fails.</p></li>
+</ul>
+</section>
+<section id="example-usage-of-validators">
+<h3>Example Usage of Validators<a class="headerlink" href="#example-usage-of-validators" title="Link to this heading"></a></h3>
+<p>Here is an example of how to use a validator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">YourModelValidator</span>
+
+<span class="n">validator</span> <span class="o">=</span> <span class="n">YourModelValidator</span><span class="p">()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">validator</span><span class="o">.</span><span class="n">validate_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dataset validation passed!&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="developer-guide-writing-a-new-model">
+<h2>Developer Guide: Writing a New Model<a class="headerlink" href="#developer-guide-writing-a-new-model" title="Link to this heading"></a></h2>
+<p>To add a new model:</p>
+<ol class="arabic simple">
+<li><p><strong>Create a Docker subdirectory</strong> under <code class="docutils literal notranslate"><span class="pre">docker/&lt;your_model&gt;/</span></code> with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model.py</span></code>: Your implementation class</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>: S3 URIs for weights and any variants</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>: Python dependencies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code>: Image definition (base on Python GPU image)</p></li>
+</ul>
+</li>
+<li><p><strong>Define a validator</strong>:</p>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code> or <code class="docutils literal notranslate"><span class="pre">BaseModelValidator</span></code> or a custom validator, if needed (see [Model Validators section)[#model-validators], above).</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">available_organisms</span></code>, <code class="docutils literal notranslate"><span class="pre">required_obs_keys</span></code>, <code class="docutils literal notranslate"><span class="pre">required_var_keys</span></code>, and <code class="docutils literal notranslate"><span class="pre">model_type</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Define a model implementation</strong> that:</p>
+<ul class="simple">
+<li><p>Implements <code class="docutils literal notranslate"><span class="pre">get_model_weights_subdir()</span></code> and <code class="docutils literal notranslate"><span class="pre">_download_model_weights()</span></code></p></li>
+<li><p>Implements <code class="docutils literal notranslate"><span class="pre">run_model(dataset:</span> <span class="pre">BaseDataset)</span></code></p></li>
+<li><p>Calls <code class="docutils literal notranslate"><span class="pre">dataset.set_output(model_type,</span> <span class="pre">DataType.XXX,</span> <span class="pre">value)</span></code></p></li>
+<li><p>Parses CLI arguments if needed via <code class="docutils literal notranslate"><span class="pre">parse_args()</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Use model type enums</strong> from <a class="reference internal" href="../autoapi/czbenchmarks/models/types/index.html"><span class="doc std std-doc">ModelType</span></a></p>
+<ul class="simple">
+<li><p>Ensure your model is registered correctly in <code class="docutils literal notranslate"><span class="pre">ModelType</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Configure variants in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></strong></p>
+<ul class="simple">
+<li><p>Define a top-level <code class="docutils literal notranslate"><span class="pre">models:</span></code> block that maps <code class="docutils literal notranslate"><span class="pre">model_variant</span></code> to S3 URIs for pretrained weights and tokenizer resources.</p></li>
+</ul>
+</li>
+</ol>
+<section id="example-skeleton">
+<h3>Example Skeleton<a class="headerlink" href="#example-skeleton" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.implementations.base_model_implementation</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModelImplementation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.validators.base_single_cell_model_validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSingleCellValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataType</span><span class="p">,</span> <span class="n">BaseDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">sync_s3_to_local</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmegaConf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyModelValidator</span><span class="p">(</span><span class="n">BaseSingleCellValidator</span><span class="p">):</span>
+    <span class="n">available_organisms</span> <span class="o">=</span> <span class="p">[</span><span class="n">Organism</span><span class="o">.</span><span class="n">HUMAN</span><span class="p">]</span>
+    <span class="n">required_obs_keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">required_var_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">]</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">MYMODEL</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><span class="n">MyModelValidator</span><span class="p">,</span> <span class="n">BaseModelImplementation</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--model_variant&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_model_weights_subdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">model_variant</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_download_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+        <span class="n">model_uri</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">model_variant</span><span class="p">]</span><span class="o">.</span><span class="n">model_uri</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">model_uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">3</span><span class="p">:])</span>
+        <span class="n">sync_s3_to_local</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_weights_dir</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">):</span>
+        <span class="n">adata</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">adata</span>
+        <span class="c1"># Run inference and compute embeddings</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># np.ndarray</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">set_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>  <span class="c1"># Handles I/O, validation, and execution</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>The example above is specific to the Single Cell Transcriptomics domain space.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="related-references">
+<h2>Related References<a class="headerlink" href="#related-references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../how_to_guides/add_custom_model.html"><span class="std std-doc">Add a Custom Model</span></a></p></li>
+<li><p><a class="reference internal" href="../how_to_guides/add_new_task.html"><span class="std std-doc">Add a Task</span></a></p></li>
+<li><p><a class="reference internal" href="../how_to_guides/add_new_metric.html"><span class="std std-doc">Add a Metric</span></a></p></li>
+<li><p><a class="reference internal" href="../how_to_guides/interactive_mode.html"><span class="std std-doc">Working on model in interactive mode</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Datasets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tasks.html" class="btn btn-neutral float-right" title="Tasks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

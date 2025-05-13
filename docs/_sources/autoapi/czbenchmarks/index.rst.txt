@@ -1,0 +1,23 @@
+czbenchmarks
+============
+
+.. py:module:: czbenchmarks
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/cli/index
+   /autoapi/czbenchmarks/constants/index
+   /autoapi/czbenchmarks/datasets/index
+   /autoapi/czbenchmarks/exceptions/index
+   /autoapi/czbenchmarks/metrics/index
+   /autoapi/czbenchmarks/models/index
+   /autoapi/czbenchmarks/runner/index
+   /autoapi/czbenchmarks/tasks/index
+   /autoapi/czbenchmarks/utils/index
+
+

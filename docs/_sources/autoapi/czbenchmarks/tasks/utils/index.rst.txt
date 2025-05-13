@@ -1,0 +1,86 @@
+czbenchmarks.tasks.utils
+========================
+
+.. py:module:: czbenchmarks.tasks.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.utils.logger
+   czbenchmarks.tasks.utils.MULTI_DATASET_TASK_NAMES
+   czbenchmarks.tasks.utils.TASK_NAMES
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.utils.cluster_embedding
+   czbenchmarks.tasks.utils.filter_minimum_class
+   czbenchmarks.tasks.utils.run_standard_scrna_workflow
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: MULTI_DATASET_TASK_NAMES
+
+.. py:data:: TASK_NAMES
+
+.. py:function:: cluster_embedding(adata: anndata.AnnData, obsm_key: str = OBSM_KEY, random_seed: int = RANDOM_SEED, n_iterations: int = 2, flavor: str = FLAVOR, key_added: str = KEY_ADDED) -> List[int]
+
+   Cluster cells in embedding space using the Leiden algorithm.
+
+   Computes nearest neighbors in the embedding space and runs the Leiden
+   community detection algorithm to identify clusters.
+
+   :param adata: AnnData object containing the embedding
+   :param obsm_key: Key in adata.obsm containing the embedding coordinates
+   :param random_seed: Random seed for reproducibility
+   :param n_iterations: Number of iterations for the Leiden algorithm
+   :param flavor: Flavor of the Leiden algorithm
+   :param key_added: Key in adata.obs to store the cluster assignments
+
+   :returns: List of cluster assignments as integers
+
+
+.. py:function:: filter_minimum_class(features: numpy.ndarray, labels: numpy.ndarray | pandas.Series, min_class_size: int = 10) -> tuple[numpy.ndarray, numpy.ndarray | pandas.Series]
+
+   Filter data to remove classes with too few samples.
+
+   Removes classes that have fewer samples than the minimum threshold.
+   Useful for ensuring enough samples per class for ML tasks.
+
+   :param features: Feature matrix of shape (n_samples, n_features)
+   :param labels: Labels array of shape (n_samples,)
+   :param min_class_size: Minimum number of samples required per class
+
+   :returns:     - Filtered feature matrix
+                 - Filtered labels as categorical data
+   :rtype: Tuple containing
+
+
+.. py:function:: run_standard_scrna_workflow(adata: anndata.AnnData, n_top_genes: int = 3000, n_pcs: int = 50, random_state: int = 42) -> anndata.AnnData
+
+   Run a standard preprocessing workflow for single-cell RNA-seq data.
+
+
+   This function performs common preprocessing steps for scRNA-seq analysis:
+   1. Normalization of counts per cell
+   2. Log transformation
+   3. Identification of highly variable genes
+   4. Subsetting to highly variable genes
+   5. Principal component analysis
+
+   :param adata: AnnData object containing the raw count data
+   :param n_top_genes: Number of highly variable genes to select
+   :param n_pcs: Number of principal components to compute
+   :param random_state: Random seed for reproducibility
+
+

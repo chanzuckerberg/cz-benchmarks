@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup Guides &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer Guides" href="../developer_guides/index.html" />
+    <link rel="prev" title="Visualizing Benchmark Results" href="visualize_results.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="add_custom_dataset.html">Add a Custom Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_custom_model.html">Add a Custom Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_task.html">Add a Custom Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_metric.html">Add a Custom Metric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_mode.html">Running a Docker Container in Interactive Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualize_results.html">Visualizing Benchmark Results</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup Guides</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#macos-development-setup">macOS Development Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-up-the-environment">Setting Up the Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#using-uv-for-dependency-management">Using <code class="docutils literal notranslate"><span class="pre">uv</span></code> for Dependency Management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-issues-and-fixes">Common Issues and Fixes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">Setup Guides</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how_to_guides/setup_guides.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="setup-guides">
+<h1>Setup Guides<a class="headerlink" href="#setup-guides" title="Link to this heading"></a></h1>
+<section id="macos-development-setup">
+<h2>macOS Development Setup<a class="headerlink" href="#macos-development-setup" title="Link to this heading"></a></h2>
+<p>For macOS users, follow these steps to set up your development environment:</p>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Install Tool for Python Environment and Dependency Management</strong><br />
+There are multiple tools for managing Python environments and dependencies. Popular ones include <a class="reference external" href="https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/">pip and venv</a>, <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a>, and <a class="reference external" href="https://www.anaconda.com/products/distribution">Anaconda</a>. An alternative, <a class="reference external" href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, is described below.</p></li>
+</ol>
+<p>Choose your favorite and make sure it is correctly installed.</p>
+<ol class="arabic" start="2">
+<li><p><strong>Install Xcode Command Line Tools</strong><br />
+Xcode provides essential compiler tools for macOS. Run the following command in your terminal to install it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xcode-select<span class="w"> </span>--install
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Docker</strong><br />
+Docker is required for containerized execution. Download and install Docker from the <a class="reference external" href="https://www.docker.com/">official website</a>. After installation, verify it is working by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>hello-world
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="setting-up-the-environment">
+<h3>Setting Up the Environment<a class="headerlink" href="#setting-up-the-environment" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Create a Virtual Environment</strong><br />
+It is highly recommended to create a virtual environment to isolate your project dependencies. The steps vary dependeing on the tool, one example is provided below for <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">venv</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># On macOS/Linux</span>
+venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate<span class="w">     </span><span class="c1"># On Windows</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Dependencies</strong><br />
+Install the required Python packages:</p></li>
+</ol>
+<p>Mac requires an additional dependency, <code class="docutils literal notranslate"><span class="pre">hnswlib</span></code>, which should be installed with the package manager.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>- Install the package in editable mode with development dependencies:
+
+  ```bash
+  pip install -e &quot;.[dev]&quot;
+  ```
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="using-uv-for-dependency-management">
+<h2>Using <code class="docutils literal notranslate"><span class="pre">uv</span></code> for Dependency Management<a class="headerlink" href="#using-uv-for-dependency-management" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">uv</span></code> is a tool that simplifies Python dependency management. Follow these steps to set it up:</p>
+<ol class="arabic">
+<li><p><strong>Install <code class="docutils literal notranslate"><span class="pre">uv</span></code></strong><br />
+Use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install <code class="docutils literal notranslate"><span class="pre">uv</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>uv
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install the Required Python Version</strong><br />
+Ensure the correct Python version is installed for your project:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>python<span class="w"> </span>install
+</pre></div>
+</div>
+</li>
+<li><p><strong>Sync Dependencies</strong><br />
+Install all required dependencies, including extras, by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
+</pre></div>
+</div>
+</li>
+</ol>
+<blockquote>
+<div><p>💡 <strong>Tip</strong>: For more details, refer to the <a class="reference external" href="https://docs.astral.sh/uv/getting-started/installation/">official <code class="docutils literal notranslate"><span class="pre">uv</span></code> installation guide</a>.</p>
+</div></blockquote>
+</section>
+</section>
+<hr class="docutils" />
+<section class="tex2jax_ignore mathjax_ignore" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h1>
+<section id="common-issues-and-fixes">
+<h2>Common Issues and Fixes<a class="headerlink" href="#common-issues-and-fixes" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Command Not Found</strong><br />
+Ensure the package is installed and accessible in your shell. If not, reinstall it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>czbenchmarks
+</pre></div>
+</div>
+</li>
+<li><p><strong>Docker Fails to Run</strong><br />
+Verify Docker is installed and running. Check permissions for your user account. Restart Docker if necessary.</p></li>
+<li><p><strong>Memory Errors</strong><br />
+Reduce the dataset size or process the data in smaller batches during inference.</p></li>
+<li><p><strong>Dataset or Model Not Found</strong><br />
+Use the <code class="docutils literal notranslate"><span class="pre">list</span></code> commands to verify available datasets and models:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>czbenchmarks<span class="w"> </span>list<span class="w"> </span>datasets
+czbenchmarks<span class="w"> </span>list<span class="w"> </span>models
+</pre></div>
+</div>
+</li>
+<li><p><strong>Dependency Conflicts</strong><br />
+Ensure all dependencies are installed in a clean virtual environment. Recreate the environment if needed.</p></li>
+<li><p><strong>hnswlib package installation error</strong></p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">hnswlib</span></code> package fails to install with an error like <code class="docutils literal notranslate"><span class="pre">fatal</span> <span class="pre">error:</span> <span class="pre">Python.h:</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory</span></code>, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python3-dev</span></code>.</p>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="visualize_results.html" class="btn btn-neutral float-left" title="Visualizing Benchmark Results" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../developer_guides/index.html" class="btn btn-neutral float-right" title="Developer Guides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

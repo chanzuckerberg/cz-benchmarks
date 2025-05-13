@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog &amp; Release Notes &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=486e5634"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Legal" href="legal.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="legal.html">Legal</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog &amp; Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#changelog">Changelog</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">0.8.0 (2025-05-10)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">0.7.0 (2025-05-08)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">0.6.1 (2025-05-02)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">0.6.0 (2025-05-02)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id8">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">Bug Fixes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">0.5.0 (2025-04-03)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id12">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">0.4.4 (2025-04-01)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id15">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">0.4.3 (2025-03-31)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id17">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id18">0.4.2 (2025-03-31)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id19">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">0.4.1 (2025-03-27)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id21">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id22">0.4.0 (2025-03-26)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id23">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id24">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id25">0.3.0 (2025-03-19)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id26">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id27">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id28">0.2.2 (2025-03-18)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id29">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id30">0.2.1 (2025-03-13)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id31">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id32">0.2.0 (2025-03-13)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id33">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id34">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id35">0.1.2 (2025-03-11)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id36">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id37">0.1.1 (2025-03-11)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id38">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id39">0.1.0 (2025-03-11)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id40">Features</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id41">Bug Fixes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Changelog &amp; Release Notes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/changelog_release_notes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changelog-release-notes">
+<h1>Changelog &amp; Release Notes<a class="headerlink" href="#changelog-release-notes" title="Link to this heading"></a></h1>
+<section id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="Link to this heading"></a></h2>
+<section id="id1">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.7.0...v0.8.0">0.8.0</a> (2025-05-10)<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<section id="features">
+<h4>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>aido all model variants (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/175">#175</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/b91ebde908b325d53d508e524cf3f68d73dda038">b91ebde</a>)</p></li>
+</ul>
+</section>
+<section id="documentation">
+<h4>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Sync up docs with XFN google docs (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/203">#203</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/6504333dd46bd7811588b2c9b5535453ced499f4">6504333</a>)</p></li>
+<li><p>VC-2547 Updated base README (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/199">#199</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/49d0d28ae5aea5fae647bc305bb43ed8de985233">49d0d28</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.1...v0.7.0">0.7.0</a> (2025-05-08)<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<section id="id3">
+<h4>Features<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>allow CLI to specify set_baseline for perturbation task (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/178">#178</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/376c8338a73d6bf2f6ca38589cd87ffbad73bd81">376c833</a>)</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h4>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Set random_state for RandomForestClassifier (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/197">#197</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/b17538846fde8433486a713f1e2e2e16f13a4e8e">b175388</a>)</p></li>
+<li><p>use correct silhouette score (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/187">#187</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/a3e06eb76eb4eee514411962c8df313b71f11067">a3e06eb</a>)</p></li>
+</ul>
+</section>
+<section id="id4">
+<h4>Documentation<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>fixes for PR feedback (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/200">#200</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/8d40da156295c6d330bd71b8d6c3ace90ab2431f">8d40da1</a>)</p></li>
+<li><p>improve add custom model docs (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/193">#193</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/7adf963a1bc7cb858e9d5895be9b8ad11633ecab">7adf963</a>)</p></li>
+<li><p>VC-2544 Instructions for working on docs (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/192">#192</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/f825c230e91469c4ff10c409a3cc42dc6f7b10ff">f825c23</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id5">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.0...v0.6.1">0.6.1</a> (2025-05-02)<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<section id="id6">
+<h4>Bug Fixes<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Push transcriptformer docker image to ECR (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/188">#188</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/e5eea6f025c6bf138a4f2084efb4aea89433317b">e5eea6f</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.5.0...v0.6.0">0.6.0</a> (2025-05-02)<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<section id="id8">
+<h4>Features<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>CLI (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/148">#148</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/4cd7947784c5a3dcd351b1d79d191dd52604912d">4cd7947</a>)</p></li>
+<li><p>CLI batch jobs (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/161">#161</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/af0bd1a63c590266946cb5f05cde5d161ebb6d0c">af0bd1a</a>)</p></li>
+<li><p>enable minimal model developer workflow (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/163">#163</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/f552bf3a45e3622fad21ba4248d4640a2ae49fbf">f552bf3</a>)</p></li>
+<li><p>support perturbation in CLI (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/156">#156</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/e14391d14dbd8d75f40ff529e1fc7f9efef8ef23">e14391d</a>)</p></li>
+<li><p>transcriptformer (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/165">#165</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/173d1e770631ad436c624a6a9901d98d492942a4">173d1e7</a>)</p></li>
+</ul>
+</section>
+<section id="id9">
+<h4>Bug Fixes<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Add scGenePT / Perturbation compatibility to developer workflow (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/155">#155</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/feaa4fe53bcb0000c32507aa277025b2b44f5183">feaa4fe</a>)</p></li>
+<li><p>Make Geneformer and UCE work in interactive mode again (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/181">#181</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/512895355a884dc1b0be94c9b8ebafbec3ac3693">5128953</a>)</p></li>
+<li><p>reload dataset after caching (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/166">#166</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/19ac92b0f1733ba232cabd8816f331a91f83234e">19ac92b</a>)</p></li>
+<li><p>use macro, not weighted F1 score (VC-2551) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/186">#186</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/11dfc0565b9a76e50557826aa22cd5e838b47462">11dfc05</a>)</p></li>
+</ul>
+</section>
+<section id="id10">
+<h4>Documentation<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>docs based on review comments from pr-160 (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/169">#169</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/5e26b84b8a3f2753c104b7ddb226d50ff0949b79">5e26b84</a>)</p></li>
+<li><p>Nc docs structure (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/158">#158</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/deaee6f2aeb18f6c85044a217eb19adbb80424be">deaee6f</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id11">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.4...v0.5.0">0.5.0</a> (2025-04-03)<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<section id="id12">
+<h4>Features<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>random seed for clustering (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/151">#151</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/a1df9f901125132d2702545a07dea18a99562e80">a1df9f9</a>)</p></li>
+</ul>
+</section>
+<section id="id13">
+<h4>Bug Fixes<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add descriptive comment for pipeline.py (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/110">#110</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/7e0ead397ed0cfb17d478d76e4f2a0be4aa83dd6">7e0ead3</a>)</p></li>
+<li><p>developer workflow implementation (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/126">#126</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/703b5eba3ba77c8f9a94eeb34942a56b00f8f6e1">703b5eb</a>)</p></li>
+<li><p>remove gene prefix validation from condition keys of perturbation single cell datasets (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/152">#152</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/e766946d10d1878f307f87bd23056544dc56e465">e766946</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id14">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.3...v0.4.4">0.4.4</a> (2025-04-01)<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<section id="id15">
+<h4>Bug Fixes<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add tag to mount dir (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/144">#144</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/b9d250047f589d2321508360025d6c7495f86c10">b9d2500</a>)</p></li>
+<li><p>push model images to ECR public repo (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/133">#133</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/8b5b65357212fc652f03596baf8711b9a0b68c70">8b5b653</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id16">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.2...v0.4.3">0.4.3</a> (2025-03-31)<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<section id="id17">
+<h4>Bug Fixes<a class="headerlink" href="#id17" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>remove old conf line in docker (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/142">#142</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/69e637a3545deba78b53cff740025a0a9e621d81">69e637a</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id18">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.1...v0.4.2">0.4.2</a> (2025-03-31)<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<section id="id19">
+<h4>Bug Fixes<a class="headerlink" href="#id19" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>include conf dir in package structure (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/140">#140</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/24e02f6e71559241dc05b19ec4d0e3f5012cb00d">24e02f6</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id20">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.4.0...v0.4.1">0.4.1</a> (2025-03-27)<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<section id="id21">
+<h4>Bug Fixes<a class="headerlink" href="#id21" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add conf directory to all containers (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/128">#128</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/9415e3c63bc8bcf93b9d1e85b4dd57d6532c90d4">9415e3c</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id22">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.3.0...v0.4.0">0.4.0</a> (2025-03-26)<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<section id="id23">
+<h4>Features<a class="headerlink" href="#id23" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>docker builder (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/124">#124</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/6c0e5b5cbcc4eadbda971cd630e1e2040d86fe4f">6c0e5b5</a>)</p></li>
+<li><p>move model validators back into docker images (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/120">#120</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/ad1cb5933d4ced62cfabd84d66370a99ea12f9fc">ad1cb59</a>)</p></li>
+</ul>
+</section>
+<section id="id24">
+<h4>Documentation<a class="headerlink" href="#id24" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>autogenerate documentation - sphinx (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/116">#116</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/94be611d4eb31f3b69d3d9423299abba9eee3be4">94be611</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id25">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.2...v0.3.0">0.3.0</a> (2025-03-19)<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<section id="id26">
+<h4>Features<a class="headerlink" href="#id26" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add back interactive mode and file mounting for container debugging (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/114">#114</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/ba317e5952bfff8a4502788e5b5d0d48bb4ed086">ba317e5</a>)</p></li>
+</ul>
+</section>
+<section id="id27">
+<h4>Bug Fixes<a class="headerlink" href="#id27" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>move metrics readme to the correct dir (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/112">#112</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/1dcd6209617e1ccf06bcfdb1542871bdf55440d0">1dcd620</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id28">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.1...v0.2.2">0.2.2</a> (2025-03-18)<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<section id="id29">
+<h4>Bug Fixes<a class="headerlink" href="#id29" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>geneformer model updates (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/103">#103</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/5fdfdffa326c0f29fccc5fe89311cdefc7bc6e08">5fdfdff</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id30">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.2.0...v0.2.1">0.2.1</a> (2025-03-13)<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<section id="id31">
+<h4>Bug Fixes<a class="headerlink" href="#id31" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>test release (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/98">#98</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/d7107664203d12c144d928176971a8ca9a542ba3">d710766</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id32">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.2...v0.2.0">0.2.0</a> (2025-03-13)<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<section id="id33">
+<h4>Features<a class="headerlink" href="#id33" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>perturb baselines (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/86">#86</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/9fe91be296396530af3bb668d2531af94a8174a5">9fe91be</a>)</p></li>
+</ul>
+</section>
+<section id="id34">
+<h4>Bug Fixes<a class="headerlink" href="#id34" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Improve error message for var_names and SCVI dataset validation (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/83">#83</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/ac048b04bdfc78d4ad1dc05dab0795f646188c8e">ac048b0</a>)</p></li>
+<li><p>model_name to model_variant kwarg for model classes (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/92">#92</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/23b525a2431169a24fc4a55dc41cfbc31057ae35">23b525a</a>)</p></li>
+<li><p>Pass AWS credentials to container (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/85">#85</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/e631c701df99f71f41f5c24c072e4e7eaf4edd46">e631c70</a>)</p></li>
+<li><p>path expansion when dataset stored in local repo (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/80">#80</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/5f3333ad5b585b9dbbd68729fb888de9e846e065">5f3333a</a>)</p></li>
+<li><p>update pip index version command in publish-pypi.yml (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/82">#82</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/68b63d99f08ce3fcef006eb256682cb67ed86671">68b63d9</a>)</p></li>
+<li><p>update scgenept model config to use full model variant name (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/94">#94</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/04057f8614f6348cd8d8df6748e2426197fdb60a">04057f8</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id35">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.1...v0.1.2">0.1.2</a> (2025-03-11)<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<section id="id36">
+<h4>Bug Fixes<a class="headerlink" href="#id36" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>pypy build (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/78">#78</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/8461a239efee7050de1cda6e36f480aaab159aaf">8461a23</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id37">
+<h3><a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.1.0...v0.1.1">0.1.1</a> (2025-03-11)<a class="headerlink" href="#id37" title="Link to this heading"></a></h3>
+<section id="id38">
+<h4>Bug Fixes<a class="headerlink" href="#id38" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add new trigger (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/76">#76</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/fc5cc3f7d8216103c45c503338e6da9090f7263b">fc5cc3f</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id39">
+<h3>0.1.0 (2025-03-11)<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<section id="id40">
+<h4>Features<a class="headerlink" href="#id40" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>add auroc metric to label prediction task (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/68">#68</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/0b17300f89a87a4237bd7da0707f63912e02f755">0b17300</a>)</p></li>
+<li><p>add baselines for all tasks except cross species and perturbation (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/69">#69</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/3e7925690d025a7dcf1b752e37cac0f780f04e97">3e79256</a>)</p></li>
+<li><p>add de genes to perturbation task (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/70">#70</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/84968e61fb80135782e038cdac3cc5917e74a1b7">84968e6</a>)</p></li>
+<li><p>add random forest classifier (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/62">#62</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/e5d0f4c67b0eaa6bb203016d1aa987821057f8e2">e5d0f4c</a>)</p></li>
+<li><p>add static typing of input and output types (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/34">#34</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/97a7bdf54721d9524394145af109787820a03df2">97a7bdf</a>)</p></li>
+<li><p>cross species integration task (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/39">#39</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/f49ce0d945d4b8c421c421859a38110919b1f12e">f49ce0d</a>)</p></li>
+<li><p>fix strong metric results typing (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/71">#71</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/30d00991fbe5ad6c6cc88f7b360e89d23f91df06">30d0099</a>)</p></li>
+<li><p>fix uce and geneformer (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/24">#24</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/101bc04581536f81d10828701cb35df52440c5d5">101bc04</a>)</p></li>
+<li><p>geneformer model (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/14">#14</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/8d9707103756a0f75f9187bf03cdcbb335ff5ebe">8d97071</a>)</p></li>
+<li><p>implement model registry for model-specific outputs (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/57">#57</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/838cf73aa844392fc5a910661c40eae28d4c3a0e">838cf73</a>)</p></li>
+<li><p>implement model weight download and caching (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/9ad44c182c4267c6f0b65af50af90b65ef52bae3">9ad44c1</a>)</p></li>
+<li><p>implement model weight download and caching (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/5a465af162a08f578f0fed2d81267d8214097d3e">5a465af</a>)</p></li>
+<li><p>metadatalabel prediction task (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/99803db178cfe14cf97a504ca3ff43658c26cbad">99803db</a>)</p></li>
+<li><p>metrics registry (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/49">#49</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/3a841d17fba81a0a1a54c9a9d5fac6735b219544">3a841d1</a>)</p></li>
+<li><p>perturbation tasks (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/41">#41</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/29c812c2f13903c5b83bc922435b4fec3ee13bca">29c812c</a>)</p></li>
+<li><p>readme update and various bug fixes (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/554366965da2bb119ce792b4c8712f093a077c54">5543669</a>)</p></li>
+<li><p>remove ModelRunner and consolidate into BaseModel (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/13e1b55e256cfd222f8001068ebb43fbf9a87015">13e1b55</a>)</p></li>
+<li><p>remove ModelRunner and consolidate into BaseModel (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/ae288439a5abd129ce83063b30abd0b2497b9cc0">ae28843</a>)</p></li>
+<li><p>scgenept (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/19">#19</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/8e6cf6a19e74098c34fbac7861f4e2ee4e2dc48c">8e6cf6a</a>)</p></li>
+<li><p>separate concerns for validation and implementation (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/33">#33</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/fd52d07efe6979f87c07a49b39f40658c3549c1b">fd52d07</a>)</p></li>
+<li><p>task baselines (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/58">#58</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/d12be6b99879a032ce073f8d3c8f2dc5b9d9199f">d12be6b</a>)</p></li>
+<li><p>update dataset handling (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/0b456e7d09b9b13150b8b7dea14f60562a9049fc">0b456e7</a>)</p></li>
+<li><p>update dataset handling (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/5b8a7b78d93ae9c0e86275ab50f1762a86139dd0">5b8a7b7</a>)</p></li>
+<li><p>update to support lists of datasets (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/issues/35">#35</a>) (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/2b6ef60731f61566db7ebfef6ca7de81e489be4e">2b6ef60</a>)</p></li>
+</ul>
+</section>
+<section id="id41">
+<h4>Bug Fixes<a class="headerlink" href="#id41" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>expand dataset path (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/7f3fc9a872352ca08cd29c178d0bccde345dc1a5">7f3fc9a</a>)</p></li>
+<li><p>expand dataset path (<a class="reference external" href="https://github.com/chanzuckerberg/cz-benchmarks/commit/23d065ad28387eb87d322beddad71f161064df64">23d065a</a>)</p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="legal.html" class="btn btn-neutral float-left" title="Legal" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

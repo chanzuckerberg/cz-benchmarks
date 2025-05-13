@@ -1,0 +1,386 @@
+czbenchmarks.tasks
+==================
+
+.. py:module:: czbenchmarks.tasks
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/tasks/base/index
+   /autoapi/czbenchmarks/tasks/clustering/index
+   /autoapi/czbenchmarks/tasks/constants/index
+   /autoapi/czbenchmarks/tasks/embedding/index
+   /autoapi/czbenchmarks/tasks/integration/index
+   /autoapi/czbenchmarks/tasks/label_prediction/index
+   /autoapi/czbenchmarks/tasks/single_cell/index
+   /autoapi/czbenchmarks/tasks/utils/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.ClusteringTask
+   czbenchmarks.tasks.EmbeddingTask
+   czbenchmarks.tasks.MetadataLabelPredictionTask
+   czbenchmarks.tasks.BatchIntegrationTask
+   czbenchmarks.tasks.PerturbationTask
+   czbenchmarks.tasks.CrossSpeciesIntegrationTask
+
+
+Package Contents
+----------------
+
+.. py:class:: ClusteringTask(label_key: str, random_seed: int = RANDOM_SEED, n_iterations: int = N_ITERATIONS, flavor: str = FLAVOR, key_added: str = KEY_ADDED)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating clustering performance against ground truth labels.
+
+   This task performs clustering on embeddings and evaluates the results
+   using multiple clustering metrics (ARI and NMI).
+
+   :param label_key: Key to access ground truth labels in metadata
+   :type label_key: str
+   :param random_seed: Random seed for reproducibility
+   :type random_seed: int
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: random_seed
+      :value: 42
+
+
+
+   .. py:attribute:: n_iterations
+      :value: 2
+
+
+
+   .. py:attribute:: flavor
+      :value: 'igraph'
+
+
+
+   .. py:attribute:: key_added
+      :value: 'leiden'
+
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run (embedding to cluster)
+
+
+.. py:class:: EmbeddingTask(label_key: str)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating embedding quality using labeled data.
+
+   This task computes quality metrics for embeddings using ground truth labels.
+   Currently supports silhouette score evaluation.
+
+   :param label_key: Key to access ground truth labels in metadata
+   :type label_key: str
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run  (embedding coordinates)
+
+
+.. py:class:: MetadataLabelPredictionTask(label_key: str, n_folds: int = N_FOLDS, random_seed: int = RANDOM_SEED, min_class_size: int = MIN_CLASS_SIZE)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for predicting labels from embeddings using cross-validation.
+
+   Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
+   cross-validation. Reports standard classification metrics.
+
+   :param label_key: Key to access ground truth labels in metadata
+   :param n_folds: Number of cross-validation folds
+   :param random_seed: Random seed for reproducibility
+   :param min_class_size: Minimum samples required per class
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: n_folds
+      :value: 5
+
+
+
+   .. py:attribute:: random_seed
+      :value: 42
+
+
+
+   .. py:attribute:: min_class_size
+      :value: 10
+
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run  (embedding coordinates)
+
+
+   .. py:method:: set_baseline(data: czbenchmarks.datasets.BaseDataset)
+
+      Set a baseline embedding using raw gene expression.
+
+      Instead of using embeddings from a model, this method uses the raw gene
+      expression matrix as features for classification. This provides a baseline
+      performance to compare against model-generated embeddings for classification
+      tasks.
+
+      :param data: BaseDataset containing AnnData with gene expression and metadata
+
+
+
+.. py:class:: BatchIntegrationTask(label_key: str, batch_key: str)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating batch integration quality.
+
+   This task computes metrics to assess how well different batches are integrated
+   in the embedding space while preserving biological signals.
+
+   :param label_key: Key to access ground truth cell type labels in metadata
+   :param batch_key: Key to access batch labels in metadata
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:attribute:: batch_key
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run (embedding coordinates)
+
+
+.. py:class:: PerturbationTask
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating perturbation prediction quality.
+
+   This task computes metrics to assess how well a model predicts gene expression
+   changes in response to perturbations. Compares predicted vs ground truth
+   perturbation effects using MSE and correlation metrics.
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (ground truth perturbation effects)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run
+                (predicted perturbation effects)
+
+
+   .. py:method:: set_baseline(data: czbenchmarks.datasets.PerturbationSingleCellDataset, gene_pert: str, baseline_type: Literal['median', 'mean'] = 'median', **kwargs)
+
+      Set a baseline embedding for perturbation prediction.
+
+      Creates baseline predictions using simple statistical methods (median and mean)
+      applied to the control data, and evaluates these predictions against ground
+      truth.
+
+      :param data: PerturbationSingleCellDataset containing control and perturbed data
+      :param gene_pert: The perturbation gene to evaluate
+      :param baseline_type: The statistical method to use for baseline prediction
+                            (median or mean)
+      :param \*\*kwargs: Additional arguments passed to the evaluation
+
+      :returns: List of MetricResult objects containing baseline performance metrics
+                for different statistical methods (median, mean)
+
+
+
+.. py:class:: CrossSpeciesIntegrationTask(label_key: str)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating cross-species integration quality.
+
+   This task computes metrics to assess how well different species' data are integrated
+   in the embedding space while preserving biological signals. It operates on multiple
+   datasets from different species.
+
+   :param label_key: Key to access ground truth cell type labels in metadata
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run (embedding coordinates)
+
+
+   .. py:property:: requires_multiple_datasets
+      :type: bool
+
+
+      Whether this task requires multiple datasets.
+
+      :returns: True as this task compares data across species
+
+
+   .. py:method:: set_baseline(data: List[czbenchmarks.datasets.SingleCellDataset], **kwargs)
+      :abstractmethod:
+
+
+      Set a baseline embedding for cross-species integration.
+
+      This method is not implemented for cross-species integration tasks
+      as standard preprocessing workflows are not directly applicable
+      across different species.
+
+      :param data: List of SingleCellDataset objects from different species
+      :param \*\*kwargs: Additional arguments passed to run_standard_scrna_workflow
+
+      :raises NotImplementedError: Always raised as baseline is not implemented
+
+
+
