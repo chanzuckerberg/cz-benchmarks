@@ -271,7 +271,7 @@ def test_run_with_inference(mocker: MockFixture) -> None:
 
     # Check that the cache was used
     mock_download.assert_called_with(
-        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed_datasets/test_dataset.dill",
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed-datasets/test_dataset.dill",
         Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute(),
     )
 
@@ -609,6 +609,6 @@ def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
     mock_dataset.load_data.assert_called_once()
     mock_upload.assert_called_once_with(
         expected_serialize_path,
-        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed_datasets/",
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed-datasets/",
         overwrite_existing=True,
     )

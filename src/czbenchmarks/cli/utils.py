@@ -96,4 +96,4 @@ def get_version() -> str:
         version = _get_pyproject_version()
 
     git_commit = _get_git_commit(version)
-    return version + git_commit
+    return "v" + version + git_commit

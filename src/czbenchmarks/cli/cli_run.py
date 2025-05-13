@@ -161,7 +161,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help=(
             "Upload any processed embeddings produced to the remote cache, overwriting "
             "any that may already exist there for the current version. They will be "
-            "stored under s3://<remote_cache_url>/<version>/processed_datasets/*.dill"
+            "stored under s3://<remote_cache_url>/<version>/processed-datasets/*.dill"
         ),
         default=False,
     )
@@ -908,7 +908,7 @@ def try_processed_datasets_cache(
 
 def get_remote_cache_prefix(cache_options: CacheOptions):
     """get the prefix ending in '/' that the remote processed datasets go under"""
-    return f"{cache_options.remote_cache_url.rstrip('/')}/{cli.get_version()}/processed_datasets/"
+    return f"{cache_options.remote_cache_url.rstrip('/')}/{cli.get_version()}/processed-datasets/"
 
 
 def get_processed_dataset_cache_filename(
