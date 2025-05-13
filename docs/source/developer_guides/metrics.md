@@ -32,21 +32,21 @@ At the core of this module is a centralized registry, `MetricRegistry`, which st
 
 The following metrics are pre-registered:
 
-| **Metric Type**          | **Tags**         | **Description**                                                                 |
-|--------------------------|------------------|---------------------------------------------------------------------------------|
-| `adjusted_rand_index`    | clustering       | Adjusted Rand Index (ARI) between predicted and true labels                     |
-| `normalized_mutual_info` | clustering       | Normalized Mutual Information (NMI)                                             |
-| `silhouette_score`       | embedding        | Silhouette score of clusters in embedding space                                 |
-| `entropy_per_cell`       | integration      | Local entropy of batch labels (higher is better mixing)                         |
-| `batch_silhouette`       | integration      | Silhouette score that accounts for batch mixing                                 |
-| `mean_squared_error`     | perturbation     | Mean squared error between predicted and ground truth expressions               |
-| `r2_score`               | perturbation     | Pearson R² between predicted and true gene deltas                               |
-| `jaccard`                | perturbation     | Jaccard similarity between predicted and true top DE genes                      |
-| `mean_fold_accuracy`     | label_prediction | Mean accuracy across k-fold cross-validation splits                             |
-| `mean_fold_f1`           | label_prediction | Mean F1 score across folds                                                      |
-| `mean_fold_precision`    | label_prediction | Mean precision across folds                                                     |
-| `mean_fold_recall`       | label_prediction | Mean recall across folds                                                        |
-| `mean_fold_auroc`        | label_prediction | Area under ROC curve, averaged across folds                                     |
+| **Metric Type**          | **Task**     | **Description**                                                                                                  |
+|--------------------------|------------------|------------------------------------------------------------------------------------------------------------------|
+| `adjusted_rand_index`    | clustering       | Measures the similarity between two clusterings, adjusted for chance. A higher value indicates better alignment. |
+| `normalized_mutual_info` | clustering       | Quantifies the amount of shared information between two clusterings, normalized to ensure comparability.         |
+| `silhouette_score`       | embedding        | Evaluates how well-separated clusters are in an embedding space. Higher scores indicate better-defined clusters. |
+| `entropy_per_cell`       | integration      | Assesses the mixing of batch labels at the single-cell level. Higher entropy indicates better integration.       |
+| `batch_silhouette`       | integration      | Combines silhouette scoring with batch information to evaluate clustering quality while accounting for batch effects. |
+| `mean_squared_error`     | perturbation     | Calculates the average squared difference between predicted and true values, indicating prediction accuracy.     |
+| `r2_score`               | perturbation     | Measures the proportion of variance in true values explained by predictions. Higher values indicate better predictions. |
+| `jaccard`                | perturbation     | Computes the similarity between predicted and true sets of top differentially expressed (DE) genes.             |
+| `mean_fold_accuracy`     | label_prediction | Average accuracy across k-fold cross-validation splits, indicating overall classification performance.           |
+| `mean_fold_f1`           | label_prediction | Average F1 score across folds, balancing precision and recall for classification tasks.                          |
+| `mean_fold_precision`    | label_prediction | Average precision across folds, reflecting the proportion of true positives among predicted positives.           |
+| `mean_fold_recall`       | label_prediction | Average recall across folds, indicating the proportion of true positives correctly identified.                   |
+| `mean_fold_auroc`        | label_prediction | Average area under the ROC curve across folds, measuring the ability to distinguish between classes.             |
 
 ## How to Compute a Metric
 
@@ -70,7 +70,7 @@ result = MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, value=value)
 
 To add a new metric to the registry:
 
-1. **Add a new member to the enum:**
+1. **Add a new member to the enum:**  
    Edit `MetricType` in `czbenchmarks/metrics/types.py`:
 
    ```python
@@ -87,8 +87,7 @@ To add a new metric to the registry:
        return float(...)
    ```
 
-3. **Register it in the registry:**
-
+3. **Register it in the registry:**  
    Add to `czbenchmarks/metrics/implementations.py`:
 
    ```python
@@ -102,8 +101,7 @@ To add a new metric to the registry:
    )
    ```
 
-4. **Use in your task or CLI:**
-
+4. **Use in your task or CLI:**  
    Now the metric is available for any task to compute.
 
 ## Using Metric Tags
@@ -114,13 +112,28 @@ You can list metrics by category using tags:
 metrics_registry.list_metrics(tags={"clustering"})  # returns a set of MetricType
 ```
 
-## Developer Tips
+## Best Practices
 
-- Metrics should be **pure functions** (i.e., no side effects)
-- Return types must always be `float`
-- Use `default_params` only for optional kwargs
-- Validate inputs manually in your metric if shape or type assumptions are strict
-- Document your metric with a short `description`
+When implementing or using metrics, follow these guidelines to ensure consistency and reliability:
+
+1. **Type Safety:**  Always use the `MetricType` enum instead of string literals to refer to metrics. This ensures type safety and avoids errors due to typos.
+
+2. **Pure Functions:**  Metrics should be **pure functions**, meaning they must not have side effects. This ensures reproducibility and consistency across computations.
+
+3. **Return Types:**  All metric functions must return a `float` value to maintain uniformity in results.
+
+4. **Validation:**  
+   - Validate inputs manually within your metric function if there are strict assumptions about input shapes or types.
+   - Include required argument validation to ensure the metric function is called with the correct parameters.
+
+
+5. **Default Parameters:**  Use `default_params` only for optional keyword arguments. Avoid using them for required arguments.
+
+6. **Tags:**  Assign appropriate tags to metrics for categorization. Tags help in filtering and organizing metrics by their use cases (e.g., `clustering`, `embedding`, `label_prediction`).
+
+7. **Documentation:**  
+   - Provide a short and clear `description` for each metric to explain its purpose and usage.
+   - Document all parameters and their expected types or shapes to guide users effectively.
 
 ## Related References
 
@@ -128,5 +141,3 @@ metrics_registry.list_metrics(tags={"clustering"})  # returns a set of MetricTyp
 - [Add New Metric Guide](../how_to_guides/add_new_metric)
 - [ClusteringTask](../autoapi/czbenchmarks/tasks/clustering/index)
 - [PerturbationTask](../autoapi/czbenchmarks/tasks/single_cell/perturbation/index)
-
-
