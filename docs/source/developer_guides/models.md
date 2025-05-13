@@ -49,14 +49,15 @@ Validators enforce the constraints that a dataset must satisfy to be compatible 
 All validators must inherit from one of the following:
 
 - [BaseModelValidator](../autoapi/czbenchmarks/models/validators/base_model_validator/index)  
-  Generic base class with support for arbitrary dataset types.
-  
-- [BaseSingleCellValidator](../autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index)  
-  Provides standard checks for single-cell models such as validating:
 
-  - `Organism` compatibility
-  - Required keys in `.obs` and `.var`
-  - Gene naming conventions (e.g., `ENSG` prefix for human)
+    - Generic base class with support for arbitrary dataset types.
+
+- [BaseSingleCellValidator](../autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index)  
+    Provides standard checks for single-cell models such as validating:
+
+    - `Organism` compatibility
+    - Required keys in `.obs` and `.var`
+    - Gene naming conventions (e.g., `ENSG` prefix for human)
 
 Validators are mixed into the implementation class via inheritance:
 
@@ -111,11 +112,11 @@ models/
 │   ├── base_model_implementation.py  # Base implementation class
 │   └── README.md
 └── validators/                       # Model validators
-    ├── __init__.py
-    ├── base_model_validator.py       # Base validator class
-    ├── base_single_cell_model_validator.py
-    ├── <model-specific-validator>.py
-    └── README.md
+        ├── __init__.py
+        ├── base_model_validator.py       # Base validator class
+        ├── base_single_cell_model_validator.py
+        ├── <model-specific-validator>.py
+        └── README.md
 ```
 
 - **`implementations/`**: Contains model-specific implementations.
@@ -127,29 +128,30 @@ To add a new model:
 
 1. **Create a Docker subdirectory** under `docker/<your_model>/` with:
 
-   - `model.py`: Your implementation class
-   - `config.yaml`: S3 URIs for weights and any variants
-   - `requirements.txt`: Python dependencies
-   - `Dockerfile`: Image definition (base on Python GPU image)
+     - `model.py`: Your implementation class
+     - `config.yaml`: S3 URIs for weights and any variants
+     - `requirements.txt`: Python dependencies
+     - `Dockerfile`: Image definition (base on Python GPU image)
 
 2. **Define a validator**: 
 
-   - Use `BaseSingleCellValidator` or `BaseModelValidator` 
-   - Set `available_organisms`, `required_obs_keys`, `required_var_keys`, and `model_type` 
+     - Use `BaseSingleCellValidator` or `BaseModelValidator` 
+     - Set `available_organisms`, `required_obs_keys`, `required_var_keys`, and `model_type` 
 
 3. **Define a model implementation** that: 
 
-   - Implements `get_model_weights_subdir()` and `_download_model_weights()` 
-   - Implements `run_model(dataset: BaseDataset)`  
-   - Calls `dataset.set_output(model_type, DataType.XXX, value)`  
-   - Parses CLI arguments if needed via `parse_args()` 
-
+     - Implements `get_model_weights_subdir()` and `_download_model_weights()` 
+     - Implements `run_model(dataset: BaseDataset)`  
+     - Calls `dataset.set_output(model_type, DataType.XXX, value)`  
+     - Parses CLI arguments if needed via `parse_args()` 
 
 4. **Use model type enums** from [ModelType](../autoapi/czbenchmarks/models/types/index)   
-   Ensure your model is registered correctly in `ModelType`. 
+
+     - Ensure your model is registered correctly in `ModelType`. 
 
 5. **Configure variants in `config.yaml`**  
-   Define a top-level `models:` block that maps `model_variant` to S3 URIs for pretrained weights and tokenizer resources. 
+
+     - Define a top-level `models:` block that maps `model_variant` to S3 URIs for pretrained weights and tokenizer resources. 
 
 ### Example Skeleton
 
@@ -194,6 +196,5 @@ class MyModel(MyModelValidator, BaseModelImplementation):
         super().run()  # Handles I/O, validation, and execution
 ```
 
-> **Note**  
+> **Note:**  
 > The example above is specific to the Single Cell Transcriptomics domain space.
-
