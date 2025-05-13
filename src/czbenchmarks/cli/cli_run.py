@@ -381,6 +381,12 @@ def run_with_inference(
 
     # Get all unique combinations of model arguments: each requires a separate inference run
     model_arg_permutations = get_model_arg_permutations(model_args)
+    if multi_dataset_tasks and not all(
+        len(ma) < 2 for ma in model_arg_permutations.values()
+    ):
+        raise ValueError(
+            "Having multiple model_args for multi-dataset tasks is not supported"
+        )
 
     for dataset_idx, dataset_name in enumerate(dataset_names):
         log.info(
@@ -418,7 +424,14 @@ def run_with_inference(
         log.info(
             f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
         )
-        task_result = run_multi_dataset_task(dataset_names, embeddings, {}, task_arg)
+        model_args_for_run = {
+            model_name: permutation[0]
+            for model_name, permutation in model_arg_permutations.items()
+            if len(permutation) == 1
+        }
+        task_result = run_multi_dataset_task(
+            dataset_names, embeddings, model_args_for_run, task_arg
+        )
         task_results.extend(task_result)
 
     return task_results
