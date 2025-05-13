@@ -135,7 +135,7 @@ To add a new model:
 
 2. **Define a validator**: 
 
-     - Use `BaseSingleCellValidator` or `BaseModelValidator` 
+     - Use `BaseSingleCellValidator` or `BaseModelValidator` or a custom validator, if needed (see [Model Validators section)[#model-validators], above).
      - Set `available_organisms`, `required_obs_keys`, `required_var_keys`, and `model_type` 
 
 3. **Define a model implementation** that: 
