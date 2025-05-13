@@ -32,7 +32,7 @@ At the core of this module is a centralized registry, `MetricRegistry`, which st
 
 The following metrics are pre-registered:
 
-| **Metric Type**          | **Category**     | **Description**                                                                                                  |
+| **Metric Type**          | **Task**     | **Description**                                                                                                  |
 |--------------------------|------------------|------------------------------------------------------------------------------------------------------------------|
 | `adjusted_rand_index`    | clustering       | Measures the similarity between two clusterings, adjusted for chance. A higher value indicates better alignment. |
 | `normalized_mutual_info` | clustering       | Quantifies the amount of shared information between two clusterings, normalized to ensure comparability.         |

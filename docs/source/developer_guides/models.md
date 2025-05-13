@@ -7,12 +7,10 @@ The `czbenchmarks.models` module provides the infrastructure to run models in a 
 
 ## Model Implementations
 
-> **Important**  
 > All model implementations must extend [BaseModelImplementation](../autoapi/czbenchmarks/models/implementations/base_model_implementation/index). This class defines the core logic for executing a model, including downloading weights, parsing arguments, validating inputs, and setting outputs.
 
 Model implementations are defined in Docker containers and executed either programmatically or via the CLI.
 
-> **Note:**  
 > Docker is used for model implementations to ensure reproducibility, modularity, and dependency isolation. It allows developers to package models with all their dependencies, libraries, and configurations into a portable container. This ensures that the model runs consistently across different environments, eliminates compatibility issues, and simplifies deployment. Additionally, Docker enables modularity by isolating each model implementation, making it easier to manage, test, and update individual models without affecting others.
 
 ### Responsibilities of an implementation:
@@ -36,14 +34,36 @@ Model implementations are defined in Docker containers and executed either progr
 - **UCE** — uses `AnndataProcessor` and custom embedding generation logic.
 - **SCGPT**, **scGenePT** — transformers for transcriptomic data or perturbation prediction.
 
-> **Note**  
 > Concrete model implementations should be added to the `docker/` directory, not the `implementations/` directory. The `implementations/` directory is reserved for base classes and shared logic.
+
+
+## Model Directory Structure
+
+The `models/` directory is organized as follows:
+
+```
+models/
+├── __init__.py
+├── README.md
+├── implementations/                  # Model implementations
+│   ├── __init__.py
+│   ├── base_model_implementation.py  # Base implementation class
+│   └── README.md
+└── validators/                       # Model validators
+        ├── __init__.py
+        ├── base_model_validator.py       # Base validator class
+        ├── base_single_cell_model_validator.py
+        ├── <model-specific-validator>.py
+        └── README.md
+```
+
+- **`implementations/`**: Contains model-specific implementations.
+- **`validators/`**: Contains model-specific validation rules.
 
 ## Model Validators
 
 Validators enforce the constraints that a dataset must satisfy to be compatible with a given model.
 
-> **Note:**  
 > A user would need to create a custom validator when the existing validators do not fully address the specific requirements of their dataset or model. Since most validators are designed to handle common scenarios, a custom validator becomes necessary for unique use cases, such as enforcing specialized constraints on dataset structure, validating custom metadata fields, or ensuring compatibility with a novel model type. Custom validators allow users to define tailored validation logic that aligns with the specific needs of their model and dataset, ensuring accurate and reliable results.
 
 All validators must inherit from one of the following:
@@ -59,18 +79,30 @@ All validators must inherit from one of the following:
     - Required keys in `.obs` and `.var`
     - Gene naming conventions (e.g., `ENSG` prefix for human)
 
-Validators are mixed into the implementation class via inheritance:
+Validators are integrated into the implementation class using inheritance. Here's an example of how to create a new Single Cell Validator:
 
-```python
-class MyModelValidator(BaseSingleCellValidator):
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = ["cell_type"]
-    required_var_keys = ["feature_name"]
-    model_type = ModelType.MY_MODEL
+1. **Add a new validator:**  
+    ```python
+    class MyModelValidator(BaseSingleCellValidator):
+        available_organisms = [Organism.HUMAN]
+        required_obs_keys = ["cell_type"]
+        required_var_keys = ["feature_name"]
+        model_type = ModelType.MY_MODEL
 
-class MyModel(MyModelValidator, BaseModelImplementation):
-    ...
-```
+        @property
+        def inputs(self) -> Set[DataType]:
+            return {DataType.ANNDATA, DataType.METADATA}
+
+        @property
+        def outputs(self) -> Set[DataType]:
+            return {DataType.EMBEDDING}
+
+    class MyModel(MyModelValidator, BaseModelImplementation):
+        ...
+    ```
+2. **Update __init__.py:**  
+   - Add your validator to `validators/__init__.py`
+
 
 ### Best Practices for Validators
 
@@ -99,28 +131,6 @@ except ValueError as e:
     print(f"Validation failed: {e}")
 ```
 
-## Model Directory Structure
-
-The `models/` directory is organized as follows:
-
-```
-models/
-├── __init__.py
-├── README.md
-├── implementations/                  # Model implementations
-│   ├── __init__.py
-│   ├── base_model_implementation.py  # Base implementation class
-│   └── README.md
-└── validators/                       # Model validators
-        ├── __init__.py
-        ├── base_model_validator.py       # Base validator class
-        ├── base_single_cell_model_validator.py
-        ├── <model-specific-validator>.py
-        └── README.md
-```
-
-- **`implementations/`**: Contains model-specific implementations.
-- **`validators/`**: Contains model-specific validation rules.
 
 ## Developer Guide: Writing a New Model
 
@@ -196,5 +206,12 @@ class MyModel(MyModelValidator, BaseModelImplementation):
         super().run()  # Handles I/O, validation, and execution
 ```
 
-> **Note:**  
 > The example above is specific to the Single Cell Transcriptomics domain space.
+
+
+## Related References
+
+- [Add a Custom Model](../how_to_guides/add_custom_model.md)  
+- [Add a Task](../how_to_guides/add_new_task.md)  
+- [Add a Metric](../how_to_guides/add_new_metric.md)  
+- [Working on model in interactive mode](../how_to_guides/interactive_mode.md) 

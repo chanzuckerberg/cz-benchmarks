@@ -47,12 +47,15 @@ To define a new evaluation task:
 
 1. **Inherit from** [BaseTask](../autoapi/czbenchmarks/tasks/base/index)
 
+
 2. **Choose the Right Location**:  
     - If the task is generic and works across multiple modalities, add it to the `tasks/` directory.
     - If the task is specific to a particular modality, add it to the appropriate subdirectory (e.g., `single_cell/`, `imaging/`).
 
+
 3. **Create the Task File**:  
     Each task should be implemented in its own file. Below is an example skeleton for creating a new task:
+
 
 4. **Override the following methods:**
 
@@ -61,20 +64,25 @@ To define a new evaluation task:
     - `_run_task(data, model_type)`: executes task logic using input data and model outputs
     - `_compute_metrics()`: returns a list of `MetricResult` objects
 
+
 5. **Update `__init__.py`**:  
     - For generic tasks, add the new task to `tasks/__init__.py`.
     - For specialized tasks, add the new task to the `__init__.py` file in the corresponding modality-specific subdirectory.
+
 
 6. **Documentation**:  
     - Add detailed docstrings to your task class and methods.
     - Update the relevant documentation files to include the new task.
 
+
 7. **Optional Features**:  
     - Set `requires_multiple_datasets = True` if your task operates on a list of datasets
     - Call `self.set_baseline(dataset)` in your task to enable PCA baseline comparisons
 
+
 8. **Return Metrics**:  
-    Use the [MetricRegistry](../autoapi/czbenchmarks/metrics/types/index) to compute and return standard metrics with strong typing.
+    - Use the [MetricRegistry](../autoapi/czbenchmarks/metrics/types/index) to compute and return standard metrics with strong typing.
+
 
 9. **Example Skeleton**:  
 
