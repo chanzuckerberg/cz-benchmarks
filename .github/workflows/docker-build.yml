@@ -37,6 +37,8 @@ jobs:
             custom_tag: geneformer
           - dockerfile: docker/transcriptformer/Dockerfile
             custom_tag: transcriptformer
+          - dockerfile: docker/aido/Dockerfile
+            custom_tag: aido  
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v4

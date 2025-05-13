@@ -1,6 +1,11 @@
 from enum import Enum
-from typing import Dict
-from ..datasets.types import DataType, DataValue
+from typing import Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..datasets.types import DataType, DataValue
+else:
+    DataType = "DataType"
+    DataValue = "DataValue"
 
 
 class ModelType(Enum):
@@ -10,6 +15,7 @@ class ModelType(Enum):
     GENEFORMER = "GENEFORMER"
     SCGENEPT = "SCGENEPT"
     UCE = "UCE"
+    AIDO = "AIDO"
     TRANSCRIPTFORMER = "TRANSCRIPTFORMER"
 
     def __hash__(self):
@@ -24,7 +30,7 @@ class ModelType(Enum):
         return self.name
 
     def __repr__(self):
-        return self.name
+        return f"{self.__class__.__name__}.{self.value}"
 
 
 # Type alias for model outputs
