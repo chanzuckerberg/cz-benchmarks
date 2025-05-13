@@ -47,7 +47,7 @@ However, please note that this is a very early stage project and as such, we exp
 ---
 
 ## 🚀 Future Ideas:
-- Refine contribution workflow for comprehensive suite of [assets – models, datasets, tasks, metrics]((docs/source/assets.md))
+- Refine contribution workflow for comprehensive suite of [assets – models, datasets, tasks, metrics](./assets.md)
 - NVIDIA tutorials to assist developers in leveraging cz-benchmarks in their workflows
 - Benchmarking on held-out datasets via hosted inference
 - 🔬 Expand domain focus: DNA-based models, spatial transcriptomics
