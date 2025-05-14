@@ -75,17 +75,17 @@ Class Diagrams
 
 
 .. autoclasstree::  czbenchmarks.datasets 
-   :name: class-diagram
+   :name: class-diagram-datasets
    :alt: Class diagram for cz-benchmarks Datasets
    :zoom:
 
 .. autoclasstree:: czbenchmarks.models.implementations czbenchmarks.models.validators
-   :name: class-diagram
+   :name: class-diagram-validators
    :alt: Class diagram for cz-benchmarks Models
    :zoom:
 
 .. autoclasstree:: czbenchmarks.tasks czbenchmarks.tasks.single_cell
-   :name: class-diagram
+   :name: class-diagram-tasks
    :alt: Class diagram for cz-benchmarks Tasks
    :zoom:
 

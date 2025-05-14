@@ -34,21 +34,22 @@ class MetricType(Enum):
 
 
 class MetricInfo(BaseModel):
-    """Stores metadata about a metric.
-
-    Attributes:
-        func: The function that computes the metric
-        required_args: Set of required argument names
-        default_params: Default parameters for the metric function
-        description: Optional documentation string for custom metrics
-        tags: Set of tags for grouping related metrics
-    """
+    """Stores metadata about a metric."""
 
     func: Callable
+    """The function that computes the metric"""
+
     required_args: Set[str]
+    """Set of required argument names"""
+
     default_params: Dict[str, Any]
+    """Default parameters for the metric function"""
+
     description: Optional[str] = None
+    """Optional documentation string for custom metrics"""
+
     tags: Set[str] = None
+    """Set of tags for grouping related metrics"""
 
 
 class MetricRegistry:

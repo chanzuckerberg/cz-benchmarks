@@ -1,6 +1,6 @@
 # Roadmap
 
-👋 Welcome to the public roadmap for the cz-benchmarks package — a collaborative effort to enable the scientific community to conduct reproducible, biologically-relevant benchmarking of AI models for biology, across domains [learn more](/README.md).
+👋 Welcome to the public roadmap for the cz-benchmarks package — a collaborative effort to enable the scientific community to conduct reproducible, biologically-relevant benchmarking of AI models for biology, across domains.
 
 The roadmap reflects our initial priorities and sequencing of work. Our goals in sharing this roadmap are to enable community engagement and contribution through transparency without this, we know that our work here cannot be successful.
 
@@ -46,7 +46,7 @@ However, please note that this is a very early stage project and as such, we exp
 
 ---
 
-## 🚀 Future Ideas:
+## 🚀 Future Ideas
 - Refine contribution workflow for comprehensive suite of [assets – models, datasets, tasks, metrics](./assets.md)
 - NVIDIA tutorials to assist developers in leveraging cz-benchmarks in their workflows
 - Benchmarking on held-out datasets via hosted inference
@@ -61,4 +61,4 @@ Our goal is to work towards a community developed benchmarking resource that wil
 - **Roadmap Leads**: Katrina Kalantar, Olivia Holmes (CZI) and Laksshman Sundaram, TJ Chen (NVIDIA)
 - **Tech Leads**: Sanchit Gupta, Andrew Tolopko (CZI) and Ankit Sethia, Michelle Gill (NVIDIA)
 
-Roadmap alignment and decision making are completed by the Roadmap Leads, in close collaboration with the Tech Leads, by consensus wherever possible. CZI SciTech currently maintains ownership of the repository and holds final decision-making authority. We will be working in close collaboration with NVIDIA to execute the roadmap and will continue to evolve the governance structure based on project needs, community growth, and resourcing. Guidelines and governance for included assets are available [here](docs/source/assets.md).
+Roadmap alignment and decision making are completed by the Roadmap Leads, in close collaboration with the Tech Leads, by consensus wherever possible. CZI SciTech currently maintains ownership of the repository and holds final decision-making authority. We will be working in close collaboration with NVIDIA to execute the roadmap and will continue to evolve the governance structure based on project needs, community growth, and resourcing. Guidelines and governance for included assets are available [here](./assets.md).
