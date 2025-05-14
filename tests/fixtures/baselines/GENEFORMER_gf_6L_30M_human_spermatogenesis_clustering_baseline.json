@@ -1,5 +1,5 @@
 {
-  "czbenchmarks_version": "0.8.0",
+  "czbenchmarks_version": "v0.8.0+e1f73da.dirty",
   "args": "czbenchmarks tests/models/test_cli_model_regression.py",
   "task_results": [
     {
