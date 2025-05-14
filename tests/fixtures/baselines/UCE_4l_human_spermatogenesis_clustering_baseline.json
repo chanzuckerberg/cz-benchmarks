@@ -1,0 +1,60 @@
+{
+  "czbenchmarks_version": "0.8.0",
+  "args": "czbenchmarks tests/models/test_cli_model_regression.py",
+  "task_results": [
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "UCE",
+      "dataset_names": [
+        "human_spermatogenesis"
+      ],
+      "dataset_names_display": [
+        "Spermatogenesis - Homo sapiens"
+      ],
+      "model_args": {
+        "model_variant": "4l"
+      },
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.4551708991582171,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.6492664211926745,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "UCE-4L"
+    },
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "BASELINE",
+      "dataset_names": [
+        "human_spermatogenesis"
+      ],
+      "dataset_names_display": [
+        "Spermatogenesis - Homo sapiens"
+      ],
+      "model_args": {},
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.4630210897592212,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.7162501333431072,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "Baseline"
+    }
+  ]
+}
