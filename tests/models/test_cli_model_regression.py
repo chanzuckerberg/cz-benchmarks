@@ -91,6 +91,11 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
         with open(results_file) as actual_results, open(baseline_file) as expected_results:
             actual_json = json.load(actual_results)
             expected_json = json.load(expected_results)
+
+            # Ignore czbenchmarks_version field
+            actual_json.pop("czbenchmarks_version", None)
+            expected_json.pop("czbenchmarks_version", None)
+
             # Compare metrics with percentage tolerance
             compare_metrics(actual_json, expected_json, tolerance_percent=tolerance_percent, results_file=results_file, baseline_file=baseline_file)
     else:
