@@ -6,23 +6,22 @@ from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, wr
 from czbenchmarks.tasks import ClusteringTask
 from unittest.mock import patch, MagicMock
 from datetime import datetime
+import os
 
 MODEL_VARIANT_TEST_CASES = [
-    ("SCGPT", "human"),
-    ("SCVI", "homo_sapiens"),
-    ("GENEFORMER", "gf_6L_30M"),
-    ("SCGENEPT", "scgpt__adamson"),
-    ("UCE", "4l"),
-    ("TRANSCRIPTFORMER", "tf-sapiens"),
+    ("SCGPT", "human", "human_spermatogenesis"),
+    ("SCVI", "homo_sapiens", "human_spermatogenesis"),
+    ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis"),
+    ("SCGENEPT", "scgpt__adamson", "adamson_perturbation"),
+    ("UCE", "4l", "human_spermatogenesis"),
+    ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis"),
 ]
 
 @pytest.mark.parametrize(
     "model_name,variant,dataset_name,task_name",
     [
-        (model, variant, dataset, task)
-        for model, variant in MODEL_VARIANT_TEST_CASES
-        for dataset in ["human_spermatogenesis"]
-        for task in ["clustering"]
+        (model, variant, dataset, "clustering")
+        for model, variant, dataset in MODEL_VARIANT_TEST_CASES
     ]
 )
 def test_model_regression(model_name, variant, dataset_name, task_name, tolerance_percent, mock_container_runner):
@@ -38,6 +37,11 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     The test ensures that model outputs remain consistent with previously established baselines.
     If the baseline file doesn't exist, it will be created for future comparisons.
     """
+    # Skip TranscriptFormer test if required weights file is missing
+    if model_name == "TRANSCRIPTFORMER":
+        if not os.path.exists("/weights/all_embeddings/homo_sapiens_gene.h5"):
+            pytest.skip("Skipping TranscriptFormer test: /weights/all_embeddings/homo_sapiens_gene.h5 not found.")
+
     #region Setup
     dataset = load_dataset(dataset_name)
     assert dataset is not None, f"Failed to load dataset {dataset_name}"
