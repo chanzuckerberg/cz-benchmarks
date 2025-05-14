@@ -11,10 +11,8 @@ Usage:
 import argparse
 import logging
 import sys
-import tomli
-from pathlib import Path
-from importlib.metadata import version, PackageNotFoundError
 from czbenchmarks.cli import cli_list, cli_run
+from czbenchmarks.cli.utils import get_version
 
 log = logging.getLogger(__name__)
 
@@ -60,24 +58,6 @@ def main() -> None:
 
     elif args.action == "run":
         cli_run.main(args)
-
-
-def get_version() -> str:
-    """
-    Get the current version of the czbenchmarks library.
-    """
-    try:
-        return version("czbenchmarks")
-    except PackageNotFoundError:
-        log.debug(
-            "Package `czbenchmarks` is not installed: fetching version info from pyproject.toml"
-        )
-
-    # In development this lib might not be installed as a package so try loading from pyproject.toml
-    pyproject_path = Path(__file__).parent.parent.parent.parent / "pyproject.toml"
-    with open(pyproject_path, "rb") as f:
-        pyproject = tomli.load(f)
-    return pyproject["project"]["version"]
 
 
 if __name__ == "__main__":
