@@ -2,7 +2,7 @@ import pytest
 import json
 from pathlib import Path
 from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results
+from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results, CacheOptions
 from czbenchmarks.tasks import ClusteringTask
 from unittest.mock import patch, MagicMock
 from datetime import datetime
@@ -60,10 +60,17 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     #endregion
 
     #region Run Inference and Task
+    cache_options = CacheOptions(
+        download_embeddings=False,
+        upload_embeddings=False,
+        upload_results=False,
+        remote_cache_url=""
+    )
     task_results = run_with_inference(
         dataset_names=[dataset_name],
         model_args=model_args,
         task_args=task_args,
+        cache_options=cache_options,
     )
     #endregion
     
