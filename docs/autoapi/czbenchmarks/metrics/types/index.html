@@ -186,58 +186,33 @@ The value is the string identifier used in results dictionaries.</p>
 <p>Stores metadata about a metric.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.func">
-<span class="sig-name descname"><span class="pre">func</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.func" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">func</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.func" title="Link to this definition"></a></dt>
 <dd><p>The function that computes the metric</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.required_args">
-<span class="sig-name descname"><span class="pre">required_args</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.required_args" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required_args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.required_args" title="Link to this definition"></a></dt>
 <dd><p>Set of required argument names</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.default_params">
-<span class="sig-name descname"><span class="pre">default_params</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.default_params" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">default_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.default_params" title="Link to this definition"></a></dt>
 <dd><p>Default parameters for the metric function</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.description">
-<span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.description" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.description" title="Link to this definition"></a></dt>
 <dd><p>Optional documentation string for custom metrics</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.tags">
-<span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.tags" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.tags" title="Link to this definition"></a></dt>
 <dd><p>Set of tags for grouping related metrics</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">func</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">required_args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id2">
-<span class="sig-name descname"><span class="pre">default_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id3">
-<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id4">
-<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 

@@ -5,13 +5,11 @@ czbenchmarks.cli.cli
 
 .. autoapi-nested-parse::
 
-   czbenchmarks CLI
+   The ``czbenchmarks`` CLI. A command-line utility for running benchmark tasks.
 
    Usage:
-       czbenchmarks list [datasets|models|tasks]
-       czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name>
-           [--output-file <output_file>]
-           [--save-processed-datasets <output_dir>]
+       ``czbenchmarks list [datasets|models|tasks]``
+       ``czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> [--output-file <output_file>] [--save-processed-datasets <output_dir>]``
 
 
 

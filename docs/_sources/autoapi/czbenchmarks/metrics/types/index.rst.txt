@@ -101,37 +101,23 @@ Module Contents
 
    Stores metadata about a metric.
 
-   .. attribute:: func
-
-      The function that computes the metric
-
-   .. attribute:: required_args
-
-      Set of required argument names
-
-   .. attribute:: default_params
-
-      Default parameters for the metric function
-
-   .. attribute:: description
-
-      Optional documentation string for custom metrics
-
-   .. attribute:: tags
-
-      Set of tags for grouping related metrics
-
 
    .. py:attribute:: func
       :type:  Callable
+
+      The function that computes the metric
 
 
    .. py:attribute:: required_args
       :type:  Set[str]
 
+      Set of required argument names
+
 
    .. py:attribute:: default_params
       :type:  Dict[str, Any]
+
+      Default parameters for the metric function
 
 
    .. py:attribute:: description
@@ -139,11 +125,15 @@ Module Contents
       :value: None
 
 
+      Optional documentation string for custom metrics
+
 
    .. py:attribute:: tags
       :type:  Set[str]
       :value: None
 
+
+      Set of tags for grouping related metrics
 
 
 .. py:class:: MetricRegistry

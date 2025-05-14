@@ -160,21 +160,22 @@ window.addEventListener("load", load);
 <div class="viewcode-block" id="MetricInfo">
 <a class="viewcode-back" href="../../../autoapi/czbenchmarks/metrics/types/index.html#czbenchmarks.metrics.types.MetricInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MetricInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores metadata about a metric.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        func: The function that computes the metric</span>
-<span class="sd">        required_args: Set of required argument names</span>
-<span class="sd">        default_params: Default parameters for the metric function</span>
-<span class="sd">        description: Optional documentation string for custom metrics</span>
-<span class="sd">        tags: Set of tags for grouping related metrics</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores metadata about a metric.&quot;&quot;&quot;</span>
 
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The function that computes the metric&quot;&quot;&quot;</span>
+
     <span class="n">required_args</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set of required argument names&quot;&quot;&quot;</span>
+
     <span class="n">default_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default parameters for the metric function&quot;&quot;&quot;</span>
+
     <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optional documentation string for custom metrics&quot;&quot;&quot;</span>
+
+    <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set of tags for grouping related metrics&quot;&quot;&quot;</span></div>
 
 
 

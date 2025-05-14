@@ -37,25 +37,23 @@ Package Contents
    - Running inference
    - Saving results
 
-   .. attribute:: datasets
-
-      List of datasets to process
-
-   .. attribute:: model_weights_dir
-
-      Directory containing model weights
-
 
    .. py:attribute:: datasets
       :type:  List[czbenchmarks.datasets.BaseDataset]
+
+      List of datasets to process
 
 
    .. py:attribute:: model_weights_dir
       :type:  str
 
+      Directory containing model weights
+
 
    .. py:attribute:: args
       :type:  argparse.Namespace
+
+      Parsed command-line arguments
 
 
    .. py:method:: get_model_weights_subdir(dataset: czbenchmarks.datasets.BaseDataset) -> str

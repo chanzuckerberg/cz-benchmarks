@@ -1,6 +1,6 @@
 # Release Process
 
-#### Diagram of Release Workflow  
+## Diagram of Release Workflow  
 
 ![Release Workflow Diagram](./release_workflow.png)
 

@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.datasets.utils &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">czbenchmarks.datasets.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for czbenchmarks.datasets.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hydra</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydra.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">instantiate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmegaConf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATASETS_CACHE_PATH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_hydra</span><span class="p">,</span> <span class="n">download_file_from_remote</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataset</span>
+
+
+<div class="viewcode-block" id="load_dataset">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.load_dataset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_dataset</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">config_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download and instantiate a dataset using Hydra configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_name: Name of dataset as specified in config</span>
+<span class="sd">        config_path: Optional path to config yaml file. If not provided,</span>
+<span class="sd">                    will use only the package&#39;s default config.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        BaseDataset: Instantiated dataset object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initialize_hydra</span><span class="p">()</span>
+
+    <span class="c1"># Load default config first and make it unstructured</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">hydra</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;datasets&quot;</span><span class="p">),</span> <span class="n">resolve</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># If custom config provided, load and merge it</span>
+    <span class="k">if</span> <span class="n">config_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Expand user path (handles ~)</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Custom config file not found: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Load custom config</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">custom_cfg</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+
+        <span class="c1"># Merge configs</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">custom_cfg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dataset_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset </span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2"> not found in config&quot;</span><span class="p">)</span>
+
+    <span class="n">dataset_info</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span>
+    <span class="n">original_path</span> <span class="o">=</span> <span class="n">dataset_info</span><span class="o">.</span><span class="n">path</span>
+
+    <span class="n">is_s3_path</span> <span class="o">=</span> <span class="n">original_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;s3://&quot;</span><span class="p">)</span>
+    <span class="n">expanded_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">original_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_s3_path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">expanded_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Local dataset file not found: </span><span class="si">{</span><span class="n">expanded_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Setup cache path</span>
+        <span class="n">cache_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">DATASETS_CACHE_PATH</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">.h5ad&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Only download if file doesn&#39;t exist</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">):</span>
+            <span class="n">download_file_from_remote</span><span class="p">(</span><span class="n">original_path</span><span class="p">,</span> <span class="n">cache_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">.h5ad&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Update path to cached file</span>
+        <span class="n">dataset_info</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">cache_file</span>
+
+    <span class="c1"># Instantiate the dataset using Hydra</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">instantiate</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">)</span>
+    <span class="n">dataset</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+
+<div class="viewcode-block" id="list_available_datasets">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.list_available_datasets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_available_datasets</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lists all available datasets defined in the datasets.yaml configuration file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A sorted list of dataset names available in the configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initialize_hydra</span><span class="p">()</span>
+
+    <span class="c1"># Load the datasets configuration</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">hydra</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;datasets&quot;</span><span class="p">),</span> <span class="n">resolve</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Extract dataset names</span>
+    <span class="n">dataset_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datasets&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="c1"># Sort alphabetically for easier reading</span>
+    <span class="n">dataset_names</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">dataset_names</span></div>
+
+
+
+<span class="n">_DATASET_TO_DISPLAY_NAME</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;adamson_perturb&quot;</span><span class="p">:</span> <span class="s2">&quot;Adamson&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;norman_perturb&quot;</span><span class="p">:</span> <span class="s2">&quot;Norman&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dixit_perturb&quot;</span><span class="p">:</span> <span class="s2">&quot;Dixit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;replogle_k562_perturb&quot;</span><span class="p">:</span> <span class="s2">&quot;Replogle K562&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;replogle_rpe1_perturb&quot;</span><span class="p">:</span> <span class="s2">&quot;Replogle RPE1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;human_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Homo sapiens&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mouse_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Mus musculus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rhesus_macaque_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Macaca mulatta&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gorilla_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Gorilla gorilla&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chimpanzee_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Pan troglodytes&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;marmoset_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Callithrix jacchus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chicken_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Gallus gallus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;opossum_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Monodelphis domestica&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;platypus_spermatogenesis&quot;</span><span class="p">:</span> <span class="s2">&quot;Spermatogenesis - Ornithorhynchus anatinus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_bladder&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Bladder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_blood&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Blood&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_bone_marrow&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Bone marrow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_ear&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Ear&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_eye&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Eye&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_fat&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Fat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_heart&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Heart&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_large_intestine&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Large intestine&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_liver&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Liver&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_lung&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Lung&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_lymph_node&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Lymph node&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_mammary&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Mammary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_muscle&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Muscle&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_ovary&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Ovary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_prostate&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Prostate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_salivary_gland&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Salivary gland&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_skin&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Skin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_small_intestine&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Small intestine&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_spleen&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Spleen&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_stomach&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Stomach&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_testis&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Testis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_thymus&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Thymus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_tongue&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Tongue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_trachea&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Trachea&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_uterus&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Uterus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tsv2_vasculature&quot;</span><span class="p">:</span> <span class="s2">&quot;Tabula Sapiens 2.0 - Vasculature&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="dataset_to_display_name">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/utils/index.html#czbenchmarks.datasets.dataset_to_display_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dataset_to_display_name</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;try to map dataset names to more uniform, pretty strings&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_DATASET_TO_DISPLAY_NAME</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="c1"># e.g. &quot;my_awesome_dataset&quot; -&gt; &quot;My awesome dataset&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">dataset_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="o">*</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
