@@ -2,17 +2,32 @@ import logging
 import sys
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.runner import run_inference
-from czbenchmarks.tasks.simple import SimpleTask
+from czbenchmarks.tasks import (
+    ClusteringTask,
+    EmbeddingTask,
+    MetadataLabelPredictionTask,
+)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    dataset = load_dataset("healthy_human_liver", config_path="src/czbenchmarks/conf/my_datasets.yaml")
-    dataset.load_data()
-    dataset.validate()
-    print(dataset.get_input("ANNDATA"))
+    dataset = load_dataset("tsv2_bladder")
 
-    dataset = run_inference("SCVI", dataset)
-    print(dataset.get_output("SCVI", "EMBEDDING"))
-    
-    result = SimpleTask(my_param=10).run(dataset)
-    print(result)
+    for model_name in ["SCVI", "SCGPT"]:
+        # Add embeddings to the dataset for each model
+        dataset = run_inference(model_name, dataset)
+
+    task = ClusteringTask(label_key="cell_type")
+    clustering_results = task.run(dataset)
+
+    task = EmbeddingTask(label_key="cell_type")
+    embedding_results = task.run(dataset)
+
+    task = MetadataLabelPredictionTask(label_key="cell_type")
+    prediction_results = task.run(dataset)
+
+    print("Clustering results:")
+    print(clustering_results)
+    print("Embedding results:")
+    print(embedding_results)
+    print("Prediction results:")
+    print(prediction_results)
