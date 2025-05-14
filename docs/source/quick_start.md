@@ -15,7 +15,7 @@ Before you begin, ensure you have the following installed:
 
 You can install the library using one of the following methods:
 
-### Option 1: Install from PyPI (Recommended - WIP)
+### Option 1: Install from PyPI (Recommended)
 
 The easiest way to install the library is via PyPI:
 

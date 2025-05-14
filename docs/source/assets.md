@@ -76,7 +76,6 @@ The following models were benchmarked using the Tabula Sapiens v2 dataset, per t
 - AIDO.Cell 3M
 - Geneformer  gf-12L-95M-i4096
 - Linear baseline
-- scGenePT
 - scGPT
 - scVI - Census 2023-12-15
 - Transcriptformer Examplar
@@ -167,6 +166,7 @@ At this stage, the cz-benchmarks project represents an initial prototype and pol
 
 - All content (models, tasks, metrics) included in cz-benchmarks currently represents a subset of recommendations from CZI staff.
 - Models included within the package have been contributed by CZI, on behalf of model developers. Feedback from model developers is being sourced via direct outreach to these individuals.
-- Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the roadmap [link]. Formal asset contribution and asset governance policies are in development.
+- Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the [roadmap](./roadmap.md). Formal asset contribution and asset governance policies are in development.
+- **Note**: TranscriptFormer was developed by the CZI AI team using separate task implementations. The cz-benchmarks task definitions, developed by the CZI SciTech team, were not included as a part of TranscriptFormer training and evaluation.
 - At this phase, the CZI SciTech team will guide initial decisions, coordinate updates, and ensure that all assets conform to policy requirements (licensing, versioning, etc.) through direct collaboration with working groups, composed of domain-specific experts from the broader scientific community and partners. 
 - We value your feedback -- feel free to open a GitHub issue or reach out to us at virtualcellmodels@chanzuckerberg.com.
