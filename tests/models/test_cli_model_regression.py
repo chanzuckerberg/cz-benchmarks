@@ -57,15 +57,16 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
             baseline_args={},  # Add empty baseline args
         ),
     ]
-    #endregion
 
-    #region Run Inference and Task
     cache_options = CacheOptions(
         download_embeddings=False,
         upload_embeddings=False,
         upload_results=False,
         remote_cache_url=""
     )
+    #endregion
+
+    #region Run Inference and Task
     task_results = run_with_inference(
         dataset_names=[dataset_name],
         model_args=model_args,
@@ -82,9 +83,9 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     results_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_results.json"
     
     if not baseline_file.exists():
-        write_results(task_results, output_format="json", output_file=str(baseline_file))
+        write_results(task_results, output_format="json", output_file=str(baseline_file), cache_options=cache_options)
         pytest.fail(f"Baseline file {baseline_file} did not exist and was created. Please review and commit this file.")
-    write_results(task_results, output_format="json", output_file=str(results_file))
+    write_results(task_results, output_format="json", output_file=str(results_file), cache_options=cache_options)
     
     if baseline_file.exists():
         with open(results_file) as actual_results, open(baseline_file) as expected_results:
