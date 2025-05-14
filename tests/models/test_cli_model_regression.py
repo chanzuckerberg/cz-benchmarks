@@ -61,22 +61,11 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     #endregion
 
     #region Run Inference and Task
-    if mock_container_runner:  # --mock-container-runner argument passed to test on the command line
-        # Mock the ContainerRunner class to avoid nvidia runtime error if not available
-        mock_runner = MagicMock()
-        mock_runner.run.return_value = dataset
-        with patch('czbenchmarks.runner.ContainerRunner', return_value=mock_runner):
-            task_results = run_with_inference(
-                dataset_names=[dataset_name],
-                model_args=model_args,
-                task_args=task_args,
-            )
-    else:
-        task_results = run_with_inference(
-            dataset_names=[dataset_name],
-            model_args=model_args,
-            task_args=task_args,
-        )
+    task_results = run_with_inference(
+        dataset_names=[dataset_name],
+        model_args=model_args,
+        task_args=task_args,
+    )
     #endregion
     
     #region Save and Compare Results
