@@ -137,10 +137,11 @@ class BaseDataset(ABC):
         pass
 
     def validate(self) -> None:
+        """Validate that all inputs and outputs match their expected types"""
+
         if not os.path.exists(self.path):
             raise ValueError("Dataset path does not exist")
 
-        """Validate that all inputs and outputs match their expected types"""
         for data_type, value in self.inputs.items():
             self._validate_type(value, data_type.dtype, f"Input {data_type.name}")
 

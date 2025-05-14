@@ -35,15 +35,16 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     - Downloading model weights
     - Running inference
     - Saving results
-
-    Attributes:
-        datasets: List of datasets to process
-        model_weights_dir: Directory containing model weights
     """
 
     datasets: List[BaseDataset]
+    """List of datasets to process"""
+
     model_weights_dir: str
+    """Directory containing model weights"""
+
     args: Namespace
+    """Parsed command-line arguments"""
 
     def __init__(self, **user_kwargs):
         super().__init__()
