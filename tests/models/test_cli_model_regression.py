@@ -24,7 +24,7 @@ MODEL_VARIANT_TEST_CASES = [
         for model, variant, dataset in MODEL_VARIANT_TEST_CASES
     ]
 )
-def test_model_regression(model_name, variant, dataset_name, task_name, tolerance_percent, mock_container_runner):
+def test_model_regression(model_name, variant, dataset_name, task_name, tolerance_percent):
     """
     Model regression test for CLI end-to-end workflow.
     
