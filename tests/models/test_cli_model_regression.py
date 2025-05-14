@@ -37,11 +37,6 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     The test ensures that model outputs remain consistent with previously established baselines.
     If the baseline file doesn't exist, it will be created for future comparisons.
     """
-    # Skip TranscriptFormer test if required weights file is missing
-    if model_name == "TRANSCRIPTFORMER":
-        if not os.path.exists("/weights/all_embeddings/homo_sapiens_gene.h5"):
-            pytest.skip("Skipping TranscriptFormer test: /weights/all_embeddings/homo_sapiens_gene.h5 not found.")
-
     #region Setup
     dataset = load_dataset(dataset_name)
     assert dataset is not None, f"Failed to load dataset {dataset_name}"
