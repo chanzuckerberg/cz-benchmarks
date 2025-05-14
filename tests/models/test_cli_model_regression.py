@@ -12,7 +12,7 @@ MODEL_VARIANT_TEST_CASES = [
     ("SCGPT", "human", "human_spermatogenesis"),
     ("SCVI", "homo_sapiens", "human_spermatogenesis"),
     ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis"),
-    ("SCGENEPT", "scgpt__adamson", "adamson_perturbation"),
+    ("SCGENEPT", "scgpt__adamson", "adamson_perturb"),
     ("UCE", "4l", "human_spermatogenesis"),
     ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis"),
 ]
