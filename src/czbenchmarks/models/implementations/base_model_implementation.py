@@ -39,10 +39,10 @@ class BaseModelImplementation(BaseModelValidator, ABC):
 
     datasets: List[BaseDataset]
     """List of datasets to process"""
-    
+
     model_weights_dir: str
     """Directory containing model weights"""
-    
+
     args: Namespace
     """Parsed command-line arguments"""
 
