@@ -1,11 +1,9 @@
 """
-czbenchmarks CLI
+The ``czbenchmarks`` CLI. A command-line utility for running benchmark tasks.
 
 Usage:
-    czbenchmarks list [datasets|models|tasks]
-    czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name>
-        [--output-file <output_file>]
-        [--save-processed-datasets <output_dir>]
+    ``czbenchmarks list [datasets|models|tasks]``
+    ``czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> [--output-file <output_file>] [--save-processed-datasets <output_dir>]``
 """
 
 import argparse
@@ -21,7 +19,7 @@ def main() -> None:
     """Entry point for the czbenchmarks CLI."""
 
     parser = argparse.ArgumentParser(
-        description="czbenchmark: A command-line utility for single-cell benchmark tasks."
+        description="czbenchmark: A command-line utility for running benchmark tasks."
     )
     parser.add_argument(
         "--version",
