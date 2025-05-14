@@ -1,0 +1,44 @@
+czbenchmarks.datasets.utils
+===========================
+
+.. py:module:: czbenchmarks.datasets.utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.utils.load_dataset
+   czbenchmarks.datasets.utils.list_available_datasets
+   czbenchmarks.datasets.utils.dataset_to_display_name
+
+
+Module Contents
+---------------
+
+.. py:function:: load_dataset(dataset_name: str, config_path: Optional[str] = None) -> czbenchmarks.datasets.base.BaseDataset
+
+   Download and instantiate a dataset using Hydra configuration.
+
+   :param dataset_name: Name of dataset as specified in config
+   :param config_path: Optional path to config yaml file. If not provided,
+                       will use only the package's default config.
+
+   :returns: Instantiated dataset object
+   :rtype: BaseDataset
+
+
+.. py:function:: list_available_datasets() -> List[str]
+
+   Lists all available datasets defined in the datasets.yaml configuration file.
+
+   :returns: A sorted list of dataset names available in the configuration.
+   :rtype: list
+
+
+.. py:function:: dataset_to_display_name(dataset_name: str) -> str
+
+   try to map dataset names to more uniform, pretty strings
+
+

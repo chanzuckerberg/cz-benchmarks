@@ -1,0 +1,116 @@
+czbenchmarks.models.implementations.base_model_implementation
+=============================================================
+
+.. py:module:: czbenchmarks.models.implementations.base_model_implementation
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.models.implementations.base_model_implementation.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.models.implementations.base_model_implementation.BaseModelImplementation
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: BaseModelImplementation(**user_kwargs)
+
+   Bases: :py:obj:`czbenchmarks.models.validators.base_model_validator.BaseModelValidator`, :py:obj:`abc.ABC`
+
+
+   Abstract base class for model implementations.
+
+   Handles common model operations like:
+   - Loading datasets
+   - Downloading model weights
+   - Running inference
+   - Saving results
+
+   .. attribute:: datasets
+
+      List of datasets to process
+
+   .. attribute:: model_weights_dir
+
+      Directory containing model weights
+
+
+   .. py:attribute:: datasets
+      :type:  List[czbenchmarks.datasets.BaseDataset]
+
+
+   .. py:attribute:: model_weights_dir
+      :type:  str
+
+
+   .. py:attribute:: args
+      :type:  argparse.Namespace
+
+
+   .. py:method:: get_model_weights_subdir(dataset: czbenchmarks.datasets.BaseDataset) -> str
+      :abstractmethod:
+
+
+      Get subdirectory for model variant weights.
+
+      :param dataset: Dataset being processed
+
+      :returns: Subdirectory path or empty string if not needed
+
+
+
+   .. py:method:: download_model_weights(dataset: czbenchmarks.datasets.BaseDataset) -> None
+
+      Download and verify model weights.
+
+      :param dataset: Dataset being processed
+
+
+
+   .. py:method:: run_model(dataset: czbenchmarks.datasets.BaseDataset) -> None
+      :abstractmethod:
+
+
+      Implement model-specific inference logic
+
+
+
+   .. py:method:: parse_args() -> argparse.Namespace
+
+      Centralized argument parsing using subclass-defined parser
+
+
+
+   .. py:method:: create_parser() -> argparse.ArgumentParser | None
+
+      Subclasses implement to define their CLI arguments
+
+
+
+   .. py:method:: run(datasets: Optional[czbenchmarks.datasets.BaseDataset | List[czbenchmarks.datasets.BaseDataset]] = None)
+
+      Run the full model pipeline.
+
+      1. Load and validate all datasets
+      2. Download model weights
+      3. Run inference
+      4. Save results
+
+      :param datasets: List of datasets to process
+
+      :raises FileNotFoundError: If no input datasets found
+
+
+

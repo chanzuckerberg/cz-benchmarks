@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.metrics.utils &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.metrics.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/czbenchmarks/metrics/utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.metrics.utils">
+<span id="czbenchmarks-metrics-utils"></span><h1>czbenchmarks.metrics.utils<a class="headerlink" href="#module-czbenchmarks.metrics.utils" title="Link to this heading"></a></h1>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.metrics.utils.nearest_neighbors_hnsw" title="czbenchmarks.metrics.utils.nearest_neighbors_hnsw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nearest_neighbors_hnsw</span></code></a>(→ tuple[numpy.ndarray, ...)</p></td>
+<td><p>Find nearest neighbors using HNSW algorithm.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.metrics.utils.compute_entropy_per_cell" title="czbenchmarks.metrics.utils.compute_entropy_per_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_entropy_per_cell</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Compute entropy of batch labels in local neighborhoods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.metrics.utils.jaccard_score" title="czbenchmarks.metrics.utils.jaccard_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jaccard_score</span></code></a>(y_true, y_pred)</p></td>
+<td><p>Compute Jaccard similarity between true and predicted values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.metrics.utils.mean_fold_metric" title="czbenchmarks.metrics.utils.mean_fold_metric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mean_fold_metric</span></code></a>(results_df[, metric, classifier])</p></td>
+<td><p>Compute mean of a metric across folds.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.utils.nearest_neighbors_hnsw">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.utils.</span></span><span class="sig-name descname"><span class="pre">nearest_neighbors_hnsw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">48</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/utils.html#nearest_neighbors_hnsw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.utils.nearest_neighbors_hnsw" title="Link to this definition"></a></dt>
+<dd><p>Find nearest neighbors using HNSW algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Input data matrix of shape (n_samples, n_features)</p></li>
+<li><p><strong>expansion_factor</strong> – Size of dynamic candidate list for search</p></li>
+<li><p><strong>max_links</strong> – Number of bi-directional links created for every new element</p></li>
+<li><p><strong>n_neighbors</strong> – Number of nearest neighbors to find</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Indices array of shape (n_samples, n_neighbors)</p></li>
+<li><p>Distances array of shape (n_samples, n_neighbors)</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple containing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.utils.compute_entropy_per_cell">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.utils.</span></span><span class="sig-name descname"><span class="pre">compute_entropy_per_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Categorical.html#pandas.Categorical" title="(in pandas v2.2.3)"><span class="pre">pandas.Categorical</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.2.3)"><span class="pre">pandas.Series</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/utils.html#compute_entropy_per_cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.utils.compute_entropy_per_cell" title="Link to this definition"></a></dt>
+<dd><p>Compute entropy of batch labels in local neighborhoods.</p>
+<p>For each cell, finds nearest neighbors and computes entropy of
+batch label distribution in that neighborhood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> – Cell embedding matrix of shape (n_cells, n_features)</p></li>
+<li><p><strong>labels</strong> – Series containing batch labels for each cell</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of entropy values for each cell, normalized by log of number of batches</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.utils.jaccard_score">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.utils.</span></span><span class="sig-name descname"><span class="pre">jaccard_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/utils.html#jaccard_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.utils.jaccard_score" title="Link to this definition"></a></dt>
+<dd><p>Compute Jaccard similarity between true and predicted values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – True values</p></li>
+<li><p><strong>y_pred</strong> – Predicted values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.utils.mean_fold_metric">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.utils.</span></span><span class="sig-name descname"><span class="pre">mean_fold_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/utils.html#mean_fold_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.utils.mean_fold_metric" title="Link to this definition"></a></dt>
+<dd><p>Compute mean of a metric across folds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results_df</strong> – <p>DataFrame containing cross-validation results. Must have columns:
+- “classifier”: Name of the classifier (e.g., “lr”, “knn”)
+- One of the following metric columns:</p>
+<blockquote>
+<div><ul>
+<li><p>”accuracy”: For accuracy scores</p></li>
+<li><p>”f1”: For F1 scores</p></li>
+<li><p>”precision”: For precision scores</p></li>
+<li><p>”recall”: For recall scores</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>metric</strong> – Name of metric column to average (“accuracy”, “f1”, etc.)</p></li>
+<li><p><strong>classifier</strong> – Optional classifier name to filter results</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mean value of the metric across folds</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><strong>KeyError</strong></a> – If the specified metric column is not present in results_df</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

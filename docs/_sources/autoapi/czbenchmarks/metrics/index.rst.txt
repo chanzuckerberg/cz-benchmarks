@@ -1,0 +1,35 @@
+czbenchmarks.metrics
+====================
+
+.. py:module:: czbenchmarks.metrics
+
+.. autoapi-nested-parse::
+
+   Metrics package for evaluating model performance.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/metrics/implementations/index
+   /autoapi/czbenchmarks/metrics/types/index
+   /autoapi/czbenchmarks/metrics/utils/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.metrics.metrics_registry
+
+
+Package Contents
+----------------
+
+.. py:data:: metrics_registry
+

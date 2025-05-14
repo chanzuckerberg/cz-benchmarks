@@ -1,0 +1,408 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add a Custom Model &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Add a Custom Task" href="add_new_task.html" />
+    <link rel="prev" title="Add a Custom Dataset" href="add_custom_dataset.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="add_custom_dataset.html">Add a Custom Dataset</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Add a Custom Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-1-create-a-directory-for-your-model">Step 1: Create a Directory for Your Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-2-add-a-new-modeltype">Step 2: Add a new ModelType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-3-implement-the-model-class">Step 3: Implement the Model Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-4-optional-add-a-display-name-for-your-model">Step 4: (Optional) Add a display name for your Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-5-optional-extend-basesinglecellvalidator">Step 5: (Optional) Extend <code class="docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-6-create-a-config-file-for-the-model">Step 6: Create a Config File for the Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-7-add-requirements-txt">Step 7: Add <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-8-create-a-dockerfile">Step 8: Create a <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-9-build-your-model">Step 9: Build Your Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-10-test-your-model">Step 10: Test Your Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#additional-notes">Additional Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_task.html">Add a Custom Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_metric.html">Add a Custom Metric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_mode.html">Running a Docker Container in Interactive Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualize_results.html">Visualizing Benchmark Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html">Setup Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">Add a Custom Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how_to_guides/add_custom_model.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="add-a-custom-model">
+<h1>Add a Custom Model<a class="headerlink" href="#add-a-custom-model" title="Link to this heading"></a></h1>
+<p>This guide provides a step-by-step process to integrate your own model into cz-benchmarks.</p>
+<hr class="docutils" />
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>To add a new model, you will:</p>
+<ol class="arabic simple">
+<li><p>Create a directory for your model.</p></li>
+<li><p>Implement the necessary files and classes, extending the base classes for model implementation and input validation.</p></li>
+<li><p>Test and integrate your model.</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-1-create-a-directory-for-your-model">
+<h2>Step 1: Create a Directory for Your Model<a class="headerlink" href="#step-1-create-a-directory-for-your-model" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Navigate to the <code class="docutils literal notranslate"><span class="pre">docker/</span></code> directory in your project.</p></li>
+<li><p>Create a new subdirectory for your model, e.g., <code class="docutils literal notranslate"><span class="pre">docker/your_model/</span></code>.</p></li>
+<li><p>Structure the directory as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker/your_model/
+├── Dockerfile          # Define the container environment
+├── model.py            # Implementation of your model inference code
+├── config.yaml         # Configuration file for your model
+├── requirements.txt    # (Optional) List Python dependencies
+└── assets/             # (Optional) Store model weights, vocabularies, etc.
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-2-add-a-new-modeltype">
+<h2>Step 2: Add a new ModelType<a class="headerlink" href="#step-2-add-a-new-modeltype" title="Link to this heading"></a></h2>
+<p>In the <code class="docutils literal notranslate"><span class="pre">src.czbenchmarks.models.types.ModelType</span></code> enum, add a value for your model:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span> Example:
+
+ ```
+ class ModelType(Enum):
+      ...
+      YOUR_MODEL = &quot;YOUR_MODEL&quot;
+ ```
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="step-3-implement-the-model-class">
+<h2>Step 3: Implement the Model Class<a class="headerlink" href="#step-3-implement-the-model-class" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Create a model class that extends <code class="docutils literal notranslate"><span class="pre">BaseModelImplementation</span></code>.</p></li>
+<li><p>Implement the required methods, such as <code class="docutils literal notranslate"><span class="pre">run_model</span></code>.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.implementations.base_model_implementation</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModelImplementation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">YourModel</span><span class="p">(</span><span class="n">BaseModelImplementation</span><span class="p">):</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+          <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Run YourModel on input dataset.&quot;</span><span class="p">)</span>
+          <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--your_param&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Description of your_param&quot;</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">parser</span>
+
+     <span class="n">model_type</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">YOUR_MODEL</span>
+
+     <span class="nd">@property</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+           <span class="c1"># Specify appropriate `DataType`s below</span>
+          <span class="k">return</span> <span class="p">{</span> <span class="p">}</span>
+
+     <span class="nd">@property</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+          <span class="c1"># Specify appropriate `DataType`s below (embeddings are a typical model output)</span>
+          <span class="k">return</span> <span class="p">{</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span> <span class="p">}</span>  
+
+     <span class="k">def</span><span class="w"> </span><span class="nf">get_model_weights_subdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+          <span class="k">return</span> <span class="s2">&quot;your_model&quot;</span>
+
+     <span class="k">def</span><span class="w"> </span><span class="nf">_download_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="c1"># Implement your model weight download or verification logic here.</span>
+          <span class="k">pass</span>
+
+     <span class="k">def</span><span class="w"> </span><span class="nf">run_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+          <span class="c1"># Implement inference logic:</span>
+          <span class="n">embeddings</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Run inference to produce embeddings</span>
+          <span class="n">dataset</span><span class="o">.</span><span class="n">set_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+      <span class="n">YourModel</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Note that you can access any arguments specified in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> or via command-line options using <code class="docutils literal notranslate"><span class="pre">self.args</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="step-4-optional-add-a-display-name-for-your-model">
+<h2>Step 4: (Optional) Add a display name for your Model<a class="headerlink" href="#step-4-optional-add-a-display-name-for-your-model" title="Link to this heading"></a></h2>
+<p>In <code class="docutils literal notranslate"><span class="pre">src.czbenchmarks.models.utils</span></code>, add a display name for your model if you would
+like a prettier display name than the one you used in the <code class="docutils literal notranslate"><span class="pre">ModelType</span></code> enum.</p>
+<p>As currently implemented, the display name can be customized based on the value in the
+<code class="docutils literal notranslate"><span class="pre">ModelType</span></code> enum as well as the <code class="docutils literal notranslate"><span class="pre">model-variant</span></code> and (fine-tuning) <code class="docutils literal notranslate"><span class="pre">dataset</span></code> arguments
+passed to your model (defined in the <code class="docutils literal notranslate"><span class="pre">create_parser</span></code> method).</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Example:
+
+ ```python
+ _MODEL_VARIANT_FINETUNE_TO_DISPLAY_NAME = {
+     ...
+     (&quot;YOUR_MODEL&quot;, &quot;1M10L&quot;, None): &quot;YourModel (1 million cells, 10 layers)&quot;,
+     ...
+ }
+ ```
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="step-5-optional-extend-basesinglecellvalidator">
+<h2>Step 5: (Optional) Extend <code class="docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code><a class="headerlink" href="#step-5-optional-extend-basesinglecellvalidator" title="Link to this heading"></a></h2>
+<p>If your model is a single-cell transcriptomic model and accepts AnnData objects as input, then it can extend <code class="docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code>. This will enable the class to validate that the input <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> provides the required organisms, obs keys, and var keys.</p>
+<ol class="arabic">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code> as a parent class.</p></li>
+<li><p>Specify the required organisms, obs keys, and var keys that are defined as class variables.</p></li>
+<li><p>Specify <code class="docutils literal notranslate"><span class="pre">DataType.ANNDATA</span></code> as the model’s input type via the <code class="docutils literal notranslate"><span class="pre">inputs()</span></code> method.
+Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Organism</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.validators.base_single_cell_model_validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSingleCellValidator</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">YourModel</span><span class="p">(</span><span class="n">BaseModelImplementation</span><span class="p">,</span> <span class="n">BaseSingleCellValidator</span><span class="p">):</span>
+
+     <span class="o">...</span>
+
+     <span class="n">available_organisms</span> <span class="o">=</span> <span class="p">[</span><span class="n">Organism</span><span class="o">.</span><span class="n">HUMAN</span><span class="p">,</span> <span class="n">Organism</span><span class="o">.</span><span class="n">MOUSE</span><span class="p">]</span>  <span class="c1"># Use appropriate Organism enums</span>
+     <span class="n">required_obs_keys</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Specify required obs keys, as needed</span>
+     <span class="n">required_var_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">]</span>  <span class="c1"># Use appropriate feature name</span>
+
+     <span class="nd">@property</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+          <span class="k">return</span> <span class="p">{</span> <span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span> <span class="p">}</span>
+
+     <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-6-create-a-config-file-for-the-model">
+<h2>Step 6: Create a Config File for the Model<a class="headerlink" href="#step-6-create-a-config-file-for-the-model" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file in your model’s directory. This file will define the configuration parameters required for your model.</p></li>
+<li><p>Include the <code class="docutils literal notranslate"><span class="pre">_target_</span></code> key to specify the model class and any additional parameters your model requires.</p>
+<p>Example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model.YourModel</span>
+<span class="nt">your_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
+<span class="nt">another_param</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;value&quot;</span>
+</pre></div>
+</div>
+<p>The config file may include any additional parameters required by your model.</p>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-7-add-requirements-txt">
+<h2>Step 7: Add <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code><a class="headerlink" href="#step-7-add-requirements-txt" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> file under <code class="docutils literal notranslate"><span class="pre">docker/your_model</span></code>.</p></li>
+<li><p>Add required Python packages</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-8-create-a-dockerfile">
+<h2>Step 8: Create a <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code><a class="headerlink" href="#step-8-create-a-dockerfile" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Create a new file <code class="docutils literal notranslate"><span class="pre">docker/your_model/Dockerfile</span></code></p></li>
+<li><p>Specify Docker commands to build the Docker image, per the requirments of the model.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FROM</span> <span class="n">nvidia</span><span class="o">/</span><span class="n">cuda</span><span class="p">:</span><span class="mf">12.6.1</span><span class="o">-</span><span class="n">cudnn</span><span class="o">-</span><span class="n">runtime</span><span class="o">-</span><span class="n">ubuntu22</span><span class="mf">.04</span>
+
+<span class="n">WORKDIR</span> <span class="o">/</span><span class="n">app</span>
+
+<span class="n">RUN</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> \
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">python3</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span>
+
+<span class="n">COPY</span> <span class="n">docker</span><span class="o">/</span><span class="n">your_model</span><span class="o">/</span><span class="n">requirements</span><span class="o">.</span><span class="n">txt</span> <span class="o">.</span>
+<span class="n">RUN</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="nb">dir</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="n">COPY</span> <span class="n">src</span> <span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">package</span><span class="o">/</span><span class="n">src</span>
+<span class="n">COPY</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span> <span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">package</span><span class="o">/</span><span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
+<span class="n">COPY</span> <span class="n">README</span><span class="o">.</span><span class="n">md</span> <span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">package</span><span class="o">/</span><span class="n">README</span><span class="o">.</span><span class="n">md</span>
+
+<span class="n">RUN</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">package</span><span class="p">[</span><span class="n">interactive</span><span class="p">]</span>
+
+<span class="n">COPY</span> <span class="n">docker</span><span class="o">/</span><span class="n">your_model</span><span class="o">/</span><span class="n">model</span><span class="o">.</span><span class="n">py</span> <span class="o">.</span>
+<span class="n">COPY</span> <span class="n">docker</span><span class="o">/</span><span class="n">your_model</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">yaml</span> <span class="o">.</span>
+<span class="c1"># Specify additional files here, as neeeded</span>
+
+<span class="n">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&quot;python3&quot;</span><span class="p">,</span> <span class="s2">&quot;-u&quot;</span><span class="p">,</span> <span class="s2">&quot;/app/model.py&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add an entry for your model’s Docker image location in <code class="docutils literal notranslate"><span class="pre">src/czbenchmarks/conf/models.yaml</span></code>:</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">models</span><span class="p">:</span>
+     <span class="n">YOUR_MODEL</span><span class="p">:</span>
+     <span class="n">model_image_uri</span><span class="p">:</span> <span class="n">cz</span><span class="o">-</span><span class="n">benchmarks</span><span class="o">-</span><span class="n">models</span><span class="o">-</span><span class="n">public</span><span class="p">:</span><span class="n">YOUR_MODEL</span>
+
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-9-build-your-model">
+<h2>Step 9: Build Your Model<a class="headerlink" href="#step-9-build-your-model" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Build the Docker container using the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> you created. Run the following command, replacing <code class="docutils literal notranslate"><span class="pre">your_model</span></code> with the appropriate values:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>cz-benchmarks-models:your_model<span class="w"> </span>-f<span class="w"> </span>docker/your_model/Dockerfile<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+<li><p>Optionally, add the Docker build command to your project’s <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> for easier execution. For example:</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">.PHONY</span><span class="o">:</span><span class="w"> </span><span class="n">your_model</span>
+<span class="nf">your_model</span><span class="o">:</span>
+<span class="w">     </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>cz-benchmarks-models:your_model<span class="w"> </span>-f<span class="w"> </span>docker/your_model/Dockerfile<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="step-10-test-your-model">
+<h2>Step 10: Test Your Model<a class="headerlink" href="#step-10-test-your-model" title="Link to this heading"></a></h2>
+<p>Test the Docker container to ensure it works as expected. You can run the container and verify its functionality by executing your model on a sample dataset using the <code class="docutils literal notranslate"><span class="pre">czbenchmarks.runner.run_inference()</span></code> method.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_inference</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+     <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+     <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;tsv2_bone_marrow&quot;</span><span class="p">)</span>  <span class="c1"># Specify a dataset from models.yaml that can be used as input to your model</span>
+
+     <span class="n">dataset</span> <span class="o">=</span> <span class="n">run_inference</span><span class="p">(</span><span class="s2">&quot;YOUR_MODEL&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span>
+
+     <span class="nb">print</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="s2">&quot;YOUR_MODEL&quot;</span><span class="p">,</span> <span class="s2">&quot;EMBEDDING&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>For details on creating a custom dataset, refer to the <a class="reference internal" href="add_custom_dataset.html"><span class="std std-doc">Add a Custom Dataset</span></a> guide.</p>
+</section>
+<hr class="docutils" />
+<section id="additional-notes">
+<h2>Additional Notes<a class="headerlink" href="#additional-notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>For guidance, review existing implementations such as <code class="docutils literal notranslate"><span class="pre">docker/scvi</span></code> or <code class="docutils literal notranslate"><span class="pre">docker/scgpt</span></code>. These examples can help you understand best practices and common patterns.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">assets/</span></code> directory to store supplementary files your model might need, such as pre-trained weights, vocabularies, or other resources. Keeping these files organized ensures your model remains portable and easy to manage.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="add_custom_dataset.html" class="btn btn-neutral float-left" title="Add a Custom Dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="add_new_task.html" class="btn btn-neutral float-right" title="Add a Custom Task" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

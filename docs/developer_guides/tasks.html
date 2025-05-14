@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Metrics" href="metrics.html" />
+    <link rel="prev" title="Models" href="models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="design_overview.html">Design Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tasks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-concepts">Core Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#task-organization">Task Organization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#available-tasks">Available Tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extending-tasks">Extending Tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html">Interactive Debugging Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guides</a></li>
+      <li class="breadcrumb-item active">Tasks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guides/tasks.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="tasks">
+<h1>Tasks<a class="headerlink" href="#tasks" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">czbenchmarks.tasks</span></code> module defines <strong>benchmarking tasks</strong> that evaluate the performance of models based on their outputs. Tasks take in datasets with model-generated outputs and compute metrics specific to each task type.</p>
+<section id="core-concepts">
+<h2>Core Concepts<a class="headerlink" href="#core-concepts" title="Link to this heading"></a></h2>
+<ul>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/base/index.html"><span class="doc std std-doc">BaseTask</span></a><br />
+All task classes inherit from this abstract base class. It defines the standard lifecycle of a task:</p>
+<ol class="arabic simple">
+<li><p><strong>Input and Output Validation</strong> via <code class="docutils literal notranslate"><span class="pre">required_inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">required_outputs</span></code></p></li>
+<li><p><strong>Execution</strong> via the <code class="docutils literal notranslate"><span class="pre">_run_task()</span></code> method</p></li>
+<li><p><strong>Metric Computation</strong> via the <code class="docutils literal notranslate"><span class="pre">_compute_metrics()</span></code> method</p></li>
+</ol>
+<p>It also supports multi-dataset operations (<code class="docutils literal notranslate"><span class="pre">requires_multiple_datasets</span></code>) and setting <strong>baseline embeddings</strong> (via PCA) for comparison with model outputs.</p>
+</li>
+</ul>
+</section>
+<section id="task-organization">
+<h2>Task Organization<a class="headerlink" href="#task-organization" title="Link to this heading"></a></h2>
+<p>Tasks in the <code class="docutils literal notranslate"><span class="pre">czbenchmarks.tasks</span></code> module are organized based on their scope and applicability:</p>
+<ul>
+<li><p><strong>Generic Tasks</strong>: Tasks that can be applied across multiple modalities (e.g., embedding evaluation, clustering, label prediction) are placed directly in the <code class="docutils literal notranslate"><span class="pre">tasks/</span></code> directory. Each task is implemented in its own file (e.g., <code class="docutils literal notranslate"><span class="pre">embedding.py</span></code>, <code class="docutils literal notranslate"><span class="pre">clustering.py</span></code>) with clear and descriptive names. Generic tasks avoid dependencies specific to any particular modality.</p></li>
+<li><p><strong>Specialized Tasks</strong>: Tasks designed for specific modalities are placed in dedicated subdirectories. For example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">single_cell/</span></code> for single-cell-specific tasks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imaging/</span></code> for imaging-related tasks. <strong>Not implemented in current release, For future imaging models</strong></p></li>
+</ul>
+<p>New subdirectories can be created as needed for other modalities.</p>
+</li>
+</ul>
+</section>
+<section id="available-tasks">
+<h2>Available Tasks<a class="headerlink" href="#available-tasks" title="Link to this heading"></a></h2>
+<p>Each task class implements a specific evaluation goal. All tasks are located under the <code class="docutils literal notranslate"><span class="pre">czbenchmarks.tasks</span></code> namespace or its submodules.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/clustering/index.html"><span class="doc std std-doc">ClusteringTask</span></a>:  Performs Leiden clustering on the embedding produced by a model and compares it to ground-truth cell-type labels using metrics like Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI).</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/embedding/index.html"><span class="doc std std-doc">EmbeddingTask</span></a>:  Computes embedding quality using the Silhouette Score based on known cell-type annotations.</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/label_prediction/index.html"><span class="doc std std-doc">MetadataLabelPredictionTask</span></a>:  Performs k-fold cross-validation classification using multiple classifiers (logistic regression, KNN, random forest) on the model embeddings to predict metadata labels (e.g., cell type, sex). Evaluates metrics like accuracy, F1, precision, recall, and AUROC.</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/integration/index.html"><span class="doc std std-doc">BatchIntegrationTask</span></a>:  Evaluates how well the model integrates batch-specific embeddings using entropy per cell and batch-aware Silhouette scores. Assesses whether embeddings mix batches while preserving biological labels.</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html"><span class="doc std std-doc">PerturbationTask</span></a>:  Designed for gene perturbation prediction models. Compares predicted gene expression shifts to ground truth. Computes metrics such as mean squared error, Pearson R², and Jaccard overlap for DE genes.</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/single_cell/cross_species/index.html"><span class="doc std std-doc">CrossSpeciesIntegrationTask</span></a>:  A multi-dataset task. Evaluates how well models embed cells from different species into a shared space using metrics like entropy per cell and silhouette scores. Requires embeddings from multiple species as input.</p></li>
+</ul>
+</section>
+<section id="extending-tasks">
+<h2>Extending Tasks<a class="headerlink" href="#extending-tasks" title="Link to this heading"></a></h2>
+<p>To define a new evaluation task:</p>
+<ol class="arabic">
+<li><p><strong>Inherit from</strong> <a class="reference internal" href="../autoapi/czbenchmarks/tasks/base/index.html"><span class="doc std std-doc">BaseTask</span></a></p></li>
+<li><p><strong>Choose the Right Location</strong>:</p>
+<ul class="simple">
+<li><p>If the task is generic and works across multiple modalities, add it to the <code class="docutils literal notranslate"><span class="pre">tasks/</span></code> directory.</p></li>
+<li><p>If the task is specific to a particular modality, add it to the appropriate subdirectory (e.g., <code class="docutils literal notranslate"><span class="pre">single_cell/</span></code>, <code class="docutils literal notranslate"><span class="pre">imaging/</span></code>).</p></li>
+</ul>
+</li>
+<li><p><strong>Create the Task File</strong>:<br />
+Each task should be implemented in its own file. Below is an example skeleton for creating a new task:</p></li>
+<li><p><strong>Override the following methods:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">required_inputs</span></code>: a set of <code class="docutils literal notranslate"><span class="pre">DataType</span></code> values required as inputs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">required_outputs</span></code>: a set of <code class="docutils literal notranslate"><span class="pre">DataType</span></code> values expected as model outputs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_run_task(data,</span> <span class="pre">model_type)</span></code>: executes task logic using input data and model outputs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_compute_metrics()</span></code>: returns a list of <code class="docutils literal notranslate"><span class="pre">MetricResult</span></code> objects</p></li>
+</ul>
+</li>
+<li><p><strong>Update <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code></strong>:</p>
+<ul class="simple">
+<li><p>For generic tasks, add the new task to <code class="docutils literal notranslate"><span class="pre">tasks/__init__.py</span></code>.</p></li>
+<li><p>For specialized tasks, add the new task to the <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file in the corresponding modality-specific subdirectory.</p></li>
+</ul>
+</li>
+<li><p><strong>Documentation</strong>:</p>
+<ul class="simple">
+<li><p>Add detailed docstrings to your task class and methods.</p></li>
+<li><p>Update the relevant documentation files to include the new task.</p></li>
+</ul>
+</li>
+<li><p><strong>Optional Features</strong>:</p>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">requires_multiple_datasets</span> <span class="pre">=</span> <span class="pre">True</span></code> if your task operates on a list of datasets</p></li>
+<li><p>Call <code class="docutils literal notranslate"><span class="pre">self.set_baseline(dataset)</span></code> in your task to enable PCA baseline comparisons</p></li>
+</ul>
+</li>
+<li><p><strong>Return Metrics</strong>:</p>
+<ul class="simple">
+<li><p>Use the <a class="reference internal" href="../autoapi/czbenchmarks/metrics/types/index.html"><span class="doc std std-doc">MetricRegistry</span></a> to compute and return standard metrics with strong typing.</p></li>
+</ul>
+</li>
+<li><p><strong>Example Skeleton</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.metrics.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetricResult</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyNewTask</span><span class="p">(</span><span class="n">BaseTask</span><span class="p">):</span>
+      <span class="nd">@property</span>
+      <span class="k">def</span><span class="w"> </span><span class="nf">required_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">}</span>
+
+      <span class="nd">@property</span>
+      <span class="k">def</span><span class="w"> </span><span class="nf">required_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">}</span>
+
+      <span class="k">def</span><span class="w"> </span><span class="nf">_run_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">)[</span><span class="s2">&quot;cell_type&quot;</span><span class="p">]</span>
+
+      <span class="k">def</span><span class="w"> </span><span class="nf">_compute_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># your metric computation here</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">MetricResult</span><span class="p">(</span><span class="n">metric_type</span><span class="o">=</span><span class="s2">&quot;my_metric&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="p">)]</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Keep tasks focused and single-purpose to ensure clarity and maintainability.</p></li>
+<li><p>Clearly document the input and output requirements for each task.</p></li>
+<li><p>Follow the patterns and conventions established in existing tasks for consistency.</p></li>
+<li><p>Use type hints to improve code readability and clarity.</p></li>
+<li><p>Add logging for key steps in the task lifecycle to facilitate debugging and monitoring.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

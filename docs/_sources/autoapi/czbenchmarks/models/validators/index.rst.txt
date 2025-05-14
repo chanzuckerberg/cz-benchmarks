@@ -1,0 +1,148 @@
+czbenchmarks.models.validators
+==============================
+
+.. py:module:: czbenchmarks.models.validators
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/models/validators/base_model_validator/index
+   /autoapi/czbenchmarks/models/validators/base_single_cell_model_validator/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.models.validators.BaseModelValidator
+   czbenchmarks.models.validators.BaseSingleCellValidator
+
+
+Package Contents
+----------------
+
+.. py:class:: BaseModelValidator
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract base class for model validators.
+
+   Defines the interface for validating datasets against model requirements.
+   Validators ensure datasets meet model-specific requirements like:
+   - Compatible data types
+   - Required metadata fields
+   - Organism compatibility
+   - Feature name formats
+
+   Each validator must:
+   1. Define a dataset_type class variable
+   2. Define a model_type class variable or model_name property
+   3. Implement _validate_dataset, inputs, and outputs
+
+
+   .. py:attribute:: dataset_type
+      :type:  ClassVar[Type[czbenchmarks.datasets.BaseDataset]]
+
+
+   .. py:attribute:: model_type
+      :type:  ClassVar[czbenchmarks.models.types.ModelType]
+
+
+   .. py:method:: __init_subclass__() -> None
+      :classmethod:
+
+
+      Validate that subclasses define required class variables and
+      follow naming conventions.
+
+      :raises TypeError: If required class variables are missing or invalid
+      :raises ValueError: If class naming doesn't follow conventions
+
+
+
+   .. py:property:: inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+      :abstractmethod:
+
+
+      Required input data types this model requires.
+
+      :returns: Set of required DataType enums
+
+
+   .. py:property:: outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+      :abstractmethod:
+
+
+      Output data types produced by this model.
+
+      :returns: Set of output DataType enums
+
+
+   .. py:method:: validate_dataset(dataset: czbenchmarks.datasets.BaseDataset)
+
+      Validate a dataset meets all model requirements.
+
+      Checks:
+      1. Dataset type matches model requirements
+      2. Required inputs are available
+      3. Model-specific validation rules
+
+      :param dataset: Dataset to validate
+
+      :raises ValueError: If validation fails
+
+
+
+.. py:class:: BaseSingleCellValidator
+
+   Bases: :py:obj:`czbenchmarks.models.validators.base_model_validator.BaseModelValidator`
+
+
+   Base validator for single-cell models.
+
+   Defines common validation logic for single-cell models, including:
+   - Organism compatibility checking
+   - Required metadata validation
+   - AnnData observation and variable key validation
+
+
+   .. py:attribute:: dataset_type
+
+
+   .. py:attribute:: available_organisms
+      :type:  ClassVar[List[czbenchmarks.datasets.Organism]]
+
+
+   .. py:attribute:: required_obs_keys
+      :type:  ClassVar[List[str]]
+
+
+   .. py:attribute:: required_var_keys
+      :type:  ClassVar[List[str]]
+
+
+   .. py:method:: __init_subclass__() -> None
+      :classmethod:
+
+
+      Validate required class variables in child classes.
+
+      Ensures child classes define:
+      - available_organisms
+      - required_obs_keys
+      - required_var_keys
+
+      :raises TypeError: If any required class variable is missing
+
+
+

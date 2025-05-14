@@ -1,0 +1,43 @@
+czbenchmarks.exceptions
+=======================
+
+.. py:module:: czbenchmarks.exceptions
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.exceptions.CZBenchmarksException
+   czbenchmarks.exceptions.RemoteStorageError
+   czbenchmarks.exceptions.RemoteStorageObjectAlreadyExists
+
+
+Module Contents
+---------------
+
+.. py:exception:: CZBenchmarksException
+
+   Bases: :py:obj:`Exception`
+
+
+   base class for all exceptions in the czbenchmarks package
+
+
+.. py:exception:: RemoteStorageError
+
+   Bases: :py:obj:`CZBenchmarksException`
+
+
+   errors having to do with remote storage
+
+
+.. py:exception:: RemoteStorageObjectAlreadyExists
+
+   Bases: :py:obj:`RemoteStorageError`
+
+
+   error when trying to overwrite an already existing object in remote storage
+
+

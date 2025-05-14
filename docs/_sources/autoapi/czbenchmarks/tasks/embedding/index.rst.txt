@@ -1,0 +1,69 @@
+czbenchmarks.tasks.embedding
+============================
+
+.. py:module:: czbenchmarks.tasks.embedding
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.embedding.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.embedding.EmbeddingTask
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: EmbeddingTask(label_key: str)
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating embedding quality using labeled data.
+
+   This task computes quality metrics for embeddings using ground truth labels.
+   Currently supports silhouette score evaluation.
+
+   :param label_key: Key to access ground truth labels in metadata
+   :type label_key: str
+
+
+   .. py:attribute:: label_key
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (metadata with labels)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run  (embedding coordinates)
+
+

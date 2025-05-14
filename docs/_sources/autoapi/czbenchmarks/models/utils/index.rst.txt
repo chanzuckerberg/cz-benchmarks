@@ -1,0 +1,41 @@
+czbenchmarks.models.utils
+=========================
+
+.. py:module:: czbenchmarks.models.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.models.utils.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.models.utils.list_available_models
+   czbenchmarks.models.utils.model_to_display_name
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: list_available_models() -> List[str]
+
+   Lists all available models defined in the models.yaml configuration file.
+
+   :returns: A sorted list of model names available in the configuration.
+   :rtype: list
+
+
+.. py:function:: model_to_display_name(model_type: czbenchmarks.models.types.ModelType, model_args: dict[str, str | int]) -> str
+
+   try to map the model variant names to more uniform, pretty strings
+
+

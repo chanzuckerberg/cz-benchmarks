@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.tasks &mdash; cz-benchmarks 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=486e5634"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.tasks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/czbenchmarks/tasks/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.tasks">
+<span id="czbenchmarks-tasks"></span><h1>czbenchmarks.tasks<a class="headerlink" href="#module-czbenchmarks.tasks" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="base/index.html">czbenchmarks.tasks.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering/index.html">czbenchmarks.tasks.clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants/index.html">czbenchmarks.tasks.constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="embedding/index.html">czbenchmarks.tasks.embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="integration/index.html">czbenchmarks.tasks.integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="label_prediction/index.html">czbenchmarks.tasks.label_prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="single_cell/index.html">czbenchmarks.tasks.single_cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils/index.html">czbenchmarks.tasks.utils</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.tasks.ClusteringTask" title="czbenchmarks.tasks.ClusteringTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClusteringTask</span></code></a></p></td>
+<td><p>Task for evaluating clustering performance against ground truth labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.tasks.EmbeddingTask" title="czbenchmarks.tasks.EmbeddingTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmbeddingTask</span></code></a></p></td>
+<td><p>Task for evaluating embedding quality using labeled data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.tasks.MetadataLabelPredictionTask" title="czbenchmarks.tasks.MetadataLabelPredictionTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetadataLabelPredictionTask</span></code></a></p></td>
+<td><p>Task for predicting labels from embeddings using cross-validation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.tasks.BatchIntegrationTask" title="czbenchmarks.tasks.BatchIntegrationTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatchIntegrationTask</span></code></a></p></td>
+<td><p>Task for evaluating batch integration quality.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.tasks.PerturbationTask" title="czbenchmarks.tasks.PerturbationTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PerturbationTask</span></code></a></p></td>
+<td><p>Task for evaluating perturbation prediction quality.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask" title="czbenchmarks.tasks.CrossSpeciesIntegrationTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CrossSpeciesIntegrationTask</span></code></a></p></td>
+<td><p>Task for evaluating cross-species integration quality.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">ClusteringTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">RANDOM_SEED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">N_ITERATIONS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flavor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">FLAVOR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_added</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">KEY_ADDED</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for evaluating clustering performance against ground truth labels.</p>
+<p>This task performs clustering on embeddings and evaluates the results
+using multiple clustering metrics (ARI and NMI).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Key to access ground truth labels in metadata</p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Random seed for reproducibility</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.label_key">
+<span class="sig-name descname"><span class="pre">label_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.label_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.random_seed">
+<span class="sig-name descname"><span class="pre">random_seed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.random_seed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.n_iterations">
+<span class="sig-name descname"><span class="pre">n_iterations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.n_iterations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.flavor">
+<span class="sig-name descname"><span class="pre">flavor</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'igraph'</span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.flavor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.key_added">
+<span class="sig-name descname"><span class="pre">key_added</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'leiden'</span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.key_added" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (metadata with labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.ClusteringTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.ClusteringTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run (embedding to cluster)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.EmbeddingTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">EmbeddingTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.EmbeddingTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for evaluating embedding quality using labeled data.</p>
+<p>This task computes quality metrics for embeddings using ground truth labels.
+Currently supports silhouette score evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Key to access ground truth labels in metadata</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.EmbeddingTask.label_key">
+<span class="sig-name descname"><span class="pre">label_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.EmbeddingTask.label_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.EmbeddingTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.EmbeddingTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.EmbeddingTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.EmbeddingTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (metadata with labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.EmbeddingTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.EmbeddingTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run  (embedding coordinates)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">MetadataLabelPredictionTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">N_FOLDS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">RANDOM_SEED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_class_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MIN_CLASS_SIZE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for predicting labels from embeddings using cross-validation.</p>
+<p>Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
+cross-validation. Reports standard classification metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_key</strong> – Key to access ground truth labels in metadata</p></li>
+<li><p><strong>n_folds</strong> – Number of cross-validation folds</p></li>
+<li><p><strong>random_seed</strong> – Random seed for reproducibility</p></li>
+<li><p><strong>min_class_size</strong> – Minimum samples required per class</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.label_key">
+<span class="sig-name descname"><span class="pre">label_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.label_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.n_folds">
+<span class="sig-name descname"><span class="pre">n_folds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.n_folds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.random_seed">
+<span class="sig-name descname"><span class="pre">random_seed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.random_seed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.min_class_size">
+<span class="sig-name descname"><span class="pre">min_class_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.min_class_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (metadata with labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run  (embedding coordinates)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.MetadataLabelPredictionTask.set_baseline">
+<span class="sig-name descname"><span class="pre">set_baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.BaseDataset" title="czbenchmarks.datasets.BaseDataset"><span class="pre">czbenchmarks.datasets.BaseDataset</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.MetadataLabelPredictionTask.set_baseline" title="Link to this definition"></a></dt>
+<dd><p>Set a baseline embedding using raw gene expression.</p>
+<p>Instead of using embeddings from a model, this method uses the raw gene
+expression matrix as features for classification. This provides a baseline
+performance to compare against model-generated embeddings for classification
+tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> – BaseDataset containing AnnData with gene expression and metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">BatchIntegrationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for evaluating batch integration quality.</p>
+<p>This task computes metrics to assess how well different batches are integrated
+in the embedding space while preserving biological signals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_key</strong> – Key to access ground truth cell type labels in metadata</p></li>
+<li><p><strong>batch_key</strong> – Key to access batch labels in metadata</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask.label_key">
+<span class="sig-name descname"><span class="pre">label_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask.label_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask.batch_key">
+<span class="sig-name descname"><span class="pre">batch_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask.batch_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (metadata with labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.BatchIntegrationTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.BatchIntegrationTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run (embedding coordinates)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.PerturbationTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">PerturbationTask</span></span><a class="headerlink" href="#czbenchmarks.tasks.PerturbationTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for evaluating perturbation prediction quality.</p>
+<p>This task computes metrics to assess how well a model predicts gene expression
+changes in response to perturbations. Compares predicted vs ground truth
+perturbation effects using MSE and correlation metrics.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.PerturbationTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.PerturbationTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.PerturbationTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.PerturbationTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (ground truth perturbation effects)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.PerturbationTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.PerturbationTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run
+(predicted perturbation effects)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.PerturbationTask.set_baseline">
+<span class="sig-name descname"><span class="pre">set_baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.PerturbationSingleCellDataset" title="czbenchmarks.datasets.PerturbationSingleCellDataset"><span class="pre">czbenchmarks.datasets.PerturbationSingleCellDataset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gene_pert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'median'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mean'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'median'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.PerturbationTask.set_baseline" title="Link to this definition"></a></dt>
+<dd><p>Set a baseline embedding for perturbation prediction.</p>
+<p>Creates baseline predictions using simple statistical methods (median and mean)
+applied to the control data, and evaluates these predictions against ground
+truth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – PerturbationSingleCellDataset containing control and perturbed data</p></li>
+<li><p><strong>gene_pert</strong> – The perturbation gene to evaluate</p></li>
+<li><p><strong>baseline_type</strong> – The statistical method to use for baseline prediction
+(median or mean)</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments passed to the evaluation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of MetricResult objects containing baseline performance metrics
+for different statistical methods (median, mean)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.tasks.</span></span><span class="sig-name descname"><span class="pre">CrossSpeciesIntegrationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#czbenchmarks.tasks.base.BaseTask" title="czbenchmarks.tasks.base.BaseTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.tasks.base.BaseTask</span></code></a></p>
+<p>Task for evaluating cross-species integration quality.</p>
+<p>This task computes metrics to assess how well different species’ data are integrated
+in the embedding space while preserving biological signals. It operates on multiple
+datasets from different species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label_key</strong> – Key to access ground truth cell type labels in metadata</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.label_key">
+<span class="sig-name descname"><span class="pre">label_key</span></span><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.label_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.display_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.display_name" title="Link to this definition"></a></dt>
+<dd><p>A pretty name to use when displaying task results</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_inputs" title="Link to this definition"></a></dt>
+<dd><p>Required input data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required input DataTypes (metadata with labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.required_outputs" title="Link to this definition"></a></dt>
+<dd><p>Required output data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required output types from models this task to run (embedding coordinates)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.requires_multiple_datasets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">requires_multiple_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.requires_multiple_datasets" title="Link to this definition"></a></dt>
+<dd><p>Whether this task requires multiple datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True as this task compares data across species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.tasks.CrossSpeciesIntegrationTask.set_baseline">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../datasets/index.html#czbenchmarks.datasets.SingleCellDataset" title="czbenchmarks.datasets.SingleCellDataset"><span class="pre">czbenchmarks.datasets.SingleCellDataset</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#czbenchmarks.tasks.CrossSpeciesIntegrationTask.set_baseline" title="Link to this definition"></a></dt>
+<dd><p>Set a baseline embedding for cross-species integration.</p>
+<p>This method is not implemented for cross-species integration tasks
+as standard preprocessing workflows are not directly applicable
+across different species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – List of SingleCellDataset objects from different species</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments passed to run_standard_scrna_workflow</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.13)"><strong>NotImplementedError</strong></a> – Always raised as baseline is not implemented</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
