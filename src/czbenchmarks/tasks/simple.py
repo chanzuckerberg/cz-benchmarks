@@ -9,6 +9,10 @@ class SimpleTask(BaseTask):
         self.my_param = my_param
 
     @property
+    def display_name(self) -> str:
+        return "Simple Task"
+
+    @property
     def required_inputs(self) -> Set[DataType]:
         return {DataType.METADATA}
 
@@ -22,6 +26,7 @@ class SimpleTask(BaseTask):
         self.labels = data.get_input(DataType.METADATA)["cell_type"]
         # Implement your task logic here
         # e.g., calculate some predictions or transform embeddings
+
 
     def _compute_metrics(self) -> List[MetricResult]:
         # Compute and return a list of MetricResult objects

@@ -30,6 +30,7 @@ from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
+from czbenchmarks.tasks.simple import SimpleTask
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 from czbenchmarks import utils
@@ -389,6 +390,10 @@ def main(parsed_args: argparse.Namespace) -> None:
         if "cross_species" in args.tasks:
             task_args.append(
                 parse_task_args("cross_species", CrossSpeciesIntegrationTask, args)
+            )
+        if "simple" in args.tasks:
+            task_args.append(
+                parse_task_args("simple", SimpleTask, args)
             )
 
         # Run the tasks
