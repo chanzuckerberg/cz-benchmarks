@@ -33,7 +33,7 @@ However, please note that this is a very early stage project and as such, we exp
 ## 🔍 Next: Support Developer Workflow & Early Contribution Workflow
 
 ### Possible Candidates:
-- Enhance support for model developer workflows to enable more seamless integration of custom assets such as models and datasets.
+- Refactor cz-benchmarks to make it easier for model developers to integrate their own models and datasets, enabling a more seamless developer workflow
 - Adopt standardized model packaging to ensure consistency.
 - Improve the CLI to provide a more user-friendly interface for running benchmarks.
 - Enable initial contributors to add (alpha format):
