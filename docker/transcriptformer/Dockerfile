@@ -8,10 +8,10 @@ RUN apt-get update && \
 # Clone the repository and install
 RUN apt-get install -y curl && \
     pip install uv && \
-    git clone https://github.com/czi-ai/transcriptformer.git && \
+    git clone --branch v0.1.0 --depth 1 https://github.com/czi-ai/transcriptformer.git && \
     cd transcriptformer && \
     uv venv --python=3.11 && \
-    . .venv/bin/activate && \
+    . .venv/bin/activate && \   
     uv pip install -e .
 
 COPY src /app/package/src

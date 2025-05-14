@@ -1,11 +1,14 @@
 import argparse
+import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, call
 
 from pytest_mock import MockFixture
 
 from czbenchmarks import runner
+from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.cli.cli_run import (
+    CacheOptions,
     get_model_arg_permutations,
     get_processed_dataset_cache_path,
     main,
@@ -37,6 +40,7 @@ def test_main(mocker: MockFixture) -> None:
         return_value=None,
     )
     mock_task_args = MagicMock()
+    mock_task_args.task = MagicMock()
     mock_parse_task_args = mocker.patch(
         "czbenchmarks.cli.cli_run.parse_task_args", return_value=mock_task_args
     )
@@ -50,11 +54,28 @@ def test_main(mocker: MockFixture) -> None:
             output_file=None,
             output_format=None,
             batch_json=[],
+            remote_cache_url=None,
+            remote_cache_upload="never",
+            remote_cache_upload_results=False,
         )
     )
-    mock_run.assert_called_once_with(dataset_names=[], model_args=[], task_args=[])
+    expected_cache_options = CacheOptions(
+        remote_cache_url="",
+        download_embeddings=False,
+        upload_embeddings=False,
+        upload_results=False,
+    )
+    mock_run.assert_called_once_with(
+        dataset_names=[],
+        model_args=[],
+        task_args=[],
+        cache_options=expected_cache_options,
+    )
     mock_write_results.assert_called_once_with(
-        mock_task_results, output_format=None, output_file=None
+        mock_task_results,
+        output_format=None,
+        output_file=None,
+        cache_options=expected_cache_options,
     )
     mock_parse_task_args.assert_not_called()
 
@@ -77,7 +98,17 @@ def test_main(mocker: MockFixture) -> None:
             output_file="output_file.yaml",
             output_format="yaml",
             batch_json=[""],
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            remote_cache_upload_embeddings=True,
+            remote_cache_upload_results=True,
+            remote_cache_download_embeddings=False,
         )
+    )
+    expected_cache_options = CacheOptions(
+        remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+        download_embeddings=False,
+        upload_embeddings=True,
+        upload_results=True,
     )
     mock_run.assert_called_once_with(
         dataset_names=["tsv2_blood", "tsv2_heart"],
@@ -88,9 +119,13 @@ def test_main(mocker: MockFixture) -> None:
             ),
         ],
         task_args=[mock_task_args, mock_task_args],
+        cache_options=expected_cache_options,
     )
     mock_write_results.assert_called_once_with(
-        mock_task_results, output_format="yaml", output_file="output_file.yaml"
+        mock_task_results,
+        output_format="yaml",
+        output_file="output_file.yaml",
+        cache_options=expected_cache_options,
     )
     assert mock_parse_task_args.call_count == 2
 
@@ -111,7 +146,17 @@ def test_main(mocker: MockFixture) -> None:
                 '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
                 '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
             ],
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            remote_cache_download_embeddings=True,
+            remote_cache_upload_embeddings=True,
+            remote_cache_upload_results=False,
         )
+    )
+    expected_cache_options = CacheOptions(
+        remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+        download_embeddings=True,
+        upload_embeddings=True,
+        upload_results=False,
     )
     mock_run.assert_has_calls(
         [
@@ -127,6 +172,7 @@ def test_main(mocker: MockFixture) -> None:
                     )
                 ],
                 task_args=[mock_task_args],
+                cache_options=expected_cache_options,
             ),
             call(
                 dataset_names=["norman_perturb"],
@@ -140,6 +186,7 @@ def test_main(mocker: MockFixture) -> None:
                     )
                 ],
                 task_args=[mock_task_args],
+                cache_options=expected_cache_options,
             ),
         ]
     )
@@ -158,6 +205,21 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     mock_run_task = mocker.patch(
         "czbenchmarks.cli.cli_run.run_task", return_value=mock_task_results
     )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename",
+        return_value="test_dataset.dill",
+    )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.cli.get_version",
+        return_value="0.0.0+test",
+    )
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.get_remote_last_modified",
+        return_value=datetime.datetime.now(datetime.timezone.utc),
+    )
+    mock_download = mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.download_file_from_remote"
+    )
     dataset_names = ["tsv2_blood", "tsv2_heart"]
     model_args = [
         ModelArgs(name="SCGPT", args={}),
@@ -170,11 +232,13 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         name="embedding",
         task=EmbeddingTask(label_key="cell_type"),
         set_baseline=False,
+        baseline_args={},
     )
     clustering_task_args = TaskArgs(
         name="clustering",
         task=ClusteringTask(label_key="cell_type"),
         set_baseline=True,
+        baseline_args={},
     )
     task_args = [embedding_task_args, clustering_task_args]
 
@@ -183,6 +247,12 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         dataset_names=dataset_names,
         model_args=model_args,
         task_args=task_args,
+        cache_options=CacheOptions(
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            download_embeddings=True,
+            upload_embeddings=False,
+            upload_results=False,
+        ),
     )
 
     # Verify results
@@ -198,6 +268,12 @@ def test_run_with_inference(mocker: MockFixture) -> None:
         call("SCVI", mock_processed_data, gpu=True, model_variant="homo_sapiens"),
         call("SCVI", mock_processed_data, gpu=True, model_variant="mus_musculus"),
     ]
+
+    # Check that the cache was used
+    mock_download.assert_called_with(
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed-datasets/test_dataset.dill",
+        Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute(),
+    )
 
     # Check that each task was run for each model variant, for each dataset
     assert mock_run_task.call_args_list == [
@@ -291,11 +367,13 @@ def test_run_without_inference(mocker: MockFixture) -> None:
         name="embedding",
         task=EmbeddingTask(label_key="cell_type"),
         set_baseline=False,
+        baseline_args={},
     )
     clustering_task_args = TaskArgs(
         name="clustering",
         task=ClusteringTask(label_key="cell_type"),
         set_baseline=True,
+        baseline_args={},
     )
     task_args = [embedding_task_args, clustering_task_args]
 
@@ -346,6 +424,8 @@ def test_run_task() -> None:
     }
     mock_task_args = MagicMock()
     mock_task_args.name = "clustering"
+    mock_task_args.task = MagicMock()
+    mock_task_args.task.display_name = "clustering"
     mock_task_run_result = {
         ModelType.SCVI: [
             MetricResult(
@@ -365,8 +445,10 @@ def test_run_task() -> None:
     assert task_results == [
         TaskResult(
             task_name="clustering",
+            task_name_display="clustering",
             model_type="SCVI",
-            dataset_name="tsv2_heart",
+            dataset_names=["tsv2_heart"],
+            dataset_names_display=["Tabula Sapiens 2.0 - Heart"],
             model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
@@ -386,6 +468,8 @@ def test_run_multi_dataset_task() -> None:
     mock_task_args = MagicMock()
     mock_task_args.name = "cross_species"
     mock_task_args.set_baseline = False
+    mock_task_args.task = MagicMock()
+    mock_task_args.task.display_name = "cross-species integration"
     mock_dataset_names = ["human_spermatogenesis", "mouse_spermatogenesis"]
     mock_task_run_result = {
         ModelType.UCE: [
@@ -405,8 +489,13 @@ def test_run_multi_dataset_task() -> None:
     assert task_results == [
         TaskResult(
             task_name="cross_species",
+            task_name_display="cross-species integration",
             model_type="UCE",
-            dataset_name=",".join(mock_dataset_names),
+            dataset_names=list(sorted(mock_dataset_names)),
+            dataset_names_display=[
+                "Spermatogenesis - Homo sapiens",
+                "Spermatogenesis - Mus musculus",
+            ],
             model_args={"model_variant": "4l"},
             metrics=[
                 MetricResult(
@@ -486,19 +575,40 @@ def test_get_processed_dataset_cache_path() -> None:
 
 
 def test_set_processed_datasets_cache(mocker: MockFixture) -> None:
-    mock_cache_path = MagicMock()
     mocker.patch(
-        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_path",
-        return_value=mock_cache_path,
+        "czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename",
+        return_value="test_dataset.dill",
+    )
+    mock_upload = mocker.patch(
+        "czbenchmarks.cli.cli_run.utils.upload_file_to_remote",
     )
     mock_dataset = MagicMock()
+    mocker.patch(
+        "czbenchmarks.cli.cli_run.cli.get_version",
+        return_value="0.0.0+test",
+    )
     set_processed_datasets_cache(
         dataset=mock_dataset,
         dataset_name="tsv2_heart",
         model_name="SCVI",
         model_args={"model_variant": "homo_sapiens"},
+        cache_options=CacheOptions(
+            remote_cache_url="s3://cz-benchmarks-results-dev/test/",
+            download_embeddings=False,
+            upload_embeddings=True,
+            upload_results=False,
+        ),
+    )
+    expected_serialize_path = (
+        (Path(PROCESSED_DATASETS_CACHE_PATH) / "test_dataset.dill")
+        .expanduser()
+        .absolute()
     )
     mock_dataset.unload_data.assert_called_once()
-    mock_dataset.serialize.assert_called_once_with(str(mock_cache_path))
+    mock_dataset.serialize.assert_called_once_with(str(expected_serialize_path))
     mock_dataset.load_data.assert_called_once()
-    mock_cache_path.parent.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+    mock_upload.assert_called_once_with(
+        expected_serialize_path,
+        "s3://cz-benchmarks-results-dev/test/0.0.0+test/processed-datasets/",
+        overwrite_existing=True,
+    )

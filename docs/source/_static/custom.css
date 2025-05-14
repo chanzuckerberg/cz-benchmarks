@@ -189,7 +189,7 @@ body, .diagram-font {
     line-height: 50px;
     text-align: center;
     font-size: 100%;
-    *zoom: 1;
+    zoom: 1;
   }
   .wy-nav-top img {
     margin-right: 12px;
@@ -390,4 +390,35 @@ body, .diagram-font {
   transform: scale(1.35) translateX(-100px);
 }
 
+
+blockquote {
+  background-color: #f4f9ff; /* light blue background */
+  border-left: none;
+  padding: 1em;
+  font-family: sans-serif;
+  color: #333;
+  margin: 0 !important;
+  margin-bottom: 24px !important;
+}
+
+/* Header bar */
+blockquote::before {
+  content: 'ℹ️ Info:';
+  display: block;
+  background-color: #b9dafd; /* light blue bar */
+  color: #111;
+  font-weight: bold;
+  padding: 0.25em;
+  margin: -1em -1em 1em -1em;
+  font-size: 1.05em;
+  letter-spacing: 0.5px;
+}
+
+/* Title text in bold, e.g., "Note:" */
+blockquote > strong {
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 0.25em;
+  font-size: 1em;
+}
 

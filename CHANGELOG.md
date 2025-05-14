@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.8.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.7.0...v0.8.0) (2025-05-10)
+
+
+### Features
+
+* aido all model variants ([#175](https://github.com/chanzuckerberg/cz-benchmarks/issues/175)) ([b91ebde](https://github.com/chanzuckerberg/cz-benchmarks/commit/b91ebde908b325d53d508e524cf3f68d73dda038))
+
+
+### Documentation
+
+* Sync up docs with XFN google docs ([#203](https://github.com/chanzuckerberg/cz-benchmarks/issues/203)) ([6504333](https://github.com/chanzuckerberg/cz-benchmarks/commit/6504333dd46bd7811588b2c9b5535453ced499f4))
+* VC-2547 Updated base README ([#199](https://github.com/chanzuckerberg/cz-benchmarks/issues/199)) ([49d0d28](https://github.com/chanzuckerberg/cz-benchmarks/commit/49d0d28ae5aea5fae647bc305bb43ed8de985233))
+
+## [0.7.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.1...v0.7.0) (2025-05-08)
+
+
+### Features
+
+* allow CLI to specify set_baseline for perturbation task ([#178](https://github.com/chanzuckerberg/cz-benchmarks/issues/178)) ([376c833](https://github.com/chanzuckerberg/cz-benchmarks/commit/376c8338a73d6bf2f6ca38589cd87ffbad73bd81))
+
+
+### Bug Fixes
+
+* Set random_state for RandomForestClassifier ([#197](https://github.com/chanzuckerberg/cz-benchmarks/issues/197)) ([b175388](https://github.com/chanzuckerberg/cz-benchmarks/commit/b17538846fde8433486a713f1e2e2e16f13a4e8e))
+* use correct silhouette score ([#187](https://github.com/chanzuckerberg/cz-benchmarks/issues/187)) ([a3e06eb](https://github.com/chanzuckerberg/cz-benchmarks/commit/a3e06eb76eb4eee514411962c8df313b71f11067))
+
+
+### Documentation
+
+* fixes for PR feedback ([#200](https://github.com/chanzuckerberg/cz-benchmarks/issues/200)) ([8d40da1](https://github.com/chanzuckerberg/cz-benchmarks/commit/8d40da156295c6d330bd71b8d6c3ace90ab2431f))
+* improve add custom model docs ([#193](https://github.com/chanzuckerberg/cz-benchmarks/issues/193)) ([7adf963](https://github.com/chanzuckerberg/cz-benchmarks/commit/7adf963a1bc7cb858e9d5895be9b8ad11633ecab))
+* VC-2544 Instructions for working on docs ([#192](https://github.com/chanzuckerberg/cz-benchmarks/issues/192)) ([f825c23](https://github.com/chanzuckerberg/cz-benchmarks/commit/f825c230e91469c4ff10c409a3cc42dc6f7b10ff))
+
 ## [0.6.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.6.0...v0.6.1) (2025-05-02)
 
 

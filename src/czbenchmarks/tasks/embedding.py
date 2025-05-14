@@ -24,6 +24,11 @@ class EmbeddingTask(BaseTask):
         self.label_key = label_key
 
     @property
+    def display_name(self) -> str:
+        """A pretty name to use when displaying task results"""
+        return "embedding"
+
+    @property
     def required_inputs(self) -> Set[DataType]:
         """Required input data types.
 

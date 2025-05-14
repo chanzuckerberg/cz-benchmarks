@@ -2,7 +2,12 @@ from czbenchmarks.tasks import (
     EmbeddingTask,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
-from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs
+from czbenchmarks.cli.cli_run import (
+    run_with_inference,
+    CacheOptions,
+    ModelArgs,
+    TaskArgs,
+)
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.models.types import ModelType
 from unittest.mock import patch, MagicMock
@@ -41,15 +46,22 @@ def test_cli_e2e_workflow(mock_runner):
     model_name = "SCGPT"
     model_type = ModelType.SCGPT
     model_args = [
-        ModelArgs(name=model_name, args={}),
+        ModelArgs(name=model_name, args={"model_variant": ["human"]}),
     ]
     task_args = [
         TaskArgs(
             name=task_name,
             task=EmbeddingTask(label_key="cell_type"),
             set_baseline=False,
+            baseline_args={},
         ),
     ]
+    cache_options = CacheOptions(
+        download_embeddings=False,
+        upload_embeddings=False,
+        upload_results=False,
+        remote_cache_url="",
+    )
     # endregion: Setup dataset, model, and task arguments
 
     # region: Run with inference
@@ -58,6 +70,7 @@ def test_cli_e2e_workflow(mock_runner):
         dataset_names=[dataset_name],
         model_args=model_args,
         task_args=task_args,
+        cache_options=cache_options,
     )
     # endregion: Run with inference
 
@@ -70,9 +83,13 @@ def test_cli_e2e_workflow(mock_runner):
 
     # Verify basic task result fields
     assert task_result.task_name == task_name
+    assert task_result.task_name_display == "embedding"
     assert task_result.model_type == model_type
-    assert task_result.dataset_name == dataset_name
-    assert task_result.model_args == {}, "Expected empty model args"
+    assert task_result.dataset_names == [dataset_name]
+    assert task_result.dataset_names_display == ["Spermatogenesis - Gallus gallus"]
+    assert task_result.model_args == {"model_variant": "human"}
+    assert task_result.model_name_display == "scGPT - whole-human"
+    assert task_result.runtime_metrics == {}, "Expected no runtime metrics"
 
     # Verify metrics
     assert isinstance(task_result.metrics, list)

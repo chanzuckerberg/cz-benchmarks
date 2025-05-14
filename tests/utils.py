@@ -85,6 +85,10 @@ class DummyTask(BaseTask):
         self._requires_multiple = requires_multiple
 
     @property
+    def display_name(self) -> str:
+        return "dummy task"
+
+    @property
     def required_inputs(self) -> Set[DataType]:
         return {DataType.ANNDATA, DataType.METADATA}
 

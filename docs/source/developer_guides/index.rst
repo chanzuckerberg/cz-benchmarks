@@ -13,3 +13,5 @@ These guides are intended for developers who want to contribute to the project o
    models
    tasks
    metrics
+   debugging
+   release_process
