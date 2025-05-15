@@ -8,10 +8,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # TODO: Once the repo is public, uncomment the following and remove the test token
-    # environment: pypi
-    # permissions:
-    #   id-token: write # to authenticate as Trusted Publisher to pypi.org
+    environment: pypi
+    permissions:
+      id-token: write # to authenticate as Trusted Publisher to pypi.org
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,7 +48,7 @@ jobs:
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # TODO: Once the repo is public, switch to publishing via Trusted Publisher and remove the test token
+          # TODO: There is no CZI org on test.pypi.org, and so it is not set up as a Trusted Publisher yet; we need to use a test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
 
@@ -66,5 +65,23 @@ jobs:
         # For example, anndata >= 0.9.0 is not on TestPyPI, so it is installed from PyPI
         run: |
           pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
+          python -c "import czbenchmarks"
+          pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://pypi.org/legacy/
+
+      - name: Confirm publish to PyPI
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 15
+          timeout_seconds: 30
+          polling_interval_seconds: 5
+          command: pip index versions --index-url https://pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Install and Test Package from PyPI
+        run: |
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
