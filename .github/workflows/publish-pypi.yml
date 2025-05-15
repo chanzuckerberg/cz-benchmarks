@@ -1,12 +1,9 @@
 name: Publish to PyPi
 
 on:
-  # TODO: remove/disable `push` section before merge to main! for testing only
-  push:
-    branches:
-      - ato/fix-pypi-publish
   release:
     types: [published]
+  # For testing purposes, you can trigger this workflow manually
   workflow_dispatch:
 
 
@@ -53,6 +50,9 @@ jobs:
           # TODO: There is no CZI org on test.pypi.org, and so it is not set up as a Trusted Publisher yet; we need to use a test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
+          # Useful if prod pypi publish failed (below), and this workflow is re-run
+          skip-existing: true
+
 
       - name: Confirm publish to Test PyPI
         uses: nick-fields/retry@v3
