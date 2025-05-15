@@ -31,6 +31,8 @@ class MetricType(Enum):
     MEAN_SQUARED_ERROR = "mean_squared_error"
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
     JACCARD = "jaccard"
+    
+    SIMPLE = "simple"
 
 
 class MetricInfo(BaseModel):
