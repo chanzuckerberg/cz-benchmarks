@@ -1,5 +1,5 @@
 {
-  "czbenchmarks_version": "v0.8.0+e1f73da.dirty",
+  "czbenchmarks_version": "v0.8.0+c9139cb.dirty",
   "args": "czbenchmarks tests/models/test_cli_model_regression.py",
   "task_results": [
     {
@@ -18,12 +18,12 @@
       "metrics": [
         {
           "metric_type": "adjusted_rand_index",
-          "value": 0.4560093190282868,
+          "value": 0.5358239408051053,
           "params": {}
         },
         {
           "metric_type": "normalized_mutual_info",
-          "value": 0.6643837734639052,
+          "value": 0.6974172743559265,
           "params": {}
         }
       ],
