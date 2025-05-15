@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.9.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.8.0...v0.9.0) (2025-05-15)
+
+
+### Features
+
+* add ability to remote cache embeddings and remote upload results ([#207](https://github.com/chanzuckerberg/cz-benchmarks/issues/207)) ([4da7731](https://github.com/chanzuckerberg/cz-benchmarks/commit/4da77311aca958e7bba8d10a3116b11ddc9ccb09))
+
+
+### Bug Fixes
+
+* fix broken help message ([#216](https://github.com/chanzuckerberg/cz-benchmarks/issues/216)) ([b3f35d0](https://github.com/chanzuckerberg/cz-benchmarks/commit/b3f35d0d9115825182cb96c55e7a6d7801c434c4))
+* run_multi_dataset_task needs to know the model args when generating results ([#209](https://github.com/chanzuckerberg/cz-benchmarks/issues/209)) ([2472ebf](https://github.com/chanzuckerberg/cz-benchmarks/commit/2472ebf14fec937441ed570ad1109652cfb6e7aa))
+
+
+### Documentation
+
+* fix broken links, render warnings ([#212](https://github.com/chanzuckerberg/cz-benchmarks/issues/212)) ([226d4b9](https://github.com/chanzuckerberg/cz-benchmarks/commit/226d4b9ed56380ade7c438011f8629e069b6f4f6))
+* may-14 edits from gdocs ([#214](https://github.com/chanzuckerberg/cz-benchmarks/issues/214)) ([ed8279d](https://github.com/chanzuckerberg/cz-benchmarks/commit/ed8279d964290467a52e0e9d43709123d636f80b))
+* update roadmap release tags ([#215](https://github.com/chanzuckerberg/cz-benchmarks/issues/215)) ([80d1020](https://github.com/chanzuckerberg/cz-benchmarks/commit/80d1020f6cf88dc637d55fd77ec239e4e8950262))
+* VC-2557 && VC-2533 ([#208](https://github.com/chanzuckerberg/cz-benchmarks/issues/208)) ([12c6727](https://github.com/chanzuckerberg/cz-benchmarks/commit/12c6727aeaecf2745321869d9b9608f9884acc87))
+
 ## [0.8.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.7.0...v0.8.0) (2025-05-10)
 
 
