@@ -1,9 +1,14 @@
 name: Publish to PyPi
 
 on:
+  # TODO: remove/disable `push` section before merge to main! for testing only
+  push:
+    branches:
+      - ato/fix-pypi-publish
   release:
     types: [published]
   workflow_dispatch:
+
 
 jobs:
   publish-test-pypi:
