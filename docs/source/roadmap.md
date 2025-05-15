@@ -25,8 +25,8 @@ However, please note that this is a very early stage project and as such, we exp
 - 🔬 Initial domain focus: single-cell transcriptomics
 
 ### 📋 Candidate release tags:
-- v0.1: Open alpha (unstable) repo for targeted developer preview
-- v0.2: Repo generates benchmark run results that can be ingested for visualization on CZI’s Virtual Cell Platform UI
+- v0.9: Open alpha (unstable) repo for targeted developer preview
+- v0.10: Fixes to address alpha release feedback
 
 ---
 
