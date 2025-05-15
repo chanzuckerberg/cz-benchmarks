@@ -33,9 +33,9 @@ However, please note that this is a very early stage project and as such, we exp
 ## 🔍 Next: Support Developer Workflow & Early Contribution Workflow
 
 ### Possible Candidates:
-- Refactor cz-benchmarks to make it easier for model developers to integrate their own models and datasets, enabling a more seamless developer workflow
+- Improve and expand support for model developers to integrate their own models and datasets, enabling a more seamless developer workflow
 - Adopt standardized model packaging to ensure consistency.
-- Improve the CLI to provide a more user-friendly interface for running benchmarks.
+- Focused improvements on the CLI to provide a more user-friendly interface for running benchmarks.
 - Enable initial contributors to add (alpha format):
   - New models
   - New datasets, tasks, and metrics
