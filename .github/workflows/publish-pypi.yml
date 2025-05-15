@@ -48,7 +48,7 @@ jobs:
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # TODO: There is CZI org on test.pypi.org, and so it is not set up as a Trusted Publisher yet; we need to use a test token
+          # TODO: There is no CZI org on test.pypi.org, and so it is not set up as a Trusted Publisher yet; we need to use a test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
 
