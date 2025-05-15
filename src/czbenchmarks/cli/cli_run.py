@@ -170,8 +170,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help=(
             "Upload the results to the remote cache. This allows results "
-            "to be shared across instances. They will be stored under ",
-            "s3://<remote_cache_url>/<version>/results/<timestamp>-<random_hex>.json",
+            "to be shared across instances. They will be stored under "
+            "s3://<remote_cache_url>/<version>/results/<timestamp>-<random_hex>.json"
         ),
         default=False,
     )
