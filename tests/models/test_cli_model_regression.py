@@ -12,7 +12,7 @@ MODEL_VARIANT_TEST_CASES = [
     ("SCGPT", "human", "human_spermatogenesis"),
     ("SCVI", "homo_sapiens", "human_spermatogenesis"),
     ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis"),
-    ("SCGENEPT", "scgpt__adamson", "adamson_perturb"),
+    ("SCGENEPT", "scgpt", "adamson_perturb"),
     ("UCE", "4l", "human_spermatogenesis"),
     ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis"),
 ]
@@ -42,11 +42,12 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     assert dataset is not None, f"Failed to load dataset {dataset_name}"
 
     # Create model args with the variant
+    args = {}
+    if variant:
+        args["model_variant"] = [variant]
     model_args = [ModelArgs(
         name=model_name,
-        args={
-            "model_variant": [variant] if variant else []
-        }
+        args=args
     )]
     
     task_args = [
