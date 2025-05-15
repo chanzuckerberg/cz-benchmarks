@@ -5,6 +5,11 @@ on:
     types: [published]
   # For testing purposes, you can trigger this workflow manually
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. "1.2.3")'
+        required: true
+        type: string
 
 
 jobs:
@@ -17,7 +22,11 @@ jobs:
       - name: Get the version
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Display version being published
         run: |
