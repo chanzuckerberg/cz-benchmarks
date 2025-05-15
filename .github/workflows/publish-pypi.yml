@@ -6,11 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  publish-test-pypi:
     runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write # to authenticate as Trusted Publisher to pypi.org
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,6 +65,46 @@ jobs:
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
 
+  publish-prod-pypi:
+    needs: publish-test-pypi
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # to authenticate as Trusted Publisher to pypi.org
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get the version
+        id: get_version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Display version being published
+        run: |
+          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Cache python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-3.10-build-
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
+        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
+
+      - name: Build package
+        run: python -m build
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -85,3 +122,4 @@ jobs:
         run: |
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+
