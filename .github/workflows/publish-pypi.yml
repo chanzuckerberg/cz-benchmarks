@@ -96,7 +96,11 @@ jobs:
       - name: Get the version
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Display version being published
         run: |
@@ -125,6 +129,9 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Useful if prod pypi publish succeeded, but you need to debug later steps in this job
+          skip-existing: true
 
       - name: Confirm publish to PyPI
         uses: nick-fields/retry@v3
