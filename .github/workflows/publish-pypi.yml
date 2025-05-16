@@ -84,7 +84,9 @@ jobs:
   publish-prod-pypi:
     needs: publish-test-pypi
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: 
+      name: pypi
+      url: https://pypi.org/cz-benchmarks
     permissions:
       id-token: write # to authenticate as Trusted Publisher to pypi.org
     steps:
@@ -123,8 +125,6 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://pypi.org/legacy/
 
       - name: Confirm publish to PyPI
         uses: nick-fields/retry@v3
