@@ -3,15 +3,20 @@ name: Publish to PyPi
 on:
   release:
     types: [published]
+  # For testing/debugging purposes, you make changes to this workflow on a branch and then trigger the workflow manually from the Github Actions tab,
+  # specifying the version to publish. Doing will only run the publish-test-pyi job and *not* the publish-prod-pypi job, unless you comment out the
+  # publish-prod-pypi job's `if` condition
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. "1.2.3"). For testing/debugging.'
+        required: true
+        type: string
+
 
 jobs:
-  publish:
+  publish-test-pypi:
     runs-on: ubuntu-latest
-    # TODO: Once the repo is public, uncomment the following and remove the test token
-    # environment: pypi
-    # permissions:
-    #   id-token: write # to authenticate as Trusted Publisher to pypi.org
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +24,11 @@ jobs:
       - name: Get the version
         id: get_version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Display version being published
         run: |
@@ -37,8 +46,8 @@ jobs:
           key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
           restore-keys: ${{ runner.os }}-python-3.10-build-
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
         run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
@@ -49,9 +58,12 @@ jobs:
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # TODO: Once the repo is public, switch to publishing via Trusted Publisher and remove the test token
+          # TODO: There is no CZI org on test.pypi.org, and so it is not set up as a Trusted Publisher yet; we need to use a test token
           password: ${{ secrets.TEST_PYPI_CZI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
+          # Useful if prod pypi publish failed (below), and this workflow is re-run
+          skip-existing: true
+
 
       - name: Confirm publish to Test PyPI
         uses: nick-fields/retry@v3
@@ -65,6 +77,82 @@ jobs:
         # Add PyPi index to the pip install command so that any dependencies not on TestPyPI are installed from PyPI
         # For example, anndata >= 0.9.0 is not on TestPyPI, so it is installed from PyPI
         run: |
+          python -m venv venv
+          source venv/bin/activate
+          # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+
+  publish-prod-pypi:
+    # This job will only run if the test-pypi job is successful
+    needs: publish-test-pypi
+    # Only run if done for an official release, not via a triggered workflow, which is used for testing
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    environment: 
+      name: pypi
+      url: https://pypi.org/cz-benchmarks
+    permissions:
+      id-token: write # to authenticate as Trusted Publisher to pypi.org
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get the version
+        id: get_version
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Display version being published
+        run: |
+          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Cache python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
+          restore-keys: ${{ runner.os }}-python-3.10-build-
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # with:
+        #   # Useful if prod pypi publish succeeded, but you need to debug later steps in this job
+        #   skip-existing: true
+
+      - name: Confirm publish to PyPI
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 15
+          timeout_seconds: 30
+          polling_interval_seconds: 5
+          command: pip index versions --index-url https://pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+
+      - name: Install and Test Package from PyPI
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
+          pip install --no-cache-dir cz-benchmarks
+          python -c "import czbenchmarks"
+          pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+
