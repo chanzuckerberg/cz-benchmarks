@@ -46,8 +46,8 @@ jobs:
           key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
           restore-keys: ${{ runner.os }}-python-3.10-build-
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
         run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
@@ -79,6 +79,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
@@ -123,8 +124,8 @@ jobs:
           key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
           restore-keys: ${{ runner.os }}-python-3.10-build-
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
         run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
@@ -150,6 +151,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           pip install --no-cache-dir cz-benchmarks
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
