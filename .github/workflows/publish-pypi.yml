@@ -3,11 +3,13 @@ name: Publish to PyPi
 on:
   release:
     types: [published]
-  # For testing purposes, you can trigger this workflow manually
+  # For testing/debugging purposes, you make changes to this workflow on a branch and then trigger the workflow manually from the Github Actions tab,
+  # specifying the version to publish. Doing will only run the publish-test-pyi job and *not* the publish-prod-pypi job, unless you comment out the
+  # publish-prod-pypi job's `if` condition
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g. "1.2.3")'
+        description: 'Version to publish (e.g. "1.2.3"). For testing/debugging.'
         required: true
         type: string
 
@@ -82,7 +84,10 @@ jobs:
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
 
   publish-prod-pypi:
+    # This job will only run if the test-pypi job is successful
     needs: publish-test-pypi
+    # Only run if done for an official release, not via a triggered workflow, which is used for testing
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     runs-on: ubuntu-latest
     environment: 
       name: pypi
@@ -129,9 +134,9 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          # Useful if prod pypi publish succeeded, but you need to debug later steps in this job
-          skip-existing: true
+        # with:
+        #   # Useful if prod pypi publish succeeded, but you need to debug later steps in this job
+        #   skip-existing: true
 
       - name: Confirm publish to PyPI
         uses: nick-fields/retry@v3
