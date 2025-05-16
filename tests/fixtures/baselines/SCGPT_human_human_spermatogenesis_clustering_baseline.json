@@ -1,0 +1,60 @@
+{
+  "czbenchmarks_version": "v0.8.0+c9139cb.dirty",
+  "args": "czbenchmarks tests/models/test_cli_model_regression.py",
+  "task_results": [
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "SCGPT",
+      "dataset_names": [
+        "human_spermatogenesis"
+      ],
+      "dataset_names_display": [
+        "Spermatogenesis - Homo sapiens"
+      ],
+      "model_args": {
+        "model_variant": "human"
+      },
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.5358239408051053,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.6974172743559265,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "scGPT - whole-human"
+    },
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "BASELINE",
+      "dataset_names": [
+        "human_spermatogenesis"
+      ],
+      "dataset_names_display": [
+        "Spermatogenesis - Homo sapiens"
+      ],
+      "model_args": {},
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.4630210897592212,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.7162501333431072,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "Baseline"
+    }
+  ]
+}
