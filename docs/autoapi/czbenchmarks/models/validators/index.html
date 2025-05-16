@@ -1,0 +1,278 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.models.validators &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.models.validators</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/czbenchmarks/models/validators/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.models.validators">
+<span id="czbenchmarks-models-validators"></span><h1>czbenchmarks.models.validators<a class="headerlink" href="#module-czbenchmarks.models.validators" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="base_model_validator/index.html">czbenchmarks.models.validators.base_model_validator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base_single_cell_model_validator/index.html">czbenchmarks.models.validators.base_single_cell_model_validator</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.models.validators.BaseModelValidator" title="czbenchmarks.models.validators.BaseModelValidator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseModelValidator</span></code></a></p></td>
+<td><p>Abstract base class for model validators.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.models.validators.BaseSingleCellValidator" title="czbenchmarks.models.validators.BaseSingleCellValidator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseSingleCellValidator</span></code></a></p></td>
+<td><p>Base validator for single-cell models.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.models.validators.</span></span><span class="sig-name descname"><span class="pre">BaseModelValidator</span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/models/validators/base_model_validator.html#BaseModelValidator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract base class for model validators.</p>
+<p>Defines the interface for validating datasets against model requirements.
+Validators ensure datasets meet model-specific requirements like:
+- Compatible data types
+- Required metadata fields
+- Organism compatibility
+- Feature name formats</p>
+<p>Each validator must:
+1. Define a dataset_type class variable
+2. Define a model_type class variable or model_name property
+3. Implement _validate_dataset, inputs, and outputs</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.dataset_type">
+<span class="sig-name descname"><span class="pre">dataset_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../datasets/index.html#czbenchmarks.datasets.BaseDataset" title="czbenchmarks.datasets.BaseDataset"><span class="pre">czbenchmarks.datasets.BaseDataset</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.dataset_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../types/index.html#czbenchmarks.models.types.ModelType" title="czbenchmarks.models.types.ModelType"><span class="pre">czbenchmarks.models.types.ModelType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.model_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.__init_subclass__">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__init_subclass__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/models/validators/base_model_validator.html#BaseModelValidator.__init_subclass__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.__init_subclass__" title="Link to this definition"></a></dt>
+<dd><p>Validate that subclasses define required class variables and
+follow naming conventions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a> – If required class variables are missing or invalid</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If class naming doesn’t follow conventions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.inputs" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Abstractmethod<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Required input data types this model requires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of required DataType enums</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.outputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../datasets/index.html#czbenchmarks.datasets.DataType" title="czbenchmarks.datasets.DataType"><span class="pre">czbenchmarks.datasets.DataType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.outputs" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Abstractmethod<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Output data types produced by this model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of output DataType enums</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseModelValidator.validate_dataset">
+<span class="sig-name descname"><span class="pre">validate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../datasets/index.html#czbenchmarks.datasets.BaseDataset" title="czbenchmarks.datasets.BaseDataset"><span class="pre">czbenchmarks.datasets.BaseDataset</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/czbenchmarks/models/validators/base_model_validator.html#BaseModelValidator.validate_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.models.validators.BaseModelValidator.validate_dataset" title="Link to this definition"></a></dt>
+<dd><p>Validate a dataset meets all model requirements.</p>
+<p>Checks:
+1. Dataset type matches model requirements
+2. Required inputs are available
+3. Model-specific validation rules</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset</strong> – Dataset to validate</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If validation fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.models.validators.</span></span><span class="sig-name descname"><span class="pre">BaseSingleCellValidator</span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/models/validators/base_single_cell_model_validator.html#BaseSingleCellValidator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base_model_validator/index.html#czbenchmarks.models.validators.base_model_validator.BaseModelValidator" title="czbenchmarks.models.validators.base_model_validator.BaseModelValidator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">czbenchmarks.models.validators.base_model_validator.BaseModelValidator</span></code></a></p>
+<p>Base validator for single-cell models.</p>
+<p>Defines common validation logic for single-cell models, including:
+- Organism compatibility checking
+- Required metadata validation
+- AnnData observation and variable key validation</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator.dataset_type">
+<span class="sig-name descname"><span class="pre">dataset_type</span></span><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator.dataset_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator.available_organisms">
+<span class="sig-name descname"><span class="pre">available_organisms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../datasets/index.html#czbenchmarks.datasets.Organism" title="czbenchmarks.datasets.Organism"><span class="pre">czbenchmarks.datasets.Organism</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator.available_organisms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator.required_obs_keys">
+<span class="sig-name descname"><span class="pre">required_obs_keys</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator.required_obs_keys" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator.required_var_keys">
+<span class="sig-name descname"><span class="pre">required_var_keys</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator.required_var_keys" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.models.validators.BaseSingleCellValidator.__init_subclass__">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__init_subclass__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/models/validators/base_single_cell_model_validator.html#BaseSingleCellValidator.__init_subclass__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.models.validators.BaseSingleCellValidator.__init_subclass__" title="Link to this definition"></a></dt>
+<dd><p>Validate required class variables in child classes.</p>
+<p>Ensures child classes define:
+- available_organisms
+- required_obs_keys
+- required_var_keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a> – If any required class variable is missing</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

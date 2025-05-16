@@ -1,0 +1,94 @@
+czbenchmarks.models.types
+=========================
+
+.. py:module:: czbenchmarks.models.types
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.models.types.DataType
+   czbenchmarks.models.types.ModelOutputs
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.models.types.ModelType
+
+
+Module Contents
+---------------
+
+.. py:data:: DataType
+   :value: 'DataType'
+
+
+.. py:class:: ModelType
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: BASELINE
+      :value: 'BASELINE'
+
+
+
+   .. py:attribute:: SCVI
+      :value: 'SCVI'
+
+
+
+   .. py:attribute:: SCGPT
+      :value: 'SCGPT'
+
+
+
+   .. py:attribute:: GENEFORMER
+      :value: 'GENEFORMER'
+
+
+
+   .. py:attribute:: SCGENEPT
+      :value: 'SCGENEPT'
+
+
+
+   .. py:attribute:: UCE
+      :value: 'UCE'
+
+
+
+   .. py:attribute:: AIDO
+      :value: 'AIDO'
+
+
+
+   .. py:attribute:: TRANSCRIPTFORMER
+      :value: 'TRANSCRIPTFORMER'
+
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+.. py:data:: ModelOutputs
+

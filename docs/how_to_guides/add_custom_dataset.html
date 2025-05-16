@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add a Custom Dataset &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Add a Custom Model" href="add_custom_model.html" />
+    <link rel="prev" title="How To Guides" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How To Guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Add a Custom Dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#steps-to-add-your-dataset">Steps to Add Your Dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-your-data">1. Prepare Your Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-custom-configuration-file">2. Create a Custom Configuration File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#load-and-validate-your-dataset-in-python">3. Load and Validate Your Dataset in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#tips-for-customization">Tips for Customization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="add_custom_model.html">Add a Custom Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_task.html">Add a Custom Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_metric.html">Add a Custom Metric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_mode.html">Running a Docker Container in Interactive Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualize_results.html">Visualizing Benchmark Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html">Setup Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">Add a Custom Dataset</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how_to_guides/add_custom_dataset.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="add-a-custom-dataset">
+<h1>Add a Custom Dataset<a class="headerlink" href="#add-a-custom-dataset" title="Link to this heading"></a></h1>
+<p>This guide explains how to integrate your own dataset into cz-benchmarks.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>For single-cell datasets:</p>
+<ul class="simple">
+<li><p>The dataset file must be an <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> file conforming to the <a class="reference external" href="https://anndata.readthedocs.io/en/latest/fileformat-prose.html#on-disk-format">AnnData on-disk format</a>.</p></li>
+<li><p>The AnnData object’s <code class="docutils literal notranslate"><span class="pre">var_names</span></code> must specify the <code class="docutils literal notranslate"><span class="pre">ensembl_id</span></code> for each gene OR <code class="docutils literal notranslate"><span class="pre">var</span></code> must contain a column named <code class="docutils literal notranslate"><span class="pre">ensembl_id</span></code>.</p></li>
+<li><p>The AnnData object must meet the validation requirements of the specific models that the dataset will be used to benchmark. This means that:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">obs</span></code> and <code class="docutils literal notranslate"><span class="pre">var</span></code> each contain the required metadata columns, as specified by the models’ <code class="docutils literal notranslate"><span class="pre">required_obs_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">required_var_keys</span></code> properties, respectively.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ensemble_id</span></code> values must be valid for the models’ accepted organisms, as specified by the <code class="docutils literal notranslate"><span class="pre">available_organisms</span></code> property.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="steps-to-add-your-dataset">
+<h2>Steps to Add Your Dataset<a class="headerlink" href="#steps-to-add-your-dataset" title="Link to this heading"></a></h2>
+<section id="prepare-your-data">
+<h3>1. Prepare Your Data<a class="headerlink" href="#prepare-your-data" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Save your data as an AnnData object in <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> format.</p></li>
+<li><p>Ensure the following:</p>
+<ul>
+<li><p>Metadata columns (e.g., cell type, batch) are included in <code class="docutils literal notranslate"><span class="pre">obs</span></code>.</p></li>
+<li><p>Gene names are properly defined in <code class="docutils literal notranslate"><span class="pre">var</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="create-a-custom-configuration-file">
+<h3>2. Create a Custom Configuration File<a class="headerlink" href="#create-a-custom-configuration-file" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">src/czbenchmarks/conf/datasets.yaml</span></code> by adding a new dataset entry:</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">datasets</span><span class="p">:</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">my_dataset</span><span class="p p-Indicator">:</span>
+<span class="w">    </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">czbenchmarks.datasets.SingleCellDataset</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/path_to_your_data/my_data.h5ad</span>
+<span class="w">    </span><span class="nt">organism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${organism:HUMAN}</span>
+</pre></div>
+</div>
+<ul>
+<li><p><strong>Explanation:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">datasets</span></code>: Defines the datasets to be loaded.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_dataset</span></code>: A unique identifier for your dataset.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_target_</span></code>: Specifies the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> class to instantiate. Currently, <code class="docutils literal notranslate"><span class="pre">cz-benchmarks</span></code> supports <code class="docutils literal notranslate"><span class="pre">src.czbenchmarks.datasets.single_cell.SingleCellDataset</span></code> and <code class="docutils literal notranslate"><span class="pre">src.czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset</span></code> Dataset types.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code>: Path to your <code class="docutils literal notranslate"><span class="pre">.h5ad</span></code> file. This may be be a local filesystem path or an S3 URL (<code class="docutils literal notranslate"><span class="pre">s3://...</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">organism</span></code>: Specify the organism, which must be a value from the <code class="docutils literal notranslate"><span class="pre">src.czbenchmarks.datasets.types.Organism</span></code> (e.g., HUMAN, MOUSE).</p></li>
+</ul>
+<p>You may add multiple datasets to thie files, as children of <code class="docutils literal notranslate"><span class="pre">datasets</span></code>.</p>
+</li>
+</ul>
+</section>
+<section id="load-and-validate-your-dataset-in-python">
+<h3>3. Load and Validate Your Dataset in Python<a class="headerlink" href="#load-and-validate-your-dataset-in-python" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use the following Python code to load your dataset:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="c1"># Instantiate the `SingleCellDataset` object from the configuration specified in `datasets.yaml`</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load the H5AD file into memory as an AnnData object, storing in the `ANNDATA` input &quot;slot&quot; of the dataset.</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+<span class="c1"># Ensure the basic requirements are met by the Dataset</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="s2">&quot;ANNDATA&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Fix any loading or validation errors, as needed.</p>
+</section>
+</section>
+<section id="tips-for-customization">
+<h2>Tips for Customization<a class="headerlink" href="#tips-for-customization" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Preprocessing:</strong> If your dataset requires specialized preprocessing, consider subclassing <code class="docutils literal notranslate"><span class="pre">BaseDataset</span></code> in your project.</p></li>
+<li><p><strong>Validation:</strong> Ensure organism-specific validations (e.g. gene name prefixes) are met.</p></li>
+<li><p><strong>Test with Models:</strong> Specific models may have additional validation requirements, so you will need to invoke applicable models with your specific dataset to ensure that it is fully compliant.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="How To Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="add_custom_model.html" class="btn btn-neutral float-right" title="Add a Custom Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

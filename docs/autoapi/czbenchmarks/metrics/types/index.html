@@ -1,0 +1,463 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.metrics.types &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.metrics.types</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/czbenchmarks/metrics/types/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.metrics.types">
+<span id="czbenchmarks-metrics-types"></span><h1>czbenchmarks.metrics.types<a class="headerlink" href="#module-czbenchmarks.metrics.types" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricType</span></code></a></p></td>
+<td><p>Enumeration of all supported metric types.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.metrics.types.MetricInfo" title="czbenchmarks.metrics.types.MetricInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricInfo</span></code></a></p></td>
+<td><p>Stores metadata about a metric.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.metrics.types.MetricRegistry" title="czbenchmarks.metrics.types.MetricRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricRegistry</span></code></a></p></td>
+<td><p>Central registry for all available metrics.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.metrics.types.MetricResult" title="czbenchmarks.metrics.types.MetricResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricResult</span></code></a></p></td>
+<td><p>!!! abstract &quot;Usage Documentation&quot;</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.types.</span></span><span class="sig-name descname"><span class="pre">MetricType</span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Enumeration of all supported metric types.</p>
+<p>Each metric type corresponds to a specific evaluation metric that can be computed.
+The value is the string identifier used in results dictionaries.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.ADJUSTED_RAND_INDEX">
+<span class="sig-name descname"><span class="pre">ADJUSTED_RAND_INDEX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'adjusted_rand_index'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.ADJUSTED_RAND_INDEX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.NORMALIZED_MUTUAL_INFO">
+<span class="sig-name descname"><span class="pre">NORMALIZED_MUTUAL_INFO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'normalized_mutual_info'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.NORMALIZED_MUTUAL_INFO" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.SILHOUETTE_SCORE">
+<span class="sig-name descname"><span class="pre">SILHOUETTE_SCORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'silhouette_score'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.SILHOUETTE_SCORE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.ENTROPY_PER_CELL">
+<span class="sig-name descname"><span class="pre">ENTROPY_PER_CELL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'entropy_per_cell'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.ENTROPY_PER_CELL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.BATCH_SILHOUETTE">
+<span class="sig-name descname"><span class="pre">BATCH_SILHOUETTE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'batch_silhouette'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.BATCH_SILHOUETTE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_FOLD_ACCURACY">
+<span class="sig-name descname"><span class="pre">MEAN_FOLD_ACCURACY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_fold_accuracy'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_ACCURACY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_FOLD_F1_SCORE">
+<span class="sig-name descname"><span class="pre">MEAN_FOLD_F1_SCORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_fold_f1'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_F1_SCORE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_FOLD_PRECISION">
+<span class="sig-name descname"><span class="pre">MEAN_FOLD_PRECISION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_fold_precision'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_PRECISION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_FOLD_RECALL">
+<span class="sig-name descname"><span class="pre">MEAN_FOLD_RECALL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_fold_recall'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_RECALL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_FOLD_AUROC">
+<span class="sig-name descname"><span class="pre">MEAN_FOLD_AUROC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_fold_auroc'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_FOLD_AUROC" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.MEAN_SQUARED_ERROR">
+<span class="sig-name descname"><span class="pre">MEAN_SQUARED_ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mean_squared_error'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.MEAN_SQUARED_ERROR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.PEARSON_CORRELATION">
+<span class="sig-name descname"><span class="pre">PEARSON_CORRELATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PEARSON_CORRELATION'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.PEARSON_CORRELATION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricType.JACCARD">
+<span class="sig-name descname"><span class="pre">JACCARD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'jaccard'</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricType.JACCARD" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.types.</span></span><span class="sig-name descname"><span class="pre">MetricInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<p>Stores metadata about a metric.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.func">
+<span class="sig-name descname"><span class="pre">func</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.func" title="Link to this definition"></a></dt>
+<dd><p>The function that computes the metric</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.required_args">
+<span class="sig-name descname"><span class="pre">required_args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.required_args" title="Link to this definition"></a></dt>
+<dd><p>Set of required argument names</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.default_params">
+<span class="sig-name descname"><span class="pre">default_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.default_params" title="Link to this definition"></a></dt>
+<dd><p>Default parameters for the metric function</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.description" title="Link to this definition"></a></dt>
+<dd><p>Optional documentation string for custom metrics</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricInfo.tags">
+<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricInfo.tags" title="Link to this definition"></a></dt>
+<dd><p>Set of tags for grouping related metrics</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricRegistry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.types.</span></span><span class="sig-name descname"><span class="pre">MetricRegistry</span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricRegistry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricRegistry" title="Link to this definition"></a></dt>
+<dd><p>Central registry for all available metrics.</p>
+<p>Handles registration and computation of metrics with proper validation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricRegistry.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><span class="pre">MetricType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricRegistry.register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricRegistry.register" title="Link to this definition"></a></dt>
+<dd><p>Register a new metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metric_type</strong> – Type of metric to register</p></li>
+<li><p><strong>func</strong> – Function that computes the metric</p></li>
+<li><p><strong>required_args</strong> – Set of required argument names</p></li>
+<li><p><strong>default_params</strong> – Default parameters for the metric function</p></li>
+<li><p><strong>description</strong> – Documentation string</p></li>
+<li><p><strong>tags</strong> – Set of tags for grouping metrics</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricRegistry.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><span class="pre">MetricType</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricRegistry.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricRegistry.compute" title="Link to this definition"></a></dt>
+<dd><p>Compute a metric with the given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metric_type</strong> – Type of metric to compute</p></li>
+<li><p><strong>**kwargs</strong> – Arguments to pass to metric function</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Computed metric value</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If metric type unknown or missing required args</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricRegistry.get_info">
+<span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><span class="pre">MetricType</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#czbenchmarks.metrics.types.MetricInfo" title="czbenchmarks.metrics.types.MetricInfo"><span class="pre">MetricInfo</span></a></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricRegistry.get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricRegistry.get_info" title="Link to this definition"></a></dt>
+<dd><p>Get metadata about a metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metric_type</strong> – Type of metric</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetricInfo object with metric metadata</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If metric type unknown</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricRegistry.list_metrics">
+<span class="sig-name descname"><span class="pre">list_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><span class="pre">MetricType</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricRegistry.list_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricRegistry.list_metrics" title="Link to this definition"></a></dt>
+<dd><p>List available metrics, optionally filtered by tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tags</strong> – If provided, only return metrics with all these tags</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set of matching MetricType values</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">czbenchmarks.metrics.types.</span></span><span class="sig-name descname"><span class="pre">MetricResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/czbenchmarks/metrics/types.html#MetricResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[Models](../concepts/models.md)</p>
+</dd>
+</dl>
+<p>A base class for creating Pydantic models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__class_vars__">
+<span class="sig-name descname"><span class="pre">__class_vars__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__class_vars__" title="Link to this definition"></a></dt>
+<dd><p>The names of the class variables defined on the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__private_attributes__">
+<span class="sig-name descname"><span class="pre">__private_attributes__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__private_attributes__" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the private attributes of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_complete__">
+<span class="sig-name descname"><span class="pre">__pydantic_complete__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_complete__" title="Link to this definition"></a></dt>
+<dd><p>Whether model building is completed, or if there are still undefined fields.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_core_schema__">
+<span class="sig-name descname"><span class="pre">__pydantic_core_schema__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_core_schema__" title="Link to this definition"></a></dt>
+<dd><p>The core schema of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_custom_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_custom_init__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_custom_init__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model has a custom <cite>__init__</cite> function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_decorators__">
+<span class="sig-name descname"><span class="pre">__pydantic_decorators__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_decorators__" title="Link to this definition"></a></dt>
+<dd><p>Metadata containing the decorators defined on the model.
+This replaces <cite>Model.__validators__</cite> and <cite>Model.__root_validators__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_generic_metadata__">
+<span class="sig-name descname"><span class="pre">__pydantic_generic_metadata__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_generic_metadata__" title="Link to this definition"></a></dt>
+<dd><p>Metadata for generic models; contains data used for a similar purpose to
+__args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_parent_namespace__">
+<span class="sig-name descname"><span class="pre">__pydantic_parent_namespace__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_parent_namespace__" title="Link to this definition"></a></dt>
+<dd><p>Parent namespace of the model, used for automatic rebuilding of models.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_post_init__">
+<span class="sig-name descname"><span class="pre">__pydantic_post_init__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_post_init__" title="Link to this definition"></a></dt>
+<dd><p>The name of the post-init method for the model, if defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_root_model__">
+<span class="sig-name descname"><span class="pre">__pydantic_root_model__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_root_model__" title="Link to this definition"></a></dt>
+<dd><p>Whether the model is a [<cite>RootModel</cite>][pydantic.root_model.RootModel].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_serializer__">
+<span class="sig-name descname"><span class="pre">__pydantic_serializer__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_serializer__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaSerializer</cite> used to dump instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_validator__">
+<span class="sig-name descname"><span class="pre">__pydantic_validator__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_validator__" title="Link to this definition"></a></dt>
+<dd><p>The <cite>pydantic-core</cite> <cite>SchemaValidator</cite> used to validate instances of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_extra__">
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_extra__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra]
+is set to <cite>‘allow’</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_fields_set__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields_set__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_fields_set__" title="Link to this definition"></a></dt>
+<dd><p>The names of fields explicitly set during instantiation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.__pydantic_private__">
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.__pydantic_private__" title="Link to this definition"></a></dt>
+<dd><p>Values of private attributes set on the model instance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.metric_type">
+<span class="sig-name descname"><span class="pre">metric_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#czbenchmarks.metrics.types.MetricType" title="czbenchmarks.metrics.types.MetricType"><span class="pre">MetricType</span></a></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.metric_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="czbenchmarks.metrics.types.MetricResult.params">
+<span class="sig-name descname"><span class="pre">params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#czbenchmarks.metrics.types.MetricResult.params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

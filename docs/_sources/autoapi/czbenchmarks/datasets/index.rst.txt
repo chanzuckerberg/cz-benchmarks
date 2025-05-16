@@ -1,0 +1,550 @@
+czbenchmarks.datasets
+=====================
+
+.. py:module:: czbenchmarks.datasets
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/datasets/base/index
+   /autoapi/czbenchmarks/datasets/single_cell/index
+   /autoapi/czbenchmarks/datasets/types/index
+   /autoapi/czbenchmarks/datasets/utils/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.DataValue
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.SingleCellDataset
+   czbenchmarks.datasets.PerturbationSingleCellDataset
+   czbenchmarks.datasets.BaseDataset
+   czbenchmarks.datasets.DataType
+   czbenchmarks.datasets.Organism
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.load_dataset
+   czbenchmarks.datasets.list_available_datasets
+
+
+Package Contents
+----------------
+
+.. py:function:: load_dataset(dataset_name: str, config_path: Optional[str] = None) -> czbenchmarks.datasets.base.BaseDataset
+
+   Download and instantiate a dataset using Hydra configuration.
+
+   :param dataset_name: Name of dataset as specified in config
+   :param config_path: Optional path to config yaml file. If not provided,
+                       will use only the package's default config.
+
+   :returns: Instantiated dataset object
+   :rtype: BaseDataset
+
+
+.. py:function:: list_available_datasets() -> List[str]
+
+   Lists all available datasets defined in the datasets.yaml configuration file.
+
+   :returns: A sorted list of dataset names available in the configuration.
+   :rtype: list
+
+
+.. py:class:: SingleCellDataset(path: str, organism: czbenchmarks.datasets.types.Organism)
+
+   Bases: :py:obj:`czbenchmarks.datasets.base.BaseDataset`
+
+
+   Single cell dataset containing gene expression data and metadata.
+
+   Handles loading and validation of AnnData objects with gene expression data
+   and associated metadata for a specific organism.
+
+
+   .. py:method:: load_data() -> None
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:property:: organism
+      :type: czbenchmarks.datasets.types.Organism
+
+
+
+   .. py:property:: adata
+      :type: anndata.AnnData
+
+
+
+.. py:class:: PerturbationSingleCellDataset(path: str, organism: czbenchmarks.datasets.types.Organism, condition_key: str = 'condition', split_key: str = 'split')
+
+   Bases: :py:obj:`SingleCellDataset`
+
+
+   Single cell dataset with perturbation data, containing control and
+   perturbed cells.
+
+   Input data requirements:
+
+   - H5AD file containing single cell gene expression data
+   - Must have a condition column in adata.obs specifying control ("ctrl") and
+     perturbed conditions.
+   - Must have a split column in adata.obs to identify test samples
+   - Condition format must be one of:
+
+     - ``ctrl`` for control samples
+     - ``{gene}+ctrl`` for single gene perturbations
+     - ``{gene1}+{gene2}`` for combinatorial perturbations
+
+
+   .. py:method:: load_data() -> None
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:property:: perturbation_truth
+      :type: Dict[str, pandas.DataFrame]
+
+
+
+   .. py:property:: condition_key
+      :type: str
+
+
+
+   .. py:property:: split_key
+      :type: str
+
+
+
+.. py:class:: BaseDataset(path: str, **kwargs: Any)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: kwargs
+
+
+   .. py:property:: inputs
+      :type: Dict[czbenchmarks.datasets.types.DataType, czbenchmarks.datasets.types.DataValue]
+
+
+      Get the inputs dictionary.
+
+
+   .. py:property:: outputs
+      :type: czbenchmarks.models.types.ModelOutputs
+
+
+      Get the outputs dictionary.
+
+
+   .. py:method:: set_input(data_type: czbenchmarks.datasets.types.DataType, value: czbenchmarks.datasets.types.DataValue) -> None
+
+      Safely set an input with type checking.
+
+
+
+   .. py:method:: set_output(model_type: czbenchmarks.models.types.ModelType | None, data_type: czbenchmarks.datasets.types.DataType, value: czbenchmarks.datasets.types.DataValue) -> None
+
+      Safely set an output with type checking.
+      :param model_type: The type of model associated with the output.
+                         This parameter is used to differentiate between outputs
+                         from various models. It can be set to `None` if the output
+                         is not tied to a specific model type defined in the `ModelType` enum.
+      :type model_type: ModelType | None
+      :param data_type: Specifies the data type of the output.
+      :type data_type: DataType
+      :param value: The value to assign to the output.
+      :type value: Any
+
+
+
+   .. py:method:: get_input(data_type: czbenchmarks.datasets.types.DataType) -> czbenchmarks.datasets.types.DataValue
+
+      Safely get an input with error handling.
+
+
+
+   .. py:method:: get_output(model_type: czbenchmarks.models.types.ModelType | None, data_type: czbenchmarks.datasets.types.DataType) -> czbenchmarks.datasets.types.DataValue
+
+      Safely get an output with error handling.
+      :param model_type: The type of model associated with the output.
+                         This parameter is used to differentiate between outputs
+                         from various models. It can be set to `None` if the output
+                         is not tied to a specific model type defined in the `ModelType` enum.
+      :type model_type: ModelType | None
+      :param data_type: Specifies the data type of the output.
+      :type data_type: DataType
+
+      :returns: The value of the output.
+      :rtype: DataValue
+
+
+
+   .. py:method:: validate() -> None
+
+      Validate that all inputs and outputs match their expected types
+
+
+
+   .. py:method:: load_data() -> None
+      :abstractmethod:
+
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+      :abstractmethod:
+
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:method:: serialize(path: str) -> None
+
+      Serialize this dataset instance to disk using dill.
+
+      :param path: Path where the serialized dataset should be saved
+
+
+
+   .. py:method:: deserialize(path: str) -> BaseDataset
+      :staticmethod:
+
+
+      Load a serialized dataset from disk.
+
+      :param path: Path to the serialized dataset file
+
+      :returns: The deserialized dataset instance
+      :rtype: BaseDataset
+
+
+
+.. py:class:: DataType
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: METADATA
+
+
+   .. py:attribute:: ANNDATA
+
+
+   .. py:attribute:: ORGANISM
+
+
+   .. py:attribute:: EMBEDDING
+
+
+   .. py:attribute:: CONDITION_KEY
+
+
+   .. py:attribute:: SPLIT_KEY
+
+
+   .. py:attribute:: PERTURBATION_PRED
+
+
+   .. py:attribute:: PERTURBATION_TRUTH
+
+
+   .. py:property:: spec
+      :type: DataTypeSpec
+
+
+
+   .. py:property:: dtype
+      :type: Type
+
+
+
+   .. py:property:: description
+      :type: str
+
+
+
+   .. py:property:: is_input
+      :type: bool
+
+
+
+   .. py:property:: is_output
+      :type: bool
+
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+.. py:data:: DataValue
+
+.. py:class:: Organism(name: str, prefix: str)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: HUMAN
+      :value: ('homo_sapiens', 'ENSG')
+
+
+
+   .. py:attribute:: MOUSE
+      :value: ('mus_musculus', 'ENSMUSG')
+
+
+
+   .. py:attribute:: TROPICAL_CLAWED_FROG
+      :value: ('xenopus_tropicalis', 'ENSXETG')
+
+
+
+   .. py:attribute:: AFRICAN_CLAWED_FROG
+      :value: ('xenopus_laevis', 'ENSXLAG')
+
+
+
+   .. py:attribute:: ZEBRAFISH
+      :value: ('danio_rerio', 'ENSDARG')
+
+
+
+   .. py:attribute:: MOUSE_LEMUR
+      :value: ('microcebus_murinus', 'ENSMICG')
+
+
+
+   .. py:attribute:: WILD_BOAR
+      :value: ('sus_scrofa', 'ENSSSCG')
+
+
+
+   .. py:attribute:: CRAB_EATING_MACAQUE
+      :value: ('macaca_fascicularis', 'ENSMFAG')
+
+
+
+   .. py:attribute:: RHESUS_MACAQUE
+      :value: ('macaca_mulatta', 'ENSMMUG')
+
+
+
+   .. py:attribute:: PLATYPUS
+      :value: ('ornithorhynchus_anatinus', 'ENSOANG')
+
+
+
+   .. py:attribute:: OPOSSUM
+      :value: ('monodelphis_domestica', 'ENSMODG')
+
+
+
+   .. py:attribute:: GORILLA
+      :value: ('gorilla_gorilla', 'ENSGGOG')
+
+
+
+   .. py:attribute:: CHIMPANZEE
+      :value: ('pan_troglodytes', 'ENSPTRG')
+
+
+
+   .. py:attribute:: MARMOSET
+      :value: ('callithrix_jacchus', 'ENSCJAG')
+
+
+
+   .. py:attribute:: CHICKEN
+      :value: ('gallus_gallus', 'ENSGALG')
+
+
+
+   .. py:attribute:: RABBIT
+      :value: ('oryctolagus_cuniculus', 'ENSOCUG')
+
+
+
+   .. py:attribute:: FRUIT_FLY
+      :value: ('drosophila_melanogaster', 'FBgn')
+
+
+
+   .. py:attribute:: RAT
+      :value: ('rattus_norvegicus', 'ENSRNOG')
+
+
+
+   .. py:attribute:: NAKED_MOLE_RAT
+      :value: ('heterocephalus_glaber', 'ENSHGLG')
+
+
+
+   .. py:attribute:: CAENORHABDITIS_ELEGANS
+      :value: ('caenorhabditis_elegans', 'WBGene')
+
+
+
+   .. py:attribute:: YEAST
+      :value: ('saccharomyces_cerevisiae', '')
+
+
+
+   .. py:attribute:: MALARIA_PARASITE
+      :value: ('plasmodium_falciparum', 'PF3D7')
+
+
+
+   .. py:attribute:: SEA_LAMPREY
+      :value: ('petromyzon_marinus', 'ENSPMAG')
+
+
+
+   .. py:attribute:: FRESHWATER_SPONGE
+      :value: ('spongilla_lacustris', 'ENSLPGG')
+
+
+
+   .. py:attribute:: CORAL
+      :value: ('stylophora_pistillata', 'LOC')
+
+
+
+   .. py:attribute:: SEA_URCHIN
+      :value: ('lytechinus_variegatus', '')
+
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:property:: name
+
+      The name of the Enum member.
+
+
+   .. py:property:: prefix
+
+

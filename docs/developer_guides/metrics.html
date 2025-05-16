@@ -1,0 +1,334 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metrics &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Interactive Debugging Guide" href="debugging.html" />
+    <link rel="prev" title="Tasks" href="tasks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="design_overview.html">Design Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Metrics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#purpose">Purpose</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#key-components">Key Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supported-metrics">Supported Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-compute-a-metric">How to Compute a Metric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-a-custom-metric">Adding a Custom Metric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-metric-tags">Using Metric Tags</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#related-references">Related References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html">Interactive Debugging Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guides</a></li>
+      <li class="breadcrumb-item active">Metrics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guides/metrics.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="metrics">
+<h1>Metrics<a class="headerlink" href="#metrics" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">czbenchmarks.metrics</span></code> module provides a unified and extensible framework for computing performance metrics across all evaluation tasks.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>At the core of this module is a centralized registry, <code class="docutils literal notranslate"><span class="pre">MetricRegistry</span></code>, which stores all supported metrics. Each metric is registered with a unique type, required arguments, default parameters, a description, and a set of descriptive tags.</p>
+<section id="purpose">
+<h3>Purpose<a class="headerlink" href="#purpose" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Allows tasks to declare and compute metrics in a unified, type-safe, and extensible manner.</p></li>
+<li><p>Ensures metrics are reproducible and callable via shared interfaces across tasks like clustering, embedding, and label prediction.</p></li>
+</ul>
+</section>
+</section>
+<section id="key-components">
+<h2>Key Components<a class="headerlink" href="#key-components" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/metrics/types/index.html"><span class="doc std std-doc">MetricRegistry</span></a><br />
+A class that registers and manages metric functions, performs argument validation, and handles invocation.</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/metrics/types/index.html"><span class="doc std std-doc">MetricType</span></a><br />
+An <code class="docutils literal notranslate"><span class="pre">Enum</span></code> defining all supported metric names. Each task refers to <code class="docutils literal notranslate"><span class="pre">MetricType</span></code> members to identify which metrics to compute.</p></li>
+<li><p><strong>Tags:</strong><br />
+Each metric is tagged with its associated category to allow filtering:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">clustering</span></code>: ARI, NMI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">embedding</span></code>: Silhouette Score</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integration</span></code>: Entropy per Cell, Batch Silhouette</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">label_prediction</span></code>: Accuracy, F1, Precision, Recall, AUROC</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">perturbation</span></code>: MSE, R², Jaccard Similarity</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="supported-metrics">
+<h2>Supported Metrics<a class="headerlink" href="#supported-metrics" title="Link to this heading"></a></h2>
+<p>The following metrics are pre-registered:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Metric Type</strong></p></th>
+<th class="head"><p><strong>Task</strong></p></th>
+<th class="head"><p><strong>Description</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">adjusted_rand_index</span></code></p></td>
+<td><p>clustering</p></td>
+<td><p>Measures the similarity between two clusterings, adjusted for chance. A higher value indicates better alignment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">normalized_mutual_info</span></code></p></td>
+<td><p>clustering</p></td>
+<td><p>Quantifies the amount of shared information between two clusterings, normalized to ensure comparability.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">silhouette_score</span></code></p></td>
+<td><p>embedding</p></td>
+<td><p>Evaluates how well-separated clusters are in an embedding space. Higher scores indicate better-defined clusters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">entropy_per_cell</span></code></p></td>
+<td><p>integration</p></td>
+<td><p>Assesses the mixing of batch labels at the single-cell level. Higher entropy indicates better integration.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">batch_silhouette</span></code></p></td>
+<td><p>integration</p></td>
+<td><p>Combines silhouette scoring with batch information to evaluate clustering quality while accounting for batch effects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mean_squared_error</span></code></p></td>
+<td><p>perturbation</p></td>
+<td><p>Calculates the average squared difference between predicted and true values, indicating prediction accuracy.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">r2_score</span></code></p></td>
+<td><p>perturbation</p></td>
+<td><p>Measures the proportion of variance in true values explained by predictions. Higher values indicate better predictions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">jaccard</span></code></p></td>
+<td><p>perturbation</p></td>
+<td><p>Computes the similarity between predicted and true sets of top differentially expressed (DE) genes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mean_fold_accuracy</span></code></p></td>
+<td><p>label_prediction</p></td>
+<td><p>Average accuracy across k-fold cross-validation splits, indicating overall classification performance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mean_fold_f1</span></code></p></td>
+<td><p>label_prediction</p></td>
+<td><p>Average F1 score across folds, balancing precision and recall for classification tasks.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mean_fold_precision</span></code></p></td>
+<td><p>label_prediction</p></td>
+<td><p>Average precision across folds, reflecting the proportion of true positives among predicted positives.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mean_fold_recall</span></code></p></td>
+<td><p>label_prediction</p></td>
+<td><p>Average recall across folds, indicating the proportion of true positives correctly identified.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">mean_fold_auroc</span></code></p></td>
+<td><p>label_prediction</p></td>
+<td><p>Average area under the ROC curve across folds, measuring the ability to distinguish between classes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="how-to-compute-a-metric">
+<h2>How to Compute a Metric<a class="headerlink" href="#how-to-compute-a-metric" title="Link to this heading"></a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">metrics_registry.compute()</span></code> inside your task’s <code class="docutils literal notranslate"><span class="pre">_compute_metrics()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.metrics.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetricType</span><span class="p">,</span> <span class="n">metrics_registry</span>
+
+<span class="n">value</span> <span class="o">=</span> <span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+    <span class="n">MetricType</span><span class="o">.</span><span class="n">ADJUSTED_RAND_INDEX</span><span class="p">,</span>
+    <span class="n">labels_true</span><span class="o">=</span><span class="n">true_labels</span><span class="p">,</span>
+    <span class="n">labels_pred</span><span class="o">=</span><span class="n">predicted_labels</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Wrap in a result object</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.metrics.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetricResult</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">MetricResult</span><span class="p">(</span><span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">ADJUSTED_RAND_INDEX</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-a-custom-metric">
+<h2>Adding a Custom Metric<a class="headerlink" href="#adding-a-custom-metric" title="Link to this heading"></a></h2>
+<p>To add a new metric to the registry:</p>
+<ol class="arabic">
+<li><p><strong>Add a new member to the enum:</strong><br />
+Edit <code class="docutils literal notranslate"><span class="pre">MetricType</span></code> in <code class="docutils literal notranslate"><span class="pre">czbenchmarks/metrics/types.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MetricType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">MY_CUSTOM_METRIC</span> <span class="o">=</span> <span class="s2">&quot;my_custom_metric&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Define the metric function:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_custom_metric</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="c1"># return a float value</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Register it in the registry:</strong><br />
+Add to <code class="docutils literal notranslate"><span class="pre">czbenchmarks/metrics/implementations.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="n">MetricType</span><span class="o">.</span><span class="n">MY_CUSTOM_METRIC</span><span class="p">,</span>
+    <span class="n">func</span><span class="o">=</span><span class="n">my_custom_metric</span><span class="p">,</span>
+    <span class="n">required_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;y_true&quot;</span><span class="p">,</span> <span class="s2">&quot;y_pred&quot;</span><span class="p">},</span>
+    <span class="n">default_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;normalize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Description of your custom metric&quot;</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;my_category&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Use in your task or CLI:</strong><br />
+Now the metric is available for any task to compute.</p></li>
+</ol>
+</section>
+<section id="using-metric-tags">
+<h2>Using Metric Tags<a class="headerlink" href="#using-metric-tags" title="Link to this heading"></a></h2>
+<p>You can list metrics by category using tags:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">list_metrics</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;clustering&quot;</span><span class="p">})</span>  <span class="c1"># returns a set of MetricType</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p>When implementing or using metrics, follow these guidelines to ensure consistency and reliability:</p>
+<ol class="arabic simple">
+<li><p><strong>Type Safety:</strong>  Always use the <code class="docutils literal notranslate"><span class="pre">MetricType</span></code> enum instead of string literals to refer to metrics. This ensures type safety and avoids errors due to typos.</p></li>
+<li><p><strong>Pure Functions:</strong>  Metrics should be <strong>pure functions</strong>, meaning they must not have side effects. This ensures reproducibility and consistency across computations.</p></li>
+<li><p><strong>Return Types:</strong>  All metric functions must return a <code class="docutils literal notranslate"><span class="pre">float</span></code> value to maintain uniformity in results.</p></li>
+<li><p><strong>Validation:</strong></p>
+<ul class="simple">
+<li><p>Validate inputs manually within your metric function if there are strict assumptions about input shapes or types.</p></li>
+<li><p>Include required argument validation to ensure the metric function is called with the correct parameters.</p></li>
+</ul>
+</li>
+<li><p><strong>Default Parameters:</strong>  Use <code class="docutils literal notranslate"><span class="pre">default_params</span></code> only for optional keyword arguments. Avoid using them for required arguments.</p></li>
+<li><p><strong>Tags:</strong>  Assign appropriate tags to metrics for categorization. Tags help in filtering and organizing metrics by their use cases (e.g., <code class="docutils literal notranslate"><span class="pre">clustering</span></code>, <code class="docutils literal notranslate"><span class="pre">embedding</span></code>, <code class="docutils literal notranslate"><span class="pre">label_prediction</span></code>).</p></li>
+<li><p><strong>Documentation:</strong></p>
+<ul class="simple">
+<li><p>Provide a short and clear <code class="docutils literal notranslate"><span class="pre">description</span></code> for each metric to explain its purpose and usage.</p></li>
+<li><p>Document all parameters and their expected types or shapes to guide users effectively.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="related-references">
+<h2>Related References<a class="headerlink" href="#related-references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/metrics/types/index.html"><span class="doc std std-doc">MetricRegistry API</span></a></p></li>
+<li><p><a class="reference internal" href="../how_to_guides/add_new_metric.html"><span class="doc std std-doc">Add New Metric Guide</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/clustering/index.html"><span class="doc std std-doc">ClusteringTask</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/tasks/single_cell/perturbation/index.html"><span class="doc std std-doc">PerturbationTask</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tasks.html" class="btn btn-neutral float-left" title="Tasks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="debugging.html" class="btn btn-neutral float-right" title="Interactive Debugging Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

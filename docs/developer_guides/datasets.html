@@ -1,0 +1,278 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Datasets &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Design Overview" href="design_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="design_overview.html">Design Overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Datasets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-components">Key Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-a-new-dataset">Adding a New Dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example-skeleton">Example Skeleton</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-inputs-and-outputs">Accessing Inputs and Outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#serialization-support">Serialization Support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tips-for-developers">Tips for Developers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#related-references">Related References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging.html">Interactive Debugging Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guides</a></li>
+      <li class="breadcrumb-item active">Datasets</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guides/datasets.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="datasets">
+<h1>Datasets<a class="headerlink" href="#datasets" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">czbenchmarks.datasets</span></code> module defines the dataset abstraction used across all benchmark pipelines. It provides a uniform and type-safe way to manage dataset inputs and outputs, ensuring compatibility with models and tasks.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>cz-benchmarks currently supports single-cell RNA-seq data stored in the <a class="reference external" href="https://anndata.readthedocs.io/en/stable/"><code class="docutils literal notranslate"><span class="pre">AnnData</span></code></a> H5AD format. The dataset system is extensible and can be used for other data modalities by creating new dataset types.</p>
+</section>
+<section id="key-components">
+<h2>Key Components<a class="headerlink" href="#key-components" title="Link to this heading"></a></h2>
+<ul>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/base/index.html"><span class="doc std std-doc">BaseDataset</span></a><br />
+An abstract class that provides methods for:</p>
+<ul class="simple">
+<li><p>Storing typed inputs and model outputs (<code class="docutils literal notranslate"><span class="pre">set_input</span></code>, <code class="docutils literal notranslate"><span class="pre">set_output</span></code>)</p></li>
+<li><p>Type validation via <code class="docutils literal notranslate"><span class="pre">DataType</span></code> enums</p></li>
+<li><p>Serialization and deserialization using <a class="reference external" href="https://dill.readthedocs.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">dill</span></code></a></p></li>
+<li><p>Loading/unloading memory-intensive data</p></li>
+</ul>
+<p>All dataset types must inherit from <code class="docutils literal notranslate"><span class="pre">BaseDataset</span></code>.</p>
+</li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/single_cell/index.html"><span class="doc std std-doc">SingleCellDataset</span></a><br />
+A concrete implementation of <code class="docutils literal notranslate"><span class="pre">BaseDataset</span></code> for single-cell data.</p>
+<p>Responsibilities:</p>
+<ul class="simple">
+<li><p>Loads anndata files via <code class="docutils literal notranslate"><span class="pre">anndata.read_h5ad</span></code></p></li>
+<li><p>Stores metadata as <code class="docutils literal notranslate"><span class="pre">.obs</span></code> or <code class="docutils literal notranslate"><span class="pre">.var</span></code> and the expression matrix as <code class="docutils literal notranslate"><span class="pre">.X</span></code></p></li>
+<li><p>Performs organism-based validation using the <code class="docutils literal notranslate"><span class="pre">Organism</span></code> enum</p></li>
+<li><p>Validates gene name prefixes and presence of expected columns</p></li>
+</ul>
+<p>Automatically sets:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DataType.ANNDATA</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DataType.METADATA</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DataType.ORGANISM</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/single_cell/index.html"><span class="doc std std-doc">PerturbationSingleCellDataset</span></a><br />
+Subclass of <code class="docutils literal notranslate"><span class="pre">SingleCellDataset</span></code> designed for perturbation benchmarks.</p>
+<p>Responsibilities:</p>
+<ul class="simple">
+<li><p>Validates presence of <code class="docutils literal notranslate"><span class="pre">condition_key</span></code> and <code class="docutils literal notranslate"><span class="pre">split_key</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">split</span></code>)</p></li>
+<li><p>Stores control and perturbed cells</p></li>
+<li><p>Computes and stores <code class="docutils literal notranslate"><span class="pre">DataType.PERTURBATION_TRUTH</span></code> as ground-truth reference</p></li>
+</ul>
+<p>Automatically filters <code class="docutils literal notranslate"><span class="pre">adata</span></code> to only include control cells for inference.</p>
+<p>Example valid perturbation formats:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;ctrl&quot;</span></code>: control</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;GENE+ctrl&quot;</span></code>: single-gene perturbation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;GENE1+GENE2&quot;</span></code>: combinatorial perturbation</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/types/index.html"><span class="doc std std-doc">DataType</span></a><br />
+Defines all valid input and output types (e.g., <code class="docutils literal notranslate"><span class="pre">ANNDATA</span></code>, <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>, <code class="docutils literal notranslate"><span class="pre">EMBEDDING</span></code>, etc.) with expected Python types (<code class="docutils literal notranslate"><span class="pre">AnnData</span></code>, <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code>, <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>, etc.)</p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/types/index.html"><span class="doc std std-doc">Organism</span></a><br />
+Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., <code class="docutils literal notranslate"><span class="pre">ENSG</span></code> and <code class="docutils literal notranslate"><span class="pre">ENSMUSG</span></code>, respectively).</p></li>
+</ul>
+</section>
+<section id="adding-a-new-dataset">
+<h2>Adding a New Dataset<a class="headerlink" href="#adding-a-new-dataset" title="Link to this heading"></a></h2>
+<p>To define a custom dataset:</p>
+<ol class="arabic simple">
+<li><p><strong>Inherit from <code class="docutils literal notranslate"><span class="pre">BaseDataset</span></code></strong> and implement:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_validate(self)</span></code> — raise exceptions for missing or malformed data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_data(self)</span></code> — populate <code class="docutils literal notranslate"><span class="pre">self.inputs</span></code> with required values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unload_data(self)</span></code> — clear memory-heavy inputs (e.g., <code class="docutils literal notranslate"><span class="pre">adata</span></code>) before serialization</p></li>
+</ul>
+</li>
+<li><p><strong>Register all required inputs</strong> using <code class="docutils literal notranslate"><span class="pre">self.set_input(data_type,</span> <span class="pre">value)</span></code></p></li>
+<li><p><strong>Store model outputs</strong> using <code class="docutils literal notranslate"><span class="pre">self.set_output(model_type,</span> <span class="pre">data_type,</span> <span class="pre">value)</span></code></p></li>
+<li><p><strong>Use the <code class="docutils literal notranslate"><span class="pre">DataType</span></code> enum</strong> to enforce type safety and input validation</p></li>
+</ol>
+<section id="example-skeleton">
+<h3>Example Skeleton<a class="headerlink" href="#example-skeleton" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataType</span><span class="p">,</span> <span class="n">Organism</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyCustomDataset</span><span class="p">(</span><span class="n">BaseDataset</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">adata</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">,</span> <span class="n">adata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">,</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ORGANISM</span><span class="p">,</span> <span class="n">Organism</span><span class="o">.</span><span class="n">HUMAN</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">unload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">adata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="s2">&quot;my_custom_key&quot;</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;Missing key!&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="accessing-inputs-and-outputs">
+<h2>Accessing Inputs and Outputs<a class="headerlink" href="#accessing-inputs-and-outputs" title="Link to this heading"></a></h2>
+<p>Use the following methods for safe access:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">SCVI</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="serialization-support">
+<h2>Serialization Support<a class="headerlink" href="#serialization-support" title="Link to this heading"></a></h2>
+<p>Datasets can be serialized to disk after model inference. Internally, <a class="reference external" href="https://dill.readthedocs.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">dill</span></code></a> is used to support complex Python objects like <code class="docutils literal notranslate"><span class="pre">AnnData</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="s2">&quot;/tmp/my_dataset.dill&quot;</span><span class="p">)</span>
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">BaseDataset</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="s2">&quot;/tmp/my_dataset.dill&quot;</span><span class="p">)</span>
+
+<span class="c1"># Don&#39;t forget to reload memory-intensive fields</span>
+<span class="n">loaded</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="tips-for-developers">
+<h2>Tips for Developers<a class="headerlink" href="#tips-for-developers" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>AnnData Views:</strong> Use <code class="docutils literal notranslate"><span class="pre">.copy()</span></code> when slicing to avoid “view” issues in Scanpy.</p></li>
+<li><p><strong>Organism Validation:</strong> Always set <code class="docutils literal notranslate"><span class="pre">DataType.ORGANISM</span></code> and validate <code class="docutils literal notranslate"><span class="pre">var_names</span></code> with <code class="docutils literal notranslate"><span class="pre">Organism.prefix</span></code>.</p></li>
+<li><p><strong>Gene Names:</strong> Ensure <code class="docutils literal notranslate"><span class="pre">.var</span></code> has <code class="docutils literal notranslate"><span class="pre">feature_name</span></code> or <code class="docutils literal notranslate"><span class="pre">ensembl_id</span></code> depending on model requirements.</p></li>
+<li><p><strong>Metadata Compatibility:</strong> Validate that all label keys required by tasks (e.g., <code class="docutils literal notranslate"><span class="pre">cell_type</span></code>, <code class="docutils literal notranslate"><span class="pre">sex</span></code>, <code class="docutils literal notranslate"><span class="pre">batch</span></code>) exist in <code class="docutils literal notranslate"><span class="pre">.obs</span></code>.</p></li>
+</ul>
+</section>
+<section id="related-references">
+<h2>Related References<a class="headerlink" href="#related-references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../how_to_guides/add_custom_dataset.html"><span class="doc std std-doc">Add Custom Dataset Guide</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/base/index.html"><span class="doc std std-doc">BaseDataset API</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/single_cell/index.html"><span class="doc std std-doc">SingleCellDataset API</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/types/index.html"><span class="doc std std-doc">DataType Enum</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/czbenchmarks/datasets/types/index.html"><span class="doc std std-doc">Organism Enum</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="design_overview.html" class="btn btn-neutral float-left" title="Design Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

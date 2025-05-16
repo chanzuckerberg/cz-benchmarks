@@ -1,0 +1,609 @@
+czbenchmarks.cli.cli_run
+========================
+
+.. py:module:: czbenchmarks.cli.cli_run
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.cli_run.log
+   czbenchmarks.cli.cli_run.VALID_OUTPUT_FORMATS
+   czbenchmarks.cli.cli_run.DEFAULT_OUTPUT_FORMAT
+   czbenchmarks.cli.cli_run.TaskType
+   czbenchmarks.cli.cli_run.ModelArgsDict
+   czbenchmarks.cli.cli_run.RuntimeMetricsDict
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.cli_run.ModelArgs
+   czbenchmarks.cli.cli_run.TaskArgs
+   czbenchmarks.cli.cli_run.TaskResult
+   czbenchmarks.cli.cli_run.CacheOptions
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.cli.cli_run.add_arguments
+   czbenchmarks.cli.cli_run.main
+   czbenchmarks.cli.cli_run.run
+   czbenchmarks.cli.cli_run.run_with_inference
+   czbenchmarks.cli.cli_run.run_inference_or_load_from_cache
+   czbenchmarks.cli.cli_run.run_without_inference
+   czbenchmarks.cli.cli_run.run_multi_dataset_task
+   czbenchmarks.cli.cli_run.run_task
+   czbenchmarks.cli.cli_run.get_model_arg_permutations
+   czbenchmarks.cli.cli_run.write_results
+   czbenchmarks.cli.cli_run.get_result_url_for_remote
+   czbenchmarks.cli.cli_run.set_processed_datasets_cache
+   czbenchmarks.cli.cli_run.try_processed_datasets_cache
+   czbenchmarks.cli.cli_run.get_remote_cache_prefix
+   czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename
+   czbenchmarks.cli.cli_run.get_processed_dataset_cache_path
+   czbenchmarks.cli.cli_run.parse_model_args
+   czbenchmarks.cli.cli_run.parse_task_args
+   czbenchmarks.cli.cli_run.parse_batch_json
+
+
+Module Contents
+---------------
+
+.. py:data:: log
+
+.. py:data:: VALID_OUTPUT_FORMATS
+   :value: ['json', 'yaml']
+
+
+.. py:data:: DEFAULT_OUTPUT_FORMAT
+   :value: 'json'
+
+
+.. py:data:: TaskType
+
+.. py:data:: ModelArgsDict
+
+.. py:data:: RuntimeMetricsDict
+
+.. py:class:: ModelArgs(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   !!! abstract "Usage Documentation"
+       [Models](../concepts/models.md)
+
+   A base class for creating Pydantic models.
+
+   .. attribute:: __class_vars__
+
+      The names of the class variables defined on the model.
+
+   .. attribute:: __private_attributes__
+
+      Metadata about the private attributes of the model.
+
+   .. attribute:: __signature__
+
+      The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+
+   .. attribute:: __pydantic_complete__
+
+      Whether model building is completed, or if there are still undefined fields.
+
+   .. attribute:: __pydantic_core_schema__
+
+      The core schema of the model.
+
+   .. attribute:: __pydantic_custom_init__
+
+      Whether the model has a custom `__init__` function.
+
+   .. attribute:: __pydantic_decorators__
+
+      Metadata containing the decorators defined on the model.
+      This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+
+   .. attribute:: __pydantic_generic_metadata__
+
+      Metadata for generic models; contains data used for a similar purpose to
+      __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+
+   .. attribute:: __pydantic_parent_namespace__
+
+      Parent namespace of the model, used for automatic rebuilding of models.
+
+   .. attribute:: __pydantic_post_init__
+
+      The name of the post-init method for the model, if defined.
+
+   .. attribute:: __pydantic_root_model__
+
+      Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+
+   .. attribute:: __pydantic_serializer__
+
+      The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+
+   .. attribute:: __pydantic_validator__
+
+      The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+
+   .. attribute:: __pydantic_fields__
+
+      A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. attribute:: __pydantic_computed_fields__
+
+      A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. attribute:: __pydantic_extra__
+
+      A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+      is set to `'allow'`.
+
+   .. attribute:: __pydantic_fields_set__
+
+      The names of fields explicitly set during instantiation.
+
+   .. attribute:: __pydantic_private__
+
+      Values of private attributes set on the model instance.
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: args
+      :type:  dict[str, list[str | int]]
+
+
+.. py:class:: TaskArgs(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`, :py:obj:`Generic`\ [\ :py:obj:`TaskType`\ ]
+
+
+   !!! abstract "Usage Documentation"
+       [Models](../concepts/models.md)
+
+   A base class for creating Pydantic models.
+
+   .. attribute:: __class_vars__
+
+      The names of the class variables defined on the model.
+
+   .. attribute:: __private_attributes__
+
+      Metadata about the private attributes of the model.
+
+   .. attribute:: __signature__
+
+      The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+
+   .. attribute:: __pydantic_complete__
+
+      Whether model building is completed, or if there are still undefined fields.
+
+   .. attribute:: __pydantic_core_schema__
+
+      The core schema of the model.
+
+   .. attribute:: __pydantic_custom_init__
+
+      Whether the model has a custom `__init__` function.
+
+   .. attribute:: __pydantic_decorators__
+
+      Metadata containing the decorators defined on the model.
+      This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+
+   .. attribute:: __pydantic_generic_metadata__
+
+      Metadata for generic models; contains data used for a similar purpose to
+      __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+
+   .. attribute:: __pydantic_parent_namespace__
+
+      Parent namespace of the model, used for automatic rebuilding of models.
+
+   .. attribute:: __pydantic_post_init__
+
+      The name of the post-init method for the model, if defined.
+
+   .. attribute:: __pydantic_root_model__
+
+      Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+
+   .. attribute:: __pydantic_serializer__
+
+      The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+
+   .. attribute:: __pydantic_validator__
+
+      The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+
+   .. attribute:: __pydantic_fields__
+
+      A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. attribute:: __pydantic_computed_fields__
+
+      A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. attribute:: __pydantic_extra__
+
+      A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+      is set to `'allow'`.
+
+   .. attribute:: __pydantic_fields_set__
+
+      The names of fields explicitly set during instantiation.
+
+   .. attribute:: __pydantic_private__
+
+      Values of private attributes set on the model instance.
+
+
+   .. py:attribute:: model_config
+
+      Configuration for the model, should be a dictionary conforming to [`ConfigDict`][pydantic.config.ConfigDict].
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: task
+      :type:  TaskType
+
+
+   .. py:attribute:: set_baseline
+      :type:  bool
+
+
+   .. py:attribute:: baseline_args
+      :type:  dict[str, Any]
+
+
+.. py:class:: TaskResult(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   !!! abstract "Usage Documentation"
+       [Models](../concepts/models.md)
+
+   A base class for creating Pydantic models.
+
+   .. attribute:: __class_vars__
+
+      The names of the class variables defined on the model.
+
+   .. attribute:: __private_attributes__
+
+      Metadata about the private attributes of the model.
+
+   .. attribute:: __signature__
+
+      The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+
+   .. attribute:: __pydantic_complete__
+
+      Whether model building is completed, or if there are still undefined fields.
+
+   .. attribute:: __pydantic_core_schema__
+
+      The core schema of the model.
+
+   .. attribute:: __pydantic_custom_init__
+
+      Whether the model has a custom `__init__` function.
+
+   .. attribute:: __pydantic_decorators__
+
+      Metadata containing the decorators defined on the model.
+      This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+
+   .. attribute:: __pydantic_generic_metadata__
+
+      Metadata for generic models; contains data used for a similar purpose to
+      __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+
+   .. attribute:: __pydantic_parent_namespace__
+
+      Parent namespace of the model, used for automatic rebuilding of models.
+
+   .. attribute:: __pydantic_post_init__
+
+      The name of the post-init method for the model, if defined.
+
+   .. attribute:: __pydantic_root_model__
+
+      Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+
+   .. attribute:: __pydantic_serializer__
+
+      The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+
+   .. attribute:: __pydantic_validator__
+
+      The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+
+   .. attribute:: __pydantic_fields__
+
+      A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. attribute:: __pydantic_computed_fields__
+
+      A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. attribute:: __pydantic_extra__
+
+      A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+      is set to `'allow'`.
+
+   .. attribute:: __pydantic_fields_set__
+
+      The names of fields explicitly set during instantiation.
+
+   .. attribute:: __pydantic_private__
+
+      Values of private attributes set on the model instance.
+
+
+   .. py:attribute:: task_name
+      :type:  str
+
+
+   .. py:attribute:: task_name_display
+      :type:  str
+
+
+   .. py:attribute:: model_type
+      :type:  czbenchmarks.models.types.ModelType
+
+
+   .. py:attribute:: dataset_names
+      :type:  list[str]
+
+
+   .. py:attribute:: dataset_names_display
+      :type:  list[str]
+
+
+   .. py:attribute:: model_args
+      :type:  ModelArgsDict
+
+
+   .. py:attribute:: metrics
+      :type:  list[czbenchmarks.metrics.types.MetricResult]
+
+
+   .. py:attribute:: runtime_metrics
+      :type:  RuntimeMetricsDict
+
+
+   .. py:property:: model_name_display
+      :type: str
+
+
+
+.. py:class:: CacheOptions(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   !!! abstract "Usage Documentation"
+       [Models](../concepts/models.md)
+
+   A base class for creating Pydantic models.
+
+   .. attribute:: __class_vars__
+
+      The names of the class variables defined on the model.
+
+   .. attribute:: __private_attributes__
+
+      Metadata about the private attributes of the model.
+
+   .. attribute:: __signature__
+
+      The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+
+   .. attribute:: __pydantic_complete__
+
+      Whether model building is completed, or if there are still undefined fields.
+
+   .. attribute:: __pydantic_core_schema__
+
+      The core schema of the model.
+
+   .. attribute:: __pydantic_custom_init__
+
+      Whether the model has a custom `__init__` function.
+
+   .. attribute:: __pydantic_decorators__
+
+      Metadata containing the decorators defined on the model.
+      This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+
+   .. attribute:: __pydantic_generic_metadata__
+
+      Metadata for generic models; contains data used for a similar purpose to
+      __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+
+   .. attribute:: __pydantic_parent_namespace__
+
+      Parent namespace of the model, used for automatic rebuilding of models.
+
+   .. attribute:: __pydantic_post_init__
+
+      The name of the post-init method for the model, if defined.
+
+   .. attribute:: __pydantic_root_model__
+
+      Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+
+   .. attribute:: __pydantic_serializer__
+
+      The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+
+   .. attribute:: __pydantic_validator__
+
+      The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+
+   .. attribute:: __pydantic_fields__
+
+      A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. attribute:: __pydantic_computed_fields__
+
+      A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. attribute:: __pydantic_extra__
+
+      A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+      is set to `'allow'`.
+
+   .. attribute:: __pydantic_fields_set__
+
+      The names of fields explicitly set during instantiation.
+
+   .. attribute:: __pydantic_private__
+
+      Values of private attributes set on the model instance.
+
+
+   .. py:attribute:: download_embeddings
+      :type:  bool
+
+
+   .. py:attribute:: upload_embeddings
+      :type:  bool
+
+
+   .. py:attribute:: upload_results
+      :type:  bool
+
+
+   .. py:attribute:: remote_cache_url
+      :type:  str
+
+
+   .. py:method:: from_args(args: argparse.Namespace) -> CacheOptions
+      :classmethod:
+
+
+
+.. py:function:: add_arguments(parser: argparse.ArgumentParser) -> None
+
+   Add run command arguments to the parser.
+
+
+.. py:function:: main(parsed_args: argparse.Namespace) -> None
+
+   Execute a series of tasks using multiple models on a collection of datasets.
+
+   This function handles the benchmarking process by iterating over the specified datasets,
+   running inference with the provided models to generate results, and running the tasks to evaluate
+   the generated outputs.
+
+
+.. py:function:: run(dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs], cache_options: CacheOptions) -> list[TaskResult]
+
+   Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.
+
+
+.. py:function:: run_with_inference(dataset_names: list[str], model_args: list[ModelArgs], task_args: list[TaskArgs], cache_options: CacheOptions) -> list[TaskResult]
+
+   Execute a series of tasks using multiple models on a collection of datasets.
+
+   This function handles the benchmarking process by iterating over the specified datasets,
+   running inference with the provided models to generate results, and running the tasks to evaluate
+   the generated outputs.
+
+
+.. py:function:: run_inference_or_load_from_cache(dataset_name: str, *, model_name: str, model_args: ModelArgsDict, cache_options: CacheOptions) -> czbenchmarks.datasets.base.BaseDataset
+
+   Load the processed dataset from the cache if it exists, else run inference and save to cache.
+
+
+.. py:function:: run_without_inference(dataset_names: list[str], task_args: list[TaskArgs]) -> list[TaskResult]
+
+   Run a set of tasks directly against raw datasets without first running model inference.
+
+
+.. py:function:: run_multi_dataset_task(dataset_names: list[str], embeddings: list[czbenchmarks.datasets.base.BaseDataset], model_args: dict[str, ModelArgsDict], task_args: TaskArgs) -> list[TaskResult]
+
+   Run a task and return the results.
+
+
+.. py:function:: run_task(dataset_name: str, dataset: czbenchmarks.datasets.base.BaseDataset, model_args: dict[str, ModelArgsDict], task_args: TaskArgs) -> list[TaskResult]
+
+   Run a task and return the results.
+
+
+.. py:function:: get_model_arg_permutations(model_args: list[ModelArgs]) -> dict[str, list[ModelArgsDict]]
+
+   Generate all the "permutations" of model arguments we want to run for each dataset:
+   E.g. Running 2 variants of scgenept at 2 chunk sizes results in 4 permutations
+
+
+.. py:function:: write_results(task_results: list[TaskResult], *, cache_options: CacheOptions, output_format: str = DEFAULT_OUTPUT_FORMAT, output_file: str | None = None) -> None
+
+   Format and write results to the given directory or file.
+
+
+.. py:function:: get_result_url_for_remote(remote_prefix_url: str) -> str
+
+.. py:function:: set_processed_datasets_cache(dataset: czbenchmarks.datasets.base.BaseDataset, dataset_name: str, *, model_name: str, model_args: ModelArgsDict, cache_options: CacheOptions) -> None
+
+   Write a dataset to the cache
+   A "processed" dataset has been run with model inference for the given arguments.
+
+
+.. py:function:: try_processed_datasets_cache(dataset_name: str, *, model_name: str, model_args: ModelArgsDict, cache_options: CacheOptions) -> czbenchmarks.datasets.base.BaseDataset | None
+
+   Deserialize and return a processed dataset from the cache if it exists, else return None.
+
+
+.. py:function:: get_remote_cache_prefix(cache_options: CacheOptions)
+
+   get the prefix ending in '/' that the remote processed datasets go under
+
+
+.. py:function:: get_processed_dataset_cache_filename(dataset_name: str, *, model_name: str, model_args: ModelArgsDict) -> str
+
+   generate a unique filename for the given dataset and model arguments
+
+
+.. py:function:: get_processed_dataset_cache_path(dataset_name: str, *, model_name: str, model_args: ModelArgsDict) -> pathlib.Path
+
+   Return a unique file path in the cache directory for the given dataset and model arguments.
+
+
+.. py:function:: parse_model_args(model_name: str, args: argparse.Namespace) -> ModelArgs
+
+   Populate a ModelArgs instance from the given argparse namespace.
+
+
+.. py:function:: parse_task_args(task_name: str, TaskCls: type[TaskType], args: argparse.Namespace) -> TaskArgs
+
+   Populate a TaskArgs instance from the given argparse namespace.
+
+
+.. py:function:: parse_batch_json(batch_json_list: list[str]) -> list[dict[str, Any]]
+
+   Parse the `--batch-json` argument.
+   Returns a list of dicts where each entry is a batch of CLI arguments.
+
+

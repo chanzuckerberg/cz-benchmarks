@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.utils &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">czbenchmarks.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/czbenchmarks/utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-czbenchmarks.utils">
+<span id="czbenchmarks-utils"></span><h1>czbenchmarks.utils<a class="headerlink" href="#module-czbenchmarks.utils" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.utils.logger" title="czbenchmarks.utils.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.utils.initialize_hydra" title="czbenchmarks.utils.initialize_hydra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_hydra</span></code></a>([config_path])</p></td>
+<td><p>Initialize Hydra configuration system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.utils.import_class_from_config" title="czbenchmarks.utils.import_class_from_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">import_class_from_config</span></code></a>(config_path)</p></td>
+<td><p>Import a class based on the _target_ field in a configuration file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.utils.sync_s3_to_local" title="czbenchmarks.utils.sync_s3_to_local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync_s3_to_local</span></code></a>(bucket, prefix, local_dir[, unsigned])</p></td>
+<td><p>Syncs files from an S3 bucket prefix to a local directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.utils.get_remote_last_modified" title="czbenchmarks.utils.get_remote_last_modified"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_remote_last_modified</span></code></a>(→ datetime.datetime | None)</p></td>
+<td><p>Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.utils.upload_file_to_remote" title="czbenchmarks.utils.upload_file_to_remote"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upload_file_to_remote</span></code></a>(→ None)</p></td>
+<td><p>Upload a local file to an s3 prefix, preserving the filename remotely</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#czbenchmarks.utils.upload_blob_to_remote" title="czbenchmarks.utils.upload_blob_to_remote"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upload_blob_to_remote</span></code></a>(→ None)</p></td>
+<td><p>Upload the contents of a text buffer to the exact S3 location given by remote_url.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#czbenchmarks.utils.download_file_from_remote" title="czbenchmarks.utils.download_file_from_remote"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_file_from_remote</span></code></a>(→ None)</p></td>
+<td><p>Download a remote file from s3 to a local directory, preserving the filename if not specified</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="czbenchmarks.utils.logger">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#czbenchmarks.utils.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.initialize_hydra">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">initialize_hydra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./conf'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#initialize_hydra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.initialize_hydra" title="Link to this definition"></a></dt>
+<dd><p>Initialize Hydra configuration system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> – Path to the configuration directory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.import_class_from_config">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">import_class_from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#import_class_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.import_class_from_config" title="Link to this definition"></a></dt>
+<dd><p>Import a class based on the _target_ field in a configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> – Path to the configuration file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The imported class object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class_obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.sync_s3_to_local">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">sync_s3_to_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bucket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsigned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#sync_s3_to_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.sync_s3_to_local" title="Link to this definition"></a></dt>
+<dd><p>Syncs files from an S3 bucket prefix to a local directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bucket</strong> – S3 bucket name</p></li>
+<li><p><strong>prefix</strong> – S3 prefix (directory path or file) to sync from</p></li>
+<li><p><strong>local_dir</strong> – Local directory path to sync to</p></li>
+<li><p><strong>unsigned</strong> – Whether to use unsigned requests (default: True)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.get_remote_last_modified">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">get_remote_last_modified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_unsigned_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#get_remote_last_modified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.get_remote_last_modified" title="Link to this definition"></a></dt>
+<dd><p>Return the LastModified timestamp of the remote S3 object, or None if it doesn’t exist.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.upload_file_to_remote">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">upload_file_to_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_prefix_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_unsigned_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_existing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#upload_file_to_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.upload_file_to_remote" title="Link to this definition"></a></dt>
+<dd><p>Upload a local file to an s3 prefix, preserving the filename remotely</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.upload_blob_to_remote">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">upload_blob_to_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_unsigned_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_existing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#upload_blob_to_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.upload_blob_to_remote" title="Link to this definition"></a></dt>
+<dd><p>Upload the contents of a text buffer to the exact S3 location given by remote_url.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="czbenchmarks.utils.download_file_from_remote">
+<span class="sig-prename descclassname"><span class="pre">czbenchmarks.utils.</span></span><span class="sig-name descname"><span class="pre">download_file_from_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_unsigned_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/czbenchmarks/utils.html#download_file_from_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#czbenchmarks.utils.download_file_from_remote" title="Link to this definition"></a></dt>
+<dd><p>Download a remote file from s3 to a local directory, preserving the filename if not specified</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

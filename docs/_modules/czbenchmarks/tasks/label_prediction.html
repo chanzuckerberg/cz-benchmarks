@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.tasks.label_prediction &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">czbenchmarks.tasks.label_prediction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for czbenchmarks.tasks.label_prediction</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">accuracy_score</span><span class="p">,</span>
+    <span class="n">f1_score</span><span class="p">,</span>
+    <span class="n">make_scorer</span><span class="p">,</span>
+    <span class="n">precision_score</span><span class="p">,</span>
+    <span class="n">recall_score</span><span class="p">,</span>
+    <span class="n">roc_auc_score</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">cross_validate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.neighbors</span><span class="w"> </span><span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..models.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataset</span><span class="p">,</span> <span class="n">DataType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">metrics_registry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..metrics.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetricResult</span><span class="p">,</span> <span class="n">MetricType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">filter_minimum_class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">RANDOM_SEED</span><span class="p">,</span> <span class="n">N_FOLDS</span><span class="p">,</span> <span class="n">MIN_CLASS_SIZE</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MetadataLabelPredictionTask">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MetadataLabelPredictionTask</span><span class="p">(</span><span class="n">BaseTask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Task for predicting labels from embeddings using cross-validation.</span>
+
+<span class="sd">    Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold</span>
+<span class="sd">    cross-validation. Reports standard classification metrics.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label_key: Key to access ground truth labels in metadata</span>
+<span class="sd">        n_folds: Number of cross-validation folds</span>
+<span class="sd">        random_seed: Random seed for reproducibility</span>
+<span class="sd">        min_class_size: Minimum samples required per class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">label_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">N_FOLDS</span><span class="p">,</span>
+        <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">RANDOM_SEED</span><span class="p">,</span>
+        <span class="n">min_class_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">MIN_CLASS_SIZE</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_key</span> <span class="o">=</span> <span class="n">label_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="n">n_folds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span> <span class="o">=</span> <span class="n">random_seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_class_size</span> <span class="o">=</span> <span class="n">min_class_size</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Initialized MetadataLabelPredictionTask with: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;label_key=&#39;</span><span class="si">{</span><span class="n">label_key</span><span class="si">}</span><span class="s2">&#39;, n_folds=</span><span class="si">{</span><span class="n">n_folds</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;min_class_size=</span><span class="si">{</span><span class="n">min_class_size</span><span class="si">}</span><span class="s2">, &quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pretty name to use when displaying task results&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;metadata label prediction&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">required_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Required input data types.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Set of required input DataTypes (metadata with labels)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">required_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Required output data types.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            required output types from models this task to run  (embedding coordinates)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs cross-validation prediction task.</span>
+
+<span class="sd">        Evaluates multiple classifiers using k-fold cross-validation on the</span>
+<span class="sd">        embedding data. Stores results for metric computation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Dataset containing embedding and ground truth labels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting prediction task for label key: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get embedding and labels</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">METADATA</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">label_key</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Initial data shape: </span><span class="si">{</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, labels shape: </span><span class="si">{</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Filter classes with minimum size requirement</span>
+        <span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">filter_minimum_class</span><span class="p">(</span>
+            <span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">min_class_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_class_size</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After filtering: </span><span class="si">{</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> samples remaining&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Determine scoring metrics based on number of classes</span>
+        <span class="n">n_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="n">target_type</span> <span class="o">=</span> <span class="s2">&quot;binary&quot;</span> <span class="k">if</span> <span class="n">n_classes</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;macro&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">n_classes</span><span class="si">}</span><span class="s2"> classes, using </span><span class="si">{</span><span class="n">target_type</span><span class="si">}</span><span class="s2"> averaging for metrics&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">scorers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">accuracy_score</span><span class="p">),</span>
+            <span class="s2">&quot;f1&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">f1_score</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">target_type</span><span class="p">),</span>
+            <span class="s2">&quot;precision&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">precision_score</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">target_type</span><span class="p">),</span>
+            <span class="s2">&quot;recall&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">recall_score</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">target_type</span><span class="p">),</span>
+            <span class="s2">&quot;auroc&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span>
+                <span class="n">roc_auc_score</span><span class="p">,</span>
+                <span class="n">average</span><span class="o">=</span><span class="s2">&quot;weighted&quot;</span><span class="p">,</span>
+                <span class="n">multi_class</span><span class="o">=</span><span class="s2">&quot;ovr&quot;</span><span class="p">,</span>
+                <span class="n">response_method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Setup cross validation</span>
+        <span class="n">skf</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span>
+            <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="si">}</span><span class="s2">-fold cross validation with random_seed </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Create classifiers</span>
+        <span class="n">classifiers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">Pipeline</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;scaler&quot;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">())]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;knn&quot;</span><span class="p">:</span> <span class="n">Pipeline</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;scaler&quot;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span> <span class="p">(</span><span class="s2">&quot;knn&quot;</span><span class="p">,</span> <span class="n">KNeighborsClassifier</span><span class="p">())]</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;rf&quot;</span><span class="p">:</span> <span class="n">Pipeline</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;rf&quot;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="p">))]</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created classifiers: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">classifiers</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store results and predictions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predictions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Run cross validation for each classifier</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">clf</span> <span class="ow">in</span> <span class="n">classifiers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running cross-validation for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="n">cv_results</span> <span class="o">=</span> <span class="n">cross_validate</span><span class="p">(</span>
+                <span class="n">clf</span><span class="p">,</span>
+                <span class="n">embeddings</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">.</span><span class="n">codes</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="n">skf</span><span class="p">,</span>
+                <span class="n">scoring</span><span class="o">=</span><span class="n">scorers</span><span class="p">,</span>
+                <span class="n">return_train_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">):</span>
+                <span class="n">fold_results</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;split&quot;</span><span class="p">:</span> <span class="n">fold</span><span class="p">}</span>
+                <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">scorers</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">fold_results</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv_results</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;test_</span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="n">fold</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fold_results</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> fold </span><span class="si">{</span><span class="n">fold</span><span class="si">}</span><span class="s2"> results: </span><span class="si">{</span><span class="n">fold_results</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed cross-validation for all classifiers&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MetricResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes classification metrics across all folds.</span>
+
+<span class="sd">        Aggregates results from cross-validation and computes mean metrics</span>
+<span class="sd">        per classifier and overall.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of MetricResult objects containing mean metrics across all classifiers</span>
+<span class="sd">            and per-classifier metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing final metrics...&quot;</span><span class="p">)</span>
+        <span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">metrics_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Calculate overall metrics across all classifiers</span>
+        <span class="n">metrics_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">MetricResult</span><span class="p">(</span>
+                    <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_ACCURACY</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                        <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_ACCURACY</span><span class="p">,</span> <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">MetricResult</span><span class="p">(</span>
+                    <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_F1_SCORE</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                        <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_F1_SCORE</span><span class="p">,</span> <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">MetricResult</span><span class="p">(</span>
+                    <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_PRECISION</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                        <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_PRECISION</span><span class="p">,</span> <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">MetricResult</span><span class="p">(</span>
+                    <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_RECALL</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                        <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_RECALL</span><span class="p">,</span> <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">MetricResult</span><span class="p">(</span>
+                    <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_AUROC</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                        <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_AUROC</span><span class="p">,</span> <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Calculate per-classifier metrics</span>
+        <span class="k">for</span> <span class="n">clf</span> <span class="ow">in</span> <span class="n">results_df</span><span class="p">[</span><span class="s2">&quot;classifier&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">metrics_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">MetricResult</span><span class="p">(</span>
+                        <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_ACCURACY</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_ACCURACY</span><span class="p">,</span>
+                            <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span><span class="p">,</span>
+                            <span class="n">classifier</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">clf</span><span class="p">},</span>
+                    <span class="p">),</span>
+                    <span class="n">MetricResult</span><span class="p">(</span>
+                        <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_F1_SCORE</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_F1_SCORE</span><span class="p">,</span>
+                            <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span><span class="p">,</span>
+                            <span class="n">classifier</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">clf</span><span class="p">},</span>
+                    <span class="p">),</span>
+                    <span class="n">MetricResult</span><span class="p">(</span>
+                        <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_PRECISION</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_PRECISION</span><span class="p">,</span>
+                            <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span><span class="p">,</span>
+                            <span class="n">classifier</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">clf</span><span class="p">},</span>
+                    <span class="p">),</span>
+                    <span class="n">MetricResult</span><span class="p">(</span>
+                        <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_RECALL</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_RECALL</span><span class="p">,</span>
+                            <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span><span class="p">,</span>
+                            <span class="n">classifier</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">clf</span><span class="p">},</span>
+                    <span class="p">),</span>
+                    <span class="n">MetricResult</span><span class="p">(</span>
+                        <span class="n">metric_type</span><span class="o">=</span><span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_AUROC</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">metrics_registry</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">MetricType</span><span class="o">.</span><span class="n">MEAN_FOLD_AUROC</span><span class="p">,</span>
+                            <span class="n">results_df</span><span class="o">=</span><span class="n">results_df</span><span class="p">,</span>
+                            <span class="n">classifier</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;classifier&quot;</span><span class="p">:</span> <span class="n">clf</span><span class="p">},</span>
+                    <span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">metrics_list</span>
+
+<div class="viewcode-block" id="MetadataLabelPredictionTask.set_baseline">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/tasks/label_prediction/index.html#czbenchmarks.tasks.MetadataLabelPredictionTask.set_baseline">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a baseline embedding using raw gene expression.</span>
+
+<span class="sd">        Instead of using embeddings from a model, this method uses the raw gene</span>
+<span class="sd">        expression matrix as features for classification. This provides a baseline</span>
+<span class="sd">        performance to compare against model-generated embeddings for classification</span>
+<span class="sd">        tasks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: BaseDataset containing AnnData with gene expression and metadata</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get the AnnData object from the dataset</span>
+        <span class="n">adata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_input</span><span class="p">(</span><span class="n">DataType</span><span class="o">.</span><span class="n">ANNDATA</span><span class="p">)</span>
+
+        <span class="c1"># Extract gene expression matrix</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+        <span class="c1"># Convert sparse matrix to dense if needed</span>
+        <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+
+        <span class="c1"># Use raw gene expression as the &quot;embedding&quot; for baseline classification</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set_output</span><span class="p">(</span><span class="n">ModelType</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">,</span> <span class="n">DataType</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1247 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.cli.cli_run &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">czbenchmarks.cli.cli_run</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for czbenchmarks.cli.cli_run</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">computed_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">secrets</span><span class="w"> </span><span class="kn">import</span> <span class="n">token_hex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">cli</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">PROCESSED_DATASETS_CACHE_PATH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">dataset_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks</span><span class="w"> </span><span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.metrics.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetricResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">model_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.models.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">task_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.clustering</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClusteringTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.embedding</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmbeddingTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchIntegrationTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.label_prediction</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataLabelPredictionTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.single_cell.cross_species</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrossSpeciesIntegrationTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.tasks.single_cell.perturbation</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerturbationTask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">VALID_OUTPUT_FORMATS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="s2">&quot;yaml&quot;</span><span class="p">]</span>
+<span class="n">DEFAULT_OUTPUT_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>
+
+<span class="n">TaskType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TaskType&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">BaseTask</span><span class="p">)</span>
+<span class="n">ModelArgsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span>  <span class="c1"># Arguments passed to model inference</span>
+<span class="n">RuntimeMetricsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span>
+    <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span>
+<span class="p">]</span>  <span class="c1"># runtime metrics like elapsed time or CPU count, not implemented yet</span>
+
+
+<div class="viewcode-block" id="ModelArgs">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.ModelArgs">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ModelArgs</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Upper-case model name e.g. SCVI</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]]</span>  <span class="c1"># Args forwarded to the model container</span></div>
+
+
+
+<div class="viewcode-block" id="TaskArgs">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskArgs">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskArgs</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">TaskType</span><span class="p">]):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;arbitrary_types_allowed&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>  <span class="c1"># Required to support TaskType</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Lower-case task name e.g. embedding</span>
+    <span class="n">task</span><span class="p">:</span> <span class="n">TaskType</span>
+    <span class="n">set_baseline</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">baseline_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TaskResult">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.TaskResult">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task_name_display</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span>
+    <span class="n">dataset_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">dataset_names_display</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">MetricResult</span><span class="p">]</span>
+    <span class="n">runtime_metrics</span><span class="p">:</span> <span class="n">RuntimeMetricsDict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># not implementing any of these for now</span>
+
+    <span class="nd">@computed_field</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_name_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model_utils</span><span class="o">.</span><span class="n">model_to_display_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_args</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CacheOptions">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CacheOptions</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">download_embeddings</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">upload_embeddings</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">upload_results</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">remote_cache_url</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="CacheOptions.from_args">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.CacheOptions.from_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CacheOptions&quot;</span><span class="p">:</span>
+        <span class="n">remote_cache_url</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">remote_cache_url</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">remote_cache_url</span><span class="o">=</span><span class="n">remote_cache_url</span><span class="p">,</span>
+            <span class="n">download_embeddings</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">remote_cache_url</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">remote_cache_download_embeddings</span><span class="p">,</span>
+            <span class="n">upload_embeddings</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">remote_cache_url</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">remote_cache_upload_embeddings</span><span class="p">,</span>
+            <span class="n">upload_results</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">remote_cache_url</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">remote_cache_upload_results</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="add_arguments">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.add_arguments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add run command arguments to the parser.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--models&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">model_utils</span><span class="o">.</span><span class="n">list_available_models</span><span class="p">(),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more model names (from models.yaml).&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--datasets&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">dataset_utils</span><span class="o">.</span><span class="n">list_available_datasets</span><span class="p">(),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more dataset names (from datasets.yaml).&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--tasks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">task_utils</span><span class="o">.</span><span class="n">TASK_NAMES</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more tasks to run.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--output-format&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-fmt&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">VALID_OUTPUT_FORMATS</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;yaml&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output format for results (ignored if --output-file specifies a valid file extension)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--output-file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to file or directory to save results (default is stdout)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--remote-cache-url&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;AWS S3 URL prefix for caching embeddings and storing output &quot;</span>
+            <span class="s2">&quot;(example: s3://cz-benchmarks-example/). Files will be stored &quot;</span>
+            <span class="s2">&quot;underneath the current --version number. This alone will not &quot;</span>
+            <span class="s2">&quot;trigger any caching behavior unless one or more of the &quot;</span>
+            <span class="s2">&quot;--remote-cache-download-embeddings, --remote-cache-upload-embeddings &quot;</span>
+            <span class="s2">&quot;or --remote-cache-upload-results flags are specified.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--remote-cache-download-embeddings&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;If specified, download embeddings from the remote cache to &quot;</span>
+            <span class="s2">&quot;PROCESSED_DATASETS_CACHE_PATH if local versions do not exist &quot;</span>
+            <span class="s2">&quot;or are older than those in the remote cache. Only embeddings &quot;</span>
+            <span class="s2">&quot;matching the current version will be downloaded.&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--remote-cache-upload-embeddings&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Upload any processed embeddings produced to the remote cache, overwriting &quot;</span>
+            <span class="s2">&quot;any that may already exist there for the current version. They will be &quot;</span>
+            <span class="s2">&quot;stored under s3://&lt;remote_cache_url&gt;/&lt;version&gt;/processed-datasets/*.dill&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--remote-cache-upload-results&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Upload the results to the remote cache. This allows results &quot;</span>
+            <span class="s2">&quot;to be shared across instances. They will be stored under &quot;</span>
+            <span class="s2">&quot;s3://&lt;remote_cache_url&gt;/&lt;version&gt;/results/&lt;timestamp&gt;-&lt;random_hex&gt;.json&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for geneformer model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--geneformer-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the geneformer model to use (see docker/geneformer/config.yaml)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for scgenept model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scgenept-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the scgenept model to use (see docker/scgenept/config.yaml)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scgenept-gene-pert&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Gene perturbation to use for scgenept model&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scgenept-dataset-name&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dataset name to use for scgenept model&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scgenept-chunk-size&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Chunk size to use for scgenept model&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for scgpt model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scgpt-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the scgpt model to use (see docker/scgpt/config.yaml)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for scvi model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scvi-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the scvi model to use (see docker/scvi/config.yaml)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for uce model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--uce-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the uce model to use (see docker/uce/config.yaml)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for transcriptformer model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--transcriptformer-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tf-sapiens&quot;</span><span class="p">,</span> <span class="s2">&quot;tf-exemplar&quot;</span><span class="p">,</span> <span class="s2">&quot;tf-metazoa&quot;</span><span class="p">],</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the transcriptformer model to use (tf-sapiens, tf-exemplar, tf-metazoa)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--transcriptformer-batch-size&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Batch size for transcriptformer model inference&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for AIDO model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--aido-model-variant&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;aido_cell_3m&quot;</span><span class="p">,</span> <span class="s2">&quot;aido_cell_10m&quot;</span><span class="p">,</span> <span class="s2">&quot;aido_cell_100m&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;aido_cell_3m&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Variant of the aido model to use. Default is aido_cell_3m&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--aido-batch-size&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Batch size for AIDO model inference (optional)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for clustering task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--clustering-task-label-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label key to use for clustering task&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--clustering-task-set-baseline&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for embedding task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--embedding-task-label-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label key to use for embedding task&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--embedding-task-set-baseline&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for label prediction task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--label-prediction-task-label-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label key to use for label prediction task&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--label-prediction-task-set-baseline&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Preprocess dataset and set PCA embedding as the BASELINE model output in the dataset&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--label-prediction-task-n-folds&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of cross-validation folds (optional)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--label-prediction-task-seed&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Random seed for reproducibility (optional)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--label-prediction-task-min-class-size&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Minimum samples required per class (optional)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for integration task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--integration-task-label-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label key to use for integration task&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--integration-task-set-baseline&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use raw gene expression matrix as features for classification (instead of embeddings)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--integration-task-batch-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Key to access batch labels in metadata&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for cross species integration task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--cross-species-task-label-key&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label key to use for cross species integration task&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extra arguments for perturbation task</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--perturbation-task-set-baseline&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use mean and median predictions as the BASELINE model output in the dataset&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--perturbation-task-baseline-gene-pert&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Gene perturbation to use for baseline&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Advanced feature: define multiple batches of jobs using JSON</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--batch-json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-b&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">],</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Override CLI arguments from the given JSON, e.g. </span><span class="se">\&#39;</span><span class="s1">{&quot;output_file&quot;: &quot;...&quot;}</span><span class="se">\&#39;</span><span class="s1">. Can be set multiple times to run complex &quot;batch&quot; jobs.&#39;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute a series of tasks using multiple models on a collection of datasets.</span>
+
+<span class="sd">    This function handles the benchmarking process by iterating over the specified datasets,</span>
+<span class="sd">    running inference with the provided models to generate results, and running the tasks to evaluate</span>
+<span class="sd">    the generated outputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">batch_args</span> <span class="o">=</span> <span class="n">parse_batch_json</span><span class="p">(</span><span class="n">parsed_args</span><span class="o">.</span><span class="n">batch_json</span><span class="p">)</span>
+    <span class="n">cache_options</span> <span class="o">=</span> <span class="n">CacheOptions</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">batch_dict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batch_args</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting batch </span><span class="si">{</span><span class="n">batch_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">parsed_args</span><span class="o">.</span><span class="n">batch_json</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">batch_key</span><span class="p">,</span> <span class="n">batch_val</span> <span class="ow">in</span> <span class="n">batch_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">batch_key</span><span class="p">,</span> <span class="n">batch_val</span><span class="p">)</span>
+
+        <span class="c1"># Collect all the arguments that we&#39;ll need to pass directly to each model</span>
+        <span class="n">model_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">models</span> <span class="ow">or</span> <span class="p">[]:</span>
+            <span class="n">model_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_model_args</span><span class="p">(</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">args</span><span class="p">))</span>
+
+        <span class="c1"># Collect all the task-related arguments</span>
+        <span class="n">task_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;clustering&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;clustering&quot;</span><span class="p">,</span> <span class="n">ClusteringTask</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;embedding&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;embedding&quot;</span><span class="p">,</span> <span class="n">EmbeddingTask</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;label_prediction&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;label_prediction&quot;</span><span class="p">,</span> <span class="n">MetadataLabelPredictionTask</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;integration&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;integration&quot;</span><span class="p">,</span> <span class="n">BatchIntegrationTask</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;perturbation&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;perturbation&quot;</span><span class="p">,</span> <span class="n">PerturbationTask</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;cross_species&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">task_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">parse_task_args</span><span class="p">(</span><span class="s2">&quot;cross_species&quot;</span><span class="p">,</span> <span class="n">CrossSpeciesIntegrationTask</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Run the tasks</span>
+        <span class="n">task_result</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span>
+            <span class="n">dataset_names</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span>
+            <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span><span class="p">,</span>
+            <span class="n">task_args</span><span class="o">=</span><span class="n">task_args</span><span class="p">,</span>
+            <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">task_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="c1"># Write the results to the specified output</span>
+    <span class="n">write_results</span><span class="p">(</span>
+        <span class="n">task_results</span><span class="p">,</span>
+        <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span><span class="p">,</span>
+        <span class="n">output_format</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_format</span><span class="p">,</span>
+        <span class="n">output_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_file</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
+    <span class="n">dataset_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgs</span><span class="p">],</span>
+    <span class="n">task_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">],</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a set of tasks against a set of datasets. Runs inference if any `model_args` are specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Starting benchmarking batch for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">)</span><span class="si">}</span><span class="s2"> datasets, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_args</span><span class="p">)</span><span class="si">}</span><span class="s2"> models, and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_args</span><span class="p">)</span><span class="si">}</span><span class="s2"> tasks&quot;</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model_args</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">run_without_inference</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">,</span> <span class="n">task_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">run_with_inference</span><span class="p">(</span>
+        <span class="n">dataset_names</span><span class="p">,</span> <span class="n">model_args</span><span class="p">,</span> <span class="n">task_args</span><span class="p">,</span> <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run_with_inference">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_with_inference">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_with_inference</span><span class="p">(</span>
+    <span class="n">dataset_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgs</span><span class="p">],</span>
+    <span class="n">task_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">],</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute a series of tasks using multiple models on a collection of datasets.</span>
+
+<span class="sd">    This function handles the benchmarking process by iterating over the specified datasets,</span>
+<span class="sd">    running inference with the provided models to generate results, and running the tasks to evaluate</span>
+<span class="sd">    the generated outputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">single_dataset_task_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">task_utils</span><span class="o">.</span><span class="n">TASK_NAMES</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="n">task_utils</span><span class="o">.</span><span class="n">MULTI_DATASET_TASK_NAMES</span>
+    <span class="p">)</span>
+    <span class="n">single_dataset_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_args</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">single_dataset_task_names</span>
+    <span class="p">]</span>
+    <span class="n">multi_dataset_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_args</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">task_utils</span><span class="o">.</span><span class="n">MULTI_DATASET_TASK_NAMES</span>
+    <span class="p">]</span>
+
+    <span class="n">embeddings_for_multi_dataset_tasks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Get all unique combinations of model arguments: each requires a separate inference run</span>
+    <span class="n">model_arg_permutations</span> <span class="o">=</span> <span class="n">get_model_arg_permutations</span><span class="p">(</span><span class="n">model_args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multi_dataset_tasks</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">ma</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">ma</span> <span class="ow">in</span> <span class="n">model_arg_permutations</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Having multiple model_args for multi-dataset tasks is not supported&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dataset_idx</span><span class="p">,</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Processing dataset &quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">dataset_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model_arg_permutation</span> <span class="ow">in</span> <span class="n">model_arg_permutations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">args_idx</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model_arg_permutation</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Starting model inference &quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">args_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model_arg_permutation</span><span class="p">)</span><span class="si">}</span><span class="s1">) &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;for dataset &quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">&quot;  (</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s1">)&#39;</span>
+                <span class="p">)</span>
+                <span class="n">processed_dataset</span> <span class="o">=</span> <span class="n">run_inference_or_load_from_cache</span><span class="p">(</span>
+                    <span class="n">dataset_name</span><span class="p">,</span>
+                    <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+                    <span class="n">model_args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                    <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="c1"># NOTE: accumulating datasets with attached embeddings in memory</span>
+                <span class="c1"># can be memory intensive</span>
+                <span class="k">if</span> <span class="n">multi_dataset_tasks</span><span class="p">:</span>
+                    <span class="n">embeddings_for_multi_dataset_tasks</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">processed_dataset</span>
+
+                <span class="c1"># Run each single-dataset task against the processed dataset</span>
+                <span class="k">for</span> <span class="n">task_arg_idx</span><span class="p">,</span> <span class="n">task_arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">single_dataset_tasks</span><span class="p">):</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Starting task &quot;</span><span class="si">{</span><span class="n">task_arg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">task_arg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_args</span><span class="p">)</span><span class="si">}</span><span class="s1">) for &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;dataset &quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">&quot; and model &quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">task_arg</span><span class="si">}</span><span class="s1">)&#39;</span>
+                    <span class="p">)</span>
+                    <span class="n">task_result</span> <span class="o">=</span> <span class="n">run_task</span><span class="p">(</span>
+                        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">processed_dataset</span><span class="p">,</span> <span class="p">{</span><span class="n">model_name</span><span class="p">:</span> <span class="n">args</span><span class="p">},</span> <span class="n">task_arg</span>
+                    <span class="p">)</span>
+                    <span class="n">task_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="c1"># Run multi-dataset tasks</span>
+    <span class="n">embeddings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDataset</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">embeddings_for_multi_dataset_tasks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">task_arg_idx</span><span class="p">,</span> <span class="n">task_arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">multi_dataset_tasks</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Starting multi-dataset task &quot;</span><span class="si">{</span><span class="n">task_arg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">task_arg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_args</span><span class="p">)</span><span class="si">}</span><span class="s1">) for datasets &quot;</span><span class="si">{</span><span class="n">dataset_names</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="p">)</span>
+        <span class="n">model_args_for_run</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">model_name</span><span class="p">:</span> <span class="n">permutation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">permutation</span> <span class="ow">in</span> <span class="n">model_arg_permutations</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">permutation</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">}</span>
+        <span class="n">task_result</span> <span class="o">=</span> <span class="n">run_multi_dataset_task</span><span class="p">(</span>
+            <span class="n">dataset_names</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">model_args_for_run</span><span class="p">,</span> <span class="n">task_arg</span>
+        <span class="p">)</span>
+        <span class="n">task_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">task_results</span></div>
+
+
+
+<div class="viewcode-block" id="run_inference_or_load_from_cache">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_inference_or_load_from_cache">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_inference_or_load_from_cache</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span><span class="p">,</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load the processed dataset from the cache if it exists, else run inference and save to cache.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">processed_dataset</span> <span class="o">=</span> <span class="n">try_processed_datasets_cache</span><span class="p">(</span>
+        <span class="n">dataset_name</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+        <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span><span class="p">,</span>
+        <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">processed_dataset</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processed dataset is cached: skipping inference&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">processed_dataset</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset_utils</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+    <span class="n">processed_dataset</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_inference</span><span class="p">(</span>
+        <span class="n">model_name</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">,</span>
+        <span class="n">gpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">model_args</span><span class="p">,</span>  <span class="c1"># type: ignore [arg-type]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># if we ran inference, put the embeddings produced into the cache (local and possibly remote)</span>
+    <span class="n">set_processed_datasets_cache</span><span class="p">(</span>
+        <span class="n">processed_dataset</span><span class="p">,</span>
+        <span class="n">dataset_name</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+        <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span><span class="p">,</span>
+        <span class="n">cache_options</span><span class="o">=</span><span class="n">cache_options</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">processed_dataset</span></div>
+
+
+
+<div class="viewcode-block" id="run_without_inference">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_without_inference">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_without_inference</span><span class="p">(</span>
+    <span class="n">dataset_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">task_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a set of tasks directly against raw datasets without first running model inference.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">single_dataset_task_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">task_utils</span><span class="o">.</span><span class="n">TASK_NAMES</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="n">task_utils</span><span class="o">.</span><span class="n">MULTI_DATASET_TASK_NAMES</span>
+    <span class="p">)</span>
+    <span class="n">single_dataset_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_args</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">single_dataset_task_names</span>
+    <span class="p">]</span>
+    <span class="n">multi_dataset_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskArgs</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_args</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">task_utils</span><span class="o">.</span><span class="n">MULTI_DATASET_TASK_NAMES</span>
+    <span class="p">]</span>
+
+    <span class="n">embeddings_for_multi_dataset_tasks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">dataset_idx</span><span class="p">,</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Processing dataset &quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">dataset_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="p">)</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset_utils</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+        <span class="c1"># NOTE: accumulating datasets with attached embeddings in memory</span>
+        <span class="c1"># can be memory intensive</span>
+        <span class="k">if</span> <span class="n">multi_dataset_tasks</span><span class="p">:</span>
+            <span class="n">embeddings_for_multi_dataset_tasks</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span>
+
+        <span class="k">for</span> <span class="n">task_arg_idx</span><span class="p">,</span> <span class="n">task_arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">single_dataset_tasks</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Starting task &quot;</span><span class="si">{</span><span class="n">task_arg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">task_arg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_args</span><span class="p">)</span><span class="si">}</span><span class="s1">) for dataset &quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+            <span class="p">)</span>
+            <span class="n">task_result</span> <span class="o">=</span> <span class="n">run_task</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="p">{},</span> <span class="n">task_arg</span><span class="p">)</span>
+            <span class="n">task_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="c1"># Run multi-dataset tasks</span>
+    <span class="n">embeddings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDataset</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">embeddings_for_multi_dataset_tasks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">task_arg_idx</span><span class="p">,</span> <span class="n">task_arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">multi_dataset_tasks</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Starting multi-dataset task &quot;</span><span class="si">{</span><span class="n">task_arg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; (</span><span class="si">{</span><span class="n">task_arg_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_args</span><span class="p">)</span><span class="si">}</span><span class="s1">) for datasets &quot;</span><span class="si">{</span><span class="n">dataset_names</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="p">)</span>
+        <span class="n">task_result</span> <span class="o">=</span> <span class="n">run_multi_dataset_task</span><span class="p">(</span><span class="n">dataset_names</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="p">{},</span> <span class="n">task_arg</span><span class="p">)</span>
+        <span class="n">task_results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">task_results</span></div>
+
+
+
+<div class="viewcode-block" id="run_multi_dataset_task">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_multi_dataset_task">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_multi_dataset_task</span><span class="p">(</span>
+    <span class="n">dataset_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">embeddings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDataset</span><span class="p">],</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModelArgsDict</span><span class="p">],</span>
+    <span class="n">task_args</span><span class="p">:</span> <span class="n">TaskArgs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a task and return the results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">task_args</span><span class="o">.</span><span class="n">set_baseline</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Baseline embedding run not allowed for multi-dataset tasks&quot;</span><span class="p">)</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">ModelType</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">MetricResult</span><span class="p">]]</span> <span class="o">=</span> <span class="n">task_args</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expect a Map ADT for a task result&quot;</span><span class="p">)</span>
+
+    <span class="c1"># sorting the dataset_names for the purposes of using it as a</span>
+    <span class="c1"># cache key and uniform presentation to the user</span>
+    <span class="n">dataset_names</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">model_type</span><span class="p">,</span> <span class="n">metrics</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">task_result</span> <span class="o">=</span> <span class="n">TaskResult</span><span class="p">(</span>
+            <span class="n">task_name</span><span class="o">=</span><span class="n">task_args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">task_name_display</span><span class="o">=</span><span class="n">task_args</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
+            <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">dataset_names</span><span class="o">=</span><span class="n">dataset_names</span><span class="p">,</span>
+            <span class="n">dataset_names_display</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">dataset_utils</span><span class="o">.</span><span class="n">dataset_to_display_name</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">dataset_names</span>
+            <span class="p">],</span>
+            <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">task_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">task_results</span></div>
+
+
+
+<div class="viewcode-block" id="run_task">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.run_task">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_task</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">,</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModelArgsDict</span><span class="p">],</span>
+    <span class="n">task_args</span><span class="p">:</span> <span class="n">TaskArgs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a task and return the results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">task_args</span><span class="o">.</span><span class="n">set_baseline</span><span class="p">:</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+        <span class="n">task_args</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">set_baseline</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">task_args</span><span class="o">.</span><span class="n">baseline_args</span><span class="p">)</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">ModelType</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">MetricResult</span><span class="p">]]</span> <span class="o">=</span> <span class="n">task_args</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a single task result, got list&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">model_type</span><span class="p">,</span> <span class="n">metrics</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">:</span>
+            <span class="n">model_args_to_store</span> <span class="o">=</span> <span class="n">task_args</span><span class="o">.</span><span class="n">baseline_args</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model_args_to_store</span> <span class="o">=</span> <span class="n">model_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">task_result</span> <span class="o">=</span> <span class="n">TaskResult</span><span class="p">(</span>
+            <span class="n">task_name</span><span class="o">=</span><span class="n">task_args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">task_name_display</span><span class="o">=</span><span class="n">task_args</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
+            <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">dataset_names</span><span class="o">=</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">],</span>
+            <span class="n">dataset_names_display</span><span class="o">=</span><span class="p">[</span><span class="n">dataset_utils</span><span class="o">.</span><span class="n">dataset_to_display_name</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)],</span>
+            <span class="n">model_args</span><span class="o">=</span><span class="n">model_args_to_store</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">task_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">task_result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">task_results</span></div>
+
+
+
+<div class="viewcode-block" id="get_model_arg_permutations">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_model_arg_permutations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_model_arg_permutations</span><span class="p">(</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgs</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgsDict</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate all the &quot;permutations&quot; of model arguments we want to run for each dataset:</span>
+<span class="sd">    E.g. Running 2 variants of scgenept at 2 chunk sizes results in 4 permutations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelArgsDict</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">model_arg</span> <span class="ow">in</span> <span class="n">model_args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model_arg</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">model_arg</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{}]</span>
+            <span class="k">continue</span>
+        <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">model_arg</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">permutations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">permutation</span><span class="p">)}</span>
+            <span class="k">for</span> <span class="n">permutation</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">values</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">model_arg</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">permutations</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="write_results">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.write_results">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_results</span><span class="p">(</span>
+    <span class="n">task_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TaskResult</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+    <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_OUTPUT_FORMAT</span><span class="p">,</span>
+    <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Writes to stdout if None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format and write results to the given directory or file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;czbenchmarks_version&quot;</span><span class="p">:</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_version</span><span class="p">(),</span>
+        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="s2">&quot;czbenchmarks &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+        <span class="s2">&quot;task_results&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">task_results</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Get the intended format/extension</span>
+    <span class="k">if</span> <span class="n">output_file</span> <span class="ow">and</span> <span class="n">output_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">):</span>
+        <span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>
+    <span class="k">elif</span> <span class="n">output_file</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">output_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.yaml&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">output_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.yml&quot;</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">output_format</span> <span class="o">=</span> <span class="s2">&quot;yaml&quot;</span>
+    <span class="k">elif</span> <span class="n">output_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_OUTPUT_FORMATS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid output format: </span><span class="si">{</span><span class="n">output_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">results_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+        <span class="n">results_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">results_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results_str</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cache_options</span><span class="o">.</span><span class="n">remote_cache_url</span> <span class="ow">and</span> <span class="n">cache_options</span><span class="o">.</span><span class="n">upload_results</span><span class="p">:</span>
+        <span class="n">remote_url</span> <span class="o">=</span> <span class="n">get_result_url_for_remote</span><span class="p">(</span><span class="n">cache_options</span><span class="o">.</span><span class="n">remote_cache_url</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">upload_blob_to_remote</span><span class="p">(</span>
+                <span class="n">results_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">remote_url</span><span class="p">,</span> <span class="n">overwrite_existing</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to upload results to </span><span class="si">{</span><span class="n">remote_url</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Uploaded results to </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">remote_url</span><span class="p">)</span>
+
+    <span class="c1"># Generate a unique filename if we were passed a directory</span>
+    <span class="k">if</span> <span class="n">output_file</span> <span class="ow">and</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span> <span class="ow">or</span> <span class="n">output_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)):</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">output_file</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;czbenchmarks_results_</span><span class="si">{</span><span class="n">current_time</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">output_format</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">output_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">results_str</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote results to </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Write to stdout if not otherwise specified</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">results_str</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_result_url_for_remote">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_result_url_for_remote">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_result_url_for_remote</span><span class="p">(</span><span class="n">remote_prefix_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">token_hex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">remote_prefix_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">/results/</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">nonce</span><span class="si">}</span><span class="s2">.json&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="set_processed_datasets_cache">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.set_processed_datasets_cache">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_processed_datasets_cache</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">BaseDataset</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span><span class="p">,</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a dataset to the cache</span>
+<span class="sd">    A &quot;processed&quot; dataset has been run with model inference for the given arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dataset_filename</span> <span class="o">=</span> <span class="n">get_processed_dataset_cache_filename</span><span class="p">(</span>
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span>
+    <span class="p">)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">PROCESSED_DATASETS_CACHE_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="n">dataset_filename</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># &quot;Unload&quot; the source data so we only cache the results</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">unload_data</span><span class="p">()</span>
+        <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Log the exception, but don&#39;t raise if we can&#39;t write to the cache for some reason</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Failed to serialize processed dataset to cache &quot;</span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">succeeded</span> <span class="ow">and</span> <span class="n">cache_options</span><span class="o">.</span><span class="n">upload_embeddings</span><span class="p">:</span>
+        <span class="c1"># upload the new embeddings, overwriting any that may already exist</span>
+        <span class="n">remote_prefix</span> <span class="o">=</span> <span class="n">get_remote_cache_prefix</span><span class="p">(</span><span class="n">cache_options</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">upload_file_to_remote</span><span class="p">(</span>
+                <span class="n">cache_file</span><span class="p">,</span> <span class="n">remote_prefix</span><span class="p">,</span> <span class="n">overwrite_existing</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Uploaded processed dataset from </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">remote_prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Unable to upload processed dataset to remote cache&quot;</span><span class="p">)</span>
+
+    <span class="n">dataset</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="try_processed_datasets_cache">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.try_processed_datasets_cache">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">try_processed_datasets_cache</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span><span class="p">,</span>
+    <span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseDataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deserialize and return a processed dataset from the cache if it exists, else return None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dataset_filename</span> <span class="o">=</span> <span class="n">get_processed_dataset_cache_filename</span><span class="p">(</span>
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span>
+    <span class="p">)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">PROCESSED_DATASETS_CACHE_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="n">dataset_filename</span>
+
+    <span class="k">if</span> <span class="n">cache_options</span><span class="o">.</span><span class="n">download_embeddings</span><span class="p">:</span>
+        <span class="c1"># check the remote cache and download the file if a local version doesn&#39;t</span>
+        <span class="c1"># exist, or if the remote version is newer than the local version</span>
+        <span class="n">remote_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">get_remote_cache_prefix</span><span class="p">(</span><span class="n">cache_options</span><span class="p">)</span><span class="si">}{</span><span class="n">dataset_filename</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">local_modified</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">remote_modified</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">local_modified</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">remote_modified</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_remote_last_modified</span><span class="p">(</span>
+                <span class="n">remote_url</span><span class="p">,</span> <span class="n">make_unsigned_request</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+            <span class="c1"># not a great way to handle this, but maybe the cache bucket is not public</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Unsigned request to remote storage cache failed. Trying signed request.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">remote_modified</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_remote_last_modified</span><span class="p">(</span>
+                    <span class="n">remote_url</span><span class="p">,</span> <span class="n">make_unsigned_request</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="n">remote_modified</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Remote cached embeddings don&#39;t exist. Skipping download.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">local_modified</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">remote_modified</span> <span class="o">&lt;=</span> <span class="n">local_modified</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Remote cached embeddings modified at </span><span class="si">{</span><span class="n">remote_modified</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Local cache files modified more recently at </span><span class="si">{</span><span class="n">local_modified</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Skipping download.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">download_file_from_remote</span><span class="p">(</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Downloaded cached embeddings from </span><span class="si">{</span><span class="n">remote_url</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+                <span class="c1"># not a great way to handle this, but maybe the cache bucket is not public</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Unsigned request to remote storage cache failed. Trying signed request.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">utils</span><span class="o">.</span><span class="n">download_file_from_remote</span><span class="p">(</span>
+                        <span class="n">remote_url</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">,</span> <span class="n">make_unsigned_request</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Downloaded cached embeddings from </span><span class="si">{</span><span class="n">remote_url</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RemoteStorageError</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Unable to retrieve embeddings from remote cache at </span><span class="si">{</span><span class="n">remote_url</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Load the original dataset</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset_utils</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+        <span class="c1"># Attach the cached results to the dataset</span>
+        <span class="n">processed_dataset</span> <span class="o">=</span> <span class="n">BaseDataset</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">_outputs</span> <span class="o">=</span> <span class="n">processed_dataset</span><span class="o">.</span><span class="n">_outputs</span>
+        <span class="k">return</span> <span class="n">dataset</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="get_remote_cache_prefix">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_remote_cache_prefix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_remote_cache_prefix</span><span class="p">(</span><span class="n">cache_options</span><span class="p">:</span> <span class="n">CacheOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;get the prefix ending in &#39;/&#39; that the remote processed datasets go under&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cache_options</span><span class="o">.</span><span class="n">remote_cache_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">cli</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span><span class="si">}</span><span class="s2">/processed-datasets/&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="get_processed_dataset_cache_filename">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_processed_dataset_cache_filename">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_processed_dataset_cache_filename</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    generate a unique filename for the given dataset and model arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">model_args</span><span class="p">:</span>
+        <span class="n">model_args_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model_args</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">model_args_str</span> <span class="o">=</span> <span class="n">model_name</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">model_args_str</span><span class="si">}</span><span class="s2">.dill&quot;</span>
+    <span class="k">return</span> <span class="n">filename</span></div>
+
+
+
+<div class="viewcode-block" id="get_processed_dataset_cache_path">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.get_processed_dataset_cache_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_processed_dataset_cache_path</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_args</span><span class="p">:</span> <span class="n">ModelArgsDict</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a unique file path in the cache directory for the given dataset and model arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">PROCESSED_DATASETS_CACHE_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">get_processed_dataset_cache_filename</span><span class="p">(</span>
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="n">filename</span></div>
+
+
+
+<div class="viewcode-block" id="parse_model_args">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_model_args">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_model_args</span><span class="p">(</span><span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelArgs</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Populate a ModelArgs instance from the given argparse namespace.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_&quot;</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="n">model_args</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">ModelArgs</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">model_name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">args</span><span class="o">=</span><span class="n">model_args</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_task_args">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_task_args">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_task_args</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">TaskCls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TaskType</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskArgs</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Populate a TaskArgs instance from the given argparse namespace.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_task_&quot;</span>
+    <span class="n">task_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">baseline_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="n">trimmed_k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trimmed_k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;baseline_&quot;</span><span class="p">):</span>
+                <span class="n">baseline_args</span><span class="p">[</span><span class="n">trimmed_k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;baseline_&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">task_args</span><span class="p">[</span><span class="n">trimmed_k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="n">set_baseline</span> <span class="o">=</span> <span class="n">task_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;set_baseline&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TaskArgs</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span>
+        <span class="n">task</span><span class="o">=</span><span class="n">TaskCls</span><span class="p">(</span><span class="o">**</span><span class="n">task_args</span><span class="p">),</span>
+        <span class="n">set_baseline</span><span class="o">=</span><span class="n">set_baseline</span><span class="p">,</span>
+        <span class="n">baseline_args</span><span class="o">=</span><span class="n">baseline_args</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_batch_json">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/cli/cli_run/index.html#czbenchmarks.cli.cli_run.parse_batch_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_batch_json</span><span class="p">(</span><span class="n">batch_json_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse the `--batch-json` argument.</span>
+<span class="sd">    Returns a list of dicts where each entry is a batch of CLI arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">batches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">batch_json_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[{}]</span>
+
+    <span class="k">for</span> <span class="n">batch_json</span> <span class="ow">in</span> <span class="n">batch_json_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">batch_json</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="n">batches</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Load JSON from disk if we were given a valid file path</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">batch_json</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">batch_json</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Failed to load batch JSON from file </span><span class="si">{</span><span class="n">batch_json</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Otherwise treat the input as JSON</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">batch_json</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">batches</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Invalid batch JSON: input must be a dictionary of CLI arguments&quot;</span>
+                <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid batch JSON </span><span class="si">{</span><span class="n">batch_json</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="k">return</span> <span class="n">batches</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

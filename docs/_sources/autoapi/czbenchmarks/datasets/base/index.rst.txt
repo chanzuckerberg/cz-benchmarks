@@ -1,0 +1,151 @@
+czbenchmarks.datasets.base
+==========================
+
+.. py:module:: czbenchmarks.datasets.base
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.datasets.base.BaseDataset
+
+
+Module Contents
+---------------
+
+.. py:class:: BaseDataset(path: str, **kwargs: Any)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: kwargs
+
+
+   .. py:property:: inputs
+      :type: Dict[czbenchmarks.datasets.types.DataType, czbenchmarks.datasets.types.DataValue]
+
+
+      Get the inputs dictionary.
+
+
+   .. py:property:: outputs
+      :type: czbenchmarks.models.types.ModelOutputs
+
+
+      Get the outputs dictionary.
+
+
+   .. py:method:: set_input(data_type: czbenchmarks.datasets.types.DataType, value: czbenchmarks.datasets.types.DataValue) -> None
+
+      Safely set an input with type checking.
+
+
+
+   .. py:method:: set_output(model_type: czbenchmarks.models.types.ModelType | None, data_type: czbenchmarks.datasets.types.DataType, value: czbenchmarks.datasets.types.DataValue) -> None
+
+      Safely set an output with type checking.
+      :param model_type: The type of model associated with the output.
+                         This parameter is used to differentiate between outputs
+                         from various models. It can be set to `None` if the output
+                         is not tied to a specific model type defined in the `ModelType` enum.
+      :type model_type: ModelType | None
+      :param data_type: Specifies the data type of the output.
+      :type data_type: DataType
+      :param value: The value to assign to the output.
+      :type value: Any
+
+
+
+   .. py:method:: get_input(data_type: czbenchmarks.datasets.types.DataType) -> czbenchmarks.datasets.types.DataValue
+
+      Safely get an input with error handling.
+
+
+
+   .. py:method:: get_output(model_type: czbenchmarks.models.types.ModelType | None, data_type: czbenchmarks.datasets.types.DataType) -> czbenchmarks.datasets.types.DataValue
+
+      Safely get an output with error handling.
+      :param model_type: The type of model associated with the output.
+                         This parameter is used to differentiate between outputs
+                         from various models. It can be set to `None` if the output
+                         is not tied to a specific model type defined in the `ModelType` enum.
+      :type model_type: ModelType | None
+      :param data_type: Specifies the data type of the output.
+      :type data_type: DataType
+
+      :returns: The value of the output.
+      :rtype: DataValue
+
+
+
+   .. py:method:: validate() -> None
+
+      Validate that all inputs and outputs match their expected types
+
+
+
+   .. py:method:: load_data() -> None
+      :abstractmethod:
+
+
+      Load the dataset into memory.
+
+      This method should be implemented by subclasses to load their specific
+      data format.
+      For example, SingleCellDataset loads an AnnData object from an h5ad
+      file.
+
+      The loaded data should be stored as instance attributes that can be
+      accessed by other methods.
+
+
+
+   .. py:method:: unload_data() -> None
+      :abstractmethod:
+
+
+      Unload the dataset from memory.
+
+      This method should be implemented by subclasses to free memory by
+      clearing loaded data.
+      For example, SingleCellDataset sets its AnnData object to None.
+
+      This is used to clear memory-intensive data before serialization,
+      since serializing large raw data artifacts can be error-prone and
+      inefficient.
+
+      Any instance attributes containing loaded data should be cleared or
+      set to None.
+
+
+
+   .. py:method:: serialize(path: str) -> None
+
+      Serialize this dataset instance to disk using dill.
+
+      :param path: Path where the serialized dataset should be saved
+
+
+
+   .. py:method:: deserialize(path: str) -> BaseDataset
+      :staticmethod:
+
+
+      Load a serialized dataset from disk.
+
+      :param path: Path to the serialized dataset file
+
+      :returns: The deserialized dataset instance
+      :rtype: BaseDataset
+
+
+

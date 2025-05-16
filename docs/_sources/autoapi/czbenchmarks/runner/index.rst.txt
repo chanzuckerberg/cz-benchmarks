@@ -1,0 +1,98 @@
+czbenchmarks.runner
+===================
+
+.. py:module:: czbenchmarks.runner
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.runner.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.runner.ContainerRunner
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.runner.run_inference
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: ContainerRunner(model_name: Union[str, czbenchmarks.models.types.ModelType], gpu: bool = False, interactive: bool = False, app_mount_dir: Optional[str] = None, environment: Optional[Dict[str, str]] = None, custom_config_path: Optional[str] = None, **kwargs: Any)
+
+   Handles Docker container execution logic for running models
+   in isolated environments
+
+
+   .. py:attribute:: client
+
+
+   .. py:attribute:: image
+
+
+   .. py:attribute:: model_type
+
+
+   .. py:attribute:: app_mount_dir
+      :value: None
+
+
+
+   .. py:attribute:: gpu
+      :value: False
+
+
+
+   .. py:attribute:: interactive
+      :value: False
+
+
+
+   .. py:attribute:: cli_args
+
+
+   .. py:attribute:: environment
+
+
+   .. py:method:: run(datasets: Union[czbenchmarks.datasets.BaseDataset, List[czbenchmarks.datasets.BaseDataset]]) -> Union[czbenchmarks.datasets.BaseDataset, List[czbenchmarks.datasets.BaseDataset]]
+
+      Run the model on one or more datasets.
+
+      :param datasets: A single dataset or list of datasets to process
+
+      :returns: The processed dataset(s) with model outputs attached
+
+
+
+.. py:function:: run_inference(model_name: str, dataset: czbenchmarks.datasets.BaseDataset, gpu: bool = True, interactive: bool = False, app_mount_dir: Optional[str] = None, environment: Optional[Dict[str, str]] = None, custom_config_path: Optional[str] = None, **kwargs) -> czbenchmarks.datasets.BaseDataset
+
+   Convenience function to run inference on a single dataset.
+
+   :param model_name: Name of the model to run
+   :param dataset: Dataset to process
+   :param gpu: Whether to use GPU acceleration
+   :param interactive: Whether to run in interactive mode
+   :param app_mount_dir: Optional directory to mount to /app in the container
+                         (this will override the default /app mount from the docker build!)
+   :param environment: Dictionary of environment variables to pass to the container
+   :param custom_config_path: Path to a custom models.yaml file
+   :param \*\*kwargs: Additional arguments to pass to the container as CLI params
+
+   :returns: The processed dataset with model outputs attached
+
+

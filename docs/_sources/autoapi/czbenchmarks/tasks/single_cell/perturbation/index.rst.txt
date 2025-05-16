@@ -1,0 +1,84 @@
+czbenchmarks.tasks.single_cell.perturbation
+===========================================
+
+.. py:module:: czbenchmarks.tasks.single_cell.perturbation
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.single_cell.perturbation.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.tasks.single_cell.perturbation.PerturbationTask
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: PerturbationTask
+
+   Bases: :py:obj:`czbenchmarks.tasks.base.BaseTask`
+
+
+   Task for evaluating perturbation prediction quality.
+
+   This task computes metrics to assess how well a model predicts gene expression
+   changes in response to perturbations. Compares predicted vs ground truth
+   perturbation effects using MSE and correlation metrics.
+
+
+   .. py:property:: display_name
+      :type: str
+
+
+      A pretty name to use when displaying task results
+
+
+   .. py:property:: required_inputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required input data types.
+
+      :returns: Set of required input DataTypes (ground truth perturbation effects)
+
+
+   .. py:property:: required_outputs
+      :type: Set[czbenchmarks.datasets.DataType]
+
+
+      Required output data types.
+
+      :returns: required output types from models this task to run
+                (predicted perturbation effects)
+
+
+   .. py:method:: set_baseline(data: czbenchmarks.datasets.PerturbationSingleCellDataset, gene_pert: str, baseline_type: Literal['median', 'mean'] = 'median', **kwargs)
+
+      Set a baseline embedding for perturbation prediction.
+
+      Creates baseline predictions using simple statistical methods (median and mean)
+      applied to the control data, and evaluates these predictions against ground
+      truth.
+
+      :param data: PerturbationSingleCellDataset containing control and perturbed data
+      :param gene_pert: The perturbation gene to evaluate
+      :param baseline_type: The statistical method to use for baseline prediction
+                            (median or mean)
+      :param \*\*kwargs: Additional arguments passed to the evaluation
+
+      :returns: List of MetricResult objects containing baseline performance metrics
+                for different statistical methods (median, mean)
+
+
+

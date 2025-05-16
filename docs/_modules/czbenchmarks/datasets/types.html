@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>czbenchmarks.datasets.types &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">czbenchmarks.datasets.types</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for czbenchmarks.datasets.types</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">anndata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ad</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmegaConf</span>
+
+
+<div class="viewcode-block" id="Organism">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.Organism">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Organism</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">HUMAN</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;homo_sapiens&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSG&quot;</span><span class="p">)</span>
+    <span class="n">MOUSE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mus_musculus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSMUSG&quot;</span><span class="p">)</span>
+    <span class="n">TROPICAL_CLAWED_FROG</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;xenopus_tropicalis&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSXETG&quot;</span><span class="p">)</span>
+    <span class="n">AFRICAN_CLAWED_FROG</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;xenopus_laevis&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSXLAG&quot;</span><span class="p">)</span>
+    <span class="n">ZEBRAFISH</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;danio_rerio&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSDARG&quot;</span><span class="p">)</span>
+    <span class="n">MOUSE_LEMUR</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;microcebus_murinus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSMICG&quot;</span><span class="p">)</span>
+    <span class="n">WILD_BOAR</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;sus_scrofa&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSSSCG&quot;</span><span class="p">)</span>
+    <span class="n">CRAB_EATING_MACAQUE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;macaca_fascicularis&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSMFAG&quot;</span><span class="p">)</span>
+    <span class="n">RHESUS_MACAQUE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;macaca_mulatta&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSMMUG&quot;</span><span class="p">)</span>
+    <span class="n">PLATYPUS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ornithorhynchus_anatinus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSOANG&quot;</span><span class="p">)</span>
+    <span class="n">OPOSSUM</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;monodelphis_domestica&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSMODG&quot;</span><span class="p">)</span>
+    <span class="n">GORILLA</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;gorilla_gorilla&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSGGOG&quot;</span><span class="p">)</span>
+    <span class="n">CHIMPANZEE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pan_troglodytes&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSPTRG&quot;</span><span class="p">)</span>
+    <span class="n">MARMOSET</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;callithrix_jacchus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSCJAG&quot;</span><span class="p">)</span>
+    <span class="n">CHICKEN</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;gallus_gallus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSGALG&quot;</span><span class="p">)</span>
+    <span class="n">RABBIT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;oryctolagus_cuniculus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSOCUG&quot;</span><span class="p">)</span>
+    <span class="n">FRUIT_FLY</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;drosophila_melanogaster&quot;</span><span class="p">,</span> <span class="s2">&quot;FBgn&quot;</span><span class="p">)</span>
+    <span class="n">RAT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;rattus_norvegicus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSRNOG&quot;</span><span class="p">)</span>
+    <span class="n">NAKED_MOLE_RAT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;heterocephalus_glaber&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSHGLG&quot;</span><span class="p">)</span>
+    <span class="n">CAENORHABDITIS_ELEGANS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;caenorhabditis_elegans&quot;</span><span class="p">,</span> <span class="s2">&quot;WBGene&quot;</span><span class="p">)</span>
+    <span class="n">YEAST</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;saccharomyces_cerevisiae&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">MALARIA_PARASITE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;plasmodium_falciparum&quot;</span><span class="p">,</span> <span class="s2">&quot;PF3D7&quot;</span><span class="p">)</span>
+    <span class="n">SEA_LAMPREY</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;petromyzon_marinus&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSPMAG&quot;</span><span class="p">)</span>
+    <span class="n">FRESHWATER_SPONGE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;spongilla_lacustris&quot;</span><span class="p">,</span> <span class="s2">&quot;ENSLPGG&quot;</span><span class="p">)</span>
+    <span class="n">CORAL</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;stylophora_pistillata&quot;</span><span class="p">,</span> <span class="s2">&quot;LOC&quot;</span><span class="p">)</span>
+    <span class="n">SEA_URCHIN</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lytechinus_variegatus&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># Mixed prefixes: LOC and GeneID</span>
+
+    <span class="c1"># Todo: add other organisms</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>  <span class="c1"># This is handled automatically by Enum</span>
+
+<div class="viewcode-block" id="Organism.__str__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.Organism.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Access the name from the tuple</span></div>
+
+
+<div class="viewcode-block" id="Organism.__repr__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.Organism.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Access the name from the tuple</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># Register Organism resolver</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">has_resolver</span><span class="p">(</span><span class="s2">&quot;organism&quot;</span><span class="p">):</span>  <span class="c1"># Required for dataset test cases</span>
+    <span class="n">OmegaConf</span><span class="o">.</span><span class="n">register_new_resolver</span><span class="p">(</span><span class="s2">&quot;organism&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Organism</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="DataTypeSpec">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataTypeSpec">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataTypeSpec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Specification for a data type in the system&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Type</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">is_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="DataType">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="c1"># Input types</span>
+    <span class="n">METADATA</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sample metadata&quot;</span>
+    <span class="p">)</span>
+    <span class="n">ANNDATA</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;anndata&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;AnnData object containing expression data&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ORGANISM</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;organism&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">Organism</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Organism type (e.g. human, mouse)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Output types</span>
+    <span class="n">EMBEDDING</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Learned cell embeddings&quot;</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">CONDITION_KEY</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;condition_key&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Condition key for perturbation data&quot;</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">SPLIT_KEY</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;split_key&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Train, test, val, split key for perturbation data&quot;</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">PERTURBATION_PRED</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;perturbation&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tuple of (condition_str, Predicted perturbation effects)&quot;</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PERTURBATION_TRUTH</span> <span class="o">=</span> <span class="n">DataTypeSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;perturbation_truth&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Truth perturbation data&quot;</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataTypeSpec</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">description</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">is_input</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">is_input</span>
+
+<div class="viewcode-block" id="DataType.__hash__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataType.__hash__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataType.__eq__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataType.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataType.__str__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataType.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="DataType.__repr__">
+<a class="viewcode-back" href="../../../autoapi/czbenchmarks/datasets/types/index.html#czbenchmarks.datasets.DataType.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+</div>
+
+
+
+<span class="n">DataValue</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Organism</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

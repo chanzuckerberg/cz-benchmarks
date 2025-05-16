@@ -1,0 +1,293 @@
+czbenchmarks.metrics.types
+==========================
+
+.. py:module:: czbenchmarks.metrics.types
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   czbenchmarks.metrics.types.MetricType
+   czbenchmarks.metrics.types.MetricInfo
+   czbenchmarks.metrics.types.MetricRegistry
+   czbenchmarks.metrics.types.MetricResult
+
+
+Module Contents
+---------------
+
+.. py:class:: MetricType
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Enumeration of all supported metric types.
+
+   Each metric type corresponds to a specific evaluation metric that can be computed.
+   The value is the string identifier used in results dictionaries.
+
+
+   .. py:attribute:: ADJUSTED_RAND_INDEX
+      :value: 'adjusted_rand_index'
+
+
+
+   .. py:attribute:: NORMALIZED_MUTUAL_INFO
+      :value: 'normalized_mutual_info'
+
+
+
+   .. py:attribute:: SILHOUETTE_SCORE
+      :value: 'silhouette_score'
+
+
+
+   .. py:attribute:: ENTROPY_PER_CELL
+      :value: 'entropy_per_cell'
+
+
+
+   .. py:attribute:: BATCH_SILHOUETTE
+      :value: 'batch_silhouette'
+
+
+
+   .. py:attribute:: MEAN_FOLD_ACCURACY
+      :value: 'mean_fold_accuracy'
+
+
+
+   .. py:attribute:: MEAN_FOLD_F1_SCORE
+      :value: 'mean_fold_f1'
+
+
+
+   .. py:attribute:: MEAN_FOLD_PRECISION
+      :value: 'mean_fold_precision'
+
+
+
+   .. py:attribute:: MEAN_FOLD_RECALL
+      :value: 'mean_fold_recall'
+
+
+
+   .. py:attribute:: MEAN_FOLD_AUROC
+      :value: 'mean_fold_auroc'
+
+
+
+   .. py:attribute:: MEAN_SQUARED_ERROR
+      :value: 'mean_squared_error'
+
+
+
+   .. py:attribute:: PEARSON_CORRELATION
+      :value: 'PEARSON_CORRELATION'
+
+
+
+   .. py:attribute:: JACCARD
+      :value: 'jaccard'
+
+
+
+.. py:class:: MetricInfo(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Stores metadata about a metric.
+
+
+   .. py:attribute:: func
+      :type:  Callable
+
+      The function that computes the metric
+
+
+   .. py:attribute:: required_args
+      :type:  Set[str]
+
+      Set of required argument names
+
+
+   .. py:attribute:: default_params
+      :type:  Dict[str, Any]
+
+      Default parameters for the metric function
+
+
+   .. py:attribute:: description
+      :type:  Optional[str]
+      :value: None
+
+
+      Optional documentation string for custom metrics
+
+
+   .. py:attribute:: tags
+      :type:  Set[str]
+      :value: None
+
+
+      Set of tags for grouping related metrics
+
+
+.. py:class:: MetricRegistry
+
+   Central registry for all available metrics.
+
+   Handles registration and computation of metrics with proper validation.
+
+
+   .. py:method:: register(metric_type: MetricType, func: Callable, required_args: Optional[Set[str]] = None, default_params: Optional[Dict[str, Any]] = None, description: str = '', tags: Optional[Set[str]] = None) -> None
+
+      Register a new metric.
+
+      :param metric_type: Type of metric to register
+      :param func: Function that computes the metric
+      :param required_args: Set of required argument names
+      :param default_params: Default parameters for the metric function
+      :param description: Documentation string
+      :param tags: Set of tags for grouping metrics
+
+
+
+   .. py:method:: compute(metric_type: MetricType, **kwargs) -> float
+
+      Compute a metric with the given parameters.
+
+      :param metric_type: Type of metric to compute
+      :param \*\*kwargs: Arguments to pass to metric function
+
+      :returns: Computed metric value
+
+      :raises ValueError: If metric type unknown or missing required args
+
+
+
+   .. py:method:: get_info(metric_type: MetricType) -> MetricInfo
+
+      Get metadata about a metric.
+
+      :param metric_type: Type of metric
+
+      :returns: MetricInfo object with metric metadata
+
+      :raises ValueError: If metric type unknown
+
+
+
+   .. py:method:: list_metrics(tags: Optional[Set[str]] = None) -> Set[MetricType]
+
+      List available metrics, optionally filtered by tags.
+
+      :param tags: If provided, only return metrics with all these tags
+
+      :returns: Set of matching MetricType values
+
+
+
+.. py:class:: MetricResult(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   !!! abstract "Usage Documentation"
+       [Models](../concepts/models.md)
+
+   A base class for creating Pydantic models.
+
+   .. attribute:: __class_vars__
+
+      The names of the class variables defined on the model.
+
+   .. attribute:: __private_attributes__
+
+      Metadata about the private attributes of the model.
+
+   .. attribute:: __signature__
+
+      The synthesized `__init__` [`Signature`][inspect.Signature] of the model.
+
+   .. attribute:: __pydantic_complete__
+
+      Whether model building is completed, or if there are still undefined fields.
+
+   .. attribute:: __pydantic_core_schema__
+
+      The core schema of the model.
+
+   .. attribute:: __pydantic_custom_init__
+
+      Whether the model has a custom `__init__` function.
+
+   .. attribute:: __pydantic_decorators__
+
+      Metadata containing the decorators defined on the model.
+      This replaces `Model.__validators__` and `Model.__root_validators__` from Pydantic V1.
+
+   .. attribute:: __pydantic_generic_metadata__
+
+      Metadata for generic models; contains data used for a similar purpose to
+      __args__, __origin__, __parameters__ in typing-module generics. May eventually be replaced by these.
+
+   .. attribute:: __pydantic_parent_namespace__
+
+      Parent namespace of the model, used for automatic rebuilding of models.
+
+   .. attribute:: __pydantic_post_init__
+
+      The name of the post-init method for the model, if defined.
+
+   .. attribute:: __pydantic_root_model__
+
+      Whether the model is a [`RootModel`][pydantic.root_model.RootModel].
+
+   .. attribute:: __pydantic_serializer__
+
+      The `pydantic-core` `SchemaSerializer` used to dump instances of the model.
+
+   .. attribute:: __pydantic_validator__
+
+      The `pydantic-core` `SchemaValidator` used to validate instances of the model.
+
+   .. attribute:: __pydantic_fields__
+
+      A dictionary of field names and their corresponding [`FieldInfo`][pydantic.fields.FieldInfo] objects.
+
+   .. attribute:: __pydantic_computed_fields__
+
+      A dictionary of computed field names and their corresponding [`ComputedFieldInfo`][pydantic.fields.ComputedFieldInfo] objects.
+
+   .. attribute:: __pydantic_extra__
+
+      A dictionary containing extra values, if [`extra`][pydantic.config.ConfigDict.extra]
+      is set to `'allow'`.
+
+   .. attribute:: __pydantic_fields_set__
+
+      The names of fields explicitly set during instantiation.
+
+   .. attribute:: __pydantic_private__
+
+      Values of private attributes set on the model instance.
+
+
+   .. py:attribute:: metric_type
+      :type:  MetricType
+
+
+   .. py:attribute:: value
+      :type:  float
+
+
+   .. py:attribute:: params
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+

@@ -1,0 +1,37 @@
+czbenchmarks.models
+===================
+
+.. py:module:: czbenchmarks.models
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/czbenchmarks/models/implementations/index
+   /autoapi/czbenchmarks/models/types/index
+   /autoapi/czbenchmarks/models/utils/index
+   /autoapi/czbenchmarks/models/validators/index
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   czbenchmarks.models.list_available_models
+
+
+Package Contents
+----------------
+
+.. py:function:: list_available_models() -> List[str]
+
+   Lists all available models defined in the models.yaml configuration file.
+
+   :returns: A sorted list of model names available in the configuration.
+   :rtype: list
+
+

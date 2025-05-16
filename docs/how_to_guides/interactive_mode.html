@@ -1,0 +1,227 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running a Docker Container in Interactive Mode &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Visualizing Benchmark Results" href="visualize_results.html" />
+    <link rel="prev" title="Add a Custom Metric" href="add_new_metric.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="add_custom_dataset.html">Add a Custom Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_custom_model.html">Add a Custom Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_task.html">Add a Custom Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_new_metric.html">Add a Custom Metric</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running a Docker Container in Interactive Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-flags">Command Line Flags</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#user-defined-configuration">User Defined Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mount-paths">Mount Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#container-execution-settings">Container Execution Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-interactive-example">Running the Interactive Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#additional-notes">Additional Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="visualize_results.html">Visualizing Benchmark Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html">Setup Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_guides.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">Running a Docker Container in Interactive Mode</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/how_to_guides/interactive_mode.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="running-a-docker-container-in-interactive-mode">
+<h1>Running a Docker Container in Interactive Mode<a class="headerlink" href="#running-a-docker-container-in-interactive-mode" title="Link to this heading"></a></h1>
+<p>This guide explains how to launch an interactive docker container with cz-benchmarks and run benchmarks for a model.</p>
+<section id="command-line-flags">
+<h2>Command Line Flags<a class="headerlink" href="#command-line-flags" title="Link to this heading"></a></h2>
+<p>The script <code class="docutils literal notranslate"><span class="pre">scripts/run_docker.sh</span></code> is used to launch the container and accepts the following command line flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-m,</span> <span class="pre">--model-name</span> <span class="pre">MODEL_NAME</span></code>: (Required) Set the model name (Geneformer, scGenePT, scGPT, scVI, UCE). Model names are case-insensitive and will be converted to lowercase internally. This also determines which docker image to use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-h,</span> <span class="pre">--help</span></code>: Display usage information and exit.</p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>scripts/run_docker.sh<span class="w"> </span>-m<span class="w"> </span>MODEL_NAME
+</pre></div>
+</div>
+</section>
+<section id="user-defined-configuration">
+<h2>User Defined Configuration<a class="headerlink" href="#user-defined-configuration" title="Link to this heading"></a></h2>
+<p>The script also includes user-configurable variables at the top of the file:</p>
+<section id="mount-paths">
+<h3>Mount Paths<a class="headerlink" href="#mount-paths" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DATASETS_CACHE_PATH</span></code>: Path to the cache directory containing datasets. Default: <code class="docutils literal notranslate"><span class="pre">${HOME}/.cz-benchmarks/datasets</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MODEL_WEIGHTS_CACHE_PATH</span></code>: Path to the cache directory for model weights. Default: <code class="docutils literal notranslate"><span class="pre">${HOME}/.cz-benchmarks/weights</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DEVELOPMENT_CODE_PATH</span></code>: Path to the workstation development code. Default: <code class="docutils literal notranslate"><span class="pre">$(pwd)</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EXAMPLES_CODE_PATH</span></code>: Path to the examples directory. Default: <code class="docutils literal notranslate"><span class="pre">$(pwd)/examples</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MOUNT_FRAMEWORK_CODE</span></code>: Whether to mount the framework code. Note: the examples directory is always mounted in interactive mode, while mounting the code directory is optional. Options: <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+</ul>
+</section>
+<section id="container-execution-settings">
+<h3>Container Execution Settings<a class="headerlink" href="#container-execution-settings" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">BUILD_DEV_CONTAINER</span></code>: true to use prebuilt container from AWS ECR, false to build a container with development code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EVAL_CMD</span></code>: Command to execute when the container starts (e.g. <code class="docutils literal notranslate"><span class="pre">bash</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-u</span> <span class="pre">examples/example_interactive.py</span></code>, etc.). See inline comments in <code class="docutils literal notranslate"><span class="pre">run_docker.sh</span></code> for more examples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RUN_AS_ROOT</span></code>: Whether to run the container as root. Options: <code class="docutils literal notranslate"><span class="pre">false</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="running-the-interactive-example">
+<h2>Running the Interactive Example<a class="headerlink" href="#running-the-interactive-example" title="Link to this heading"></a></h2>
+<p>The repository includes two example scripts (<code class="docutils literal notranslate"><span class="pre">examples/example_interactive.py</span></code> and <code class="docutils literal notranslate"><span class="pre">examples/example_interactive_perturb.py</span></code>, for perturbation tasks) that demonstrate how to run various tasks on a dataset with the user-selected model. To use this example:</p>
+<ol class="arabic">
+<li><p>Launch the container with the appropriate model:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>scripts/run_docker.sh<span class="w"> </span>-m<span class="w"> </span>MODEL_NAME
+</pre></div>
+</div>
+</li>
+<li><p>Inside the container, run the example script with one of the following commands:</p>
+<p>For perturbation tasks with scGenePT:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>examples/example_interactive_perturb.py
+</pre></div>
+</div>
+<p>For UCE:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/opt/conda/envs/uce/bin/python<span class="w"> </span>-u<span class="w"> </span>/app/examples/example_interactive.py
+</pre></div>
+</div>
+<p>Or all other models:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>examples/example_interactive.py
+</pre></div>
+</div>
+</li>
+</ol>
+<p>The example script will:</p>
+<ul class="simple">
+<li><p>Download the specified dataset(s)</p></li>
+<li><p>Evaluate the dataset(s) with the model</p></li>
+<li><p>Execute tasks</p></li>
+<li><p>Print the results of each task</p></li>
+</ul>
+</section>
+<section id="additional-notes">
+<h2>Additional Notes<a class="headerlink" href="#additional-notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The container has GPU support enabled by default and is configured with appropriate memory settings</p></li>
+<li><p>The script validates that all required directories exist before starting the container and that a valid model is provided</p></li>
+<li><p>The script will automatically ensure the appropriate container is downloaded and current</p></li>
+<li><p>When using AWS ECR images, the script automatically handles image pulling</p></li>
+</ul>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Each model is provided in a separate Docker container, thus limiting this method to a single model per container</p></li>
+<li><p>Running multiple models can be accomplished by launching the docker run script for each model</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="add_new_metric.html" class="btn btn-neutral float-left" title="Add a Custom Metric" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="visualize_results.html" class="btn btn-neutral float-right" title="Visualizing Benchmark Results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

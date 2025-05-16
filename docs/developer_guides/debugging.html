@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Debugging Guide &mdash; cz-benchmarks 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3c1ccb17" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Release Process" href="release_process.html" />
+    <link rel="prev" title="Metrics" href="metrics.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            cz-benchmarks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to_guides/index.html">How To Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="design_overview.html">Design Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Interactive Debugging Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-model-inference-container">Build model inference container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-interactive-mode">Starting Interactive Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-the-container">Accessing the Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#development-workflow">Development Workflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mounting-your-development-directory">1. Mounting Your Development Directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installing-in-development-mode">2. Installing in Development Mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#adding-debugger-statements">3. Adding Debugger Statements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running-the-model">4. Running the Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cleanup">Cleanup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tips">Tips</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#common-issues">Common Issues</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#getting-help">Getting Help</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assets.html">Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/index.html">Policy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legal.html">Legal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_release_notes.html">Changelog &amp; Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cz-benchmarks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guides</a></li>
+      <li class="breadcrumb-item active">Interactive Debugging Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guides/debugging.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="interactive-debugging-guide">
+<h1>Interactive Debugging Guide<a class="headerlink" href="#interactive-debugging-guide" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>This guide explains how to use interactive debugging mode with cz-benchmarks containers. Interactive mode allows you to:</p>
+<ul class="simple">
+<li><p>Access a bash shell inside the container</p></li>
+<li><p>Mount your local development directory</p></li>
+<li><p>Debug code in real-time</p></li>
+<li><p>Make changes to the codebase without rebuilding</p></li>
+</ul>
+</section>
+<section id="build-model-inference-container">
+<h2>Build model inference container<a class="headerlink" href="#build-model-inference-container" title="Link to this heading"></a></h2>
+<p>In the project root run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">&lt;model&gt;</span></code> to build the docker image ex: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">geneformer</span></code></p>
+</section>
+<section id="starting-interactive-mode">
+<h2>Starting Interactive Mode<a class="headerlink" href="#starting-interactive-mode" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.datasets.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">czbenchmarks.runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_inference</span>
+
+<span class="c1"># Load your dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;~/cz-benchmarks/example.yaml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run inference in interactive mode</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">run_inference</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;GENEFORMER&quot;</span><span class="p">,</span>  <span class="c1"># or any other model</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">app_mount_dir</span><span class="o">=</span><span class="s2">&quot;/home/ssm-user/cz-benchmarks&quot;</span>  <span class="c1"># Your local development directory</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="accessing-the-container">
+<h2>Accessing the Container<a class="headerlink" href="#accessing-the-container" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Get the container ID:</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>ps
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Attach to the container:</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>attach<span class="w"> </span>&lt;container_id&gt;
+</pre></div>
+</div>
+</section>
+<section id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Link to this heading"></a></h2>
+<section id="mounting-your-development-directory">
+<h3>1. Mounting Your Development Directory<a class="headerlink" href="#mounting-your-development-directory" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">app_mount_dir</span></code> parameter mounts your local directory to <code class="docutils literal notranslate"><span class="pre">/app</span></code> in the container</p></li>
+<li><p>This allows you to make changes to your local files and have them reflected in the container</p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">/home/ssm-user/cz-benchmarks</span></code> → <code class="docutils literal notranslate"><span class="pre">/app</span></code> in container</p></li>
+</ul>
+</section>
+<section id="installing-in-development-mode">
+<h3>2. Installing in Development Mode<a class="headerlink" href="#installing-in-development-mode" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># Inside the container</span>
+<span class="nb">cd</span><span class="w"> </span>/app
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This installs cz-benchmarks in editable mode, so changes to your local files are immediately reflected.</p>
+</section>
+<section id="adding-debugger-statements">
+<h3>3. Adding Debugger Statements<a class="headerlink" href="#adding-debugger-statements" title="Link to this heading"></a></h3>
+<p>Add Python debugger statements in your code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pdb</span><span class="p">;</span> <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>  <span class="c1"># Code will pause here when executed</span>
+</pre></div>
+</div>
+</section>
+<section id="running-the-model">
+<h3>4. Running the Model<a class="headerlink" href="#running-the-model" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># Inside the container</span>
+<span class="nb">cd</span><span class="w"> </span>/app/docker/&lt;model&gt;/<span class="w">  </span><span class="c1"># e.g., /app/docker/geneformer/</span>
+python<span class="w"> </span>model.py
+</pre></div>
+</div>
+<p>⚠️ <strong>Important</strong>: Run <code class="docutils literal notranslate"><span class="pre">model.py</span></code> from the mounted directory (<code class="docutils literal notranslate"><span class="pre">/app/docker/&lt;model&gt;/</span></code>), not from <code class="docutils literal notranslate"><span class="pre">/app/</span></code>. The version in <code class="docutils literal notranslate"><span class="pre">/app/</span></code> was copied during the Docker build and won’t reflect your changes.</p>
+</section>
+</section>
+<section id="cleanup">
+<h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Remove all debugger statements from your code</p></li>
+<li><p>Rebuild the container if you’re done with interactive mode:</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>geneformer<span class="w"> </span><span class="c1"># or whatever model you&#39;re working with, run make command from project root</span>
+</pre></div>
+</div>
+</section>
+<section id="tips">
+<h2>Tips<a class="headerlink" href="#tips" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">Ctrl+P</span></code> then <code class="docutils literal notranslate"><span class="pre">Ctrl+Q</span></code> to detach from the container without stopping it</p></li>
+<li><p>The data directory is mounted at <code class="docutils literal notranslate"><span class="pre">/raw</span></code> in the container</p></li>
+<li><p>Changes to your local files are immediately reflected after installing in editable mode</p></li>
+<li><p>Keep track of which files you’ve modified to ensure they’re properly cleaned up</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="common-issues">
+<h3>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Changes not reflecting</strong>: Make sure you’ve installed the package in editable mode</p></li>
+<li><p><strong>Wrong file location</strong>: Ensure you’re editing files in the mounted directory, not the container’s original files</p></li>
+<li><p><strong>Debugger not working</strong>: Verify you’re running the correct version of <code class="docutils literal notranslate"><span class="pre">model.py</span></code> from the mounted directory</p></li>
+</ol>
+</section>
+<section id="getting-help">
+<h3>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h3>
+<p>If you encounter issues:</p>
+<ol class="arabic simple">
+<li><p>Check the container logs: <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">logs</span> <span class="pre">&lt;container_id&gt;</span></code></p></li>
+<li><p>Verify your mounts: <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">inspect</span> <span class="pre">&lt;container_id&gt;</span></code></p></li>
+<li><p>Ensure you’re in the correct directory when running the model</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="metrics.html" class="btn btn-neutral float-left" title="Metrics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="release_process.html" class="btn btn-neutral float-right" title="Release Process" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Chan Zuckerberg Initiative.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
