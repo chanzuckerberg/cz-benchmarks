@@ -145,6 +145,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install --no-cache-dir cz-benchmarks
           python -c "import czbenchmarks"
           pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
 
