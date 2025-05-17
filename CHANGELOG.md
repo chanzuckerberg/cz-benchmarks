@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.0...v0.9.1) (2025-05-17)
+
+
+### Documentation
+
+* tweak roadmap wording ([#217](https://github.com/chanzuckerberg/cz-benchmarks/issues/217)) ([7a6f71d](https://github.com/chanzuckerberg/cz-benchmarks/commit/7a6f71dd5214dd91bc44bd4fdc965aa383bfe029))
+
 ## [0.9.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.8.0...v0.9.0) (2025-05-15)
 
 
