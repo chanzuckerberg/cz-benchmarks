@@ -25,17 +25,17 @@ However, please note that this is a very early stage project and as such, we exp
 - 🔬 Initial domain focus: single-cell transcriptomics
 
 ### 📋 Candidate release tags:
-- v0.1: Open alpha (unstable) repo for targeted developer preview
-- v0.2: Repo generates benchmark run results that can be ingested for visualization on CZI’s Virtual Cell Platform UI
+- v0.9: Open alpha (unstable) repo for targeted developer preview
+- v0.10: Fixes to address alpha release feedback
 
 ---
 
 ## 🔍 Next: Support Developer Workflow & Early Contribution Workflow
 
 ### Possible Candidates:
-- Refactor to better support model developer workflows, enabling more seamless use of custom assets (models, datasets)
-- Refactor to adopt standardized model packaging.
-- Refactor CLI to create a more user-friendly interface for running benchmarks
+- Improve and expand support for model developers to integrate their own models and datasets, enabling a more seamless developer workflow
+- Adopt standardized model packaging to ensure consistency.
+- Focused improvements on the CLI to provide a more user-friendly interface for running benchmarks.
 - Enable initial contributors to add (alpha format):
   - New models
   - New datasets, tasks, and metrics
