@@ -1,0 +1,155 @@
+{
+  "czbenchmarks_version": "v0.8.0+6980622.dirty",
+  "args": "czbenchmarks tests/models/test_cli_model_regression.py::test_model_regression[SCGENEPT-scgpt-adamson_perturb-perturbation] --tolerance-percent 0.5",
+  "task_results": [
+    {
+      "task_name": "perturbation",
+      "task_name_display": "perturbation",
+      "model_type": "SCGENEPT",
+      "dataset_names": [
+        "adamson_perturb"
+      ],
+      "dataset_names_display": [
+        "Adamson"
+      ],
+      "model_args": {
+        "model_variant": "scgpt",
+        "gene_pert": "CREB1+ctrl"
+      },
+      "metrics": [
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.022153262048959732,
+          "params": {
+            "subset": "all"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": -0.2702774405479431,
+          "params": {
+            "subset": "all"
+          }
+        },
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.3846484422683716,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": -0.6053726673126221,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.18651174008846283,
+          "params": {
+            "subset": "top100"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": -0.31741324067115784,
+          "params": {
+            "subset": "top100"
+          }
+        },
+        {
+          "metric_type": "jaccard",
+          "value": 0.0,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "jaccard",
+          "value": 0.0,
+          "params": {
+            "subset": "top100"
+          }
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "Scgenept"
+    },
+    {
+      "task_name": "perturbation",
+      "task_name_display": "perturbation",
+      "model_type": "BASELINE",
+      "dataset_names": [
+        "adamson_perturb"
+      ],
+      "dataset_names_display": [
+        "Adamson"
+      ],
+      "model_args": {
+        "gene_pert": "CREB1+ctrl"
+      },
+      "metrics": [
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.015585456974804401,
+          "params": {
+            "subset": "all"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": 0.13289795815944672,
+          "params": {
+            "subset": "all"
+          }
+        },
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.13403913378715515,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": -0.24858522415161133,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "mean_squared_error",
+          "value": 0.060633886605501175,
+          "params": {
+            "subset": "top100"
+          }
+        },
+        {
+          "metric_type": "PEARSON_CORRELATION",
+          "value": -0.04591253399848938,
+          "params": {
+            "subset": "top100"
+          }
+        },
+        {
+          "metric_type": "jaccard",
+          "value": 0.0,
+          "params": {
+            "subset": "top20"
+          }
+        },
+        {
+          "metric_type": "jaccard",
+          "value": 0.0582010582010582,
+          "params": {
+            "subset": "top100"
+          }
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "Baseline"
+    }
+  ]
+}

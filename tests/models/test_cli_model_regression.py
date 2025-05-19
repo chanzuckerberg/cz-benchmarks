@@ -3,37 +3,35 @@ import json
 from pathlib import Path
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results, CacheOptions
-from czbenchmarks.tasks import ClusteringTask
-from unittest.mock import patch, MagicMock
+from czbenchmarks.tasks import ClusteringTask, PerturbationTask
 from datetime import datetime
-import os
 
-MODEL_VARIANT_TEST_CASES = [
-    ("SCGPT", "human", "human_spermatogenesis"),
-    ("SCVI", "homo_sapiens", "human_spermatogenesis"),
-    ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis"),
-    ("SCGENEPT", "scgpt", "adamson_perturb"),
-    ("UCE", "4l", "human_spermatogenesis"),
-    ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis"),
+MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
+    ("SCGPT", "human", "human_spermatogenesis", "clustering"),
+    ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
+    ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
+    ("SCGENEPT", "scgpt", "adamson_perturb", "perturbation"),
+    ("UCE", "4l", "human_spermatogenesis", "clustering"),
+    ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis", "clustering"),
 ]
 
 @pytest.mark.parametrize(
     "model_name,variant,dataset_name,task_name",
     [
-        (model, variant, dataset, "clustering")
-        for model, variant, dataset in MODEL_VARIANT_TEST_CASES
+        (model, variant, dataset, task)
+        for model, variant, dataset, task in MODEL_VARIANT_DATASET_TASK_TEST_CASES
     ]
 )
 def test_model_regression(model_name, variant, dataset_name, task_name, tolerance_percent):
     """
     Model regression test for CLI end-to-end workflow.
-    
+
     This tests:
     1. A single benchmark (i.e. a single dataset & task) against a baseline file
     2. Generates both baseline and results files in tests/fixtures/baselines/
        - baseline file: {model}_{variant}_{dataset}_{task}_baseline.json
        - results file: {model}_{variant}_{dataset}_{task}_results.json
-    
+
     The test ensures that model outputs remain consistent with previously established baselines.
     If the baseline file doesn't exist, it will be created for future comparisons.
     """
@@ -45,19 +43,36 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     args = {}
     if variant:
         args["model_variant"] = [variant]
+
+    if task_name == "perturbation":
+        gene_pert = "CREB1+ctrl"
+        args["gene_pert"] = [gene_pert]
+        task_args = [
+            TaskArgs(
+                name=task_name,
+                task=PerturbationTask(),
+                set_baseline=True,
+                baseline_args={
+                    "gene_pert": gene_pert
+                },
+            ),
+        ]
+    elif task_name == "clustering":
+        task_args = [
+            TaskArgs(
+                name=task_name,
+                task=ClusteringTask(label_key="cell_type"),
+                set_baseline=True,
+                baseline_args={},
+            ),
+        ]
+    else:
+        raise ValueError(f"Invalid task name: {task_name}")
+
     model_args = [ModelArgs(
         name=model_name,
         args=args
     )]
-    
-    task_args = [
-        TaskArgs(
-            name=task_name,
-            task=ClusteringTask(label_key="cell_type"),
-            set_baseline=True,  # Set to True to generate baseline results
-            baseline_args={},  # Add empty baseline args
-        ),
-    ]
 
     cache_options = CacheOptions(
         download_embeddings=False,
@@ -75,19 +90,19 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
         cache_options=cache_options,
     )
     #endregion
-    
+
     #region Save and Compare Results
     baseline_dir = Path("tests/fixtures/baselines")
     baseline_dir.mkdir(parents=True, exist_ok=True)
     variant_suffix = f"_{variant}" if variant else ""
     baseline_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_baseline.json"
     results_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_results.json"
-    
+
     if not baseline_file.exists():
         write_results(task_results, output_format="json", output_file=str(baseline_file), cache_options=cache_options)
         pytest.fail(f"Baseline file {baseline_file} did not exist and was created. Please review and commit this file.")
     write_results(task_results, output_format="json", output_file=str(results_file), cache_options=cache_options)
-    
+
     if baseline_file.exists():
         with open(results_file) as actual_results, open(baseline_file) as expected_results:
             actual_json = json.load(actual_results)
@@ -103,7 +118,7 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     else:
         raise ValueError(f"Baseline file {baseline_file} does not exist")
     #endregion
-    
+
     #region Sanity Checks
     assert task_results is not None, "Task results should not be None"
     assert len(task_results) > 0, "Should have at least one task result"
@@ -145,3 +160,4 @@ def compare_metrics(actual, expected, path="root", tolerance_percent=0.1, result
         assert actual == expected, (
             f"Value mismatch at {path}: actual={actual}, expected={expected} in {results_file} vs {baseline_file}"
         )
+
