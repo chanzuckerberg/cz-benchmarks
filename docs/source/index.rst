@@ -21,6 +21,11 @@ Last year, CZI hosted a workshop focused on benchmarking and evaluation of AI mo
 
 We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to `open an issue <https://github.com/chanzuckerberg/cz-benchmarks/issues>`_ on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
 
+You can find **cz-benchmarks** on:
+
+- `PyPI <https://pypi.org/project/cz-benchmarks/>`_ – for installation and release information.
+- `GitHub <https://github.com/chanzuckerberg/cz-benchmarks>`_ – for source code, issue tracking, and contributions.
+
 
 **Project Status: UNSTABLE**
 

@@ -2,7 +2,7 @@
 
 ## PROJECT STATUS: UNSTABLE
 
-⚠️ **Warning:** Repository under active development and is in the alpha phase of development, subject to major refactors as outlined in the public-facing [roadmap](https://github.com/chanzuckerberg/cz-benchmarks/blob/main/docs/source/roadmap.md).
+⚠️ **Warning:** Repository under active development and is in the alpha phase of development, subject to major refactors as outlined in the public-facing [roadmap](https://chanzuckerberg.github.io/cz-benchmarks/roadmap.html).
 
 ### What is cz-benchmarks?
 cz-benchmarks is a package for standardized evaluation and comparison of machine learning models for biological applications (first, in the single-cell transcriptomics domain, with future plans to expand to additional domains). The package provides a toolkit for running containerized models, executing biologically-relevant tasks, and computing performance metrics. We see this tool as a step towards ensuring that large-scale AI models can be harnessed to deliver genuine biological insights -- by building trust, accelerating development, and bridging the gap between ML and biology communities.

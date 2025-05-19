@@ -32,12 +32,15 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 - [Metrics](docs/source/developer_guides/metrics.md)
 - [Models](docs/source/developer_guides/models.md)
 - [Tasks](docs/source/developer_guides/tasks.md)
-- [Writing Test](tests/README.md)
-- [Writing Documentation](docs/README.md)
+- [Debugging](docs/source/developer_guides/debugging.md)
+- [Release Process](docs/source/developer_guides/release_process.md)
+- [Design Overview](docs/source/developer_guides/design_overview.rst)
+
+### Assets
+- [Assets](docs/source/assets.md)
 
 ### Policies
-- [Assets](docs/source/assets.md)
-- [Governance](docs/source/policy/definitions.md)
+- [Definitions](docs/source/policy/definitions.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ### Additional Resources
@@ -45,3 +48,15 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 - [Roadmap](docs/source/roadmap.md)
 - [Legal](LICENSE.md)
 - [Security](SECURITY.md)
+
+---
+
+## 📚 Documentation
+
+Full documentation: [cz-benchmarks website](https://chanzuckerberg.github.io/cz-benchmarks/)
+
+---
+
+## 📦 PyPI
+
+Find the package on [PyPI](https://pypi.org/project/cz-benchmarks/)
