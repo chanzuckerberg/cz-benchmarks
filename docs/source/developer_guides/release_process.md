@@ -74,11 +74,14 @@ File: `docs-publish.yml`
 
 After `release-please.yml` finishes publishing a new release, this workflow will be triggered to build and publish the documentation. This action will:
 
+- Set up Python 3.11 environment with pip caching
+- Install Sphinx and the ReadTheDocs theme
 - Build the Sphinx documentation using `make clean html`
-- Deploy the built documentation to GitHub Pages
+- Upload the built documentation as a GitHub Pages artifact
+- Deploy the documentation to GitHub Pages using the official GitHub Pages deployment action
 - The documentation will be available at the repository's GitHub Pages URL
 
-The documentation is automatically updated whenever a new release is published, ensuring that the online documentation always matches the latest released version.
+The documentation is automatically updated whenever a new release is published, ensuring that the online documentation always matches the latest released version. The workflow can also be triggered manually through the GitHub Actions interface for testing purposes.
 
 ## Building Model Images
 
