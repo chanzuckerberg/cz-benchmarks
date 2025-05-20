@@ -35,6 +35,7 @@ RUN git clone --depth 1 https://github.com/giovp/UCE && \
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
+COPY README-pypi.md /app/package/README-pypi.md
 RUN /opt/conda/envs/uce/bin/pip install -e /app/package[interactive]
 
 # Create model_files directory and empty CSV file for species protein embeddings
