@@ -18,6 +18,7 @@ TASK_NAMES = frozenset(
         "label_prediction",
         "integration",
         "perturbation",
+        "simple"
     }.union(MULTI_DATASET_TASK_NAMES)
 )
 
