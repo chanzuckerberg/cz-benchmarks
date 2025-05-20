@@ -31,6 +31,7 @@ COPY docker/aido/config.yaml /app/config.yaml
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
+COPY README-pypi.md /app/package/README-pypi.md
 RUN /opt/venv_aido/bin/pip install -e /app/package[interactive]
 
 ENV PYTHONPATH="/app/package/src:$PYTHONPATH"
