@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
+COPY README-pypi.md /app/package/README-pypi.md
 RUN pip install -e /app/package[interactive]
 
 COPY docker/geneformer/model.py .

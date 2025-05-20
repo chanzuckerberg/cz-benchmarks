@@ -8,7 +8,7 @@ RUN apt-get update && \
 # Clone the repository and install
 RUN apt-get install -y curl && \
     pip install uv && \
-    git clone --branch v0.1.0 --depth 1 https://github.com/czi-ai/transcriptformer.git && \
+    git clone --branch v0.2.1 --depth 1 https://github.com/czi-ai/transcriptformer.git && \
     cd transcriptformer && \
     uv venv --python=3.11 && \
     . .venv/bin/activate && \   
@@ -17,6 +17,7 @@ RUN apt-get install -y curl && \
 COPY src /app/package/src
 COPY pyproject.toml /app/package/pyproject.toml
 COPY README.md /app/package/README.md
+COPY README-pypi.md /app/package/README-pypi.md
 
 RUN . /app/transcriptformer/.venv/bin/activate && uv pip install -e /app/package
 
