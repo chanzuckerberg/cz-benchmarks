@@ -12,7 +12,7 @@ MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
     ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
     ("SCGENEPT", "scgpt", "adamson_perturb", "perturbation"),
     ("UCE", "4l", "human_spermatogenesis", "clustering"),
-    ("TRANSCRIPTFORMER", "tf-sapiens", "human_spermatogenesis", "clustering"),
+    ("TRANSCRIPTFORMER", "tf-sapiens", "tsv2_bladder", "clustering"),
 ]
 
 @pytest.mark.parametrize(
