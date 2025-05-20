@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.1...v0.9.2) (2025-05-20)
+
+
+### Bug Fixes
+
+* Fix UCE docker image build failure ([#244](https://github.com/chanzuckerberg/cz-benchmarks/issues/244)) ([3acf5fa](https://github.com/chanzuckerberg/cz-benchmarks/commit/3acf5fa4fb031d34dbff378b3e48bad3ef9e1b87))
+
 ## [0.9.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.0...v0.9.1) (2025-05-20)
 
 
