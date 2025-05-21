@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.9.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.1...v0.9.2) (2025-05-20)
+
+
+### Bug Fixes
+
+* Fix UCE docker image build failure ([#244](https://github.com/chanzuckerberg/cz-benchmarks/issues/244)) ([3acf5fa](https://github.com/chanzuckerberg/cz-benchmarks/commit/3acf5fa4fb031d34dbff378b3e48bad3ef9e1b87))
+
+## [0.9.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.0...v0.9.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* Fix transcriptformer Dockerfile ([#224](https://github.com/chanzuckerberg/cz-benchmarks/issues/224)) ([1ebf24a](https://github.com/chanzuckerberg/cz-benchmarks/commit/1ebf24a0b3f5289d1c832606e9918bbef33cbb4a))
+
+
+### Documentation
+
+* repo and site links update ([#223](https://github.com/chanzuckerberg/cz-benchmarks/issues/223)) ([7c27747](https://github.com/chanzuckerberg/cz-benchmarks/commit/7c27747d37a97bd6288ac1e2cdb38cbec70f17ff))
+* tweak roadmap wording ([#217](https://github.com/chanzuckerberg/cz-benchmarks/issues/217)) ([7a6f71d](https://github.com/chanzuckerberg/cz-benchmarks/commit/7a6f71dd5214dd91bc44bd4fdc965aa383bfe029))
+
 ## [0.9.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.8.0...v0.9.0) (2025-05-15)
 
 
