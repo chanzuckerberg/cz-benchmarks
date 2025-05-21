@@ -40,7 +40,14 @@ jobs:
 
       - name: Generate coverage report
         if: always()
-        run: make test-coverage | tee coverage.txt
+        run: |
+          make test-coverage | tee coverage.txt
+          # Extract the total coverage percentage
+          COVERAGE=$(grep -oP 'TOTAL.*\d+%' coverage.txt | grep -oP '\d+%' | grep -oP '\d+')
+          if [ "$COVERAGE" -lt 90 ]; then
+            echo "Test coverage ($COVERAGE%) is below the required threshold of 90%"
+            exit 1
+          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
