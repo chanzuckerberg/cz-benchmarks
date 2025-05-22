@@ -14,7 +14,7 @@ def test_set_input(dummy_dataset):
 
 def test_set_output():
     """Tests setting an output for the dataset."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     ds.set_output(ModelType.BASELINE, DataType.EMBEDDING, np.array([1, 2, 3]))
     assert np.all(
         ds.get_output(ModelType.BASELINE, DataType.EMBEDDING) == np.array([1, 2, 3])
@@ -23,21 +23,21 @@ def test_set_output():
 
 def test_get_input_missing_key():
     """Tests that getting an input fails when the key is missing."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(KeyError):
         ds.get_input(DataType.ANNDATA)
 
 
 def test_get_output_missing_model():
     """Tests that getting an output fails when the model is missing."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(KeyError):
         ds.get_output(ModelType.SCVI, DataType.ANNDATA)
 
 
 def test_get_output_missing_data_type():
     """Tests that getting an output fails when the data type is missing."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(KeyError):
         ds.get_output(ModelType.BASELINE, DataType.ANNDATA)
 
@@ -56,15 +56,14 @@ def test_validate_dataset_path_not_exists(dummy_human_anndata):
 
 def test_validate_input_type():
     """Tests that setting an input fails when the input type is invalid."""
-    ds = DummyDataset("dummy_path")
-    ds.set_input(DataType.ORGANISM, Organism.HUMAN)
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(TypeError):
         ds.set_input(DataType.ORGANISM, "not_an_organism")
 
 
 def test_validate_input_type_with_dict():
     """Tests that setting an input fails when the input type is invalid."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     valid_dict = {"test": pd.DataFrame()}
     ds.set_input(DataType.PERTURBATION_TRUTH, valid_dict)
     with pytest.raises(TypeError):
@@ -75,21 +74,21 @@ def test_validate_input_type_with_dict():
 
 def test_set_input_with_output_type():
     """Tests that setting an input with an output type raises an error."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(ValueError, match="Cannot set output type as input.*"):
         ds.set_input(DataType.EMBEDDING, np.array([1, 2, 3]))
 
 
 def test_set_output_with_input_type():
     """Tests that setting an output with an input type raises an error."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(ValueError, match="Cannot set input type as output.*"):
         ds.set_output(ModelType.BASELINE, DataType.ORGANISM, Organism.HUMAN)
 
 
 def test_set_output_wrong_value_type():
     """Tests that setting an output with wrong value type raises an error."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(TypeError):
         ds.set_output(ModelType.BASELINE, DataType.EMBEDDING, "not_an_array")
 

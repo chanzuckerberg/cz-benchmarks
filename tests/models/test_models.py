@@ -34,14 +34,13 @@ def test_invalid_dataset_type():
     validator = (
         DummySingleCellModelValidator()
     )  # Expects a SingleCellDataset (exact type match)
-    dummy_ds = DummyDataset("dummy_path")
+    dummy_ds = DummyDataset("dummy_path", Organism.HUMAN)
     # Provide required inputs to bypass missing-input errors.
     ann = create_dummy_anndata(
         obs_columns=["dataset_id", "assay", "suspension_type", "donor_id"]
     )
     dummy_ds.set_input(DataType.ANNDATA, ann)
     dummy_ds.set_input(DataType.METADATA, ann.obs)
-    dummy_ds.set_input(DataType.ORGANISM, Organism.HUMAN)
     with pytest.raises(ValueError, match="Dataset type mismatch"):
         validator.validate_dataset(dummy_ds)
 
