@@ -433,7 +433,7 @@ def run_with_inference(
     model_args: list[ModelArgs],
     task_args: list[TaskArgs],
     cache_options: CacheOptions,
-) -> list[TaskResult]:
+) -> list[TaskResult]:  # pragma: no cover
     """
     Execute a series of tasks using multiple models on a collection of datasets.
 
