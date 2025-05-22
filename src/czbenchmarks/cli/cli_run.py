@@ -60,12 +60,21 @@ class TaskArgs(BaseModel, Generic[TaskType]):
     baseline_args: dict[str, Any]
 
 
+class DatasetDetail(BaseModel):
+    name: str
+    organism: str
+
+    @computed_field
+    @property
+    def name_display(self) -> str:
+        return dataset_utils.dataset_to_display_name(self.name)
+
+
 class TaskResult(BaseModel):
     task_name: str
     task_name_display: str
     model_type: ModelType
-    dataset_names: list[str]
-    dataset_names_display: list[str]
+    datasets: list[DatasetDetail]
     model_args: ModelArgsDict
     metrics: list[MetricResult]
     runtime_metrics: RuntimeMetricsDict = {}  # not implementing any of these for now
@@ -125,7 +134,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--output-format",
         "-fmt",
         choices=VALID_OUTPUT_FORMATS,
-        default="yaml",
+        default=DEFAULT_OUTPUT_FORMAT,
         help="Output format for results (ignored if --output-file specifies a valid file extension)",
     )
     parser.add_argument(
@@ -633,9 +642,9 @@ def run_multi_dataset_task(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,
             model_type=model_type.value,
-            dataset_names=dataset_names,
-            dataset_names_display=[
-                dataset_utils.dataset_to_display_name(ds) for ds in dataset_names
+            datasets=[
+                DatasetDetail(name=ds_name, organism=ds.organism.value[0])
+                for ds_name, ds in zip(dataset_names, embeddings)
             ],
             model_args=model_args.get(model_type.value) or {},
             metrics=metrics,
@@ -676,8 +685,9 @@ def run_task(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,
             model_type=model_type.value,
-            dataset_names=[dataset_name],
-            dataset_names_display=[dataset_utils.dataset_to_display_name(dataset_name)],
+            datasets=[
+                DatasetDetail(name=dataset_name, organism=dataset.organism.value[0])
+            ],
             model_args=model_args_to_store,
             metrics=metrics,
         )
@@ -722,6 +732,7 @@ def write_results(
         "czbenchmarks_version": cli.get_version(),
         "args": "czbenchmarks " + " ".join(sys.argv[1:]),
         "task_results": [result.model_dump(mode="json") for result in task_results],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
     # Get the intended format/extension
