@@ -1,7 +1,32 @@
-_target_: model.SCVI
+# _target_: model.SCVI
 
-homo_sapiens:
-  model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/homo_sapiens/
+# homo_sapiens:
+#   model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/homo_sapiens/
 
-mus_musculus:
-  model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/mus_musculus/
+# mus_musculus:
+#   model_dir: s3://cz-benchmarks-data/models/v1/scvi_2023_12_15/mus_musculus/
+
+#####
+
+# TODO: Could this be Python-defined "model" definition?
+# TODO: How do we install/import any packages needed by integration scripts? (Look into Python support for this)
+name: UCE_30M_arch2_20250521
+display_name: 
+available_organisms: [Organism.HUMAN, Organism.MOUSE]
+# SHOULD NOT BE ANNDATA SPECIFIC
+required_data_keys:
+  single_cell:
+    required_obs_keys: ["dataset_id", "assay", "suspension_type", "donor_id"]
+    required_var_keys: []
+
+pre_process: 
+# TODO: What model options, other than input file, do we need to pass inference?
+inference:
+  container_uri:
+  shell_script: run_my_model.sh
+  python_script: run_my_model.py
+  python_expr: "mymodelpkg.model.run"
+post_process:
+
+
+

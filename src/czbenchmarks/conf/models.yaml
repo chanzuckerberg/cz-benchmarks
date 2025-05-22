@@ -5,6 +5,8 @@
 # 1. Build a local image: `make geneformer`
 # 2. Update geneformer model_image_uri: cz-benchmarks-models:geneformer
 # 3. Update example.py to run inference with GENEFORMER, then run `uv run example.py`
+
+# TODO: Could this enumerate the model config files instead?
 models:
   SCGPT:
     model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:scgpt
