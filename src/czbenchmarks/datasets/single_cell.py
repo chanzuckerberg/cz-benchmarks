@@ -20,8 +20,7 @@ class SingleCellDataset(BaseDataset):
         path: str,
         organism: Organism,
     ):
-        super().__init__(path)
-        self.set_input(DataType.ORGANISM, organism)
+        super().__init__(path, organism)
 
     def load_data(self) -> None:
         adata = ad.read_h5ad(self.path)
@@ -31,10 +30,6 @@ class SingleCellDataset(BaseDataset):
     def unload_data(self) -> None:
         self._inputs.pop(DataType.ANNDATA, None)
         self._inputs.pop(DataType.METADATA, None)
-
-    @property
-    def organism(self) -> Organism:
-        return self.get_input(DataType.ORGANISM)
 
     @property
     def adata(self) -> ad.AnnData:

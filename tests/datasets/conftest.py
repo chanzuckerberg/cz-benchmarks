@@ -18,7 +18,7 @@ def dummy_anndata():
 @pytest.fixture
 def dummy_dataset(dummy_anndata):
     """Creates a dummy dataset with AnnData and metadata inputs."""
-    ds = DummyDataset("dummy_path")
+    ds = DummyDataset("dummy_path", Organism.HUMAN)
     ds.set_input(DataType.ANNDATA, dummy_anndata)
     ds.set_input(DataType.METADATA, pd.DataFrame({"col": [1, 2, 3, 4, 5]}))
     return ds

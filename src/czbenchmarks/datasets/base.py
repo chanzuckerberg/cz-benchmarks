@@ -3,16 +3,17 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Type
 import dill
 
-from .types import DataType, DataValue
+from .types import DataType, DataValue, Organism
 from ..models.types import ModelType, ModelOutputs
 
 
 class BaseDataset(ABC):
-    def __init__(self, path: str, **kwargs: Any):
+    def __init__(self, path: str, organism: Organism, **kwargs: Any):
         self._inputs: Dict[DataType, DataValue] = {}
         self._outputs: ModelOutputs = {}
 
         self.path = path
+        self.set_input(DataType.ORGANISM, organism)
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
@@ -27,6 +28,10 @@ class BaseDataset(ABC):
     def outputs(self) -> ModelOutputs:
         """Get the outputs dictionary."""
         return self._outputs
+
+    @property
+    def organism(self) -> Organism:
+        return self.get_input(DataType.ORGANISM)
 
     def _validate_type(
         self, value: Any, expected_type: Type, type_name: str = ""

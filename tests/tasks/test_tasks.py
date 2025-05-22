@@ -18,7 +18,7 @@ from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
 def test_missing_required_inputs_outputs():
     """Test that validation fails when dataset is missing required inputs/outputs."""
     task = DummyTask()
-    dataset = DummyDataset("dummy_path")
+    dataset = DummyDataset("dummy_path", Organism.HUMAN)
 
     # Don't set any inputs/outputs
     with pytest.raises(
@@ -52,7 +52,7 @@ def test_requires_multiple_datasets_validation():
     """Test that ValueError is raised when requires_multiple_datasets is True
     but input is not a list."""
     task = DummyTask(requires_multiple=True)
-    dataset = DummyDataset("dummy_path")
+    dataset = DummyDataset("dummy_path", Organism.HUMAN)
 
     # Set required inputs/outputs
     adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
@@ -80,7 +80,10 @@ def test_list_input_single_task():
     """Test that List[Dict[ModelType, List[MetricResult]]] is returned for list
     input on a task requiring a single dataset."""
     task = DummyTask(requires_multiple=False)
-    datasets = [DummyDataset("dummy1"), DummyDataset("dummy2")]
+    datasets = [
+        DummyDataset("dummy1", Organism.HUMAN),
+        DummyDataset("dummy2", Organism.HUMAN),
+    ]
 
     # Set required inputs/outputs for both datasets
     for dataset in datasets:
@@ -102,7 +105,10 @@ def test_list_input_multiple_task():
     """Test that Dict[ModelType, List[MetricResult]] is returned for list input
     on a task requiring multiple datasets."""
     task = DummyTask(requires_multiple=True)
-    datasets = [DummyDataset("dummy1"), DummyDataset("dummy2")]
+    datasets = [
+        DummyDataset("dummy1", Organism.HUMAN),
+        DummyDataset("dummy2", Organism.HUMAN),
+    ]
 
     # Set required inputs/outputs for both datasets
     for dataset in datasets:
@@ -120,7 +126,7 @@ def test_list_input_multiple_task():
 def test_single_dataset_result():
     """Test that Dict[ModelType, List[MetricResult]] is returned for single dataset."""
     task = DummyTask()
-    dataset = DummyDataset("dummy")
+    dataset = DummyDataset("dummy", Organism.HUMAN)
 
     # Set required inputs/outputs
     adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)

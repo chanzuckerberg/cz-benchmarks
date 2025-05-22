@@ -9,6 +9,7 @@ from czbenchmarks import runner
 from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.cli.cli_run import (
     CacheOptions,
+    DatasetDetail,
     get_model_arg_permutations,
     get_processed_dataset_cache_path,
     main,
@@ -22,7 +23,10 @@ from czbenchmarks.cli.cli_run import (
     TaskArgs,
     TaskResult,
 )
-from czbenchmarks.datasets import utils as dataset_utils
+from czbenchmarks.datasets import (
+    utils as dataset_utils,
+    types as dataset_types,
+)
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.models.types import ModelType
 from czbenchmarks.tasks.clustering import ClusteringTask
@@ -194,7 +198,9 @@ def test_main(mocker: MockFixture) -> None:
 
 def test_run_with_inference(mocker: MockFixture) -> None:
     # Setup mocks
+    dataset_names = ["tsv2_blood", "tsv2_heart"]
     mock_processed_data = MagicMock()
+    mock_processed_data.organism = dataset_types.Organism.HUMAN
     mock_load_dataset = mocker.patch.object(
         dataset_utils, "load_dataset", return_value=mock_processed_data
     )
@@ -220,7 +226,6 @@ def test_run_with_inference(mocker: MockFixture) -> None:
     mock_download = mocker.patch(
         "czbenchmarks.cli.cli_run.utils.download_file_from_remote"
     )
-    dataset_names = ["tsv2_blood", "tsv2_heart"]
     model_args = [
         ModelArgs(name="SCGPT", args={}),
         ModelArgs(
@@ -419,6 +424,7 @@ def test_run_without_inference(mocker: MockFixture) -> None:
 def test_run_task() -> None:
     # Setup mocks
     mock_dataset = MagicMock()
+    mock_dataset.organism = dataset_types.Organism.HUMAN
     model_args: dict[str, ModelArgsDict] = {
         ModelType.SCVI.value: {"model_variant": "homo_sapiens"}
     }
@@ -447,8 +453,7 @@ def test_run_task() -> None:
             task_name="clustering",
             task_name_display="clustering",
             model_type="SCVI",
-            dataset_names=["tsv2_heart"],
-            dataset_names_display=["Tabula Sapiens 2.0 - Heart"],
+            datasets=[DatasetDetail(name="tsv2_heart", organism="homo_sapiens")],
             model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
@@ -461,7 +466,6 @@ def test_run_task() -> None:
 
 def test_run_multi_dataset_task() -> None:
     # Setup mocks
-    mock_embedded_datasets = MagicMock()
     model_args: dict[str, ModelArgsDict] = {
         ModelType.UCE.value: {"model_variant": "4l"}
     }
@@ -471,6 +475,9 @@ def test_run_multi_dataset_task() -> None:
     mock_task_args.task = MagicMock()
     mock_task_args.task.display_name = "cross-species integration"
     mock_dataset_names = ["human_spermatogenesis", "mouse_spermatogenesis"]
+    mock_embedded_datasets = [MagicMock() for _ in range(2)]
+    mock_embedded_datasets[0].organism = dataset_types.Organism.HUMAN
+    mock_embedded_datasets[1].organism = dataset_types.Organism.MOUSE
     mock_task_run_result = {
         ModelType.UCE: [
             MetricResult(metric_type=MetricType.ENTROPY_PER_CELL, value=0.1, params={}),
@@ -491,10 +498,9 @@ def test_run_multi_dataset_task() -> None:
             task_name="cross_species",
             task_name_display="cross-species integration",
             model_type="UCE",
-            dataset_names=list(sorted(mock_dataset_names)),
-            dataset_names_display=[
-                "Spermatogenesis - Homo sapiens",
-                "Spermatogenesis - Mus musculus",
+            datasets=[
+                DatasetDetail(name="human_spermatogenesis", organism="homo_sapiens"),
+                DatasetDetail(name="mouse_spermatogenesis", organism="mus_musculus"),
             ],
             model_args={"model_variant": "4l"},
             metrics=[
