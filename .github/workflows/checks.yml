@@ -45,7 +45,7 @@ jobs:
           # Extract the total coverage percentage
           COVERAGE=$(grep -oP 'TOTAL.*\d+%' coverage.txt | grep -oP '\d+%' | grep -oP '\d+')
           if [ "$COVERAGE" -lt 74 ]; then
-            echo "Test coverage ($COVERAGE%) is below the required threshold of 90%"
+            echo "Test coverage ($COVERAGE%) is below the required threshold of 74%"
             exit 1
           fi
 
