@@ -110,7 +110,7 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
             expected_json = json.load(expected_results)
 
             # Ignore fields that are not relevant for comparison
-            for ignored_field in ["czbenchmarks_version", "args"]:
+            for ignored_field in ["czbenchmarks_version", "args", "timestamp"]:
                 actual_json.pop(ignored_field, None)
                 expected_json.pop(ignored_field, None)
 
