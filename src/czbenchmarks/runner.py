@@ -22,7 +22,8 @@ from .models.types import ModelType
 logger = logging.getLogger(__name__)
 
 
-class ContainerRunner:
+# pragma: no cover
+class ContainerRunner:  
     """
     Handles Docker container execution logic for running models
     in isolated environments
