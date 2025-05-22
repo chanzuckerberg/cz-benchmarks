@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Literal
 
 import numpy as np
 import pandas as pd
@@ -27,10 +27,11 @@ TASK_NAMES = frozenset(
 def cluster_embedding(
     adata: AnnData,
     obsm_key: str = OBSM_KEY,
-    random_seed: int = RANDOM_SEED,
     n_iterations: int = 2,
-    flavor: str = FLAVOR,
+    flavor: Literal["leidenalg", "igraph"] = FLAVOR,
     key_added: str = KEY_ADDED,
+    *,
+    random_seed: int = RANDOM_SEED,
 ) -> List[int]:
     """Cluster cells in embedding space using the Leiden algorithm.
 
@@ -40,10 +41,10 @@ def cluster_embedding(
     Args:
         adata: AnnData object containing the embedding
         obsm_key: Key in adata.obsm containing the embedding coordinates
-        random_seed: Random seed for reproducibility
         n_iterations: Number of iterations for the Leiden algorithm
         flavor: Flavor of the Leiden algorithm
         key_added: Key in adata.obs to store the cluster assignments
+        random_seed (int): Random seed for reproducibility
     Returns:
         List of cluster assignments as integers
     """
@@ -103,7 +104,10 @@ def filter_minimum_class(
 
 
 def run_standard_scrna_workflow(
-    adata: AnnData, n_top_genes: int = 3000, n_pcs: int = 50, random_state: int = 42
+    adata: AnnData,
+    n_top_genes: int = 3000,
+    n_pcs: int = 50,
+    random_state: int = RANDOM_SEED,
 ) -> AnnData:
     """Run a standard preprocessing workflow for single-cell RNA-seq data.
 

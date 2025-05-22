@@ -4,6 +4,7 @@ import anndata as ad
 import scipy.sparse as sp
 
 from czbenchmarks.datasets.types import Organism
+from czbenchmarks.tasks.constants import RANDOM_SEED
 from typing import List, Set
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (
@@ -81,7 +82,10 @@ class DummyDataset(BaseDataset):
 class DummyTask(BaseTask):
     """A dummy task implementation for testing."""
 
-    def __init__(self, requires_multiple: bool = False):
+    def __init__(
+        self, requires_multiple: bool = False, *, random_seed: int = RANDOM_SEED
+    ):
+        super().__init__(random_seed=random_seed)
         self._requires_multiple = requires_multiple
 
     @property

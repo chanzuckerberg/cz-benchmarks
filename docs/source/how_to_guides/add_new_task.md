@@ -18,7 +18,8 @@ This guide explains how to create and integrate your own evaluation task into cz
     from czbenchmarks.models.types import ModelType
 
     class MyTask(BaseTask):
-        def __init__(self, my_param: int = 10):
+        def __init__(self, my_param: int = 10, *, random_seed: int = 123):
+            super().__init__(random_seed=random_seed)
             self.my_param = my_param
 
         @property
@@ -48,6 +49,7 @@ This guide explains how to create and integrate your own evaluation task into cz
 
 - Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
 - Use `display_name` to provide a human-readable name for use when displaying your task
+- The `random_seed` should be used for all sources of randomness so results are reproducible
 - Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.
     - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
     - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).

@@ -162,3 +162,23 @@ class MetricResult(BaseModel):
     metric_type: MetricType
     value: float
     params: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+    @property
+    def aggregation_key(self) -> str:
+        """return a key based on the metric type and params in order to aggregate the same metrics together"""
+        if self.params is None:
+            params = ""
+        else:
+            params = "_".join(
+                (f"{key}-{value}" for key, value in sorted(self.params.items()))
+            )
+        return f"{self.metric_type}({params})"
+
+
+class AggregatedMetricResult(BaseModel):
+    metric_type: MetricType
+    params: Dict[str, Any] | None = Field(default_factory=dict)
+    n_values: int
+    value: float
+    value_std_dev: float | None
+    values_raw: list[float]
