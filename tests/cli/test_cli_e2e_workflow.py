@@ -86,9 +86,8 @@ def test_cli_e2e_workflow(mock_runner):
     assert task_result.task_name_display == "embedding"
     assert task_result.model.type == model_type
     assert [ds.name for ds in task_result.datasets] == [dataset_name]
-    assert [ds.name_display for ds in task_result.datasets] == [
-        "Spermatogenesis - Gallus gallus"
-    ]
+    assert [ds.name_display for ds in task_result.datasets] == ["Spermatogenesis"]
+    assert [ds.subset_display for ds in task_result.datasets] == ["Gallus gallus"]
     assert [ds.organism for ds in task_result.datasets] == ["gallus_gallus"]
     assert task_result.model.args == {"model_variant": "human"}
     assert task_result.model.name_display == "scGPT"

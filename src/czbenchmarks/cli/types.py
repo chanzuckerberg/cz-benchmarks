@@ -36,10 +36,19 @@ class DatasetDetail(BaseModel):
     name: str
     organism: str
 
+    @cached_property
+    def _display_info(self) -> tuple[str, str]:
+        return dataset_utils.dataset_to_display(self.name)
+
     @computed_field
     @property
     def name_display(self) -> str:
-        return dataset_utils.dataset_to_display_name(self.name)
+        return self._display_info[0]
+    
+    @computed_field
+    @property
+    def subset_display(self) -> str:
+        return self._display_info[1]
 
 
 class ModelDetail(BaseModel):
