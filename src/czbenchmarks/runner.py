@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 # pragma: no cover
-class ContainerRunner:  
+class ContainerRunner:
     """
     Handles Docker container execution logic for running models
     in isolated environments
