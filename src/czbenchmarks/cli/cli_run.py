@@ -633,7 +633,9 @@ def run_multi_dataset_task(
     dataset_names.sort()
 
     for model_type, metrics in result.items():
-        model_detail = ModelDetail(type=model_type, args=model_args.get(model_type.value) or {})
+        model_detail = ModelDetail(
+            type=model_type, args=model_args.get(model_type.value) or {}
+        )
         task_result = TaskResult(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,

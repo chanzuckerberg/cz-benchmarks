@@ -28,7 +28,9 @@ def test_dataset_to_display():
     assert ("My dataset", "") == utils.dataset_to_display("my_dataset")
     assert ("Example dataset", "") == utils.dataset_to_display("EXAMPLE_DATASET")
     assert ("Short", "") == utils.dataset_to_display("short")
-    assert ("This is a really long one", "") == utils.dataset_to_display("This_is_A_ReAlLy_loNG_ONE")
+    assert ("This is a really long one", "") == utils.dataset_to_display(
+        "This_is_A_ReAlLy_loNG_ONE"
+    )
     assert ("", "") == utils.dataset_to_display("")
 
     # test that special case lookup works too

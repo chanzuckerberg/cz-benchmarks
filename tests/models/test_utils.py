@@ -34,7 +34,10 @@ def test_model_to_display_name():
     assert ("Tester", "model_variant='A1'") == utils.model_to_display(
         dummy_model_type, {"model_variant": "A1"}
     )
-    assert ("Tester", "model_variant='A1', dataset='good_cells'") == utils.model_to_display(
+    assert (
+        "Tester",
+        "model_variant='A1', dataset='good_cells'",
+    ) == utils.model_to_display(
         dummy_model_type, {"model_variant": "A1", "dataset": "good_cells"}
     )
 

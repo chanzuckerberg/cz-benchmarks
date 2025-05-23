@@ -21,7 +21,9 @@ def test_aggregate_task_results_same_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}),
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}
+            ),
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[:2],
             runtime_metrics={},
@@ -29,7 +31,9 @@ def test_aggregate_task_results_same_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}),
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}
+            ),
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[2:],
             runtime_metrics={},
@@ -62,7 +66,9 @@ def test_aggregate_task_results_different_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}),
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}
+            ),
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[:2],
             runtime_metrics={},
@@ -70,7 +76,9 @@ def test_aggregate_task_results_different_key(mock_agg_metrics):
         TaskResult(
             task_name="extra",  # different task
             task_name_display="Extra",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}),
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}
+            ),
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[2:4],
             runtime_metrics={},
@@ -78,7 +86,9 @@ def test_aggregate_task_results_different_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCGPT, args={"model_variant": "human"}),  # different model
+            model=ModelDetail(
+                type=ModelType.SCGPT, args={"model_variant": "human"}
+            ),  # different model
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[4:6],
             runtime_metrics={},
@@ -86,7 +96,9 @@ def test_aggregate_task_results_different_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "mus_musculus"}),  # different model args
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "mus_musculus"}
+            ),  # different model args
             datasets=[DatasetDetail(name="dummy", organism="homo_sapiens")],
             metrics=dummy_metrics[6:8],
             runtime_metrics={},
@@ -94,7 +106,9 @@ def test_aggregate_task_results_different_key(mock_agg_metrics):
         TaskResult(
             task_name="dummy",
             task_name_display="Dummy",
-            model=ModelDetail(type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}),
+            model=ModelDetail(
+                type=ModelType.SCVI, args={"model_variant": "homo_sapiens"}
+            ),
             datasets=[
                 DatasetDetail(name="extended", organism="homo_sapiens")
             ],  # different dataset name

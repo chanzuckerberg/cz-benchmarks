@@ -45,7 +45,10 @@ _MODEL_VARIANT_FINETUNE_TO_DISPLAY = {  # maps a tuple of (name, variant, fine_t
         "scgenept_ncbi_gpt",
         "adamson",
     ): ("scGenePT_{NCBI}", "fine-tuned, Adamson"),
-    ("SCGENEPT", "scgenept_ncbi_gpt", "norman"): ("scGenePT_{NCBI}", "fine-tuned, Norman"),
+    ("SCGENEPT", "scgenept_ncbi_gpt", "norman"): (
+        "scGenePT_{NCBI}",
+        "fine-tuned, Norman",
+    ),
     (
         "SCGENEPT",
         "scgenept_ncbi+uniprot_gpt",
@@ -125,5 +128,5 @@ def model_to_display(
             )
         return (
             model_type.name.title(),
-            ', '.join(f"{k}={v!r}" for k, v in model_args.items())
+            ", ".join(f"{k}={v!r}" for k, v in model_args.items()),
         )

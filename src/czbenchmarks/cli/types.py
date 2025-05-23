@@ -44,7 +44,7 @@ class DatasetDetail(BaseModel):
     @property
     def name_display(self) -> str:
         return self._display_info[0]
-    
+
     @computed_field
     @property
     def subset_display(self) -> str:
@@ -58,7 +58,7 @@ class ModelDetail(BaseModel):
     @cached_property
     def _display_info(self) -> tuple[str, str]:
         return model_utils.model_to_display(self.type, self.args)
-    
+
     @computed_field
     @property
     def name_display(self) -> str:

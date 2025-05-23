@@ -150,7 +150,4 @@ def dataset_to_display(dataset_name: str) -> tuple[str, str]:
     except KeyError:
         # e.g. "my_awesome_dataset" -> "My awesome dataset"
         parts = dataset_name.split("_")
-        return (
-            " ".join((parts[0].title(), *(part.lower() for part in parts[1:]))),
-            ""
-        )
+        return (" ".join((parts[0].title(), *(part.lower() for part in parts[1:]))), "")
