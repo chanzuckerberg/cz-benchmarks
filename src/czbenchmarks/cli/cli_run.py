@@ -21,6 +21,7 @@ from czbenchmarks.cli.types import (
     DatasetDetail,
     ModelArgs,
     ModelArgsDict,
+    ModelDetail,
     TaskArgs,
     TaskResult,
     TaskType,
@@ -632,15 +633,15 @@ def run_multi_dataset_task(
     dataset_names.sort()
 
     for model_type, metrics in result.items():
+        model_detail = ModelDetail(type=model_type, args=model_args.get(model_type.value) or {})
         task_result = TaskResult(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,
-            model_type=model_type.value,
+            model=model_detail,
             datasets=[
                 DatasetDetail(name=ds_name, organism=ds.organism.value[0])
                 for ds_name, ds in zip(dataset_names, embeddings)
             ],
-            model_args=model_args.get(model_type.value) or {},
             metrics=metrics,
         )
         task_results.append(task_result)
@@ -675,14 +676,17 @@ def run_task(
         else:
             model_args_to_store = model_args.get(model_type.value) or {}
 
+        model_detail = ModelDetail(
+            type=model_type,
+            args=model_args_to_store,
+        )
         task_result = TaskResult(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,
-            model_type=model_type.value,
+            model=model_detail,
             datasets=[
                 DatasetDetail(name=dataset_name, organism=dataset.organism.value[0])
             ],
-            model_args=model_args_to_store,
             metrics=metrics,
         )
         task_results.append(task_result)

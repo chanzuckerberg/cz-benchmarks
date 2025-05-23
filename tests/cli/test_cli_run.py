@@ -8,18 +8,21 @@ from pytest_mock import MockFixture
 from czbenchmarks import runner
 from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.cli.cli_run import (
-    CacheOptions,
-    DatasetDetail,
     get_model_arg_permutations,
     get_processed_dataset_cache_path,
     main,
-    ModelArgs,
-    ModelArgsDict,
     run_task,
     run_multi_dataset_task,
     run_with_inference,
     run_without_inference,
     set_processed_datasets_cache,
+)
+from czbenchmarks.cli.types import (
+    CacheOptions,
+    DatasetDetail,
+    ModelArgs,
+    ModelArgsDict,
+    ModelDetail,
     TaskArgs,
     TaskResult,
 )
@@ -476,9 +479,8 @@ def test_run_task() -> None:
         TaskResult(
             task_name="clustering",
             task_name_display="clustering",
-            model_type="SCVI",
+            model=ModelDetail(type="SCVI", args={"model_variant": "homo_sapiens"}),
             datasets=[DatasetDetail(name="tsv2_heart", organism="homo_sapiens")],
-            model_args={"model_variant": "homo_sapiens"},
             metrics=[
                 MetricResult(
                     metric_type=MetricType.ADJUSTED_RAND_INDEX,
@@ -523,12 +525,11 @@ def test_run_multi_dataset_task() -> None:
         TaskResult(
             task_name="cross_species",
             task_name_display="cross-species integration",
-            model_type="UCE",
+            model=ModelDetail(type="UCE", args={"model_variant": "4l"}),
             datasets=[
                 DatasetDetail(name="human_spermatogenesis", organism="homo_sapiens"),
                 DatasetDetail(name="mouse_spermatogenesis", organism="mus_musculus"),
             ],
-            model_args={"model_variant": "4l"},
             metrics=[
                 MetricResult(
                     metric_type=MetricType.ENTROPY_PER_CELL, value=0.1, params={}
