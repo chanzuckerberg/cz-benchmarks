@@ -49,6 +49,18 @@ VALID_OUTPUT_FORMATS = ["json", "yaml"]
 DEFAULT_OUTPUT_FORMAT = "json"
 
 
+def _parse_str_to_bool(val):
+    """allows us to have arguments that can be explicitly turned on or off
+    instead of being limited to store_true and store_false
+    """
+    if val.lower() in ("true", "1", "yes", "on"):
+        return True
+    elif val.lower() in ("false", "0", "no", "off"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f"Invalid boolean value: {val}")
+
+
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     """
     Add run command arguments to the parser.
@@ -316,12 +328,15 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "--batch-aggregate-metrics",
-        action="store_true",
-        default=False,
+        nargs="?",
+        default=None,  # lets us have a different default depending on batch random seed
+        const=True,  # if specified alone without a value, acts like store_true
+        type=_parse_str_to_bool,  # lets user explicitly specify true or false to override default
         help=(
             "Aggregate the metrics from tasks that use the same model and dataset if they are run multiple times in a batch job. "
-            "For example, if --batch-json is used to specify multiple random seeds for a task, the metrics reported will provide "
-            "an estimate of the mean performance at that task and the uncertainty."
+            "For example, if --batch-random-seeds is used to specify multiple random seeds for a task, the metrics reported will "
+            "provide an estimate of the mean performance at that task and the uncertainty. "
+            "Defaults to true if multiple --batch-random-seeds are specified, but can be disabled with --batch-aggregate-metrics=False"
         ),
     )
 
@@ -338,10 +353,15 @@ def main(parsed_args: argparse.Namespace) -> None:
     batch_args = parse_batch_json(
         parsed_args.batch_json, parsed_args.batch_random_seeds
     )
+    if parsed_args.batch_aggregate_metrics is None:
+        # if they specified --batch-aggregate-metrics explicitly, use that
+        # but if they didn't, default to true if multiple seeds were specified, otherwise false
+        parsed_args.batch_aggregate_metrics = len(parsed_args.batch_random_seeds) > 1
+
     cache_options = CacheOptions.from_args(parsed_args)
 
     for batch_idx, batch_dict in enumerate(batch_args):
-        log.info(f"Starting batch {batch_idx + 1}/{len(parsed_args.batch_json)}")
+        log.info(f"Starting batch {batch_idx + 1}/{len(batch_args)}")
 
         args = deepcopy(parsed_args)
         for batch_key, batch_val in batch_dict.items():
@@ -975,48 +995,56 @@ def parse_batch_json(
     Parse the `--batch-json` and `--batch-random-seeds` argument.
     Returns a list of dicts where each entry is a batch of CLI arguments.
     """
-    batches: list[dict[str, Any]] = []
-
-    if batch_random_seeds and batch_json_list:
-        raise ValueError(
-            "Can only specify one of `--batch-json` and `--batch-random-seeds`"
-        )
-
-    if batch_random_seeds:
-        return [{"random_seed": random_seed} for random_seed in batch_random_seeds]
+    json_batches: list[dict[str, Any]] = []
 
     if not batch_json_list:
-        return [{}]
+        json_batches = [{}]
+    else:
+        for batch_json in batch_json_list:
+            if not batch_json.strip():
+                json_batches.append({})
+                continue
 
-    for batch_json in batch_json_list:
-        if not batch_json.strip():
-            batches.append({})
-            continue
+            # Load JSON from disk if we were given a valid file path
+            if os.path.isfile(batch_json):
+                try:
+                    with open(batch_json, "r") as f:
+                        json_batches.append(json.load(f))
+                except Exception as e:
+                    raise ValueError(
+                        f"Failed to load batch JSON from file {batch_json}: {e}"
+                    ) from e
+                continue
 
-        # Load JSON from disk if we were given a valid file path
-        if os.path.isfile(batch_json):
+            # Otherwise treat the input as JSON
             try:
-                with open(batch_json, "r") as f:
-                    batches.append(json.load(f))
-            except Exception as e:
-                raise ValueError(
-                    f"Failed to load batch JSON from file {batch_json}: {e}"
-                ) from e
-            continue
+                result = json.loads(batch_json)
+                if isinstance(result, list):
+                    json_batches.extend(result)
+                elif isinstance(result, dict):
+                    json_batches.append(result)
+                else:
+                    raise ValueError(
+                        "Invalid batch JSON: input must be a dictionary of CLI arguments"
+                    )
+                continue
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid batch JSON {batch_json}: {e}") from e
 
-        # Otherwise treat the input as JSON
-        try:
-            result = json.loads(batch_json)
-            if isinstance(result, list):
-                batches.extend(result)
-            elif isinstance(result, dict):
-                batches.append(result)
-            else:
-                raise ValueError(
-                    "Invalid batch JSON: input must be a dictionary of CLI arguments"
-                )
-            continue
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid batch JSON {batch_json}: {e}") from e
+    if batch_random_seeds:
+        seed_batches = [
+            {"random_seed": random_seed} for random_seed in batch_random_seeds
+        ]
+    else:
+        seed_batches = [{}]
 
-    return batches
+    merged_batches: list[dict[str, Any]] = []
+    for json_batch in json_batches:
+        for seed_batch in seed_batches:
+            merged_batches.append({**json_batch, **seed_batch})
+
+    log.info(
+        f"Generated {len(merged_batches)} batches from {len(json_batches)} set(s) of arguments and {len(seed_batches)} random seeds"
+    )
+
+    return merged_batches

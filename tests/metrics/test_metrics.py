@@ -123,18 +123,21 @@ def test_metric_default_params(dummy_metric_registry, dummy_metric_function):
 
 def test_aggregate_results():
     results = [
+        # aggregrate group 1
         MetricResult(
             metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 1}, value=0.30
         ),
         MetricResult(
             metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 1}, value=0.50
         ),
+        # aggregrate group 2
         MetricResult(
             metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 2}, value=0.60
         ),
         MetricResult(
             metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 2}, value=0.80
         ),
+        # aggregrate group 3
         MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.10),
         MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, params={}, value=0.90),
     ]
@@ -172,7 +175,7 @@ def test_aggregate_results():
     assert ss_foo2_result.values_raw == [0.60, 0.80]
     assert ss_foo2_result.n_values == 2
 
-    # both should be aggregated togeter since params is empty
+    # both should be aggregated together since params is empty
     try:
         ari_result = next(
             r for r in agg_results if r.metric_type == MetricType.ADJUSTED_RAND_INDEX
