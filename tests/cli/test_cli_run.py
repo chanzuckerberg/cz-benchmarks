@@ -163,8 +163,8 @@ def test_main(mocker: MockFixture) -> None:
                 '{"datasets": ["adamson_perturb"], "scgenept_dataset_name": ["adamson"], "scgenept_gene_pert": ["AEBPB+ctrl", "AEBPB+dox"]}',
                 '{"datasets": ["norman_perturb"], "scgenept_dataset_name": ["norman"], "scgenept_gene_pert": ["NTGC+ctrl", "NTGC+dox"]}',
             ],
-            batch_random_seeds=[],
-            batch_aggregate_metrics=True,
+            batch_random_seeds=[1, 2],
+            batch_aggregate_metrics=None,
             remote_cache_url="s3://cz-benchmarks-results-dev/test/",
             remote_cache_download_embeddings=True,
             remote_cache_upload_embeddings=True,
@@ -179,34 +179,40 @@ def test_main(mocker: MockFixture) -> None:
     )
     mock_run.assert_has_calls(
         [
-            call(
-                dataset_names=["adamson_perturb"],
-                model_args=[
-                    ModelArgs(
-                        name="SCGENEPT",
-                        args={
-                            "dataset_name": ["adamson"],
-                            "gene_pert": ["AEBPB+ctrl", "AEBPB+dox"],
-                        },
-                    )
-                ],
-                task_args=[mock_task_args],
-                cache_options=expected_cache_options,
-            ),
-            call(
-                dataset_names=["norman_perturb"],
-                model_args=[
-                    ModelArgs(
-                        name="SCGENEPT",
-                        args={
-                            "dataset_name": ["norman"],
-                            "gene_pert": ["NTGC+ctrl", "NTGC+dox"],
-                        },
-                    )
-                ],
-                task_args=[mock_task_args],
-                cache_options=expected_cache_options,
-            ),
+            *[
+                call(
+                    dataset_names=["adamson_perturb"],
+                    model_args=[
+                        ModelArgs(
+                            name="SCGENEPT",
+                            args={
+                                "dataset_name": ["adamson"],
+                                "gene_pert": ["AEBPB+ctrl", "AEBPB+dox"],
+                            },
+                        )
+                    ],
+                    task_args=[mock_task_args],
+                    cache_options=expected_cache_options,
+                )
+                for _ in range(2)  # once for each random seed
+            ],
+            *[
+                call(
+                    dataset_names=["norman_perturb"],
+                    model_args=[
+                        ModelArgs(
+                            name="SCGENEPT",
+                            args={
+                                "dataset_name": ["norman"],
+                                "gene_pert": ["NTGC+ctrl", "NTGC+dox"],
+                            },
+                        )
+                    ],
+                    task_args=[mock_task_args],
+                    cache_options=expected_cache_options,
+                )
+                for _ in range(2)  # once for each random seed
+            ],
         ]
     )
     mock_aggregate_results.assert_called_once_with(mock_task_results)
