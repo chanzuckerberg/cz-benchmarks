@@ -12,7 +12,10 @@
 # TODO: How do we install/import any packages needed by integration scripts? (Look into Python support for this)
 name: UCE_30M_arch2_20250521
 display_name: 
-available_organisms: [Organism.HUMAN, Organism.MOUSE]
+trained_on_organisms: [Organism.HUMAN, Organism.MOUSE] # useful for understanding the model's "pedigree"
+accepted_organisms: ...  # could this also accept "any organism"? out-of-band 
+# are there other metadata items like organism needed for compatibility checks? 3' vs 5'
+
 # SHOULD NOT BE ANNDATA SPECIFIC
 required_data_keys:
   single_cell:
