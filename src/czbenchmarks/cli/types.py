@@ -1,4 +1,5 @@
 import argparse
+from functools import cached_property
 import operator
 from typing import Any, Generic, TypeVar
 
@@ -35,25 +36,47 @@ class DatasetDetail(BaseModel):
     name: str
     organism: str
 
+    @cached_property
+    def _display_info(self) -> tuple[str, str]:
+        return dataset_utils.dataset_to_display(self.name)
+
     @computed_field
     @property
     def name_display(self) -> str:
-        return dataset_utils.dataset_to_display_name(self.name)
+        return self._display_info[0]
+
+    @computed_field
+    @property
+    def subset_display(self) -> str:
+        return self._display_info[1]
+
+
+class ModelDetail(BaseModel):
+    type: ModelType
+    args: ModelArgsDict
+
+    @cached_property
+    def _display_info(self) -> tuple[str, str]:
+        return model_utils.model_to_display(self.type, self.args)
+
+    @computed_field
+    @property
+    def name_display(self) -> str:
+        return self._display_info[0]
+
+    @computed_field
+    @property
+    def variant_display(self) -> str:
+        return self._display_info[1]
 
 
 class TaskResult(BaseModel):
     task_name: str
     task_name_display: str
-    model_type: ModelType
+    model: ModelDetail
     datasets: list[DatasetDetail]
-    model_args: ModelArgsDict
     metrics: list[MetricResult | AggregatedMetricResult]
     runtime_metrics: RuntimeMetricsDict = {}  # not implementing any of these for now
-
-    @computed_field
-    @property
-    def model_name_display(self) -> str:
-        return model_utils.model_to_display_name(self.model_type, self.model_args)
 
     @property
     def aggregation_key(self) -> str:
@@ -62,9 +85,9 @@ class TaskResult(BaseModel):
             (ds.name for ds in sorted(self.datasets, key=operator.attrgetter("name")))
         )
         model_args = "_".join(
-            (f"{key}-{value!s}" for key, value in sorted(self.model_args.items()))
+            (f"{key}-{value!s}" for key, value in sorted(self.model.args.items()))
         )
-        return f"{self.task_name}|{self.model_type}({model_args})|{datasets}"
+        return f"{self.task_name}|{self.model.type}({model_args})|{datasets}"
 
 
 class CacheOptions(BaseModel):
