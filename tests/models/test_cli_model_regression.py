@@ -5,6 +5,10 @@ from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.cli.cli_run import run_with_inference, ModelArgs, TaskArgs, write_results, CacheOptions
 from czbenchmarks.tasks import ClusteringTask, PerturbationTask
 from datetime import datetime
+import numpy as np
+from czbenchmarks.models.types import ModelType
+from czbenchmarks.datasets.types import DataType
+from czbenchmarks.runner import run_inference
 
 MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
     ("SCGPT", "human", "human_spermatogenesis", "clustering"),
@@ -99,11 +103,26 @@ def test_model_regression(model_name, variant, dataset_name, task_name, toleranc
     baseline_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_baseline.json"
     results_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_{task_name}_results.json"
 
+    # Run inference and get processed dataset
+    processed_dataset = run_inference(model_name, dataset)
+
     if not baseline_file.exists():
         write_results(task_results, output_format="json", output_file=str(baseline_file), cache_options=cache_options)
         pytest.fail(f"Baseline file {baseline_file} did not exist and was created. Please review and commit this file.")
     write_results(task_results, output_format="json", output_file=str(results_file), cache_options=cache_options)
 
+    # Save embeddings
+    embeddings_file = baseline_dir / f"{model_name}{variant_suffix}_{dataset_name}_embeddings.npy"
+    if not embeddings_file.exists():
+        try:
+            model_type = ModelType[model_name]
+            embeddings = processed_dataset.get_output(model_type, DataType.EMBEDDING)
+            np.save(embeddings_file, embeddings)
+        except Exception as e:
+            print(f"Could not extract/save embeddings for {model_name}: {e}")
+
+    if not results_file.exists():
+        pytest.fail(f"Results file {results_file} did not exist.")
     if baseline_file.exists():
         with open(results_file) as actual_results, open(baseline_file) as expected_results:
             actual_json = json.load(actual_results)
