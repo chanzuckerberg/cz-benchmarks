@@ -2,6 +2,7 @@ from typing import List, Set
 
 import numpy as np
 
+from ..constants import RANDOM_SEED
 from ...datasets import SingleCellDataset, DataType
 from ..base import BaseTask
 from ...metrics import metrics_registry
@@ -18,9 +19,11 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
     Args:
         label_key: Key to access ground truth cell type labels in metadata
+        random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str):
+    def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
+        super().__init__(random_seed=random_seed)
         self.label_key = label_key
 
     @property

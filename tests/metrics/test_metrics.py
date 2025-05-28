@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 from enum import Enum
-from czbenchmarks.metrics.types import MetricType
+from czbenchmarks.metrics.types import MetricType, MetricResult
+from czbenchmarks.metrics.utils import aggregate_results
 
 
 def test_register_metric_valid(dummy_metric_registry, dummy_metric_function):
@@ -118,3 +119,94 @@ def test_metric_default_params(dummy_metric_registry, dummy_metric_function):
 
     info = dummy_metric_registry.get_info(MetricType.SILHOUETTE_SCORE)
     assert info.default_params == default_params
+
+
+def test_aggregate_results():
+    results = [
+        # aggregrate group 1
+        MetricResult(
+            metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 1}, value=0.30
+        ),
+        MetricResult(
+            metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 1}, value=0.50
+        ),
+        # aggregrate group 2
+        MetricResult(
+            metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 2}, value=0.60
+        ),
+        MetricResult(
+            metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 2}, value=0.80
+        ),
+        # aggregrate group 3
+        MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, value=0.10),
+        MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, params={}, value=0.90),
+    ]
+    agg_results = aggregate_results(results)
+    assert len(agg_results) == 3
+
+    # there should be two silhoutte score aggregated results since there are two different params
+    try:
+        ss_foo1_result = next(
+            r
+            for r in agg_results
+            if r.metric_type == MetricType.SILHOUETTE_SCORE and r.params == {"foo": 1}
+        )
+    except StopIteration:
+        pytest.fail(
+            "No aggregated result for MetricType.SILHOUETTE_SCORE with params {'foo': 1}"
+        )
+    assert ss_foo1_result.value == pytest.approx(0.40, abs=1e-2)
+    assert ss_foo1_result.value_std_dev == pytest.approx(0.1414, abs=1e-4)
+    assert ss_foo1_result.values_raw == [0.30, 0.50]
+    assert ss_foo1_result.n_values == 2
+
+    try:
+        ss_foo2_result = next(
+            r
+            for r in agg_results
+            if r.metric_type == MetricType.SILHOUETTE_SCORE and r.params == {"foo": 2}
+        )
+    except StopIteration:
+        pytest.fail(
+            "No aggregated result for MetricType.SILHOUETTE_SCORE with params {'foo': 2}"
+        )
+    assert ss_foo2_result.value == pytest.approx(0.70, abs=1e-2)
+    assert ss_foo2_result.value_std_dev == pytest.approx(0.1414, abs=1e-4)
+    assert ss_foo2_result.values_raw == [0.60, 0.80]
+    assert ss_foo2_result.n_values == 2
+
+    # both should be aggregated together since params is empty
+    try:
+        ari_result = next(
+            r for r in agg_results if r.metric_type == MetricType.ADJUSTED_RAND_INDEX
+        )
+    except StopIteration:
+        pytest.fail("No aggregated result for MetricType.ADJUSTED_RAND_INDEX")
+    assert not ari_result.params
+    assert ari_result.value == pytest.approx(0.50, abs=1e-2)
+    assert ari_result.value_std_dev == pytest.approx(0.5657, abs=1e-4)
+    assert ari_result.values_raw == [0.10, 0.90]
+    assert ari_result.n_values == 2
+
+
+def test_aggregate_results_works_on_empty():
+    assert aggregate_results([]) == []
+
+
+def test_aggregate_results_handles_just_one():
+    results = [
+        MetricResult(
+            metric_type=MetricType.SILHOUETTE_SCORE, params={"foo": 2}, value=0.42
+        )
+    ]
+    agg_results = aggregate_results(results)
+
+    assert len(agg_results) == 1
+    agg_result = agg_results[0]
+
+    assert agg_result.metric_type == MetricType.SILHOUETTE_SCORE
+    assert agg_result.params == {"foo": 2}
+    assert agg_result.value == pytest.approx(0.42)
+    assert agg_result.value_std_dev is None
+    assert agg_result.values_raw == [0.42]
+    assert agg_result.n_values == 1
