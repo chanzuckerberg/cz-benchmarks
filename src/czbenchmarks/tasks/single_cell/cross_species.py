@@ -96,6 +96,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
                     entropy_per_cell_metric,
                     X=self.embedding,
                     labels=self.species,
+                    random_seed=self.random_seed,
                 ),
             ),
             MetricResult(

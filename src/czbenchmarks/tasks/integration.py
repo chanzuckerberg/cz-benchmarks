@@ -84,6 +84,7 @@ class BatchIntegrationTask(BaseTask):
                     entropy_per_cell_metric,
                     X=self.embedding,
                     labels=self.batch_labels,
+                    random_seed=self.random_seed,
                 ),
             ),
             MetricResult(
