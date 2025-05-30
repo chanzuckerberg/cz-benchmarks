@@ -121,7 +121,7 @@ class MetadataLabelPredictionTask(BaseTask):
             "recall": make_scorer(recall_score, average=target_type),
             "auroc": make_scorer(
                 roc_auc_score,
-                average="weighted",
+                average="macro",
                 multi_class="ovr",
                 response_method="predict_proba",
             ),
