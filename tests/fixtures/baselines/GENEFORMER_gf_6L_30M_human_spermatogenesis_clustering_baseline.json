@@ -1,0 +1,63 @@
+{
+  "czbenchmarks_version": "v0.9.2+e368d0d.dirty",
+  "args": "czbenchmarks tests/models/test_cli_model_regression.py",
+  "task_results": [
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "GENEFORMER",
+      "datasets": [
+        {
+          "name": "human_spermatogenesis",
+          "organism": "homo_sapiens",
+          "name_display": "Spermatogenesis - Homo sapiens"
+        }
+      ],
+      "model_args": {
+        "model_variant": "gf_6L_30M"
+      },
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.35844805928952184,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.566547225915615,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "GF-6L-30M-i2048 (June 2021)"
+    },
+    {
+      "task_name": "clustering",
+      "task_name_display": "clustering",
+      "model_type": "BASELINE",
+      "datasets": [
+        {
+          "name": "human_spermatogenesis",
+          "organism": "homo_sapiens",
+          "name_display": "Spermatogenesis - Homo sapiens"
+        }
+      ],
+      "model_args": {},
+      "metrics": [
+        {
+          "metric_type": "adjusted_rand_index",
+          "value": 0.470486833259807,
+          "params": {}
+        },
+        {
+          "metric_type": "normalized_mutual_info",
+          "value": 0.7252258391424932,
+          "params": {}
+        }
+      ],
+      "runtime_metrics": {},
+      "model_name_display": "Baseline"
+    }
+  ],
+  "timestamp": "2025-05-27T22:00:51.895080+00:00"
+}
