@@ -27,7 +27,10 @@ MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
 ]
 
 
-@pytest.mark.skipif(not pytest.run_model_tests, reason="Model regression tests skipped. Use --run-model-tests to run them.")
+@pytest.mark.skipif(
+    not pytest.run_model_tests,
+    reason="Model regression tests skipped. Use --run-model-tests to run them.",
+)
 @pytest.mark.parametrize(
     "model_name,variant,dataset_name,task_name",
     [
