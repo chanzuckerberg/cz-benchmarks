@@ -16,6 +16,10 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_configure(config):
+    pytest.run_model_tests = config.getoption("--run-model-tests")
+
+
 @pytest.fixture
 def tolerance_percent(request):
     return request.config.getoption("--tolerance-percent", default=0.2)
