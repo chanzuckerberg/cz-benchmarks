@@ -52,6 +52,10 @@ def test_model_regression(
 
     The test ensures that model outputs remain consistent with previously established baselines.
     If the baseline file doesn't exist, it will be created for future comparisons.
+
+    Command line arguments:
+    --run-model-tests: Required flag to run these tests (skipped by default)
+    --tolerance-percent: Optional float (default: 0.2) for metric comparison tolerance
     """
     # region Setup
     dataset = load_dataset(dataset_name)
