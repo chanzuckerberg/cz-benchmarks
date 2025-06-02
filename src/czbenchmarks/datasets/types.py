@@ -69,6 +69,7 @@ class DataTypeSpec:
     is_input: bool = True
 
 
+# TODO: should method below be adapted to read column names from yaml file?
 class DataType(Enum):
     # Input types
     METADATA = DataTypeSpec(
@@ -101,10 +102,11 @@ class DataType(Enum):
         is_input=True,
     )
 
+    # FIXME: generalize this so that it can be used for all datasets
     SPLIT_KEY = DataTypeSpec(
         name="split_key",
         dtype=str,
-        description="Train, test, val, split key for perturbation data",
+        description="Train, test, val, split key for data",
         is_input=True,
     )
 
@@ -133,13 +135,13 @@ class DataType(Enum):
     def description(self) -> str:
         return self.value.description
 
-    @property
-    def is_input(self) -> bool:
-        return self.value.is_input
+    # @property
+    # def is_input(self) -> bool:
+    #     return self.value.is_input
 
-    @property
-    def is_output(self) -> bool:
-        return not self.value.is_input
+    # @property
+    # def is_output(self) -> bool:
+    #     return not self.value.is_input
 
     def __hash__(self):
         return hash(self.name)
