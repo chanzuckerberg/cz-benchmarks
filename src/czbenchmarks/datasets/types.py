@@ -69,6 +69,7 @@ class DataTypeSpec:
     # is_input: bool = True
 
 
+# TODO: unclear if this is the right approach for homogenizing metadata
 # TODO: should method below be adapted to read column names from yaml file?
 class DataType(Enum):
     # Input types

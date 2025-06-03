@@ -108,7 +108,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
     def load_data(self) -> None:
         super().load_data()
-        # FIXME VALIDATION:: move to validaton class
+        # FIXME VALIDATION:: move to validation class
         # if self.condition_key not in self.adata.obs.columns:
         #     raise ValueError(
         #         f"Condition key {self.condition_key} not found in adata.obs"
@@ -116,6 +116,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         # if self.split_key not in self.adata.obs.columns:
         #     raise ValueError(f"Split key {self.split_key} not found in adata.obs")
 
+        # FIXME: reduce complexity of this code
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
 
@@ -132,33 +133,38 @@ class PerturbationSingleCellDataset(SingleCellDataset):
             for condition in set(test_conditions)
         }
 
-        self.set_input(
-            # This only contains the test conditions, not the training conditions
-            DataType.PERTURBATION_TRUTH,
-            truth_data,
-        )
+        # self.set_input(
+        #     # This only contains the test conditions, not the training conditions
+        #     DataType.PERTURBATION_TRUTH,
+        #     truth_data,
+        # )
+        self.perturbation_truth = truth_data
 
-        self.set_input(
-            DataType.ANNDATA,
-            self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy(),
-        )
+        # self.set_input(
+        #     DataType.ANNDATA,
+        #     self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy(),
+        # )
+        # FIXME: this overwrites adata from SingleCellDataset, find a better way to do this
+        self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
 
     def unload_data(self) -> None:
         super().unload_data()
-        self._inputs.pop(DataType.PERTURBATION_TRUTH, None)
+        # self._inputs.pop(DataType.PERTURBATION_TRUTH, None)
+        self.perturbation_truth = None
 
-    @property
-    def perturbation_truth(self) -> Dict[str, pd.DataFrame]:
-        return self.get_input(DataType.PERTURBATION_TRUTH)
+    # @property
+    # def perturbation_truth(self) -> Dict[str, pd.DataFrame]:
+    #     return self.get_input(DataType.PERTURBATION_TRUTH)
 
-    @property
-    def condition_key(self) -> str:
-        return self.get_input(DataType.CONDITION_KEY)
+    # @property
+    # def condition_key(self) -> str:
+    #     return self.get_input(DataType.CONDITION_KEY)
 
-    @property
-    def split_key(self) -> str:
-        return self.get_input(DataType.SPLIT_KEY)
+    # @property
+    # def split_key(self) -> str:
+    #     return self.get_input(DataType.SPLIT_KEY)
 
+    # FIXME VALIDATION: move to validation class
     # def _validate(self) -> None:
     #     super()._validate()
 

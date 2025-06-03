@@ -4,7 +4,7 @@ from typing import Any#, Optional, Dict, Type
 # import dill
 
 
-from .types import DataType, DataValue, Organism
+from .types import Organism # DataType, DataValue, 
 # from ..models.types import ModelType, ModelOutputs
 
 
@@ -16,7 +16,7 @@ class BaseDataset(ABC):
         self.path = path
         # self.set_input(DataType.ORGANISM, organism)
         # FIXME VALIDATION: validate that organism name(s) are in dataset validator
-        self.organism = DataType.ORGANISM[organism]
+        self.organism = organism
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
