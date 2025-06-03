@@ -43,14 +43,14 @@ def test_model_regression(
     Environment variables:
     MODEL_CASES: Optional semicolon-separated list of test cases to run.
                  Each test case should be in the format: model,variant,dataset,task
-                 
+
                  Example:
                  SCGPT,human,human_spermatogenesis,clustering;SCVI,homo_sapiens,human_spermatogenesis,clustering
-                 
+
                  If not set, runs all default test cases.
 
     Alternative: You can also run a specific test from the default cases using pytest's node selection syntax:
-                 
+
                  Example:
                  pytest "tests/models/test_cli_model_regression.py::test_model_regression[SCGPT-human-human_spermatogenesis-clustering]" --run-model-tests
     """
