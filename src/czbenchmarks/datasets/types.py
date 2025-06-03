@@ -66,7 +66,7 @@ class DataTypeSpec:
     name: str
     dtype: Type
     description: str
-    is_input: bool = True
+    # is_input: bool = True
 
 
 # TODO: should method below be adapted to read column names from yaml file?
@@ -92,35 +92,35 @@ class DataType(Enum):
         name="embedding",
         dtype=np.ndarray,
         description="Learned cell embeddings",
-        is_input=False,
+        # is_input=False,
     )
 
     CONDITION_KEY = DataTypeSpec(
         name="condition_key",
         dtype=str,
         description="Condition key for perturbation data",
-        is_input=True,
+        # is_input=True,
     )
 
-    # FIXME: generalize this so that it can be used for all datasets
+    # FIXME: should ensure this can be used with all datasets, not just perturb-seq
     SPLIT_KEY = DataTypeSpec(
         name="split_key",
         dtype=str,
         description="Train, test, val, split key for data",
-        is_input=True,
+        # is_input=True,
     )
 
     PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
         dtype=tuple[str, pd.DataFrame],
         description="Tuple of (condition_str, Predicted perturbation effects)",
-        is_input=False,
+        # is_input=False,
     )
     PERTURBATION_TRUTH = DataTypeSpec(
         name="perturbation_truth",
         dtype=Dict[str, pd.DataFrame],
         description="Truth perturbation data",
-        is_input=True,
+        # is_input=True,
     )
 
     @property

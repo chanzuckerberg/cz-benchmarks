@@ -108,7 +108,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
     def load_data(self) -> None:
         super().load_data()
-        # FIXME: move to validator
+        # FIXME VALIDATION:: move to validaton class
         # if self.condition_key not in self.adata.obs.columns:
         #     raise ValueError(
         #         f"Condition key {self.condition_key} not found in adata.obs"

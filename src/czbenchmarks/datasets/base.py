@@ -15,7 +15,7 @@ class BaseDataset(ABC):
 
         self.path = path
         # self.set_input(DataType.ORGANISM, organism)
-        # FIXME: validate organism name(s) in dataset validator
+        # FIXME VALIDATION: validate that organism name(s) are in dataset validator
         self.organism = DataType.ORGANISM[organism]
         self.kwargs = kwargs
 
