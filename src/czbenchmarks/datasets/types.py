@@ -66,11 +66,7 @@ class DataTypeSpec:
     name: str
     dtype: Type
     description: str
-    # is_input: bool = True
 
-
-# TODO: unclear if this is the right approach for homogenizing metadata
-# TODO: should method below be adapted to read column names from yaml file?
 class DataType(Enum):
     # Input types
     METADATA = DataTypeSpec(
@@ -93,35 +89,29 @@ class DataType(Enum):
         name="embedding",
         dtype=np.ndarray,
         description="Learned cell embeddings",
-        # is_input=False,
     )
 
     CONDITION_KEY = DataTypeSpec(
         name="condition_key",
         dtype=str,
         description="Condition key for perturbation data",
-        # is_input=True,
     )
 
-    # FIXME: should ensure this can be used with all datasets, not just perturb-seq
     SPLIT_KEY = DataTypeSpec(
         name="split_key",
         dtype=str,
-        description="Train, test, val, split key for data",
-        # is_input=True,
+        description="Train, test, val, split key for perturbation data",
     )
 
     PERTURBATION_PRED = DataTypeSpec(
         name="perturbation",
         dtype=tuple[str, pd.DataFrame],
         description="Tuple of (condition_str, Predicted perturbation effects)",
-        # is_input=False,
     )
     PERTURBATION_TRUTH = DataTypeSpec(
         name="perturbation_truth",
         dtype=Dict[str, pd.DataFrame],
         description="Truth perturbation data",
-        # is_input=True,
     )
 
     @property
@@ -135,14 +125,6 @@ class DataType(Enum):
     @property
     def description(self) -> str:
         return self.value.description
-
-    # @property
-    # def is_input(self) -> bool:
-    #     return self.value.is_input
-
-    # @property
-    # def is_output(self) -> bool:
-    #     return not self.value.is_input
 
     def __hash__(self):
         return hash(self.name)
