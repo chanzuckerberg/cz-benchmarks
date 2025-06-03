@@ -7,6 +7,7 @@ from czbenchmarks.datasets.single_cell import (
 )
 from czbenchmarks.datasets.types import Organism, DataType
 from tests.utils import create_dummy_anndata
+import os
 
 
 @pytest.fixture
@@ -124,3 +125,53 @@ def dummy_mouse_dataset(tmp_path):
     dataset.load_data()
     dataset.set_input(DataType.METADATA, adata.obs)
     return dataset
+
+# region model regression tests
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-model-tests",
+        action="store_true",
+        default=False,
+        help="Run model regression tests",
+    )
+
+
+def pytest_configure(config):
+    pytest.run_model_tests = config.getoption("--run-model-tests")
+
+
+@pytest.fixture
+def run_model_tests(request):
+    return request.config.getoption("--run-model-tests", default=False)
+
+
+def parse_cases_from_env():
+    cases = os.environ.get("MODEL_CASES")
+    if not cases:
+        return None
+    parsed = []
+    for case in cases.split(";"):
+        parts = case.split(",")
+        if len(parts) == 4:
+            parsed.append(tuple(parts))
+    return parsed
+
+
+def pytest_generate_tests(metafunc):
+    if {name in metafunc.fixturenames for name in ["model_name", "variant", "dataset_name", "task_name"]}:
+        cases = parse_cases_from_env() or [
+            ("SCGPT", "human", "human_spermatogenesis", "clustering"),
+            ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
+            ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
+            ("SCGENEPT", "scgpt", "adamson_perturb", "perturbation"),
+            ("UCE", "4l", "human_spermatogenesis", "clustering"),
+            ("TRANSCRIPTFORMER", "tf-sapiens", "tsv2_bladder", "clustering"),
+            ("AIDO", "aido_cell_3m", "human_spermatogenesis", "clustering"),
+        ]
+        metafunc.parametrize(
+            ("model_name", "variant", "dataset_name", "task_name"),
+            cases
+        )
+
+# endregion model regression tests

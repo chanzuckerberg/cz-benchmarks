@@ -16,27 +16,10 @@ from czbenchmarks.models.types import ModelType
 from czbenchmarks.datasets.types import DataType
 from czbenchmarks.runner import run_inference
 
-MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
-    ("SCGPT", "human", "human_spermatogenesis", "clustering"),
-    ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
-    ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
-    ("SCGENEPT", "scgpt", "adamson_perturb", "perturbation"),
-    ("UCE", "4l", "human_spermatogenesis", "clustering"),
-    ("TRANSCRIPTFORMER", "tf-sapiens", "tsv2_bladder", "clustering"),
-    ("AIDO", "aido_cell_3m", "human_spermatogenesis", "clustering"),
-]
-
 
 @pytest.mark.skipif(
     not pytest.run_model_tests,
     reason="Model regression tests skipped. Use --run-model-tests to run them.",
-)
-@pytest.mark.parametrize(
-    "model_name,variant,dataset_name,task_name",
-    [
-        (model, variant, dataset, task)
-        for model, variant, dataset, task in MODEL_VARIANT_DATASET_TASK_TEST_CASES
-    ],
 )
 def test_model_regression(
     model_name, variant, dataset_name, task_name, tolerance_percent
