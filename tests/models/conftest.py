@@ -161,7 +161,7 @@ def parse_cases_from_env():
 
 
 def pytest_generate_tests(metafunc):
-    if {
+    if metafunc.function.__name__ == "test_model_regression" and {
         name in metafunc.fixturenames
         for name in ["model_name", "variant", "dataset_name", "task_name"]
     }:
