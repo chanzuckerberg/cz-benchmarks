@@ -1,4 +1,5 @@
-# To view the image sizes, check out the Image Tags in the ECR repository: https://gallery.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public
+# TODO: Swap to custom alias for the public ECR registry when it's approved (custom alias: czi-virtual-cells)
+# To view the image sizes, check out the Image Tags in the ECR repository: https://gallery.ecr.aws/y4c8w5f9/cz-benchmarks-models-public
 
 # Local Development Example (Using GENEFORMER as an example):
 # 1. Build a local image: `make geneformer`
@@ -6,22 +7,22 @@
 # 3. Update example.py to run inference with GENEFORMER, then run `uv run example.py`
 models:
   SCGPT:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:scgpt
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:scgpt
 
   SCVI:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:scvi
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:scvi
 
   GENEFORMER:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:geneformer
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:geneformer
 
   SCGENEPT:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:scgenept
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:scgenept
 
   UCE:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:uce
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:uce
 
   AIDO:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:aido
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:aido
 
   TRANSCRIPTFORMER:
-    model_image_uri: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public:transcriptformer
+    model_image_uri: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:transcriptformer
