@@ -126,7 +126,9 @@ def dummy_mouse_dataset(tmp_path):
     dataset.set_input(DataType.METADATA, adata.obs)
     return dataset
 
+
 # region model regression tests
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -159,7 +161,10 @@ def parse_cases_from_env():
 
 
 def pytest_generate_tests(metafunc):
-    if {name in metafunc.fixturenames for name in ["model_name", "variant", "dataset_name", "task_name"]}:
+    if {
+        name in metafunc.fixturenames
+        for name in ["model_name", "variant", "dataset_name", "task_name"]
+    }:
         cases = parse_cases_from_env() or [
             ("SCGPT", "human", "human_spermatogenesis", "clustering"),
             ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
@@ -170,8 +175,8 @@ def pytest_generate_tests(metafunc):
             ("AIDO", "aido_cell_3m", "human_spermatogenesis", "clustering"),
         ]
         metafunc.parametrize(
-            ("model_name", "variant", "dataset_name", "task_name"),
-            cases
+            ("model_name", "variant", "dataset_name", "task_name"), cases
         )
+
 
 # endregion model regression tests
