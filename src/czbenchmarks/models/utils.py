@@ -38,7 +38,8 @@ _MODEL_VARIANT_FINETUNE_TO_DISPLAY = {  # maps a tuple of (name, variant, fine_t
     ("GENEFORMER", "gf_6L_30M", None): ("GENEFORMER", "GF-6L-30M-i2048 (June 2021)"),
     ("GENEFORMER", "gf_12L_30M", None): ("GENEFORMER", "GF-12L-30M-i2048 (June 2021)"),
     ("GENEFORMER", "gf_18L_316M", None): (
-        "GENEFORMER", "Geneformer-V2-316M (May 2025)"
+        "GENEFORMER",
+        "Geneformer-V2-316M (May 2025)",
     ),
     # scGenePT
     (
