@@ -1,9 +1,9 @@
 import logging
-from typing import Set, List
+from typing import List
+import numpy as np
 
 from .constants import RANDOM_SEED
-from ..datasets import BaseDataset, DataType
-from ..models.types import ModelType
+from ..datasets import BaseDataset
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -27,33 +27,11 @@ class BatchIntegrationTask(BaseTask):
         self, label_key: str, batch_key: str, *, random_seed: int = RANDOM_SEED
     ):
         super().__init__(random_seed=random_seed)
+        self.display_name = "batch integration"
         self.label_key = label_key
         self.batch_key = batch_key
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "batch integration"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run (embedding coordinates)
-        """
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
+    def _run_task(self, data: BaseDataset, **kwargs) -> dict:
         """Runs the batch integration evaluation task.
 
         Gets embedding coordinates, batch labels and cell type labels from the dataset
@@ -61,13 +39,30 @@ class BatchIntegrationTask(BaseTask):
 
         Args:
             data: Dataset containing embedding and labels
-        """
-        self.embedding = data.get_output(model_type, DataType.EMBEDDING)
-        self.batch_labels = data.get_input(DataType.METADATA)[self.batch_key]
-        self.labels = data.get_input(DataType.METADATA)[self.label_key]
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        Returns:
+            Dictionary of batch labels and cell type labels
+        """
+        # FIXME BYODATASET: decouple AnnData
+        adata = data.adata
+
+        batch_labels = adata.obs[self.batch_key].values
+        labels = adata.obs[self.label_key].values
+
+        return {
+            "batch_labels": batch_labels,
+            "labels": labels,
+        }
+
+    def _compute_metrics(
+        self, embedding: np.ndarray, batch_labels: np.ndarray, labels: np.ndarray
+    ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
+
+        Args:
+            embedding: embedding to use for the task
+            batch_labels: batch labels to use for the task
+            labels: cell type labels to use for the task
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -82,8 +77,8 @@ class BatchIntegrationTask(BaseTask):
                 metric_type=entropy_per_cell_metric,
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
-                    X=self.embedding,
-                    labels=self.batch_labels,
+                    X=embedding,
+                    labels=batch_labels,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -91,9 +86,9 @@ class BatchIntegrationTask(BaseTask):
                 metric_type=silhouette_batch_metric,
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
-                    X=self.embedding,
-                    labels=self.labels,
-                    batch=self.batch_labels,
+                    X=embedding,
+                    labels=labels,
+                    batch=batch_labels,
                 ),
             ),
         ]

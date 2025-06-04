@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 
 import numpy as np
 
@@ -24,41 +24,11 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
     def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
+        self.display_name = "cross-species integration"
+        self.requires_multiple_datasets = True
         self.label_key = label_key
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "cross-species integration"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run (embedding coordinates)
-        """
-        return {DataType.EMBEDDING}
-
-    @property
-    def requires_multiple_datasets(self) -> bool:
-        """Whether this task requires multiple datasets.
-
-        Returns:
-            True as this task compares data across species
-        """
-        return True
-
-    def _run_task(self, data: List[SingleCellDataset], model_type: ModelType):
+    def _run_task(self, data: List[SingleCellDataset], **kwargs) -> dict:
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
@@ -67,19 +37,27 @@ class CrossSpeciesIntegrationTask(BaseTask):
         Args:
             data: List of datasets containing embeddings and labels from different
                   species
-        """
-        self.embedding = np.vstack(
-            [d.get_output(model_type, DataType.EMBEDDING) for d in data]
-        )
-        self.labels = np.concatenate(
-            [d.get_input(DataType.METADATA)[self.label_key] for d in data]
-        )
-        self.species = np.concatenate(
-            [[d.organism.name] * d.adata.shape[0] for d in data]
-        )
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        Returns:
+            Dictionary of labels and species
+        """
+        labels = np.concatenate([d.adata.obs[self.label_key].values for d in data])
+        species = np.concatenate([[d.organism.name] * d.adata.shape[0] for d in data])
+
+        return {
+            "labels": labels,
+            "species": species,
+        }
+
+    def _compute_metrics(
+        self, embedding: np.ndarray, labels: np.ndarray, species: np.ndarray
+    ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
+
+        Args:
+            embedding: embedding to use for the task
+            labels: labels to use for the task
+            species: species to use for the task
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -94,8 +72,8 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=entropy_per_cell_metric,
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
-                    X=self.embedding,
-                    labels=self.species,
+                    X=embedding,
+                    labels=species,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -103,9 +81,9 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=silhouette_batch_metric,
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
-                    X=self.embedding,
-                    labels=self.labels,
-                    batch=self.species,
+                    X=embedding,
+                    labels=labels,
+                    batch=species,
                 ),
             ),
         ]
