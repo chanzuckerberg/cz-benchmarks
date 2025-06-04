@@ -1,9 +1,8 @@
 import anndata as ad
 import pandas as pd
-from typing import Dict
 import numpy as np
 from .base import BaseDataset
-from .types import Organism, DataType
+from .types import Organism
 import logging
 
 logger = logging.getLogger(__name__)
@@ -120,7 +119,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         }
 
         self.perturbation_truth = truth_data
-        # FIXME: this overwrites adata from SingleCellDataset, find a better way to do this
+        # FIXME BYODATASET: as implemented, this overwrites adata from SingleCellDataset
         self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
 
     def unload_data(self) -> None:

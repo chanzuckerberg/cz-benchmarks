@@ -18,8 +18,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..models.types import ModelType
-from ..datasets import BaseDataset, DataType
+from ..datasets import BaseDataset
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask

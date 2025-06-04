@@ -70,8 +70,9 @@ class BaseTask(ABC):
 
         """
         task_output = self._run_task(data=data, embedding=embedding)
-        # Handle case where embedding required for some metrics but not _run_task
-        task_output.setdefault('embedding', embedding)
+        # Handle cases where embedding required by metrics but not set by _run_task
+        if embedding:
+            task_output.setdefault("embedding", embedding)
         metrics = self._compute_metrics(**task_output)
         return metrics
 
@@ -100,6 +101,7 @@ class BaseTask(ABC):
         self,
         data: Union[BaseDataset, List[BaseDataset]],
         embedding: Optional[np.ndarray] = None,
+        **kwargs,
     ) -> Union[List[MetricResult], List[List[MetricResult]]]:
         """Run the task on input data and compute metrics.
 
@@ -107,6 +109,7 @@ class BaseTask(ABC):
             data: Single dataset or list of datasets to evaluate. Must contain
                 required input and output data types.
             embedding: embedding to use for the task
+            **kwargs: Additional arguments passed to the task
 
         Returns:
             For single dataset: A metric result of list of metric results for the task
@@ -126,9 +129,9 @@ class BaseTask(ABC):
             all_metrics = []
             for d in data:
                 all_metrics.append(
-                    self._run_task_for_dataset(data=d, embedding=embedding)
+                    self._run_task_for_dataset(data=d, embedding=embedding, **kwargs)
                 )
             return all_metrics
         else:
             # Process single dataset or multiple datasets as required by the task
-            return self._run_task_for_dataset(data=data, embedding=embedding)
+            return self._run_task_for_dataset(data=data, embedding=embedding, **kwargs)

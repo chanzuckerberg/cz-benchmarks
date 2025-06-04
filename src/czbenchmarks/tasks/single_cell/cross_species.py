@@ -3,11 +3,10 @@ from typing import List
 import numpy as np
 
 from ..constants import RANDOM_SEED
-from ...datasets import SingleCellDataset, DataType
+from ...datasets import SingleCellDataset
 from ..base import BaseTask
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from ...models.types import ModelType
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
