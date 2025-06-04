@@ -67,6 +67,7 @@ class DataTypeSpec:
     dtype: Type
     description: str
 
+
 class DataType(Enum):
     # Input types
     METADATA = DataTypeSpec(

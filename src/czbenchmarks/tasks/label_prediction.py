@@ -78,7 +78,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # FIXME BYODATASET: decouple AnnData
         adata = data.adata
-        embedding = embedding.copy() # Protect from destructive operations
+        embedding = embedding.copy()  # Protect from destructive operations
 
         # Get embedding and labels
         labels = adata.obs[self.label_key].values

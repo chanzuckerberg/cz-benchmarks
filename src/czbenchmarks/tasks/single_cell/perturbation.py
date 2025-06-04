@@ -354,7 +354,7 @@ class PerturbationTask(BaseTask):
             data: dataset to run the task on
             gene_pert: perturbation gene to evaluate
             perturbation_pred: predicted perturbation effects
-            
+
         Returns:
             List of MetricResult objects
 
