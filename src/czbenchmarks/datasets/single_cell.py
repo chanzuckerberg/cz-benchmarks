@@ -22,10 +22,20 @@ class SingleCellDataset(BaseDataset):
         super().__init__(path, organism)
 
     def load_data(self) -> None:
+        """Load the dataset from the path."""
         self.adata = ad.read_h5ad(self.path)
 
     def unload_data(self) -> None:
+        """Unload the dataset from memory."""
         self.adata = None
+
+    def cache_data(self, cache_path: str) -> None:
+        """Cache the dataset to the path.
+
+        Args:
+            cache_path: The path to cache the dataset to.
+        """
+        ad.write_h5ad(cache_path, self.adata)
 
     # FIXME VALIDATION: move to validation class
 
@@ -119,7 +129,7 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         }
 
         self.perturbation_truth = truth_data
-        # FIXME BYODATASET: as implemented, this overwrites adata from SingleCellDataset
+        # FIXME BYODATASET: as originally implemented, this overwrites adata from SingleCellDataset
         self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
 
     def unload_data(self) -> None:

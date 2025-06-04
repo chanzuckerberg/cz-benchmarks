@@ -28,6 +28,16 @@ class BaseDataset(ABC):
         """
 
     @abstractmethod
+    def cache_data(self) -> None:
+        """
+        Cache existing data.
+
+        This method should be implemented by subclasses to cache existing data.
+        For example, after extracting dataset embeddings from a model,
+        the anndata object with the embeddings in the obsm slot can be cached.
+        """
+
+    @abstractmethod
     def unload_data(self) -> None:
         """
         Unload the dataset from memory.
@@ -39,7 +49,4 @@ class BaseDataset(ABC):
         This is used to clear memory-intensive data before serialization,
         since serializing large raw data artifacts can be error-prone and
         inefficient.
-
-        Any instance attributes containing loaded data should be cleared or
-        set to None.
         """
