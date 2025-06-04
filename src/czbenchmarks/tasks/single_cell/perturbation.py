@@ -80,6 +80,7 @@ class PerturbationTask(BaseTask):
         Returns:
             List of MetricResult objects containing metric values and metadata
         """
+        # FIXME BYOTASK: this is quite involved and should be broken into more simple functions
 
         mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR
         pearson_correlation_metric = MetricType.PEARSON_CORRELATION
