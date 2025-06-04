@@ -148,7 +148,7 @@ def run_model_tests(request):
     return request.config.getoption("--run-model-tests", default=False)
 
 
-def parse_cases_from_env():
+def parse_model_cases_from_env():
     cases = os.environ.get("MODEL_CASES")
     if not cases:
         return None
@@ -160,12 +160,12 @@ def parse_cases_from_env():
     return parsed
 
 
-def pytest_generate_tests(metafunc):
+def generate_model_cases(metafunc):
     if metafunc.function.__name__ == "test_model_regression" and {
         name in metafunc.fixturenames
         for name in ["model_name", "variant", "dataset_name", "task_name"]
     }:
-        cases = parse_cases_from_env() or [
+        cases = parse_model_cases_from_env() or [
             ("SCGPT", "human", "human_spermatogenesis", "clustering"),
             ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
             ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
@@ -180,3 +180,8 @@ def pytest_generate_tests(metafunc):
 
 
 # endregion model regression tests
+
+
+def pytest_generate_tests(metafunc):
+    if metafunc.function.__name__ == "test_model_regression":
+        generate_model_cases(metafunc)
