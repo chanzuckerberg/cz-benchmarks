@@ -63,7 +63,7 @@ def import_class_from_config(config_path: str):
     return class_obj
 
 
-def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
+def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):  # pragma: no cover
     """
     Syncs files from an S3 bucket prefix to a local directory.
 
@@ -115,7 +115,7 @@ def sync_s3_to_local(bucket, prefix, local_dir, unsigned=True):
                     logger.info(f"Updated: {relative_key} at {local_file_path}")
 
 
-def _get_s3_client(make_unsigned_request: bool = False) -> S3Client:
+def _get_s3_client(make_unsigned_request: bool = False) -> S3Client:  # pragma: no cover
     if make_unsigned_request:
         return boto3.client("s3", config=Config(signature_version=botocore.UNSIGNED))
     else:
@@ -124,7 +124,7 @@ def _get_s3_client(make_unsigned_request: bool = False) -> S3Client:
 
 def _get_remote_last_modified(
     s3_client: S3Client, bucket: str, key: str
-) -> datetime | None:
+) -> datetime | None:  # pragma: no cover
     """
     Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist.
 
@@ -148,7 +148,7 @@ def _get_remote_last_modified(
 
 def get_remote_last_modified(
     remote_url: str, make_unsigned_request: bool = True
-) -> datetime | None:
+) -> datetime | None:  # pragma: no cover
     """Return the LastModified timestamp of the remote S3 object, or None if it doesn't exist."""
     try:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
@@ -165,7 +165,7 @@ def upload_file_to_remote(
     remote_prefix_url: str,
     make_unsigned_request: bool = False,
     overwrite_existing: bool = False,
-) -> None:
+) -> None:  # pragma: no cover
     """Upload a local file to an s3 prefix, preserving the filename remotely"""
     local_file = Path(local_file)
     if not local_file.is_file():
@@ -200,7 +200,7 @@ def upload_blob_to_remote(
     remote_url: str,
     make_unsigned_request: bool = False,
     overwrite_existing: bool = False,
-) -> None:
+) -> None:  # pragma: no cover
     """Upload the contents of a text buffer to the exact S3 location given by remote_url."""
     try:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
@@ -234,7 +234,7 @@ def download_file_from_remote(
     local_directory: str | Path,
     local_filename: str | None = None,
     make_unsigned_request: bool = True,
-) -> None:
+) -> None:  # pragma: no cover
     """Download a remote file from s3 to a local directory, preserving the filename if not specified"""
     try:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
