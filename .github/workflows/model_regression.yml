@@ -1,0 +1,60 @@
+name: Model Regression Tests
+
+on:
+  push:
+    branches: [ "*" ]
+    paths:
+      - 'docker/**'
+  pull_request:
+    branches: [ "*" ]
+    paths:
+      - 'docker/**'
+  workflow_dispatch:
+    inputs:
+      model_cases:
+        description: 'Semicolon-separated list of model cases to test (format: model,variant,dataset,task;model,variant,dataset,task;...). Use "all" to run all default cases.'
+        required: true
+        default: 'all'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  model_regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenMP
+        run: sudo apt-get update && sudo apt-get install -y libomp-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e ".[dev]"
+
+      - name: Run model regression test
+        run: |
+          source .venv/bin/activate
+          MODEL_CASES_INPUT="${{ github.event.inputs.model_cases }}"
+          if [ "$MODEL_CASES_INPUT" = "all" ] || [ -z "$MODEL_CASES_INPUT" ]; then
+            pytest "tests/models/test_cli_model_regression.py" --run-model-tests
+          else
+            export MODEL_CASES="$MODEL_CASES_INPUT"
+            pytest "tests/models/test_cli_model_regression.py" --run-model-tests
