@@ -1,6 +1,7 @@
 import logging
 from typing import Set, List
 
+from .constants import RANDOM_SEED
 from ..datasets import BaseDataset, DataType
 from ..models.types import ModelType
 from ..metrics import metrics_registry
@@ -19,9 +20,13 @@ class BatchIntegrationTask(BaseTask):
     Args:
         label_key: Key to access ground truth cell type labels in metadata
         batch_key: Key to access batch labels in metadata
+        random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str, batch_key: str):
+    def __init__(
+        self, label_key: str, batch_key: str, *, random_seed: int = RANDOM_SEED
+    ):
+        super().__init__(random_seed=random_seed)
         self.label_key = label_key
         self.batch_key = batch_key
 
@@ -79,6 +84,7 @@ class BatchIntegrationTask(BaseTask):
                     entropy_per_cell_metric,
                     X=self.embedding,
                     labels=self.batch_labels,
+                    random_seed=self.random_seed,
                 ),
             ),
             MetricResult(

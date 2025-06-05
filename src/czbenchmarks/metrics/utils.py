@@ -1,6 +1,12 @@
-from typing import Union
+import collections
+import statistics
+from typing import Iterable, Union
+
 import numpy as np
 import pandas as pd
+
+from ..tasks.constants import RANDOM_SEED
+from .types import AggregatedMetricResult, MetricResult
 
 
 def _safelog(a: np.ndarray) -> np.ndarray:
@@ -21,6 +27,7 @@ def nearest_neighbors_hnsw(
     expansion_factor: int = 200,
     max_links: int = 48,
     n_neighbors: int = 100,
+    random_seed: int = RANDOM_SEED,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Find nearest neighbors using HNSW algorithm.
 
@@ -43,6 +50,7 @@ def nearest_neighbors_hnsw(
         max_elements=data.shape[0],
         ef_construction=expansion_factor,
         M=max_links,
+        random_seed=random_seed,
     )
     index.add_items(data, sample_indices)
     index.set_ef(expansion_factor)
@@ -51,7 +59,9 @@ def nearest_neighbors_hnsw(
 
 
 def compute_entropy_per_cell(
-    X: np.ndarray, labels: Union[pd.Categorical, pd.Series, np.ndarray]
+    X: np.ndarray,
+    labels: Union[pd.Categorical, pd.Series, np.ndarray],
+    random_seed: int = RANDOM_SEED,
 ) -> np.ndarray:
     """Compute entropy of batch labels in local neighborhoods.
 
@@ -65,7 +75,7 @@ def compute_entropy_per_cell(
     Returns:
         Array of entropy values for each cell, normalized by log of number of batches
     """
-    indices, _ = nearest_neighbors_hnsw(X, n_neighbors=200)
+    indices, _ = nearest_neighbors_hnsw(X, n_neighbors=200, random_seed=random_seed)
     labels = np.array(list(labels))
     unique_batch_labels = np.unique(labels)
     indices_batch = labels[indices]
@@ -117,3 +127,31 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     else:
         df = results_df
     return df[metric].mean()
+
+
+def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricResult]:
+    """aggregate a collection of MetricResults by their type and parameters"""
+    grouped_results = collections.defaultdict(list)
+    for result in results:
+        grouped_results[result.aggregation_key].append(result)
+
+    aggregated = []
+    for results_to_agg in grouped_results.values():
+        values_raw = [result.value for result in results_to_agg]
+        value_mean = statistics.mean(values_raw)
+        try:
+            value_std_dev = statistics.stdev(values_raw, xbar=value_mean)
+        except statistics.StatisticsError:
+            # we only had one result so we can't compute it
+            value_std_dev = None
+        aggregated.append(
+            AggregatedMetricResult(
+                metric_type=results_to_agg[0].metric_type,
+                params=results_to_agg[0].params,
+                value=value_mean,
+                value_std_dev=value_std_dev,
+                values_raw=values_raw,
+                n_values=len(values_raw),
+            )
+        )
+    return aggregated

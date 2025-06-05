@@ -78,6 +78,8 @@ To define a new evaluation task:
 7. **Optional Features**:  
     - Set `requires_multiple_datasets = True` if your task operates on a list of datasets
     - Call `self.set_baseline(dataset)` in your task to enable PCA baseline comparisons
+    - if your task is stochastic, use `self.random_seed` to seed sources of randomness for reproducibilty
+      and to make it easier for users to estimate the variance of the task metrics due to randomness
 
 
 8. **Return Metrics**:  
