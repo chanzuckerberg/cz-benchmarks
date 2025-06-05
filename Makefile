@@ -58,7 +58,15 @@ test:
 # Run all unit tests with coverage
 .PHONY: test-coverage
 test-coverage:
-	uv run pytest --cov=czbenchmarks --cov-report=term-missing tests/
+	@echo "Running tests with coverage (minimum threshold: 74%)"
+	uv run pytest --cov=czbenchmarks --cov-report=term-missing tests/ | tee coverage.txt
+	@COVERAGE=$$(grep "TOTAL" coverage.txt | grep -o "[0-9]*%" | tr -d '%'); \
+	if [ "$$COVERAGE" -lt 74 ]; then \
+		echo "Test coverage ($$COVERAGE%) is below the required threshold of 74%"; \
+		exit 1; \
+	else \
+		echo "Test coverage ($$COVERAGE%) meets the required threshold of 74%"; \
+	fi
 
 # Check formatting with ruff
 .PHONY: ruff-fmt-check
