@@ -1,9 +1,8 @@
 import logging
-from typing import Set, List
+from typing import List
 
 from .constants import RANDOM_SEED
-from ..datasets import BaseDataset, DataType
-from ..models.types import ModelType
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -24,44 +23,15 @@ class EmbeddingTask(BaseTask):
 
     def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
+        self.display_name = "embedding"
         self.label_key = label_key
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "embedding"
+    def _run_task(self, **kwargs):
+        return {}
 
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run  (embedding coordinates)
-        """
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
-        """Runs the embedding evaluation task.
-
-        Gets embedding coordinates and labels from the dataset for metric computation.
-
-        Args:
-            data: Dataset containing embedding and labels
-        """
-        # Store embedding and labels for metric computation
-        self.embedding = data.get_output(model_type, DataType.EMBEDDING)
-        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-
-    def _compute_metrics(self) -> List[MetricResult]:
+    def _compute_metrics(
+        self, embedding: Embedding, input_labels: ListLike
+    ) -> List[MetricResult]:
         """Computes embedding quality metrics.
 
         Returns:
@@ -73,8 +43,8 @@ class EmbeddingTask(BaseTask):
                 metric_type=metric_type,
                 value=metrics_registry.compute(
                     metric_type,
-                    X=self.embedding,
-                    labels=self.input_labels,
+                    X=embedding,
+                    labels=input_labels,
                 ),
             )
         ]

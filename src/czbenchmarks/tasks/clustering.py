@@ -1,10 +1,11 @@
 import logging
-from typing import Set, List
+from typing import List
+import pandas as pd
+import anndata as ad
 
-from ..datasets import BaseDataset, DataType
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from ..models.types import ModelType
 from .base import BaseTask
 from .utils import cluster_embedding
 from .constants import RANDOM_SEED, N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
@@ -33,35 +34,20 @@ class ClusteringTask(BaseTask):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+        self.display_name = "clustering"
         self.label_key = label_key
         self.n_iterations = n_iterations
         self.flavor = flavor
         self.key_added = key_added
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "clustering"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run (embedding to cluster)
-        """
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
+    def _run_task(
+        self,
+        embedding: Embedding,
+        obs: pd.DataFrame,
+        var: pd.DataFrame,
+        obsm_key: str = OBSM_KEY,
+        **kwargs,
+    ):
         """Runs clustering on the embedding data.
 
         Performs clustering and stores results for metric computation.
@@ -69,22 +55,26 @@ class ClusteringTask(BaseTask):
         Args:
             data: Dataset containing embedding and ground truth labels
         """
-        # Get anndata object and add embedding
-        adata = data.adata
-        adata.obsm["emb"] = data.get_output(model_type, DataType.EMBEDDING)
 
-        # Store labels and generate clusters
-        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(
+        # Create the AnnData object
+        adata = ad.AnnData(X=embedding, obs=obs, var=var)
+
+        predicted_labels = cluster_embedding(
             adata,
-            obsm_key=OBSM_KEY,
+            obsm_key=obsm_key,
             random_seed=self.random_seed,
             n_iterations=self.n_iterations,
             flavor=self.flavor,
             key_added=self.key_added,
         )
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        return {
+            "predicted_labels": predicted_labels,
+        }
+
+    def _compute_metrics(
+        self, input_labels: ListLike, predicted_labels: ListLike, **kwargs
+    ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
 
         Returns:
@@ -95,8 +85,8 @@ class ClusteringTask(BaseTask):
                 metric_type=metric_type,
                 value=metrics_registry.compute(
                     metric_type,
-                    labels_true=self.input_labels,
-                    labels_pred=self.predicted_labels,
+                    labels_true=input_labels,
+                    labels_pred=predicted_labels,
                 ),
                 params={},
             )

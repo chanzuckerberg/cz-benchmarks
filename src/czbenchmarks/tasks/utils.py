@@ -6,6 +6,7 @@ import pandas as pd
 import scanpy as sc
 from anndata import AnnData
 from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
+from ..datasets.types import Embedding
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +108,9 @@ def run_standard_scrna_workflow(
     adata: AnnData,
     n_top_genes: int = 3000,
     n_pcs: int = 50,
+    obsm_key: str = OBSM_KEY,
     random_state: int = RANDOM_SEED,
-) -> AnnData:
+) -> Embedding:
     """Run a standard preprocessing workflow for single-cell RNA-seq data.
 
 
@@ -137,6 +139,6 @@ def run_standard_scrna_workflow(
     adata = adata[:, adata.var["highly_variable"]].copy()
 
     # Run PCA for dimensionality reduction
-    sc.pp.pca(adata, n_comps=n_pcs, random_state=random_state)
+    sc.pp.pca(adata, n_comps=n_pcs, use_rep=obsm_key, random_state=random_state)
 
-    return adata
+    return adata.obsm[obsm_key]

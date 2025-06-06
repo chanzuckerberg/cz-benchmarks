@@ -1,6 +1,5 @@
 import logging
-from typing import Set, List
-
+from typing import List
 import pandas as pd
 import scipy as sp
 from sklearn.linear_model import LogisticRegression
@@ -18,8 +17,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..models.types import ModelType
-from ..datasets import BaseDataset, DataType
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -51,6 +49,7 @@ class MetadataLabelPredictionTask(BaseTask):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+        self.display_name = "metadata label prediction"
         self.label_key = label_key
         self.n_folds = n_folds
         self.min_class_size = min_class_size
@@ -60,52 +59,32 @@ class MetadataLabelPredictionTask(BaseTask):
             f"min_class_size={min_class_size}, "
         )
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "metadata label prediction"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run  (embedding coordinates)
-        """
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
+    def _run_task(self, embedding: Embedding, labels: ListLike):
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
         embedding data. Stores results for metric computation.
 
         Args:
-            data: Dataset containing embedding and ground truth labels
-        """
-        logger.info(f"Starting prediction task for label key: {self.label_key}")
+            embedding: embedding to use for the task
+            labels: labels to use for the task
 
-        # Get embedding and labels
-        embeddings = data.get_output(model_type, DataType.EMBEDDING)
-        labels = data.get_input(DataType.METADATA)[self.label_key]
+        Returns:
+            Dictionary of results
+        """
+        # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
+        logger.info(f"Starting prediction task for label key: {self.label_key}")
+        embedding = embedding.copy()  # Protect from destructive operations
+
         logger.info(
-            f"Initial data shape: {embeddings.shape}, labels shape: {labels.shape}"
+            f"Initial data shape: {embedding.shape}, labels shape: {labels.shape}"
         )
 
         # Filter classes with minimum size requirement
-        embeddings, labels = filter_minimum_class(
-            embeddings, labels, min_class_size=self.min_class_size
+        embedding, labels = filter_minimum_class(
+            embedding, labels, min_class_size=self.min_class_size
         )
-        logger.info(f"After filtering: {embeddings.shape} samples remaining")
+        logger.info(f"After filtering: {embedding.shape} samples remaining")
 
         # Determine scoring metrics based on number of classes
         n_classes = len(labels.unique())
@@ -149,9 +128,8 @@ class MetadataLabelPredictionTask(BaseTask):
         }
         logger.info(f"Created classifiers: {list(classifiers.keys())}")
 
-        # Store results and predictions
-        self.results = []
-        self.predictions = []
+        # Store results
+        results = []
 
         # Run cross validation for each classifier
         labels = pd.Categorical(labels.astype(str))
@@ -159,7 +137,7 @@ class MetadataLabelPredictionTask(BaseTask):
             logger.info(f"Running cross-validation for {name}...")
             cv_results = cross_validate(
                 clf,
-                embeddings,
+                embedding,
                 labels.codes,
                 cv=skf,
                 scoring=scorers,
@@ -170,23 +148,30 @@ class MetadataLabelPredictionTask(BaseTask):
                 fold_results = {"classifier": name, "split": fold}
                 for metric in scorers.keys():
                     fold_results[metric] = cv_results[f"test_{metric}"][fold]
-                self.results.append(fold_results)
+                results.append(fold_results)
                 logger.debug(f"{name} fold {fold} results: {fold_results}")
 
         logger.info("Completed cross-validation for all classifiers")
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        return {
+            "results": results,
+        }
+
+    def _compute_metrics(self, results: List[dict], **kwargs) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics
         per classifier and overall.
 
+        Args:
+            results: Results from cross-validation
+
         Returns:
-            List of MetricResult objects containing mean metrics across all classifiers
-            and per-classifier metrics
+            List of MetricResult objects containing mean metrics across all
+            classifiers and per-classifier metrics
         """
         logger.info("Computing final metrics...")
-        results_df = pd.DataFrame(self.results)
+        results_df = pd.DataFrame(results)
         metrics_list = []
 
         classifiers = results_df["classifier"].unique()
@@ -288,7 +273,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, data: BaseDataset):
+    def set_baseline(self, expression_values: Embedding) -> Embedding:
         """Set a baseline embedding using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene
@@ -297,17 +282,12 @@ class MetadataLabelPredictionTask(BaseTask):
         tasks.
 
         Args:
-            data: BaseDataset containing AnnData with gene expression and metadata
+            expression_values: expression values to use for the task
+
+        Returns:
+            Baseline embedding
         """
-
-        # Get the AnnData object from the dataset
-        adata = data.get_input(DataType.ANNDATA)
-
-        # Extract gene expression matrix
-        X = adata.X
         # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(X):
-            X = X.toarray()
-
-        # Use raw gene expression as the "embedding" for baseline classification
-        data.set_output(ModelType.BASELINE, DataType.EMBEDDING, X)
+        if sp.sparse.issparse(expression_values):
+            embedding = expression_values.toarray()
+        return embedding
