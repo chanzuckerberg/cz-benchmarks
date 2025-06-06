@@ -8,7 +8,9 @@ from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from .constants import RANDOM_SEED
+# FIXME MICHELLE: need to add correct import path
+# from ...constants import RANDOM_SEED
+RANDOM_SEED = 42  #1
 
 logger = logging.getLogger(__name__)
 

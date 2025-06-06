@@ -4,7 +4,7 @@ from czbenchmarks.datasets.types import DataType
 
 def test_perturbation_dataset_load_data(dummy_perturbation_anndata):
     """Tests the loading of perturbation dataset data."""
-    truth = dummy_perturbation_anndata.get_input(DataType.PERTURBATION_TRUTH)
+    truth = dummy_perturbation_anndata.perturbation_truth
     assert "test1+ctrl" in truth
     assert "test2+ctrl" in truth
     assert dummy_perturbation_anndata.adata.shape == (2, 3)
@@ -27,8 +27,7 @@ def test_perturbation_dataset_load_data_missing_split_key(perturbation_missing_s
 def test_perturbation_dataset_unload_data(dummy_perturbation_anndata):
     """Tests the unloading of perturbation dataset data."""
     dummy_perturbation_anndata.unload_data()
-    with pytest.raises(KeyError):
-        dummy_perturbation_anndata.get_input(DataType.PERTURBATION_TRUTH)
+    assert dummy_perturbation_anndata.perturbation_truth is None
 
 
 def test_perturbation_dataset_validate_invalid_split(perturbation_invalid_split):

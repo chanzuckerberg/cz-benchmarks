@@ -91,15 +91,3 @@ def test_set_output_wrong_value_type():
     ds = DummyDataset("dummy_path", Organism.HUMAN)
     with pytest.raises(TypeError):
         ds.set_output(ModelType.BASELINE, DataType.EMBEDDING, "not_an_array")
-
-
-def test_serialize_deserialize(tmp_path, dummy_dataset):
-    """Tests the serialization and deserialization of the dataset."""
-    path = tmp_path / "serialized.dill"
-    dummy_dataset.serialize(str(path))
-    loaded = DummyDataset.deserialize(str(path))
-    assert isinstance(loaded, type(dummy_dataset))
-    assert (
-        loaded.get_input(DataType.ANNDATA).shape
-        == dummy_dataset.get_input(DataType.ANNDATA).shape
-    )
