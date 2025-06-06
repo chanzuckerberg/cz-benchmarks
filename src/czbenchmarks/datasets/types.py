@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 from omegaconf import OmegaConf
+import scipy.sparse as sp
 
 
 class Organism(Enum):
@@ -58,5 +59,7 @@ class Organism(Enum):
 if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
     OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
 
+
+Embedding = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
 
 DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]
