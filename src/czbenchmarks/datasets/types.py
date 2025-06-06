@@ -62,4 +62,6 @@ if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
 
 Embedding = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
 
+ListLike = Union[list, np.ndarray, pd.Series]
+
 DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]

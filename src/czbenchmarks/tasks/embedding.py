@@ -1,9 +1,8 @@
 import logging
 from typing import List
-import numpy as np
 
 from .constants import RANDOM_SEED
-from ..datasets import BaseDataset
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -27,29 +26,11 @@ class EmbeddingTask(BaseTask):
         self.display_name = "embedding"
         self.label_key = label_key
 
-    def _run_task(self, data: BaseDataset, **kwargs):
-        """Runs the embedding evaluation task.
-
-        Gets labels from the dataset for metric computation.
-
-        Args:
-            data: Dataset containing labels
-
-        Returns:
-            Dictionary of labels
-        """
-        # FIXME BYODATASET: decouple AnnData
-        adata = data.adata
-
-        # Labels for metric computation
-        input_labels = adata.obs[self.label_key]
-
-        return {
-            "input_labels": input_labels,
-        }
+    def _run_task(self, **kwargs):
+        return {}
 
     def _compute_metrics(
-        self, embedding: np.ndarray, input_labels: np.ndarray
+        self, embedding: Embedding, input_labels: ListLike
     ) -> List[MetricResult]:
         """Computes embedding quality metrics.
 

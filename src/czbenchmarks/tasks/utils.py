@@ -6,6 +6,7 @@ import pandas as pd
 import scanpy as sc
 from anndata import AnnData
 from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
+from ..datasets.types import Embedding
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ def run_standard_scrna_workflow(
     n_pcs: int = 50,
     obsm_key: str = OBSM_KEY,
     random_state: int = RANDOM_SEED,
-) -> np.ndarray:
+) -> Embedding:
     """Run a standard preprocessing workflow for single-cell RNA-seq data.
 
 

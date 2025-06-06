@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
-import numpy as np
+import pandas as pd
+import anndata as ad
 
 from .constants import RANDOM_SEED
-from ..datasets import BaseDataset
+from ..datasets.types import Embedding
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
@@ -32,15 +33,15 @@ class BaseTask(ABC):
         self.requires_multiple_datasets = False
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset, embedding: np.ndarray) -> dict:
+    def _run_task(self, embedding: Embedding, **kwargs) -> dict:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
         as instance variables.
 
         Args:
-            data: Dataset containing required input and output data
             embedding: embedding to use for the task
+            **kwargs: Additional arguments passed to the task
         Returns:
             Dictionary of output data for the task
         """
@@ -55,28 +56,35 @@ class BaseTask(ABC):
 
     def _run_task_for_dataset(
         self,
-        data: BaseDataset,
-        embedding: Optional[np.ndarray] = None,
+        embedding: Embedding,
+        task_kwargs: dict = {},
+        metric_kwargs: dict = {},
     ) -> List[MetricResult]:
         """Run task for a dataset or list of datasets and compute metrics.
 
         This method runs the task implementation and computes the corresponding metrics.
 
         Args:
-            data: dataset to run the task on
-            embedding: embedding to use for the task, if required. Default is None.
+            embedding: embedding to use for the task
+            task_kwargs: Additional arguments passed to the task
+            metric_kwargs: Additional arguments passed to the metrics
         Returns:
             List of MetricResult objects
 
         """
-        task_output = self._run_task(data=data, embedding=embedding)
+
+        task_output = self._run_task(embedding=embedding, **task_kwargs)
+        
         # Handle cases where embedding required by metrics but not set by _run_task
-        if embedding:
+        if "embedding" not in metric_kwargs:
             task_output.setdefault("embedding", embedding)
-        metrics = self._compute_metrics(**task_output)
+        
+        metrics = self._compute_metrics(**task_output, **metric_kwargs)
         return metrics
 
-    def set_baseline(self, data: BaseDataset, **kwargs) -> np.ndarray:
+    def set_baseline(
+        self, embedding: Embedding, obs: pd.DataFrame, var: pd.DataFrame, **kwargs
+    ) -> Embedding:
         """Set a baseline embedding using PCA on gene expression data.
 
         This method performs standard preprocessing on the raw gene expression data
@@ -85,13 +93,14 @@ class BaseTask(ABC):
         with other model embeddings.
 
         Args:
-            data: BaseDataset containing AnnData with gene expression data
+            embedding: embedding to use for anndata
+            obs: obs dataframe to use for anndata
+            var: var dataframe to use for anndata
             **kwargs: Additional arguments passed to run_standard_scrna_workflow
         """
 
-        # FIXME BYODATASET: decouple AnnData
-        # Get the AnnData object from the dataset
-        adata = data.adata
+        # Create the AnnData object
+        adata = ad.AnnData(X=embedding, obs=obs, var=var)
 
         # Run the standard preprocessing workflow
         embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)
@@ -99,39 +108,46 @@ class BaseTask(ABC):
 
     def run(
         self,
-        data: Union[BaseDataset, List[BaseDataset]],
-        embedding: Optional[np.ndarray] = None,
-        **kwargs,
+        embedding: Union[Embedding, List[Embedding]],
+        task_kwargs: Optional[dict] = None,
+        metric_kwargs: Optional[dict] = None,
     ) -> Union[List[MetricResult], List[List[MetricResult]]]:
         """Run the task on input data and compute metrics.
 
         Args:
-            data: Single dataset or list of datasets to evaluate. Must contain
-                required input and output data types.
             embedding: embedding to use for the task
-            **kwargs: Additional arguments passed to the task
+            task_kwargs: Additional arguments passed to the task
+            metric_kwargs: Additional arguments passed to the metrics
 
         Returns:
-            For single dataset: A metric result of list of metric results for the task
-            For multiple datasets: List of metric results for each task, one per dataset
+            For single embedding: A metric result of list of metric results for the task
+            For multiple embeddings: List of metric results for each task, one per dataset
 
         Raises:
-            ValueError: If task requires multiple datasets but single dataset provided
+            ValueError: If task requires multiple embeddings but single embeddings provided
         """
 
-        # Check if task requires multiple datasets
-        if self.requires_multiple_datasets and not isinstance(data, list):
-            raise ValueError("This task requires a list of datasets")
+        # Check if task requires embeddings from multiple datasets
+        if self.requires_multiple_datasets and not isinstance(embedding, list):
+            raise ValueError("This task requires a list of embeddings")
 
-        # Handle single vs multiple datasets
-        if isinstance(data, list):
-            # Process each dataset individually
+        # Handle single vs multiple embeddings
+        if isinstance(embedding, list):
+            # Process each embedding individually
             all_metrics = []
-            for d in data:
+            for emb in embedding:
                 all_metrics.append(
-                    self._run_task_for_dataset(data=d, embedding=embedding, **kwargs)
+                    self._run_task_for_dataset(
+                        embedding=emb,
+                        task_kwargs=task_kwargs,
+                        metric_kwargs=metric_kwargs,
+                    )
                 )
             return all_metrics
         else:
-            # Process single dataset or multiple datasets as required by the task
-            return self._run_task_for_dataset(data=data, embedding=embedding, **kwargs)
+            # Process single embedding or multiple embeddings as required by the task
+            return self._run_task_for_dataset(
+                embedding=embedding,
+                task_kwargs=task_kwargs,
+                metric_kwargs=metric_kwargs,
+            )

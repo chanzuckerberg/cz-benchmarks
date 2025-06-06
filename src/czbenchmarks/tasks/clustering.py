@@ -1,8 +1,9 @@
 import logging
 from typing import List
-import numpy as np
+import pandas as pd
+import anndata as ad
 
-from ..datasets import BaseDataset
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -39,7 +40,14 @@ class ClusteringTask(BaseTask):
         self.flavor = flavor
         self.key_added = key_added
 
-    def _run_task(self, data: BaseDataset, **kwargs):
+    def _run_task(
+        self,
+        embedding: Embedding,
+        obs: pd.DataFrame,
+        var: pd.DataFrame,
+        obsm_key: str = OBSM_KEY,
+        **kwargs,
+    ):
         """Runs clustering on the embedding data.
 
         Performs clustering and stores results for metric computation.
@@ -47,16 +55,13 @@ class ClusteringTask(BaseTask):
         Args:
             data: Dataset containing embedding and ground truth labels
         """
-        # FIXME BYODATASET: decouple AnnData
-        # Get anndata object and embedding
-        adata = data.adata
 
-        # Store labels and generate clusters
-        input_labels = adata.obs[self.label_key].values
+        # Create the AnnData object
+        adata = ad.AnnData(X=embedding, obs=obs, var=var)
 
         predicted_labels = cluster_embedding(
             adata,
-            obsm_key=OBSM_KEY,
+            obsm_key=obsm_key,
             random_seed=self.random_seed,
             n_iterations=self.n_iterations,
             flavor=self.flavor,
@@ -64,12 +69,11 @@ class ClusteringTask(BaseTask):
         )
 
         return {
-            "input_labels": input_labels,
             "predicted_labels": predicted_labels,
         }
 
     def _compute_metrics(
-        self, input_labels: np.ndarray, predicted_labels: np.ndarray, **kwargs
+        self, input_labels: ListLike, predicted_labels: ListLike, **kwargs
     ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
 

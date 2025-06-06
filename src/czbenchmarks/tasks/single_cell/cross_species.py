@@ -5,6 +5,7 @@ import numpy as np
 from ..constants import RANDOM_SEED
 from ...datasets import SingleCellDataset
 from ..base import BaseTask
+from ..datasets.types import Embedding, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 
@@ -27,29 +28,31 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self.requires_multiple_datasets = True
         self.label_key = label_key
 
-    def _run_task(self, data: List[SingleCellDataset], **kwargs) -> dict:
+    def _run_task(self, labels: List[ListLike], organism_list: List[str], **kwargs) -> dict:
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
         for metric computation.
 
         Args:
-            data: List of datasets containing embeddings and labels from different
-                  species
+            labels: labels to use for the task
+            organism_list: list of organisms to use for the task
 
         Returns:
             Dictionary of labels and species
         """
-        labels = np.concatenate([d.adata.obs[self.label_key].values for d in data])
-        species = np.concatenate([[d.organism.name] * d.adata.shape[0] for d in data])
-
+        species = np.concatenate([organism] * len(label) for organism, label in zip(organism_list, labels))
+        labels = np.concatenate(labels)
+        
+        assert species.shape == labels.shape, AssertionError("Species and labels must have the same shape")
+        
         return {
             "labels": labels,
             "species": species,
         }
 
     def _compute_metrics(
-        self, embedding: np.ndarray, labels: np.ndarray, species: np.ndarray
+        self, embedding: Embedding, labels: ListLike, species: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
@@ -87,16 +90,12 @@ class CrossSpeciesIntegrationTask(BaseTask):
             ),
         ]
 
-    def set_baseline(self, data: List[SingleCellDataset], **kwargs):
+    def set_baseline(self, **kwargs):
         """Set a baseline embedding for cross-species integration.
 
         This method is not implemented for cross-species integration tasks
         as standard preprocessing workflows are not directly applicable
         across different species.
-
-        Args:
-            data: List of SingleCellDataset objects from different species
-            **kwargs: Additional arguments passed to run_standard_scrna_workflow
 
         Raises:
             NotImplementedError: Always raised as baseline is not implemented

@@ -31,28 +31,8 @@ class BatchIntegrationTask(BaseTask):
         self.label_key = label_key
         self.batch_key = batch_key
 
-    def _run_task(self, data: BaseDataset, **kwargs) -> dict:
-        """Runs the batch integration evaluation task.
-
-        Gets embedding coordinates, batch labels and cell type labels from the dataset
-        for metric computation.
-
-        Args:
-            data: Dataset containing embedding and labels
-
-        Returns:
-            Dictionary of batch labels and cell type labels
-        """
-        # FIXME BYODATASET: decouple AnnData
-        adata = data.adata
-
-        batch_labels = adata.obs[self.batch_key].values
-        labels = adata.obs[self.label_key].values
-
-        return {
-            "batch_labels": batch_labels,
-            "labels": labels,
-        }
+    def _run_task(self, **kwargs) -> dict:
+        return {}
 
     def _compute_metrics(
         self, embedding: np.ndarray, batch_labels: np.ndarray, labels: np.ndarray

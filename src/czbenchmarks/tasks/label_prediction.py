@@ -1,6 +1,5 @@
 import logging
 from typing import List
-import numpy as np
 import pandas as pd
 import scipy as sp
 from sklearn.linear_model import LogisticRegression
@@ -18,7 +17,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets import BaseDataset
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -60,28 +59,23 @@ class MetadataLabelPredictionTask(BaseTask):
             f"min_class_size={min_class_size}, "
         )
 
-    def _run_task(self, data: BaseDataset, embedding: np.ndarray):
+    def _run_task(self, embedding: Embedding, labels: ListLike):
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
         embedding data. Stores results for metric computation.
 
         Args:
-            data: Dataset containing embedding and ground truth labels
             embedding: embedding to use for the task
+            labels: labels to use for the task
 
         Returns:
             Dictionary of results
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
         logger.info(f"Starting prediction task for label key: {self.label_key}")
-
-        # FIXME BYODATASET: decouple AnnData
-        adata = data.adata
         embedding = embedding.copy()  # Protect from destructive operations
 
-        # Get embedding and labels
-        labels = adata.obs[self.label_key].values
         logger.info(
             f"Initial data shape: {embedding.shape}, labels shape: {labels.shape}"
         )
@@ -279,7 +273,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, data: BaseDataset) -> np.ndarray:
+    def set_baseline(self, expression_values: Embedding) -> Embedding:
         """Set a baseline embedding using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene
@@ -288,21 +282,12 @@ class MetadataLabelPredictionTask(BaseTask):
         tasks.
 
         Args:
-            data: BaseDataset containing AnnData with gene expression and metadata
+            expression_values: expression values to use for the task
 
         Returns:
             Baseline embedding
         """
-
-        # FIXME BYODATASET: decouple AnnData
-        # Get the AnnData object from the dataset
-        adata = data.adata
-
-        # Extract gene expression matrix
-        X = adata.X
         # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(X):
-            X = X.toarray()
-
-        # Use raw gene expression as the "embedding" for baseline classification
-        return X
+        if sp.sparse.issparse(expression_values):
+            embedding = expression_values.toarray()
+        return embedding
