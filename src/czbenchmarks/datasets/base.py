@@ -36,17 +36,3 @@ class BaseDataset(ABC):
         For example, after extracting dataset embeddings from a model,
         the anndata object with the embeddings in the obsm slot can be cached.
         """
-
-    @abstractmethod
-    def unload_data(self) -> None:
-        """
-        Unload the dataset from memory.
-
-        This method should be implemented by subclasses to free memory by
-        clearing loaded data.
-        For example, SingleCellDataset sets its AnnData object to None.
-
-        This is used to clear memory-intensive data before serialization,
-        since serializing large raw data artifacts can be error-prone and
-        inefficient.
-        """

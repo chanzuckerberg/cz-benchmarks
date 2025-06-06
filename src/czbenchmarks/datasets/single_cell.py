@@ -25,10 +25,6 @@ class SingleCellDataset(BaseDataset):
         """Load the dataset from the path."""
         self.adata = ad.read_h5ad(self.path)
 
-    def unload_data(self) -> None:
-        """Unload the dataset from memory."""
-        self.adata = None
-
     def cache_data(self, cache_path: str) -> None:
         """Cache the dataset to the path.
 
@@ -131,10 +127,6 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         self.perturbation_truth = truth_data
         # FIXME BYODATASET: as originally implemented, this overwrites adata from SingleCellDataset
         self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
-
-    def unload_data(self) -> None:
-        super().unload_data()
-        self.perturbation_truth = None
 
     # FIXME VALIDATION: move to validation class?
     # def _validate(self) -> None:
