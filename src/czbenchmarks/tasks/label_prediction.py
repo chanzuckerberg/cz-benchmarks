@@ -60,7 +60,7 @@ class MetadataLabelPredictionTask(BaseTask):
             f"min_class_size={min_class_size}, "
         )
 
-    def _run_task(self, embedding: Embedding, labels: ListLike):
+    def _run_task(self, embedding: Embedding, labels: ListLike) -> dict:
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the

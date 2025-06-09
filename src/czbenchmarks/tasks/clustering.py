@@ -48,7 +48,7 @@ class ClusteringTask(BaseTask):
         var: pd.DataFrame,
         obsm_key: str = OBSM_KEY,
         **kwargs,
-    ):
+    ) -> dict:
         """Runs clustering on the embedding data.
 
         Performs clustering and stores results for metric computation.

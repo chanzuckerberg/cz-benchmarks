@@ -4,7 +4,7 @@ import pandas as pd
 import anndata as ad
 
 from ...constants import RANDOM_SEED
-from ..datasets.types import Embedding
+from ..datasets.types import Embedding, GeneExpression
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
@@ -74,16 +74,20 @@ class BaseTask(ABC):
         """
 
         task_output = self._run_task(embedding=embedding, **task_kwargs)
-        
+
         # Handle cases where embedding required by metrics but not set by _run_task
         if "embedding" not in metric_kwargs:
             task_output.setdefault("embedding", embedding)
-        
+
         metrics = self._compute_metrics(**task_output, **metric_kwargs)
         return metrics
 
     def set_baseline(
-        self, embedding: Embedding, obs: pd.DataFrame, var: pd.DataFrame, **kwargs
+        self,
+        expression_data: GeneExpression,
+        obs: pd.DataFrame,
+        var: pd.DataFrame,
+        **kwargs,
     ) -> Embedding:
         """Set a baseline embedding using PCA on gene expression data.
 
@@ -93,14 +97,14 @@ class BaseTask(ABC):
         with other model embeddings.
 
         Args:
-            embedding: embedding to use for anndata
+            expression_data: expression data to use for anndata
             obs: obs dataframe to use for anndata
             var: var dataframe to use for anndata
             **kwargs: Additional arguments passed to run_standard_scrna_workflow
         """
 
         # Create the AnnData object
-        adata = ad.AnnData(X=embedding, obs=obs, var=var)
+        adata = ad.AnnData(X=expression_data, obs=obs, var=var)
 
         # Run the standard preprocessing workflow
         embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)

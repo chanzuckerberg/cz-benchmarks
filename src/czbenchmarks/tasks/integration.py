@@ -1,8 +1,8 @@
 import logging
 from typing import List
-import numpy as np
 
 from ...constants import RANDOM_SEED
+from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -34,7 +34,7 @@ class BatchIntegrationTask(BaseTask):
         return {}
 
     def _compute_metrics(
-        self, embedding: np.ndarray, batch_labels: np.ndarray, labels: np.ndarray
+        self, embedding: Embedding, batch_labels: ListLike, labels: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
