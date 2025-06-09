@@ -2,8 +2,7 @@ import logging
 from typing import List
 import numpy as np
 
-from .constants import RANDOM_SEED
-from ..datasets import BaseDataset
+from ...constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask

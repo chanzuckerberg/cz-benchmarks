@@ -8,7 +8,7 @@ from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from .constants import RANDOM_SEED
+from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 

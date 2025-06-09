@@ -2,8 +2,7 @@ from typing import List
 
 import numpy as np
 
-from ..constants import RANDOM_SEED
-from ...datasets import SingleCellDataset
+from ...constants import RANDOM_SEED
 from ..base import BaseTask
 from ..datasets.types import Embedding, ListLike
 from ...metrics import metrics_registry

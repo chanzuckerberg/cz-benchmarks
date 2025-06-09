@@ -4,7 +4,7 @@ import anndata as ad
 import scipy.sparse as sp
 
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.tasks.constants import RANDOM_SEED
+from czbenchmarks.constants import RANDOM_SEED
 from typing import List, Set
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (

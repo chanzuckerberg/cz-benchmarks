@@ -8,7 +8,8 @@ from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import cluster_embedding
-from .constants import RANDOM_SEED, N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
+from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
+from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 

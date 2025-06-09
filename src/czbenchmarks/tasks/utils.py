@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
-from .constants import RANDOM_SEED, FLAVOR, KEY_ADDED, OBSM_KEY
+from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
+from ...constants import RANDOM_SEED
 from ..datasets.types import Embedding
 
 logger = logging.getLogger(__name__)
