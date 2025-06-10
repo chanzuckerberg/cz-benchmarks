@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from ...constants import RANDOM_SEED
+from ..constants import RANDOM_SEED
 from ..datasets.types import Embedding, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType

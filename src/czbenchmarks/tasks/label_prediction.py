@@ -23,7 +23,7 @@ from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
-from ...constants import RANDOM_SEED
+from ..constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 

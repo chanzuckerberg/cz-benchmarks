@@ -5,14 +5,12 @@ import scipy.sparse as sp
 
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
-from typing import List, Set
+from typing import List
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (
     BaseDataset,
-    DataType,
     PerturbationSingleCellDataset,
 )
-from czbenchmarks.models.types import ModelType
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.models.validators import BaseSingleCellValidator
 
@@ -86,25 +84,10 @@ class DummyTask(BaseTask):
         self, requires_multiple: bool = False, *, random_seed: int = RANDOM_SEED
     ):
         super().__init__(random_seed=random_seed)
-        self._requires_multiple = requires_multiple
+        self.name = "dummy task"
+        self.requires_multiple_datasets = requires_multiple
 
-    @property
-    def display_name(self) -> str:
-        return "dummy task"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        return {DataType.ANNDATA, DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        return {DataType.EMBEDDING}
-
-    @property
-    def requires_multiple_datasets(self) -> bool:
-        return self._requires_multiple
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
+    def _run_task(self, data: BaseDataset): # FIXME MICHELLE
         # Dummy implementation that does nothing
         pass
 
@@ -130,54 +113,12 @@ class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN]
     required_obs_keys = []
     required_var_keys = ["feature_name"]
-    model_type = ModelType.SCGENEPT
-
-    @property
-    def inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set containing AnnData requirement
-        """
-        return {DataType.ANNDATA}
-
-    @property
-    def outputs(self) -> Set[DataType]:
-        """Expected model output types.
-
-        Returns:
-            Set containing perturbation predictions and ground truth values for
-            evaluating perturbation prediction performance
-        """
-        return {
-            DataType.PERTURBATION_PRED,
-            DataType.PERTURBATION_TRUTH,
-        }
 
 
 class DummySingleCellModelValidator(BaseSingleCellValidator):
     available_organisms = [Organism.HUMAN, Organism.MOUSE]
     required_obs_keys = []
     required_var_keys = ["feature_name"]
-    model_type = ModelType.SCVI
-
-    @property
-    def inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set containing AnnData and metadata requirements
-        """
-        return {DataType.ANNDATA, DataType.METADATA}
-
-    @property
-    def outputs(self) -> Set[DataType]:
-        """Expected model output types.
-
-        Returns:
-            Set containing embedding output type
-        """
-        return {DataType.EMBEDDING}
 
 
 class DummySingleCellModelValidatorWithObsKeys(DummySingleCellModelValidator):

@@ -5,7 +5,7 @@ from typing import Iterable, Union
 import numpy as np
 import pandas as pd
 
-from ...constants import RANDOM_SEED
+from ..constants import RANDOM_SEED
 from .types import AggregatedMetricResult, MetricResult
 
 

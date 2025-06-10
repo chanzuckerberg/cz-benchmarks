@@ -4,7 +4,7 @@ import numpy as np
 
 from ...constants import RANDOM_SEED
 from ..base import BaseTask
-from ..datasets.types import Embedding, ListLike
+from ...datasets.types import Embedding, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 

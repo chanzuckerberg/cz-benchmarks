@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 import pandas as pd
 import anndata as ad
 
-from ...constants import RANDOM_SEED
+from ..constants import RANDOM_SEED
 from ..datasets.types import Embedding, GeneExpression
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow

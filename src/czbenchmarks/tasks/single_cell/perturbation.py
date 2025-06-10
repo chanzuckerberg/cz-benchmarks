@@ -6,7 +6,7 @@ import numpy as np
 import scipy as sp
 import logging
 from ..base import BaseTask
-from ..datasets.types import Embedding, GeneExpression, ListLike
+from ...datasets.types import Embedding, GeneExpression, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
