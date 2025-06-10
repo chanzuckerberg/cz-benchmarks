@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+import os
 
 from .types import Organism
 
@@ -36,3 +37,18 @@ class BaseDataset(ABC):
         For example, after extracting dataset embeddings from a model,
         the anndata object with the embeddings in the obsm slot can be cached.
         """
+
+    @abstractmethod
+    def _validate(self) -> None:
+        pass
+
+    def validate(self) -> None:
+        """Validate that all inputs and outputs match their expected types"""
+
+        if not os.path.exists(self.path):
+            raise ValueError("Dataset path does not exist")
+        
+        if self.organism not in Organism.__members__:
+            raise ValueError("Organism is not a valid Organism enum")
+
+        self._validate()
