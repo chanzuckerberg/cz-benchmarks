@@ -1,5 +1,4 @@
 import pytest
-from czbenchmarks.datasets.types import DataType
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 
 

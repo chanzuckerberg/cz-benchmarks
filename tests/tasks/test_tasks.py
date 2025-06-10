@@ -6,11 +6,7 @@ from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
-from czbenchmarks.datasets import (
-    DataType,
-)
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.models.types import ModelType
 from czbenchmarks.metrics.types import MetricResult
 from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
 

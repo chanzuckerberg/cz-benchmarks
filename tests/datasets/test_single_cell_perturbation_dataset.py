@@ -1,5 +1,4 @@
 import pytest
-from czbenchmarks.datasets.types import DataType
 
 
 def test_perturbation_dataset_load_data(dummy_perturbation_anndata):

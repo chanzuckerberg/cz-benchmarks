@@ -4,12 +4,10 @@ import tempfile
 import os
 import pandas as pd
 from czbenchmarks.datasets import (
-    DataType,
     SingleCellDataset,
     PerturbationSingleCellDataset,
 )
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.models.types import ModelType
 from tests.utils import create_dummy_anndata
 
 
