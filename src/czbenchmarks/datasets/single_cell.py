@@ -101,13 +101,13 @@ class PerturbationSingleCellDataset(SingleCellDataset):
     def load_data(self) -> None:
         super().load_data()
 
-        # FIXME VALIDATION:: move to validation class?
-        # if self.condition_key not in self.adata.obs.columns:
-        #     raise ValueError(
-        #         f"Condition key {self.condition_key} not found in adata.obs"
-        #     )
-        # if self.split_key not in self.adata.obs.columns:
-        #     raise ValueError(f"Split key {self.split_key} not found in adata.obs")
+        if self.condition_key not in self.adata.obs.columns:
+            raise ValueError(
+                f"Condition key {self.condition_key} not found in adata.obs"
+            )
+
+        if self.split_key not in self.adata.obs.columns:
+            raise ValueError(f"Split key {self.split_key} not found in adata.obs")
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
@@ -130,29 +130,29 @@ class PerturbationSingleCellDataset(SingleCellDataset):
         self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
 
     # FIXME VALIDATION: move to validation class?
-    # def _validate(self) -> None:
-    #     super()._validate()
+    def _validate(self) -> None:
+        super()._validate()
 
-    #     # Validate split values
-    #     valid_splits = {"train", "test", "val"}
-    #     splits = set(self.adata.obs[self.split_key])
-    #     invalid_splits = splits - valid_splits
-    #     if invalid_splits:
-    #         raise ValueError(f"Invalid split value(s): {invalid_splits}")
+        # Validate split values
+        valid_splits = {"train", "test", "val"}
+        splits = set(self.adata.obs[self.split_key])
+        invalid_splits = splits - valid_splits
+        if invalid_splits:
+            raise ValueError(f"Invalid split value(s): {invalid_splits}")
 
-    #     # Validate condition format
-    #     conditions = set(
-    #         list(self.adata.obs[self.condition_key])
-    #         + list(self.perturbation_truth.keys())
-    #     )
+        # Validate condition format
+        conditions = set(
+            list(self.adata.obs[self.condition_key])
+            + list(self.perturbation_truth.keys())
+        )
 
-    #     for condition in conditions:
-    #         if condition == "ctrl":
-    #             continue
+        for condition in conditions:
+            if condition == "ctrl":
+                continue
 
-    #         parts = condition.split("+")
-    #         if len(parts) != 2:
-    #             raise ValueError(
-    #                 f"Invalid perturbation condition format: {condition}. "
-    #                 "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
-    #             )
+            parts = condition.split("+")
+            if len(parts) != 2:
+                raise ValueError(
+                    f"Invalid perturbation condition format: {condition}. "
+                    "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
+                )
