@@ -23,6 +23,7 @@ class SingleCellDataset(BaseDataset):
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
+        # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
     def cache_data(self, cache_path: str) -> None:
@@ -31,41 +32,41 @@ class SingleCellDataset(BaseDataset):
         Args:
             cache_path: The path to cache the dataset to.
         """
-        ad.write_h5ad(cache_path, self.adata)
+        # FIXME: Implement this when cache PR is merged
+        pass
 
-    # FIXME VALIDATION: move to validation class
+    # FIXME VALIDATION: move to validation class?
+    def _validate(self) -> None:
+        if not isinstance(self.organism, Organism):
+            raise ValueError("Organism is not a valid Organism enum")
 
-    # def _validate(self) -> None:
-    #     if not isinstance(self.organism, Organism):
-    #         raise ValueError("Organism is not a valid Organism enum")
+        var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
-    #     var = all(self.adata.var_names.str.startswith(self.organism.prefix))
+        # Check if data contains non-integer or negative values
+        data = (
+            self.adata.X.data
+            if hasattr(self.adata.X, "data")
+            and not isinstance(self.adata.X, np.ndarray)
+            else self.adata.X
+        )
+        if np.any(np.mod(data, 1) != 0) or np.any(data < 0):
+            logger.warning(
+                "Dataset X matrix does not contain raw counts."
+                " Some models may require raw counts as input."
+                " Check the corresponding model card for more details."
+            )
 
-    #     # Check if data contains non-integer or negative values
-    #     data = (
-    #         self.adata.X.data
-    #         if hasattr(self.adata.X, "data")
-    #         and not isinstance(self.adata.X, np.ndarray)
-    #         else self.adata.X
-    #     )
-    #     if np.any(np.mod(data, 1) != 0) or np.any(data < 0):
-    #         logger.warning(
-    #             "Dataset X matrix does not contain raw counts."
-    #             " Some models may require raw counts as input."
-    #             " Check the corresponding model card for more details."
-    #         )
+        if not var:
+            if "ensembl_id" in self.adata.var.columns:
+                self.adata.var_names = pd.Index(list(self.adata.var["ensembl_id"]))
+                var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
-    #     if not var:
-    #         if "ensembl_id" in self.adata.var.columns:
-    #             self.adata.var_names = pd.Index(list(self.adata.var["ensembl_id"]))
-    #             var = all(self.adata.var_names.str.startswith(self.organism.prefix))
-
-    #     if not var:
-    #         raise ValueError(
-    #             "Dataset does not contain valid gene names. Gene names must"
-    #             f" start with {self.organism.prefix} and be stored in either"
-    #             f" adata.var_names or adata.var['ensembl_id']."
-    #         )
+        if not var:
+            raise ValueError(
+                "Dataset does not contain valid gene names. Gene names must"
+                f" start with {self.organism.prefix} and be stored in either"
+                f" adata.var_names or adata.var['ensembl_id']."
+            )
 
 
 class PerturbationSingleCellDataset(SingleCellDataset):

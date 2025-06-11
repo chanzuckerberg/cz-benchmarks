@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from tests.utils import create_dummy_anndata, DummyDataset
-from czbenchmarks.datasets.types import DataType, Organism
+from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.single_cell import (
     SingleCellDataset,
     PerturbationSingleCellDataset,
@@ -18,9 +18,8 @@ def dummy_anndata():
 @pytest.fixture
 def dummy_dataset(dummy_anndata):
     """Creates a dummy dataset with AnnData and metadata inputs."""
-    ds = DummyDataset("dummy_path", Organism.HUMAN)
-    ds.set_input(DataType.ANNDATA, dummy_anndata)
-    ds.set_input(DataType.METADATA, pd.DataFrame({"col": [1, 2, 3, 4, 5]}))
+    ds = DummyDataset(path="dummy_path", organism=Organism.HUMAN)
+    ds.adata = dummy_anndata
     return ds
 
 
@@ -36,7 +35,7 @@ def dummy_human_anndata(tmp_path):
     )
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
     dataset.load_data()
     return dataset
 
@@ -59,7 +58,7 @@ def dummy_human_anndata_wrong_prefix(tmp_path):
 
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
     dataset.load_data()
     return dataset
 
@@ -72,7 +71,7 @@ def float_counts_anndata(tmp_path):
     adata.X = np.ones((5, 3), dtype=np.float32)  # Override X to be float
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
     dataset.load_data()
     return dataset
 
