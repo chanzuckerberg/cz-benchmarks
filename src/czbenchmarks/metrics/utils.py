@@ -1,12 +1,16 @@
 import collections
 import statistics
 from typing import Iterable, Union
+import logging
 
 import numpy as np
 import pandas as pd
 
 from ..constants import RANDOM_SEED
 from .types import AggregatedMetricResult, MetricResult
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def _safelog(a: np.ndarray) -> np.ndarray:
@@ -44,6 +48,9 @@ def nearest_neighbors_hnsw(
     """
     import hnswlib
 
+    assert n_neighbors <= data.shape[0], ValueError(
+        f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
+    )
     sample_indices = np.arange(data.shape[0])
     index = hnswlib.Index(space="l2", dim=data.shape[1])
     index.init_index(
@@ -61,6 +68,7 @@ def nearest_neighbors_hnsw(
 def compute_entropy_per_cell(
     X: np.ndarray,
     labels: Union[pd.Categorical, pd.Series, np.ndarray],
+    n_neighbors: int = 200,
     random_seed: int = RANDOM_SEED,
 ) -> np.ndarray:
     """Compute entropy of batch labels in local neighborhoods.
@@ -71,11 +79,21 @@ def compute_entropy_per_cell(
     Args:
         X: Cell embedding matrix of shape (n_cells, n_features)
         labels: Series containing batch labels for each cell
+        n_neighbors: Number of nearest neighbors to consider
+        random_seed: Random seed for reproducibility
 
     Returns:
         Array of entropy values for each cell, normalized by log of number of batches
     """
-    indices, _ = nearest_neighbors_hnsw(X, n_neighbors=200, random_seed=random_seed)
+    if n_neighbors > X.shape[0]:
+        n_neighbors = X.shape[0]
+        logger.warning(
+            f"n_neighbors ({n_neighbors}) is greater than the number of samples ({X.shape[0]}). Setting n_neighbors to {n_neighbors}."
+        )
+
+    indices, _ = nearest_neighbors_hnsw(
+        X, n_neighbors=n_neighbors, random_seed=random_seed
+    )
     labels = np.array(list(labels))
     unique_batch_labels = np.unique(labels)
     indices_batch = labels[indices]

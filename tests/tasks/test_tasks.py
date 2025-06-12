@@ -94,7 +94,7 @@ def test_embedding_invalid_input(
             EMBEDDING_MATRIX,
             {},
             {"labels": OBS["cell_type"], "batch_labels": OBS["batch"]},
-        ),  # FIXME MICHELLE
+        ),
         (
             MetadataLabelPredictionTask,
             EMBEDDING_MATRIX,
