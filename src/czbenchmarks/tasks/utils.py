@@ -140,6 +140,6 @@ def run_standard_scrna_workflow(
     adata = adata[:, adata.var["highly_variable"]].copy()
 
     # Run PCA for dimensionality reduction
-    sc.pp.pca(adata, n_comps=n_pcs, use_rep=obsm_key, random_state=random_state)
+    sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]

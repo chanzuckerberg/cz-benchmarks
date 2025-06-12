@@ -113,9 +113,9 @@ class BaseTask(ABC):
     def run(
         self,
         embedding: Union[Embedding, List[Embedding]],
-        task_kwargs: Optional[dict] = None,
-        metric_kwargs: Optional[dict] = None,
-    ) -> Union[List[MetricResult], List[List[MetricResult]]]:
+        task_kwargs: dict = {},
+        metric_kwargs: dict = {},
+    ) -> List[MetricResult]:
         """Run the task on input data and compute metrics.
 
         Args:
@@ -128,30 +128,24 @@ class BaseTask(ABC):
             For multiple embeddings: List of metric results for each task, one per dataset
 
         Raises:
-            ValueError: If task requires multiple embeddings but single embeddings provided
+            ValueError: If input does not match multiple embedding requirement
         """
 
         # Check if task requires embeddings from multiple datasets
-        if self.requires_multiple_datasets and not isinstance(embedding, list):
-            raise ValueError("This task requires a list of embeddings")
-
-        # Handle single vs multiple embeddings
-        if isinstance(embedding, list):
-            # Process each embedding individually
-            all_metrics = []
-            for emb in embedding:
-                all_metrics.append(
-                    self._run_task_for_dataset(
-                        embedding=emb,
-                        task_kwargs=task_kwargs,
-                        metric_kwargs=metric_kwargs,
-                    )
-                )
-            return all_metrics
+        if self.requires_multiple_datasets:
+            error_message = "This task requires a list of embeddings"
+            if not isinstance(embedding, list):
+                raise ValueError(error_message)
+            if not all([isinstance(emb, Embedding) for emb in embedding]):
+                raise ValueError(error_message)
+            if len(embedding) < 2:
+                raise ValueError(f"{error_message} but only one embedding provided")
         else:
-            # Process single embedding or multiple embeddings as required by the task
-            return self._run_task_for_dataset(
-                embedding=embedding,
-                task_kwargs=task_kwargs,
-                metric_kwargs=metric_kwargs,
-            )
+            if not isinstance(embedding, Embedding):
+                raise ValueError("This task requires a single embedding for input")
+
+        return self._run_task_for_dataset(
+                                    embedding=embedding,
+                                    task_kwargs=task_kwargs,
+                                    metric_kwargs=metric_kwargs,
+                                )

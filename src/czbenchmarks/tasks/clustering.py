@@ -27,7 +27,6 @@ class ClusteringTask(BaseTask):
 
     def __init__(
         self,
-        label_key: str,
         n_iterations: int = N_ITERATIONS,
         flavor: str = FLAVOR,
         key_added: str = KEY_ADDED,
@@ -36,7 +35,6 @@ class ClusteringTask(BaseTask):
     ):
         super().__init__(random_seed=random_seed)
         self.display_name = "clustering"
-        self.label_key = label_key
         self.n_iterations = n_iterations
         self.flavor = flavor
         self.key_added = key_added

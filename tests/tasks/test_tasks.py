@@ -1,4 +1,6 @@
 import pytest
+from typing import List
+import numpy as np
 import pandas as pd
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
@@ -6,137 +8,76 @@ from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
-from czbenchmarks.datasets.types import Organism
+from czbenchmarks.datasets.types import Organism, Embedding, ListLike
 from czbenchmarks.metrics.types import MetricResult
-from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
+from czbenchmarks.constants import RANDOM_SEED
 
 
-def test_missing_required_inputs_outputs():
-    """Test that validation fails when dataset is missing required inputs/outputs."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
+# from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
+from czbenchmarks.tasks.base import BaseTask
+from czbenchmarks.metrics.types import MetricType
 
-    # Don't set any inputs/outputs
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required inputs.*",
+
+class DummyTask(BaseTask):
+    """A dummy task implementation for testing."""
+
+    def __init__(
+        self, requires_multiple_datasets: bool = False, *, random_seed: int = RANDOM_SEED
     ):
-        task.validate(dataset)
+        super().__init__(random_seed=random_seed)
+        self.name = "dummy task"
+        self.requires_multiple_datasets = requires_multiple_datasets
 
-    # Set inputs but no model outputs at all
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    with pytest.raises(
-        ValueError,
-        match=".*No model outputs available.*",
-    ):
-        task.validate(dataset)
+    def _run_task(self, embedding: Embedding):
+        # Dummy implementation that does nothing
+        return {}
 
-    # Set inputs and model type but missing required outputs
-    dataset.set_output(
-        ModelType.BASELINE, DataType.PERTURBATION_PRED, ("", pd.DataFrame())
-    )
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required outputs for model type BASELINE.*",
-    ):
-        task.validate(dataset)
+    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
+        # Return a dummy metric result
+        return [
+            MetricResult(
+                name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
+            )
+        ]
 
+NUM_CELLS: int = 30
+NUM_GENES: int = 20
+NUM_EMB_DIM: int = 15
 
-def test_requires_multiple_datasets_validation():
-    """Test that ValueError is raised when requires_multiple_datasets is True
-    but input is not a list."""
-    task = DummyTask(requires_multiple=True)
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
+OBS: ListLike = pd.DataFrame({"cell_type": np.random.choice(a=["A", "B", "C"], size=NUM_CELLS)})
+VAR_EXP: ListLike = pd.DataFrame({"feature_name": np.random.choice(a=["X", "Y", "Z"], size=NUM_GENES)})
+EXPRESSION_MATRIX: Embedding = np.random.normal(size=(NUM_CELLS, NUM_GENES))
 
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    with pytest.raises(ValueError, match="This task requires a list of datasets"):
-        task.run(dataset)
+VAR_EMB: ListLike = pd.DataFrame({"feature_name": np.random.choice(a=["X", "Y", "Z"], size=NUM_EMB_DIM)})
+EMBEDDING_MATRIX: Embedding = np.random.normal(size=(NUM_CELLS, NUM_EMB_DIM))
 
 
-def test_invalid_input_type():
-    """Test that ValueError is raised when input is not BaseDataset or list of
-    BaseDatasets."""
-    task = DummyTask()
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run("not a dataset")
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run([1, 2, 3])
-
-
-def test_list_input_single_task():
-    """Test that List[Dict[ModelType, List[MetricResult]]] is returned for list
-    input on a task requiring a single dataset."""
-    task = DummyTask(requires_multiple=False)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(datasets)
+@pytest.mark.parametrize("requires_multiple_datasets, embedding", [
+    (False, EMBEDDING_MATRIX),
+    (True, [EMBEDDING_MATRIX, EMBEDDING_MATRIX]),
+])
+def test_embedding_valid_input_output(requires_multiple_datasets, embedding):
+    """Test that and embedding is accepted and List[MetricResult] is returned."""
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    results = task.run(embedding)
 
     assert isinstance(results, list)
-    assert len(results) == 2
-    assert all(isinstance(r, dict) for r in results)
-    assert all(ModelType.SCVI in r for r in results)
-    assert all(isinstance(r[ModelType.SCVI], list) for r in results)
+    assert all(isinstance(r, MetricResult) for r in results)
 
 
-def test_list_input_multiple_task():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for list input
-    on a task requiring multiple datasets."""
-    task = DummyTask(requires_multiple=True)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-    results = task.run(datasets)
-
-    assert isinstance(results, dict)
-    assert ModelType.SCVI in results
-    assert isinstance(results[ModelType.SCVI], list)
-
-
-def test_single_dataset_result():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for single dataset."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy", Organism.HUMAN)
-
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(dataset)
-
-    assert isinstance(results, dict)
-    assert ModelType.BASELINE in results
-    assert isinstance(results[ModelType.BASELINE], list)
-    assert len(results[ModelType.BASELINE]) == 1
-    assert isinstance(results[ModelType.BASELINE][0], MetricResult)
+@pytest.mark.parametrize("requires_multiple_datasets, embedding_list, error_message", [
+    (False, "abcd", "This task requires a single embedding for input"),
+    (False, [EMBEDDING_MATRIX], "This task requires a single embedding for input"),
+    (False, [EMBEDDING_MATRIX, EMBEDDING_MATRIX], "This task requires a single embedding for input"),
+    (True, EMBEDDING_MATRIX, "This task requires a list of embeddings"),
+    (True, ["abcd", EMBEDDING_MATRIX], "This task requires a list of embeddings"),
+    (True, [EMBEDDING_MATRIX], "This task requires a list of embeddings but only one embedding provided"),
+])
+def test_embedding_invalid_input(requires_multiple_datasets, embedding_list, error_message):
+    """Test that ValueError is raised appropriately when requires_multiple_datasets is True/False"""
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    with pytest.raises(ValueError, match=error_message):
+        task.run(embedding_list)
 
 
 @pytest.mark.parametrize(

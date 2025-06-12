@@ -3,7 +3,7 @@ import pandas as pd
 import anndata as ad
 import scipy.sparse as sp
 
-from czbenchmarks.datasets.types import Organism
+from czbenchmarks.datasets.types import Organism, Embedding
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
 from czbenchmarks.tasks.base import BaseTask
@@ -12,7 +12,6 @@ from czbenchmarks.datasets import (
     PerturbationSingleCellDataset,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
-from czbenchmarks.models.validators import BaseSingleCellValidator
 
 
 def create_dummy_anndata(
@@ -73,7 +72,7 @@ class DummyDataset(BaseDataset):
     def load_data(self):
         pass
 
-    def unload_data(self):
+    def cache_data(self):
         pass
 
 
@@ -81,45 +80,20 @@ class DummyTask(BaseTask):
     """A dummy task implementation for testing."""
 
     def __init__(
-        self, requires_multiple: bool = False, *, random_seed: int = RANDOM_SEED
+        self, requires_multiple_datasets: bool = False, *, random_seed: int = RANDOM_SEED
     ):
         super().__init__(random_seed=random_seed)
         self.name = "dummy task"
-        self.requires_multiple_datasets = requires_multiple
+        self.requires_multiple_datasets = requires_multiple_datasets
 
-    def _run_task(self, data: BaseDataset): # FIXME MICHELLE
+    def _run_task(self, embedding: Embedding):
         # Dummy implementation that does nothing
-        pass
+        return {}
 
-    def _compute_metrics(self) -> List[MetricResult]:
+    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
         # Return a dummy metric result
         return [
             MetricResult(
                 name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
             )
         ]
-
-
-class DummySingleCellPerturbationModelValidator(BaseSingleCellValidator):
-    """Validation requirements for ScGenePT models.
-
-    Validates datasets for use with Single-cell Gene Perturbation Transformer models.
-    Requires gene symbols and currently only supports human data.
-    Used for perturbation prediction tasks.
-    """
-
-    # Override dataset_type in BaseSingleCellValidator
-    dataset_type = PerturbationSingleCellDataset
-    available_organisms = [Organism.HUMAN]
-    required_obs_keys = []
-    required_var_keys = ["feature_name"]
-
-
-class DummySingleCellModelValidator(BaseSingleCellValidator):
-    available_organisms = [Organism.HUMAN, Organism.MOUSE]
-    required_obs_keys = []
-    required_var_keys = ["feature_name"]
-
-
-class DummySingleCellModelValidatorWithObsKeys(DummySingleCellModelValidator):
-    required_obs_keys = ["dataset_id", "assay", "suspension_type", "donor_id"]
