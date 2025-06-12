@@ -217,7 +217,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         embex = EmbExtractor(
             model_type="Pretrained",
             emb_layer=-1,
-            emb_mode="cell",
+            emb_mode="cls",
             forward_batch_size=32,
             nproc=4,
             token_dictionary_file=str(
