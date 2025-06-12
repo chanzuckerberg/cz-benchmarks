@@ -17,15 +17,13 @@ class CrossSpeciesIntegrationTask(BaseTask):
     datasets from different species.
 
     Args:
-        label_key: Key to access ground truth cell type labels in metadata
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
+    def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.display_name = "cross-species integration"
         self.requires_multiple_datasets = True
-        self.label_key = label_key
 
     def _run_task(self, labels: List[ListLike], organism_list: List[str], **kwargs) -> dict:
         """Runs the cross-species integration evaluation task.

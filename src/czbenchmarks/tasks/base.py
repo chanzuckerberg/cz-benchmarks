@@ -30,6 +30,7 @@ class BaseTask(ABC):
         random_seed: int = RANDOM_SEED,
     ):
         self.random_seed = random_seed
+        # FIXME should this be changed to requires_multiple_embeddings?
         self.requires_multiple_datasets = False
 
     @abstractmethod
@@ -85,8 +86,8 @@ class BaseTask(ABC):
     def set_baseline(
         self,
         expression_data: GeneExpression,
-        obs: pd.DataFrame,
-        var: pd.DataFrame,
+        obs: Optional[pd.DataFrame] = None,
+        var: Optional[pd.DataFrame] = None,
         **kwargs,
     ) -> Embedding:
         """Set a baseline embedding using PCA on gene expression data.
@@ -104,7 +105,8 @@ class BaseTask(ABC):
         """
 
         # Create the AnnData object
-        adata = ad.AnnData(X=expression_data, obs=obs, var=var)
+        # FIXME MICHELLE -- obs var probably not needed, but needs debugging
+        adata = ad.AnnData(X=expression_data)#, obs=obs, var=var)
 
         # Run the standard preprocessing workflow
         embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)

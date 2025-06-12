@@ -35,32 +35,18 @@ class MetadataLabelPredictionTask(BaseTask):
     cross-validation. Reports standard classification metrics.
 
     Args:
-        label_key: Key to access ground truth labels in metadata
-        n_folds: Number of cross-validation folds
-        min_class_size: Minimum samples required per class
         random_seed (int): Random seed for reproducibility
     """
 
     def __init__(
         self,
-        label_key: str,
-        n_folds: int = N_FOLDS,
-        min_class_size: int = MIN_CLASS_SIZE,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
         self.display_name = "metadata label prediction"
-        self.label_key = label_key
-        self.n_folds = n_folds
-        self.min_class_size = min_class_size
-        logger.info(
-            "Initialized MetadataLabelPredictionTask with: "
-            f"label_key='{label_key}', n_folds={n_folds}, "
-            f"min_class_size={min_class_size}, "
-        )
 
-    def _run_task(self, embedding: Embedding, labels: ListLike) -> dict:
+    def _run_task(self, embedding: Embedding, labels: ListLike, n_folds: int = N_FOLDS, min_class_size: int = MIN_CLASS_SIZE) -> dict:
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
@@ -74,7 +60,7 @@ class MetadataLabelPredictionTask(BaseTask):
             Dictionary of results
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
-        logger.info(f"Starting prediction task for label key: {self.label_key}")
+        logger.info(f"Starting prediction task for labels")
         embedding = embedding.copy()  # Protect from destructive operations
 
         logger.info(
@@ -83,7 +69,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Filter classes with minimum size requirement
         embedding, labels = filter_minimum_class(
-            embedding, labels, min_class_size=self.min_class_size
+            embedding, labels, min_class_size=min_class_size
         )
         logger.info(f"After filtering: {embedding.shape} samples remaining")
 
@@ -109,10 +95,10 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Setup cross validation
         skf = StratifiedKFold(
-            n_splits=self.n_folds, shuffle=True, random_state=self.random_seed
+            n_splits=n_folds, shuffle=True, random_state=self.random_seed
         )
         logger.info(
-            f"Using {self.n_folds}-fold cross validation with random_seed {self.random_seed}"
+            f"Using {n_folds}-fold cross validation with random_seed {self.random_seed}"
         )
 
         # Create classifiers
@@ -145,7 +131,7 @@ class MetadataLabelPredictionTask(BaseTask):
                 return_train_score=False,
             )
 
-            for fold in range(self.n_folds):
+            for fold in range(n_folds):
                 fold_results = {"classifier": name, "split": fold}
                 for metric in scorers.keys():
                     fold_results[metric] = cv_results[f"test_{metric}"][fold]

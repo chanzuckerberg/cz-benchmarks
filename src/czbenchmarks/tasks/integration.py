@@ -17,18 +17,14 @@ class BatchIntegrationTask(BaseTask):
     in the embedding space while preserving biological signals.
 
     Args:
-        label_key: Key to access ground truth cell type labels in metadata
-        batch_key: Key to access batch labels in metadata
         random_seed (int): Random seed for reproducibility
     """
 
     def __init__(
-        self, label_key: str, batch_key: str, *, random_seed: int = RANDOM_SEED
+        self, *, random_seed: int = RANDOM_SEED
     ):
         super().__init__(random_seed=random_seed)
         self.display_name = "batch integration"
-        self.label_key = label_key
-        self.batch_key = batch_key
 
     def _run_task(self, **kwargs) -> dict:
         return {}

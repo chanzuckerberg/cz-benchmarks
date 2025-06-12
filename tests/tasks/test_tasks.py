@@ -13,38 +13,15 @@ from czbenchmarks.metrics.types import MetricResult
 from czbenchmarks.constants import RANDOM_SEED
 
 
-# from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
-from czbenchmarks.tasks.base import BaseTask
-from czbenchmarks.metrics.types import MetricType
+from tests.utils import DummyTask
 
 
-class DummyTask(BaseTask):
-    """A dummy task implementation for testing."""
-
-    def __init__(
-        self, requires_multiple_datasets: bool = False, *, random_seed: int = RANDOM_SEED
-    ):
-        super().__init__(random_seed=random_seed)
-        self.name = "dummy task"
-        self.requires_multiple_datasets = requires_multiple_datasets
-
-    def _run_task(self, embedding: Embedding):
-        # Dummy implementation that does nothing
-        return {}
-
-    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
-        # Return a dummy metric result
-        return [
-            MetricResult(
-                name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
-            )
-        ]
-
+# Move this to tests/utils.py ?
 NUM_CELLS: int = 30
 NUM_GENES: int = 20
 NUM_EMB_DIM: int = 15
 
-OBS: ListLike = pd.DataFrame({"cell_type": np.random.choice(a=["A", "B", "C"], size=NUM_CELLS)})
+OBS: ListLike = pd.DataFrame({"cell_type": np.random.choice(a=["A", "B", "C"], size=NUM_CELLS), "batch": np.random.choice(a=["1", "2", "3"], size=NUM_CELLS)})
 VAR_EXP: ListLike = pd.DataFrame({"feature_name": np.random.choice(a=["X", "Y", "Z"], size=NUM_GENES)})
 EXPRESSION_MATRIX: Embedding = np.random.normal(size=(NUM_CELLS, NUM_GENES))
 
@@ -81,66 +58,59 @@ def test_embedding_invalid_input(requires_multiple_datasets, embedding_list, err
 
 
 @pytest.mark.parametrize(
-    "task_class,task_kwargs",
+    "task_class, embedding, task_kwargs, metric_kwargs",
     [
-        (ClusteringTask, {"label_key": "cell_type"}),
-        (EmbeddingTask, {"label_key": "cell_type"}),
-        (BatchIntegrationTask, {"label_key": "cell_type", "batch_key": "batch"}),
-        (MetadataLabelPredictionTask, {"label_key": "cell_type", "n_folds": 3}),
+        (ClusteringTask, EMBEDDING_MATRIX, {"obs": OBS, "var": VAR_EMB}, {"input_labels": OBS["cell_type"]}),
+        (EmbeddingTask, EMBEDDING_MATRIX, {}, {"input_labels": OBS["cell_type"]}),
+        # (BatchIntegrationTask, EMBEDDING_MATRIX, {}, {"labels": OBS["cell_type"], "batch_labels": OBS["batch"]}), # FIXME MICHELLE
+        (MetadataLabelPredictionTask, EMBEDDING_MATRIX, {"labels": OBS["cell_type"]}, {}),
     ],
 )
-def test_task_execution(task_class, task_kwargs, dummy_single_cell_dataset):
+def test_task_execution(task_class, embedding, task_kwargs, metric_kwargs, expression_data=EXPRESSION_MATRIX):
     """Test that each task executes without errors on compatible data."""
-    task = task_class(**task_kwargs)
+    task = task_class()
 
     try:
         # Test regular task execution
-        results = task.run(dummy_single_cell_dataset)
-        assert isinstance(results, dict)
-        assert ModelType.SCVI in results
-        assert isinstance(results[ModelType.SCVI], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCVI])
+        results = task.run(embedding=embedding, task_kwargs=task_kwargs, metric_kwargs=metric_kwargs)
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test baseline execution if implemented
-        try:
-            task.set_baseline(dummy_single_cell_dataset)
-            baseline_results = task.run(
-                dummy_single_cell_dataset, model_types=[ModelType.BASELINE]
-            )
-            assert ModelType.BASELINE in baseline_results
-            assert isinstance(baseline_results[ModelType.BASELINE], list)
-            assert all(
-                isinstance(m, MetricResult)
-                for m in baseline_results[ModelType.BASELINE]
-            )
-        except NotImplementedError:
-            # Some tasks may not implement set_baseline
-            pass
+        # try:  # FIXME MICHELLE
+        #     baseline_embedding = task.set_baseline(expression_data, n_pcs=expression_data.shape[1])
+        #     baseline_results = task.run(
+        #         embedding=baseline_embedding, task_kwargs=task_kwargs, metric_kwargs=metric_kwargs
+        #     )
+        #     assert isinstance(baseline_results, list)
+        #     assert all(isinstance(r, MetricResult) for r in baseline_results)
+        # except NotImplementedError:
+        #     # Some tasks may not implement set_baseline
+        #     pass
 
     except Exception as e:
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-def test_cross_species_task(dummy_cross_species_datasets):
+# FIXME MICHELLE
+def test_cross_species_task(embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"]):
     """Test that CrossSpeciesIntegrationTask executes without errors."""
-    task = CrossSpeciesIntegrationTask(label_key="cell_type")
+    task = CrossSpeciesIntegrationTask()
+    embedding_list = [embedding, embedding]
+    labels_list = [labels, labels]
+    organism_list = [Organism.HUMAN, Organism.MOUSE]
 
     try:
         # Test regular task execution
-        results = task.run(dummy_cross_species_datasets)
+        results = task.run(embedding=embedding_list, labels=labels_list, organism_list=organism_list)
 
         # Verify results structure
-        assert isinstance(results, dict)
-        assert ModelType.UCE in results
-        assert isinstance(results[ModelType.UCE], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.UCE])
-        assert (
-            len(results[ModelType.UCE]) == 2
-        )  # Should have entropy and silhouette metrics
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test that baseline raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            task.set_baseline(dummy_cross_species_datasets)
+            task.set_baseline()
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")

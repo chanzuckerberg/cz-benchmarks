@@ -17,14 +17,12 @@ class EmbeddingTask(BaseTask):
     Currently supports silhouette score evaluation.
 
     Args:
-        label_key (str): Key to access ground truth labels in metadata
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
+    def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.display_name = "embedding"
-        self.label_key = label_key
 
     def _run_task(self, **kwargs):
         return {}

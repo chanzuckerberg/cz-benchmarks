@@ -9,7 +9,6 @@ from typing import List
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (
     BaseDataset,
-    PerturbationSingleCellDataset,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
 

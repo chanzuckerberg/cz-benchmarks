@@ -8,7 +8,7 @@ from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
 from .utils import cluster_embedding
-from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
+from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
 from ..constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
@@ -27,24 +27,21 @@ class ClusteringTask(BaseTask):
 
     def __init__(
         self,
-        n_iterations: int = N_ITERATIONS,
-        flavor: str = FLAVOR,
-        key_added: str = KEY_ADDED,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
         self.display_name = "clustering"
-        self.n_iterations = n_iterations
-        self.flavor = flavor
-        self.key_added = key_added
 
     def _run_task(
         self,
         embedding: Embedding,
         obs: pd.DataFrame,
         var: pd.DataFrame,
-        obsm_key: str = OBSM_KEY,
+        use_rep: str = "X",
+        n_iterations: int = N_ITERATIONS,
+        flavor: str = FLAVOR,
+        key_added: str = KEY_ADDED,
         **kwargs,
     ) -> dict:
         """Runs clustering on the embedding data.
@@ -52,7 +49,13 @@ class ClusteringTask(BaseTask):
         Performs clustering and stores results for metric computation.
 
         Args:
-            data: Dataset containing embedding and ground truth labels
+            embedding: Embedding matrix
+            obs: Obs dataframe
+            var: Var dataframe
+            use_rep: Use representation, default is "X"
+            n_iterations: Number of iterations, default is N_ITERATIONS
+            flavor: Flavor, default is FLAVOR
+            key_added: Key added, default is KEY_ADDED
         """
 
         # Create the AnnData object
@@ -60,11 +63,11 @@ class ClusteringTask(BaseTask):
 
         predicted_labels = cluster_embedding(
             adata,
-            obsm_key=obsm_key,
+            use_rep=use_rep,
             random_seed=self.random_seed,
-            n_iterations=self.n_iterations,
-            flavor=self.flavor,
-            key_added=self.key_added,
+            n_iterations=n_iterations,
+            flavor=flavor,
+            key_added=key_added,
         )
 
         return {

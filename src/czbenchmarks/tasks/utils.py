@@ -1,5 +1,5 @@
 import logging
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -28,9 +28,9 @@ TASK_NAMES = frozenset(
 # to the task config
 def cluster_embedding(
     adata: AnnData,
-    obsm_key: str = OBSM_KEY,
     n_iterations: int = 2,
     flavor: Literal["leidenalg", "igraph"] = FLAVOR,
+    use_rep: str = "X",
     key_added: str = KEY_ADDED,
     *,
     random_seed: int = RANDOM_SEED,
@@ -42,15 +42,16 @@ def cluster_embedding(
 
     Args:
         adata: AnnData object containing the embedding
-        obsm_key: Key in adata.obsm containing the embedding coordinates
         n_iterations: Number of iterations for the Leiden algorithm
         flavor: Flavor of the Leiden algorithm
+        use_rep: Key in adata.obsm containing the embedding coordinates
+                  If None, embedding is assumed to be in adata.X
         key_added: Key in adata.obs to store the cluster assignments
         random_seed (int): Random seed for reproducibility
     Returns:
         List of cluster assignments as integers
     """
-    sc.pp.neighbors(adata, use_rep=obsm_key, random_state=random_seed)
+    sc.pp.neighbors(adata, use_rep=use_rep, random_state=random_seed)
     sc.tl.leiden(
         adata,
         key_added=key_added,
@@ -129,11 +130,13 @@ def run_standard_scrna_workflow(
         random_state: Random seed for reproducibility
     """
     adata = adata.copy()
+
     # Standard preprocessing steps for single-cell data
     sc.pp.normalize_total(adata)  # Normalize counts per cell
     sc.pp.log1p(adata)  # Log-transform the data
 
     # Identify highly variable genes using Seurat method
+    # FIXME: should n_top_genes be set to min(n_top_genes, n_genes)?
     sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
 
     # Subset to only highly variable genes to reduce noise
@@ -141,5 +144,5 @@ def run_standard_scrna_workflow(
 
     # Run PCA for dimensionality reduction
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
-
+    
     return adata.obsm[obsm_key]

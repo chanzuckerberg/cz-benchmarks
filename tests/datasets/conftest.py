@@ -1,6 +1,5 @@
 import pytest
 import pandas as pd
-import numpy as np
 from tests.utils import create_dummy_anndata, DummyDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.single_cell import (
@@ -56,19 +55,6 @@ def dummy_human_anndata_wrong_prefix(tmp_path):
     )
     adata.var_names = pd.Index(gene_names)
 
-    adata.write_h5ad(file_path)
-
-    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
-    dataset.load_data()
-    return dataset
-
-
-@pytest.fixture
-def float_counts_anndata(tmp_path):
-    """Creates a SingleCellDataset with float counts instead of integers."""
-    file_path = tmp_path / "float_counts.h5ad"
-    adata = create_dummy_anndata(n_cells=5, n_genes=3, organism=Organism.HUMAN)
-    adata.X = np.ones((5, 3), dtype=np.float32)  # Override X to be float
     adata.write_h5ad(file_path)
 
     dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
