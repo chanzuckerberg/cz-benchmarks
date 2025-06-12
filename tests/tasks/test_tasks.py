@@ -1,5 +1,4 @@
 import pytest
-from typing import List
 import numpy as np
 import pandas as pd
 from czbenchmarks.tasks.clustering import ClusteringTask
@@ -10,38 +9,8 @@ from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegration
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 from czbenchmarks.datasets.types import Organism, Embedding, ListLike
 from czbenchmarks.metrics.types import MetricResult
-from czbenchmarks.constants import RANDOM_SEED
 
-
-# from tests.utils import DummyTask
-from czbenchmarks.tasks.base import BaseTask
-from czbenchmarks.metrics.types import MetricType
-
-
-class DummyTask(BaseTask):
-    """A dummy task implementation for testing."""
-
-    def __init__(
-        self,
-        requires_multiple_datasets: bool = False,
-        *,
-        random_seed: int = RANDOM_SEED,
-    ):
-        super().__init__(random_seed=random_seed)
-        self.name = "dummy task"
-        self.requires_multiple_datasets = requires_multiple_datasets
-
-    def _run_task(self, embedding: Embedding):
-        # Dummy implementation that does nothing
-        return {}
-
-    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
-        # Return a dummy metric result
-        return [
-            MetricResult(
-                name="dummy", value=1.0, metric_type=MetricType.ADJUSTED_RAND_INDEX
-            )
-        ]
+from tests.utils import DummyTask
 
 
 # Move this to tests/utils.py ?
