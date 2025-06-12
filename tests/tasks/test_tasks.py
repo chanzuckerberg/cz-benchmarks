@@ -159,6 +159,7 @@ def test_cross_species_task(embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"])
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
 
 
+# FIXME MICHELLE
 def test_perturbation_task(
     expression_data=EXPRESSION_MATRIX,
     var_names=VAR_EXP["feature_name"],
