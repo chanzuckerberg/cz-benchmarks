@@ -28,29 +28,11 @@ geneformer_vocabs_uri: s3://cz-benchmarks-data/models/v1/geneformer/vocabs/gene_
 
 # Model configurations
 models:
-  gf_12L_30M:
-    model_name: gf-12L-30M-i2048
-    model_uri: s3://cz-benchmarks-data/models/v1/geneformer/gf-12L-30M-i2048
-    token_config:
-      gene_median_file: gene_dictionaries/gene_median_dictionary_gc30M.pkl
-      token_dictionary_file: gene_dictionaries/token_dictionary_gc30M.pkl
-      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc30M.pkl
-      input_size: 2048
-
-  gf_18L_316M:
-    model_name: gf-18L-316M-i4096
-    model_uri: s3://cz-benchmarks-data/models/v1/geneformer/gf-18L-316M-i4096
+  Geneformer-V2-316M:
+    model_name: Geneformer-V2-316M
+    model_uri: s3://cz-benchmarks-data/models/v1/geneformer/Geneformer-V2-316M
     token_config:
       gene_median_file: gene_dictionaries/gene_median_dictionary_gc95M.pkl
       token_dictionary_file: gene_dictionaries/token_dictionary_gc95M.pkl
       ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc95M.pkl
       input_size: 4096
-
-  gf_6L_30M:
-    model_name: gf-6L-30M-i2048
-    model_uri: s3://cz-benchmarks-data/models/v1/geneformer/gf-6L-30M-i2048
-    token_config:
-      gene_median_file: gene_dictionaries/gene_median_dictionary_gc30M.pkl
-      token_dictionary_file: gene_dictionaries/token_dictionary_gc30M.pkl
-      ensembl_mapping_file: gene_dictionaries/ensembl_mapping_dict_gc30M.pkl
-      input_size: 2048
