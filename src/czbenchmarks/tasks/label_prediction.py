@@ -260,7 +260,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, expression_values: Embedding) -> Embedding:
+    def set_baseline(self, expression_values: Embedding, **kwargs) -> Embedding:
         """Set a baseline embedding using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene

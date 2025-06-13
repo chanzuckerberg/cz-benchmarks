@@ -44,25 +44,6 @@ VAR_EXP: ListLike = adata.var.copy()
 VAR_EMB: ListLike = VAR_EXP
 
 
-# n_emb_dim: int = 32
-
-# OBS: ListLike = pd.DataFrame(
-#     {
-#         "cell_type": np.random.choice(a=["A", "B", "C"], size=NUM_CELLS),
-#         "batch": np.random.choice(a=["1", "2", "3"], size=NUM_CELLS),
-#     }
-# )
-# VAR_EXP: ListLike = pd.DataFrame(
-#     {"feature_name": np.random.choice(a=["X", "Y", "Z"], size=NUM_GENES)}
-# )
-# EXPRESSION_MATRIX: Embedding = np.random.normal(size=(NUM_CELLS, NUM_GENES))
-
-# VAR_EMB: ListLike = pd.DataFrame(
-#     {"feature_name": np.random.choice(a=["X", "Y", "Z"], size=NUM_EMB_DIM)}
-# )
-# EMBEDDING_MATRIX: Embedding = np.random.normal(size=(NUM_CELLS, NUM_EMB_DIM))
-
-
 @pytest.mark.parametrize(
     "requires_multiple_datasets, embedding",
     [
@@ -110,9 +91,7 @@ def test_embedding_valid_input_output(requires_multiple_datasets, embedding):
 def test_embedding_invalid_input(
     requires_multiple_datasets, embedding_list, error_message
 ):
-    """
-    Test that ValueError is raised when requires_multiple_datasets is True/False.
-    """
+    """Test ValueError for mismatch with requires_multiple_datasets."""
     task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
     with pytest.raises(ValueError, match=error_message):
         task.run(embedding_list)
@@ -169,13 +148,14 @@ def test_task_execution(
         assert all(isinstance(r, MetricResult) for r in results)
 
         # Test baseline execution if implemented
-        try:  # FIXME MICHELLE
-            if task_class == MetadataLabelPredictionTask:
-                baseline_embedding = task.set_baseline(expression_data)
-            else:
-                baseline_embedding = task.set_baseline(
-                    expression_data, n_pcs=expression_data.shape[1]
-                )
+        try:
+            n_pcs = min(50, expression_data.shape[1] - 1)
+            baseline_embedding = task.set_baseline(
+                expression_data, n_pcs=n_pcs
+            )
+            if "var" in task_kwargs:
+                task_kwargs["var"] = task_kwargs["var"].iloc[:n_pcs]
+
             baseline_results = task.run(
                 embedding=baseline_embedding,
                 task_kwargs=task_kwargs,
