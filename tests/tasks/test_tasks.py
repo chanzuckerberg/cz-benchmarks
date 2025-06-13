@@ -1,181 +1,168 @@
 import pytest
-import pandas as pd
+
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
-from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
-from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
-from czbenchmarks.datasets import (
-    DataType,
+from czbenchmarks.tasks.single_cell.cross_species import (
+    CrossSpeciesIntegrationTask,
 )
-from czbenchmarks.datasets.types import Organism
-from czbenchmarks.models.types import ModelType
+from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks.datasets.types import (
+    Organism,
+    Embedding,
+    ListLike,
+    GeneExpression,
+)
 from czbenchmarks.metrics.types import MetricResult
-from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
+from tests.utils import DummyTask, create_dummy_anndata
 
 
-def test_missing_required_inputs_outputs():
-    """Test that validation fails when dataset is missing required inputs/outputs."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
+# Move this to tests/utils.py ?
+n_cells: int = 500
+n_genes: int = 128
+n_emb_dim: int = 32
+organism: Organism = Organism.HUMAN
+obs_columns = ["cell_type", "batch"]
+var_columns = ["feature_name"]
+adata = create_dummy_anndata(
+    n_cells=n_cells,
+    n_genes=n_genes,
+    organism=organism,
+    obs_columns=obs_columns,
+    var_columns=var_columns,
+)
+# sc.pp.pca(adata, n_comps=n_emb_dim, svd_solver="arpack",
+# random_state=RANDOM_SEED, use_highly_variable=True, key_added=OBSM_KEY)
 
-    # Don't set any inputs/outputs
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required inputs.*",
-    ):
-        task.validate(dataset)
-
-    # Set inputs but no model outputs at all
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    with pytest.raises(
-        ValueError,
-        match=".*No model outputs available.*",
-    ):
-        task.validate(dataset)
-
-    # Set inputs and model type but missing required outputs
-    dataset.set_output(
-        ModelType.BASELINE, DataType.PERTURBATION_PRED, ("", pd.DataFrame())
-    )
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required outputs for model type BASELINE.*",
-    ):
-        task.validate(dataset)
-
-
-def test_requires_multiple_datasets_validation():
-    """Test that ValueError is raised when requires_multiple_datasets is True
-    but input is not a list."""
-    task = DummyTask(requires_multiple=True)
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
-
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    with pytest.raises(ValueError, match="This task requires a list of datasets"):
-        task.run(dataset)
-
-
-def test_invalid_input_type():
-    """Test that ValueError is raised when input is not BaseDataset or list of
-    BaseDatasets."""
-    task = DummyTask()
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run("not a dataset")
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run([1, 2, 3])
-
-
-def test_list_input_single_task():
-    """Test that List[Dict[ModelType, List[MetricResult]]] is returned for list
-    input on a task requiring a single dataset."""
-    task = DummyTask(requires_multiple=False)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(datasets)
-
-    assert isinstance(results, list)
-    assert len(results) == 2
-    assert all(isinstance(r, dict) for r in results)
-    assert all(ModelType.SCVI in r for r in results)
-    assert all(isinstance(r[ModelType.SCVI], list) for r in results)
-
-
-def test_list_input_multiple_task():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for list input
-    on a task requiring multiple datasets."""
-    task = DummyTask(requires_multiple=True)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-    results = task.run(datasets)
-
-    assert isinstance(results, dict)
-    assert ModelType.SCVI in results
-    assert isinstance(results[ModelType.SCVI], list)
-
-
-def test_single_dataset_result():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for single dataset."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy", Organism.HUMAN)
-
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(dataset)
-
-    assert isinstance(results, dict)
-    assert ModelType.BASELINE in results
-    assert isinstance(results[ModelType.BASELINE], list)
-    assert len(results[ModelType.BASELINE]) == 1
-    assert isinstance(results[ModelType.BASELINE][0], MetricResult)
+EXPRESSION_MATRIX: GeneExpression = adata.X.copy()
+EMBEDDING_MATRIX: Embedding = (
+    adata.X.copy().toarray()
+)  # adata.obsm[OBSM_KEY].copy()
+OBS: ListLike = adata.obs.copy()
+VAR_EXP: ListLike = adata.var.copy()
+VAR_EMB: ListLike = VAR_EXP
 
 
 @pytest.mark.parametrize(
-    "task_class,task_kwargs",
+    "requires_multiple_datasets, embedding",
     [
-        (ClusteringTask, {"label_key": "cell_type"}),
-        (EmbeddingTask, {"label_key": "cell_type"}),
-        (BatchIntegrationTask, {"label_key": "cell_type", "batch_key": "batch"}),
-        (MetadataLabelPredictionTask, {"label_key": "cell_type", "n_folds": 3}),
+        (False, EMBEDDING_MATRIX),
+        (True, [EMBEDDING_MATRIX, EMBEDDING_MATRIX]),
     ],
 )
-def test_task_execution(task_class, task_kwargs, dummy_single_cell_dataset):
+def test_embedding_valid_input_output(requires_multiple_datasets, embedding):
+    """Test that embedding is accepted and List[MetricResult] is returned."""
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    results = task.run(embedding)
+
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
+
+
+@pytest.mark.parametrize(
+    "requires_multiple_datasets, embedding_list, error_message",
+    [
+        (False, "abcd", "This task requires a single embedding for input"),
+        (
+            False,
+            [EMBEDDING_MATRIX],
+            "This task requires a single embedding for input",
+        ),
+        (
+            False,
+            [EMBEDDING_MATRIX, EMBEDDING_MATRIX],
+            "This task requires a single embedding for input",
+        ),
+        (True, EMBEDDING_MATRIX, "This task requires a list of embeddings"),
+        (
+            True,
+            ["abcd", EMBEDDING_MATRIX],
+            "This task requires a list of embeddings",
+        ),
+        (
+            True,
+            [EMBEDDING_MATRIX],
+            "This task requires a list of embeddings but only one embedding "
+            "provided",
+        ),
+    ],
+)
+def test_embedding_invalid_input(
+    requires_multiple_datasets, embedding_list, error_message
+):
+    """Test ValueError for mismatch with requires_multiple_datasets."""
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    with pytest.raises(ValueError, match=error_message):
+        task.run(embedding_list)
+
+
+@pytest.mark.parametrize(
+    "task_class, embedding, task_kwargs, metric_kwargs",
+    [
+        (
+            ClusteringTask,
+            EMBEDDING_MATRIX,
+            {"obs": OBS, "var": VAR_EMB},
+            {"input_labels": OBS["cell_type"]},
+        ),
+        (
+            EmbeddingTask,
+            EMBEDDING_MATRIX,
+            {},
+            {"input_labels": OBS["cell_type"]},
+        ),
+        (
+            BatchIntegrationTask,
+            EMBEDDING_MATRIX,
+            {},
+            {"labels": OBS["cell_type"], "batch_labels": OBS["batch"]},
+        ),
+        (
+            MetadataLabelPredictionTask,
+            EMBEDDING_MATRIX,
+            {"labels": OBS["cell_type"]},
+            {},
+        ),
+
+    ],
+)
+def test_task_execution(
+    task_class,
+    embedding,
+    task_kwargs,
+    metric_kwargs,
+    expression_data=EXPRESSION_MATRIX,
+):
     """Test that each task executes without errors on compatible data."""
-    task = task_class(**task_kwargs)
+    task = task_class()
 
     try:
         # Test regular task execution
-        results = task.run(dummy_single_cell_dataset)
-        assert isinstance(results, dict)
-        assert ModelType.SCVI in results
-        assert isinstance(results[ModelType.SCVI], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCVI])
+        results = task.run(
+            embedding=embedding,
+            task_kwargs=task_kwargs,
+            metric_kwargs=metric_kwargs,
+        )
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test baseline execution if implemented
         try:
-            task.set_baseline(dummy_single_cell_dataset)
+            n_pcs = min(50, expression_data.shape[1] - 1)
+            baseline_embedding = task.set_baseline(
+                expression_data, n_pcs=n_pcs
+            )
+            if "var" in task_kwargs:
+                task_kwargs["var"] = task_kwargs["var"].iloc[:n_pcs]
+
             baseline_results = task.run(
-                dummy_single_cell_dataset, model_types=[ModelType.BASELINE]
+                embedding=baseline_embedding,
+                task_kwargs=task_kwargs,
+                metric_kwargs=metric_kwargs,
             )
-            assert ModelType.BASELINE in baseline_results
-            assert isinstance(baseline_results[ModelType.BASELINE], list)
-            assert all(
-                isinstance(m, MetricResult)
-                for m in baseline_results[ModelType.BASELINE]
-            )
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
         except NotImplementedError:
             # Some tasks may not implement set_baseline
             pass
@@ -184,62 +171,77 @@ def test_task_execution(task_class, task_kwargs, dummy_single_cell_dataset):
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-def test_cross_species_task(dummy_cross_species_datasets):
+# FIXME MICHELLE
+def test_cross_species_task(
+    embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"]
+):
     """Test that CrossSpeciesIntegrationTask executes without errors."""
-    task = CrossSpeciesIntegrationTask(label_key="cell_type")
+    task = CrossSpeciesIntegrationTask()
+    embedding_list = [embedding, embedding]
+    labels_list = [labels, labels]
+    organism_list = [Organism.HUMAN, Organism.MOUSE]
 
     try:
         # Test regular task execution
-        results = task.run(dummy_cross_species_datasets)
+        results = task.run(
+            embedding=embedding_list,
+            labels=labels_list,
+            organism_list=organism_list,
+        )
 
         # Verify results structure
-        assert isinstance(results, dict)
-        assert ModelType.UCE in results
-        assert isinstance(results[ModelType.UCE], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.UCE])
-        assert (
-            len(results[ModelType.UCE]) == 2
-        )  # Should have entropy and silhouette metrics
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test that baseline raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            task.set_baseline(dummy_cross_species_datasets)
+            task.set_baseline()
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
 
 
-def test_perturbation_task(dummy_perturbation_dataset):
+# FIXME MICHELLE
+def test_perturbation_task(
+    expression_data=EXPRESSION_MATRIX,
+    var_names=VAR_EXP["feature_name"],
+    obs_names=OBS["cell_type"],
+):
     """Test that PerturbationTask executes without errors."""
     task = PerturbationTask()
 
     try:
         # Test regular task execution
-        results = task.run(dummy_perturbation_dataset)
+        results = task.run(
+            expression_data=expression_data, var_names=var_names
+        )
 
         # Verify results structure
-        assert isinstance(results, dict)
-        assert ModelType.SCGENEPT in results
-        assert isinstance(results[ModelType.SCGENEPT], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCGENEPT])
-
-        # Should have 8 metrics: MSE and R2 for all/top20/top100 genes,
-        # plus Jaccard for top20/100
-        assert len(results[ModelType.SCGENEPT]) == 8
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard
+        # for top20/100
+        assert len(results) == 8
 
         # Test baseline with both mean and median
         for baseline_type in ["mean", "median"]:
-            task.set_baseline(
-                dummy_perturbation_dataset,
+            baseline_embedding = task.set_baseline(
+                expression_data=expression_data,
+                var_names=var_names,
+                obs_names=obs_names,
                 gene_pert="ENSG00000123456+ctrl",
                 baseline_type=baseline_type,
             )
             baseline_results = task.run(
-                dummy_perturbation_dataset, model_types=[ModelType.BASELINE]
+                expression_data=baseline_embedding, var_names=var_names
             )
-            assert ModelType.BASELINE in baseline_results
-            assert isinstance(baseline_results[ModelType.BASELINE], list)
-            assert len(baseline_results[ModelType.BASELINE]) == 8
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
+            assert len(baseline_results) == 8
 
     except Exception as e:
         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
+
+
+if __name__ == "__main__":
+    pytest.main(["-v", __file__, "-k", "test_task_execution"])

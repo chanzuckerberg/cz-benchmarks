@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import ClassVar, Set, Type
 
-from ...datasets import BaseDataset, DataType
+from ...datasets import BaseDataset
 from ..types import ModelType
 
 # Configure logging to output to stdout
@@ -68,7 +68,7 @@ class BaseModelValidator(ABC):
 
     @property
     @abstractmethod
-    def inputs(self) -> Set[DataType]:
+    def inputs(self):
         """Required input data types this model requires.
 
         Returns:
@@ -77,7 +77,7 @@ class BaseModelValidator(ABC):
 
     @property
     @abstractmethod
-    def outputs(self) -> Set[DataType]:
+    def outputs(self):
         """Output data types produced by this model.
 
         Returns:
