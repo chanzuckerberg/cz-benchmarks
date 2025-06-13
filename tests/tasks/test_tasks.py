@@ -127,6 +127,24 @@ def test_embedding_invalid_input(
             {"obs": OBS, "var": VAR_EMB},
             {"input_labels": OBS["cell_type"]},
         ),
+        (
+            EmbeddingTask,
+            EMBEDDING_MATRIX,
+            {},
+            {"input_labels": OBS["cell_type"]},
+        ),
+        (
+            BatchIntegrationTask,
+            EMBEDDING_MATRIX,
+            {},
+            {"labels": OBS["cell_type"], "batch_labels": OBS["batch"]},
+        ),
+        (
+            MetadataLabelPredictionTask,
+            EMBEDDING_MATRIX,
+            {"labels": OBS["cell_type"]},
+            {},
+        ),
 
     ],
 )
