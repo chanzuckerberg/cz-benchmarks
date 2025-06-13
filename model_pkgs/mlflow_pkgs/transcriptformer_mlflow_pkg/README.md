@@ -58,7 +58,7 @@ $ python generate_mlflow_test_payload.py --model-uri mlflow_models/transcriptfor
 
 2. Flesh out the values in `test_input_payload.json`. Example:
 
-```json
+```
 $ cat test_input_payload.json
 
 {
@@ -91,7 +91,7 @@ $ mlflow models predict --model-uri mlflow_models/transcriptformer_tf_sapiens --
 
 4. Verify that the inference ran correctly by checking the `test_output.json` file:
 
-```json
+```
 $ cat test_output.json
 {"predictions": [{"output_file": "tf_results/example_small_embeddings.h5ad"}]}
 
@@ -100,8 +100,6 @@ Python 3.11.12 (main, Apr  9 2025, 04:04:00) [Clang 20.1.0 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import anndata as ad
 >>> adata = ad.read_h5ad("tf_results/example_small_embeddings.h5ad")
->>> adata.shape
-(512, 0)
 >>> adata.obsm.keys()
 KeysView(AxisArrays with keys: embeddings)
 >>> adata.obsm['embeddings'][:10]
