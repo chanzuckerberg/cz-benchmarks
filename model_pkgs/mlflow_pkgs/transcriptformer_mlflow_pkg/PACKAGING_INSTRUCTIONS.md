@@ -54,10 +54,17 @@ $ python generate_mlflow_test_payload.py --model-uri <mlflow-model-directory> --
 
 2. Flesh out the values in `test_input_payload.json`.
 
-3. Run inference with the payload in its own virtual environment. This likely means you will use the same virtual environment library (conda, uv, virtualenv) you used to to create a virtual environment and install the original model package and its dependencies. See [documentation](https://mlflow.org/docs/latest/api_reference/cli.html#mlflow-models-predict)
+3. **Run inference** to test that the that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
+
+```
+$ python test_predict_fn.py --model-uri <mlflow-model-directory> --json-payload-file test_input_payload.json
+```
+4. **Run inference to test if the model can be served from a REST API endpoint.**_This tests if the json input payload round-trips through mlflow's native support for deserialization, datatype validation and finally serialization of the output back to json._
+The inference process will spin up its own virtual environment.
+This likely means you will use the same virtual environment library (conda, uv, virtualenv) recommended by the model's installation instructions. See [documentation](https://mlflow.org/docs/latest/api_reference/cli.html#mlflow-models-predict).
 
 ```
 $ mlflow models predict --model-uri <mlflow-model-directory> --content-type json --input-path test_input_payload.json --output-path test_output.json --env-manager <virtualenv-manager>
 ```
 
-4. Verify that the inference ran correctly by checking the `test_output.json` file.
+5. Verify that the inference ran correctly by checking the `test_output.json` file.
