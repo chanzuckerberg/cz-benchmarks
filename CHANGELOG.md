@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.2...v0.10.0) (2025-06-16)
+
+
+### Features
+
+* allow estimating uncertainty in task metrics via batches of random seeds ([#251](https://github.com/chanzuckerberg/cz-benchmarks/issues/251)) ([5c033ff](https://github.com/chanzuckerberg/cz-benchmarks/commit/5c033ffcad31cf66c372c804f9eca91808bd1e19))
+* Reapply "geneformer updates" ([#266](https://github.com/chanzuckerberg/cz-benchmarks/issues/266)) ([#267](https://github.com/chanzuckerberg/cz-benchmarks/issues/267)) ([a871b57](https://github.com/chanzuckerberg/cz-benchmarks/commit/a871b57ee3a76bc42603a3fdee2ef00602fe1d98))
+* update result output schema ([#252](https://github.com/chanzuckerberg/cz-benchmarks/issues/252)) ([#258](https://github.com/chanzuckerberg/cz-benchmarks/issues/258)) ([8bbb365](https://github.com/chanzuckerberg/cz-benchmarks/commit/8bbb3650acbed9328b9b66a12eafce393990eaa1))
+
+
+### Bug Fixes
+
+* use macro average for auroc, not weighted ([#253](https://github.com/chanzuckerberg/cz-benchmarks/issues/253)) ([#260](https://github.com/chanzuckerberg/cz-benchmarks/issues/260)) ([412af37](https://github.com/chanzuckerberg/cz-benchmarks/commit/412af37228ffdd868f496ba73f8060ffe0e70787))
+
 ## [0.9.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.1...v0.9.2) (2025-05-20)
 
 
