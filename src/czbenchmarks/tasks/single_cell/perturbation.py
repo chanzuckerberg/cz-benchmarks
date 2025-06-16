@@ -6,7 +6,7 @@ import numpy as np
 import scipy as sp
 import logging
 from ..base import BaseTask
-from ...datasets.types import Embedding, GeneExpression, ListLike
+from ...datasets.types import Embedding, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
@@ -26,7 +26,7 @@ class PerturbationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "perturbation"
 
-    def _run_task(self, expression_data: GeneExpression, var_names: ListLike) -> dict:
+    def _run_task(self, expression_data: Embedding, var_names: ListLike) -> dict:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -60,9 +60,9 @@ class PerturbationTask(BaseTask):
     def _compute_metrics(
         self,
         gene_pert: str,
-        perturbation_pred: GeneExpression,
+        perturbation_pred: Embedding,
         perturbation_truth: pd.DataFrame,
-        perturbation_ctrl: GeneExpression,
+        perturbation_ctrl: Embedding,
         avg_perturbation_ctrl: pd.Series,
         **kwargs,
     ) -> List[MetricResult]:
@@ -300,7 +300,7 @@ class PerturbationTask(BaseTask):
 
     @staticmethod
     def set_baseline(
-        expression_data: GeneExpression,
+        expression_data: Embedding,
         var_names: ListLike,
         obs_names: ListLike,
         baseline_type: Literal["median", "mean"] = "median",
@@ -341,10 +341,10 @@ class PerturbationTask(BaseTask):
 
     def _run_task_for_dataset(
         self,
-        expression_data: GeneExpression,
+        expression_data: Embedding,
         var_names: ListLike,
         gene_pert: str,
-        perturbation_pred: GeneExpression,
+        perturbation_pred: Embedding,
         perturbation_truth: pd.DataFrame,
     ) -> List[MetricResult]:
         """Run task for a dataset or list of datasets and compute metrics.

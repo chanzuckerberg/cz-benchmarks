@@ -4,7 +4,7 @@ import pandas as pd
 import anndata as ad
 
 from ..constants import RANDOM_SEED
-from ..datasets.types import Embedding, GeneExpression
+from ..datasets.types import Embedding
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
@@ -85,7 +85,7 @@ class BaseTask(ABC):
 
     def set_baseline(
         self,
-        expression_data: GeneExpression,
+        expression_data: Embedding,
         obs: Optional[pd.DataFrame] = None,
         var: Optional[pd.DataFrame] = None,
         **kwargs,

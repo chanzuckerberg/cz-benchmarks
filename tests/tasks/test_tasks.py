@@ -12,7 +12,6 @@ from czbenchmarks.datasets.types import (
     Organism,
     Embedding,
     ListLike,
-    GeneExpression,
 )
 from czbenchmarks.metrics.types import MetricResult
 from tests.utils import DummyTask, create_dummy_anndata
@@ -35,7 +34,7 @@ adata = create_dummy_anndata(
 # sc.pp.pca(adata, n_comps=n_emb_dim, svd_solver="arpack",
 # random_state=RANDOM_SEED, use_highly_variable=True, key_added=OBSM_KEY)
 
-EXPRESSION_MATRIX: GeneExpression = adata.X.copy()
+EXPRESSION_MATRIX: Embedding = adata.X.copy()
 EMBEDDING_MATRIX: Embedding = (
     adata.X.copy().toarray()
 )  # adata.obsm[OBSM_KEY].copy()

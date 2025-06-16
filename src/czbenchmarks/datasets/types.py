@@ -58,9 +58,6 @@ class Organism(Enum):
 if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
     OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
 
-
-GeneExpression = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
-
 Embedding = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
 
 ListLike = Union[list, np.ndarray, pd.Series]
