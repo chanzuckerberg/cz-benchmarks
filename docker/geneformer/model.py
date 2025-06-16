@@ -71,7 +71,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
         parser = argparse.ArgumentParser(
             description="Run Geneformer model on input dataset."
         )
-        parser.add_argument("--model-variant", type=str, default="gf_12L_30M")
+        parser.add_argument("--model_variant", type=str, default="Geneformer-V2-316M")
         return parser
 
     def get_model_weights_subdir(self, _dataset: BaseDataset) -> str:
@@ -218,7 +218,7 @@ class Geneformer(GeneformerValidator, BaseModelImplementation):
             model_type="Pretrained",
             emb_layer=-1,
             emb_mode="cls",
-            forward_batch_size=32,
+            forward_batch_size=16,
             nproc=4,
             token_dictionary_file=str(
                 Path(
