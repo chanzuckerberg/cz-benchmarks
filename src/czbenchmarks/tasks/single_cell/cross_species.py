@@ -26,7 +26,11 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self.requires_multiple_datasets = True
 
     def _run_task(
-        self, labels: List[ListLike], organism_list: List[str], **kwargs
+        self,
+        cell_representation: Embedding,
+        labels: List[ListLike],
+        organism_list: List[str],
+        **kwargs,
     ) -> dict:
         """Runs the cross-species integration evaluation task.
 
@@ -40,16 +44,25 @@ class CrossSpeciesIntegrationTask(BaseTask):
         Returns:
             Dictionary of labels and species
         """
+        cell_representation = np.vstack(cell_representation)
+
         species = np.concatenate(
-            [organism] * len(label) for organism, label in zip(organism_list, labels)
+            [
+                [
+                    str(organism),
+                ]
+                * len(label)
+                for organism, label in zip(organism_list, labels)
+            ]
         )
         labels = np.concatenate(labels)
 
-        assert species.shape == labels.shape, AssertionError(
-            "Species and labels must have the same shape"
+        assert len(cell_representation) == len(species) == len(labels), AssertionError(
+            "Cell representation, species, and labels must have the same shape"
         )
 
         return {
+            "cell_representation": cell_representation,
             "labels": labels,
             "species": species,
         }

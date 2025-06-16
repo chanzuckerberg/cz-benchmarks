@@ -169,7 +169,6 @@ def test_task_execution(
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-# FIXME MICHELLE
 def test_cross_species_task(
     embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"]
 ):
@@ -178,13 +177,16 @@ def test_cross_species_task(
     embedding_list = [embedding, embedding]
     labels_list = [labels, labels]
     organism_list = [Organism.HUMAN, Organism.MOUSE]
+    task_kwargs = {
+        "labels": labels_list,
+        "organism_list": organism_list,
+    }
 
     try:
         # Test regular task execution
         results = task.run(
-            embedding=embedding_list,
-            labels=labels_list,
-            organism_list=organism_list,
+            cell_representation=embedding_list,
+            task_kwargs=task_kwargs,
         )
 
         # Verify results structure
