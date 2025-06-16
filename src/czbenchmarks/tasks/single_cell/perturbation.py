@@ -1,4 +1,4 @@
-from typing import Literal, List
+from typing import Literal, List, Dict
 import pandas as pd
 import scanpy as sc
 import anndata as ad
@@ -44,10 +44,10 @@ class PerturbationTask(BaseTask):
         if sp.sparse.issparse(cell_representation):
             cell_representation = cell_representation.toarray()
 
-        perturbation_ctrl = cell_representation.mean(0)
+        perturbation_ctrl = cell_representation.mean(0, keepdims=True)
 
         avg_perturbation_ctrl = pd.Series(
-            data=perturbation_ctrl,
+            data=perturbation_ctrl.squeeze(),
             index=var_names,
             name="ctrl",
         )
@@ -61,7 +61,7 @@ class PerturbationTask(BaseTask):
         self,
         gene_pert: str,
         perturbation_pred: Embedding,
-        perturbation_truth: pd.DataFrame,
+        perturbation_truth: Dict[str, pd.DataFrame],
         perturbation_ctrl: Embedding,
         avg_perturbation_ctrl: pd.Series,
         **kwargs,
@@ -330,7 +330,8 @@ class PerturbationTask(BaseTask):
         baseline_func = np.median if baseline_type == "median" else np.mean
         perturb_baseline_pred = pd.DataFrame(
             np.tile(
-                baseline_func(cell_representation, axis=0), (cell_representation.shape[0], 1)
+                baseline_func(cell_representation, axis=0),
+                (cell_representation.shape[0], 1),
             ),
             columns=var_names,  # Use gene names from the dataset
             index=obs_names,  # Use cell names from the dataset
@@ -338,38 +339,3 @@ class PerturbationTask(BaseTask):
 
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
-
-    def _run_task_for_dataset(
-        self,
-        cell_representation: Embedding,
-        var_names: ListLike,
-        gene_pert: str,
-        perturbation_pred: Embedding,
-        perturbation_truth: pd.DataFrame,
-    ) -> List[MetricResult]:
-        """Run task for a dataset or list of datasets and compute metrics.
-
-        This method runs the task implementation and computes the corresponding metrics.
-
-        Args:
-            cell_representation: gene expression data or embedding for task
-            var_names: list of gene names
-            gene_pert: perturbation gene to evaluate
-            perturbation_pred: predicted perturbation effects
-            perturbation_truth: ground truth perturbation effects
-
-        Returns:
-            List of MetricResult objects
-
-        """
-        task_output = self._run_task(
-            cell_representation=cell_representation, var_names=var_names
-        )
-        metrics = self._compute_metrics(
-            gene_pert=gene_pert,
-            perturbation_pred=perturbation_pred,
-            perturbation_truth=perturbation_truth,
-            perturbation_ctrl=task_output["perturbation_ctrl"],
-            avg_perturbation_ctrl=task_output["avg_perturbation_ctrl"],
-        )
-        return metrics
