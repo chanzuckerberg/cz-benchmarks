@@ -106,7 +106,7 @@ class BaseTask(ABC):
 
         # Create the AnnData object
         # FIXME MICHELLE -- obs var probably not needed, but needs debugging
-        adata = ad.AnnData(X=expression_data)#, obs=obs, var=var)
+        adata = ad.AnnData(X=expression_data)  # , obs=obs, var=var)
 
         # Run the standard preprocessing workflow
         embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)
@@ -114,14 +114,14 @@ class BaseTask(ABC):
 
     def run(
         self,
-        embedding: Union[Embedding, List[Embedding]],
+        cell_representation: Union[Embedding, List[Embedding]],
         task_kwargs: dict = {},
         metric_kwargs: dict = {},
     ) -> List[MetricResult]:
         """Run the task on input data and compute metrics.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding to use for the task
             task_kwargs: Additional arguments passed to the task
             metric_kwargs: Additional arguments passed to the metrics
 
@@ -135,19 +135,21 @@ class BaseTask(ABC):
 
         # Check if task requires embeddings from multiple datasets
         if self.requires_multiple_datasets:
-            error_message = "This task requires a list of embeddings"
-            if not isinstance(embedding, list):
+            error_message = "This task requires a list of cell representations"
+            if not isinstance(cell_representation, list):
                 raise ValueError(error_message)
-            if not all([isinstance(emb, Embedding) for emb in embedding]):
+            if not all([isinstance(emb, Embedding) for emb in cell_representation]):
                 raise ValueError(error_message)
-            if len(embedding) < 2:
-                raise ValueError(f"{error_message} but only one embedding provided")
+            if len(cell_representation) < 2:
+                raise ValueError(f"{error_message} but only one was provided")
         else:
-            if not isinstance(embedding, Embedding):
-                raise ValueError("This task requires a single embedding for input")
+            if not isinstance(cell_representation, Embedding):
+                raise ValueError(
+                    "This task requires a single cell representation for input"
+                )
 
         return self._run_task_for_dataset(
-                                    embedding=embedding,
-                                    task_kwargs=task_kwargs,
-                                    metric_kwargs=metric_kwargs,
-                                )
+            cell_representation,
+            task_kwargs=task_kwargs,
+            metric_kwargs=metric_kwargs,
+        )

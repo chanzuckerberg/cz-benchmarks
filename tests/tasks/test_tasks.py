@@ -53,7 +53,7 @@ VAR_EMB: ListLike = VAR_EXP
 def test_embedding_valid_input_output(requires_multiple_datasets, embedding):
     """Test that embedding is accepted and List[MetricResult] is returned."""
     task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
-    results = task.run(embedding)
+    results = task.run(cell_representation=embedding)
 
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
@@ -62,28 +62,27 @@ def test_embedding_valid_input_output(requires_multiple_datasets, embedding):
 @pytest.mark.parametrize(
     "requires_multiple_datasets, embedding_list, error_message",
     [
-        (False, "abcd", "This task requires a single embedding for input"),
+        (False, "abcd", "This task requires a single cell representation for input"),
         (
             False,
             [EMBEDDING_MATRIX],
-            "This task requires a single embedding for input",
+            "This task requires a single cell representation for input",
         ),
         (
             False,
             [EMBEDDING_MATRIX, EMBEDDING_MATRIX],
-            "This task requires a single embedding for input",
+            "This task requires a single cell representation for input",
         ),
-        (True, EMBEDDING_MATRIX, "This task requires a list of embeddings"),
+        (True, EMBEDDING_MATRIX, "This task requires a list of cell representations"),
         (
             True,
             ["abcd", EMBEDDING_MATRIX],
-            "This task requires a list of embeddings",
+            "This task requires a list of cell representations",
         ),
         (
             True,
             [EMBEDDING_MATRIX],
-            "This task requires a list of embeddings but only one embedding "
-            "provided",
+            "This task requires a list of cell representations but only one was provided",
         ),
     ],
 )
@@ -93,7 +92,7 @@ def test_embedding_invalid_input(
     """Test ValueError for mismatch with requires_multiple_datasets."""
     task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
     with pytest.raises(ValueError, match=error_message):
-        task.run(embedding_list)
+        task.run(cell_representation=embedding_list)
 
 
 @pytest.mark.parametrize(
@@ -139,7 +138,7 @@ def test_task_execution(
     try:
         # Test regular task execution
         results = task.run(
-            embedding=embedding,
+            cell_representation=embedding,
             task_kwargs=task_kwargs,
             metric_kwargs=metric_kwargs,
         )
@@ -156,7 +155,7 @@ def test_task_execution(
                 task_kwargs["var"] = task_kwargs["var"].iloc[:n_pcs]
 
             baseline_results = task.run(
-                embedding=baseline_embedding,
+                cell_representation=baseline_embedding,
                 task_kwargs=task_kwargs,
                 metric_kwargs=metric_kwargs,
             )
@@ -212,7 +211,8 @@ def test_perturbation_task(
     try:
         # Test regular task execution
         results = task.run(
-            expression_data=expression_data, var_names=var_names
+            cell_representation=expression_data, 
+            task_kwargs=task_kwargs,
         )
 
         # Verify results structure
@@ -232,7 +232,7 @@ def test_perturbation_task(
                 baseline_type=baseline_type,
             )
             baseline_results = task.run(
-                expression_data=baseline_embedding, var_names=var_names
+                cell_representation=baseline_embedding, var_names=var_names
             )
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
