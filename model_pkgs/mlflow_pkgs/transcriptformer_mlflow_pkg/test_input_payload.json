@@ -1,16 +1,7 @@
 {
-  "dataframe_split": {
-    "columns": [
-      "input_file",
-      "output_file"
-    ],
-    "data": [
-      [
-        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad",
-        "tf_results/example_small_embeddings.h5ad"
-      ]
-    ]
-  },
+  "inputs": [
+    "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+  ],
   "params": {
     "gene_col_name": "ensembl_id",
     "precision": "16-mixed",

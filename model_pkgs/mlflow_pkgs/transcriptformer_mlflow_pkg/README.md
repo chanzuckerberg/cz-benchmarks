@@ -10,8 +10,7 @@ $ cd model_pkgs/mlflow_pkgs/transcriptformer_mlflow_pkg
 ```
 $ uv venv --python=3.11
 $ source .venv/bin/activate
-$ uv pip install mlflow
-$ uv pip install transcriptformer 
+$ uv pip install -r transcriptformer_requirements.txt 
 ```
 
 3. Download model weights and auxiliary data to the `model_data` directory.
@@ -20,10 +19,10 @@ $ uv pip install transcriptformer
 $ transcriptformer download tf-sapiens --checkpoint-dir model_data/
 ```
 
-4. Run `transcriptformer_mlflow_packager.py` to create the **MLflow Model** artifact.
+4. Run `mlflow_packager.py` to create the **MLflow Model** artifact.
 
 ```
-$ python transcriptformer_mlflow_packager.py --model-variant tf_sapiens   --checkpoint-path model_data/tf_sapiens --output-dir mlflow_models --requirements transcriptformer_requirements.txt
+$ python mlflow_packager.py --model-variant tf_sapiens   --checkpoint-path model_data/tf_sapiens --output-dir mlflow_models --requirements transcriptformer_requirements.txt
 ```
 
 5. This should have created a directory `mlflow_models/transcriptformer_tf_sapiens/`. `transcriptformer_tf_sapiens` is the **MLflow Model** artifact and it should have the following structure:
@@ -46,7 +45,6 @@ $ python transcriptformer_mlflow_packager.py --model-variant tf_sapiens   --chec
 ├── python_env.yaml
 ├── python_model.pkl
 ├── requirements.txt
-├── serving_input_example.json
 ```
 
 # Verify that model package can be used to run inference
@@ -62,18 +60,9 @@ $ python generate_mlflow_test_payload.py --model-uri mlflow_models/transcriptfor
 $ cat test_input_payload.json
 
 {
-  "dataframe_split": {
-    "columns": [
-      "input_file",
-      "output_file"
-    ],
-    "data": [
-      [
-        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad",
-        "tf_results/example_small_embeddings.h5ad"
-      ]
-    ]
-  },
+  "inputs": [
+    "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+  ],
   "params": {
     "gene_col_name": "ensembl_id",
     "precision": "16-mixed",
@@ -92,29 +81,6 @@ $ mlflow models predict --model-uri mlflow_models/transcriptformer_tf_sapiens --
 4. Verify that the inference ran correctly by checking the `test_output.json` file:
 
 ```
-$ cat test_output.json
-{"predictions": [{"output_file": "tf_results/example_small_embeddings.h5ad"}]}
-
-$ python
-Python 3.11.12 (main, Apr  9 2025, 04:04:00) [Clang 20.1.0 ] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import anndata as ad
->>> adata = ad.read_h5ad("tf_results/example_small_embeddings.h5ad")
->>> adata.obsm.keys()
-KeysView(AxisArrays with keys: embeddings)
->>> adata.obsm['embeddings'][:10]
-array([[-0.14298186, -0.12608503,  0.04042066, ...,  0.05823774,
-         0.11938392,  0.05610898],
-       [-0.24399517, -0.2638534 , -0.16482367, ...,  0.07856863,
-         0.03534734, -0.00754361],
-       [-0.4980944 , -0.40106925, -0.24204014, ..., -0.4581786 ,
-         0.44571778,  0.17741683],
-       ...,
-       [-0.20021866, -0.31380177, -0.2203846 , ..., -0.0949255 ,
-         0.20720059, -0.00074428],
-       [-0.3758839 , -0.1579138 , -0.13913535, ..., -0.04498409,
-         0.08683188,  0.04261744],
-       [-0.53276694, -0.4542373 , -0.48934302, ...,  0.05328108,
-         0.6291807 ,  0.02545681]], shape=(10, 2048), dtype=float32)
->>> quit()
+$ head -c 1000 test_output.json | less
+{"predictions": [[[-0.1429818570613861, -0.12608502805233002, 0.040420662611722946, -0.19157767295837402, 0.22647874057292938, 0.15660904347896576, -0.13574904203414917, 0.0721682608127594, 0.024216821417212486, -0.045611537992954254, -0.3007250130176544, 0.08299852907657623, 0.000504956697113812, 0.003926896024495363, 0.08237996697425842, 0.18843598663806915, -0.008095023222267628, -0.012726053595542908, -0.11273445188999176, 0.03558430075645447, -0.05046337470412254, 0.18308386206626892, 0.07628823816776276, 0.017358627170324326, 0.027970347553491592, -0.33074551820755005, 0.07161068916320801, 0.15132226049900055, -0.06798345595598221, 0.06222779303789139, -0.13658343255519867, 0.2187119573354721, 0.1522756665945053, 0.023600874468684196, -0.1128731444478035, 0.0877125933766365, 0.045885197818279266, 0.05724436417222023, 0.16931083798408508, -0.1518353968858719, 0.03722844272851944, -0.13497602939605713, -0.015310755930840969, -0.10012456774711609, -0.032233309000730515, 0.2051643580
 ```

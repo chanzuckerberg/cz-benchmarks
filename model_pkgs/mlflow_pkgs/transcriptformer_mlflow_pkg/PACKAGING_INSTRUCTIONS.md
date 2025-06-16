@@ -12,7 +12,7 @@ transcriptformer_mlflow_pkg
         │   ├── __init__.py
         │   └── transcriptformer_mlflow_model.py
         ├── model_data
-        ├── transcriptformer_mlflow_packager.py
+        ├── mlflow_packager.py
         └── transcriptformer_requirements.txt
 ``` 
 2. Flesh out the package dependencies required to run your model in `transcriptformer_requirements.txt`.
@@ -24,9 +24,9 @@ transcriptformer_mlflow_pkg
 5. Flesh out the implementation of `model_code/transcriptformer_mlflow_model.py`.
 
 # Create an **MLflow Model** package
-1. Flesh out the implementation of `transcriptformer_mlflow_packager.py`.
+1. Flesh out the implementation of `mlflow_packager.py`.
 
-2. Run `transcriptformer_mlflow_packager.py` to create the **MLflow Model** artifact.
+2. Run `mlflow_packager.py` to create the **MLflow Model** artifact.
 
 3. Check that it created a directory that has this structure:
 
@@ -42,7 +42,6 @@ transcriptformer_mlflow_pkg
 ├── python_env.yaml
 ├── python_model.pkl
 ├── requirements.txt
-├── serving_input_example.json
 ```
 
 # Verify that model package can be used to run inference

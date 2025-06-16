@@ -1,2 +1,2 @@
-mlflow
-transcriptformer
+mlflow==3.1.*
+transcriptformer>=0.3.0
