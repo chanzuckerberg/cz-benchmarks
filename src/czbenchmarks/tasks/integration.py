@@ -20,22 +20,20 @@ class BatchIntegrationTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(
-        self, *, random_seed: int = RANDOM_SEED
-    ):
+    def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.display_name = "batch integration"
 
-    def _run_task(self, **kwargs) -> dict:
+    def _run_task(self, cell_representation: Embedding, **kwargs) -> dict:
         return {}
 
     def _compute_metrics(
-        self, embedding: Embedding, batch_labels: ListLike, labels: ListLike
+        self, cell_representation: Embedding, batch_labels: ListLike, labels: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding for task
             batch_labels: batch labels to use for the task
             labels: cell type labels to use for the task
 
@@ -52,7 +50,7 @@ class BatchIntegrationTask(BaseTask):
                 metric_type=entropy_per_cell_metric,
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
-                    X=embedding,
+                    X=cell_representation,
                     labels=batch_labels,
                     random_seed=self.random_seed,
                 ),
@@ -61,7 +59,7 @@ class BatchIntegrationTask(BaseTask):
                 metric_type=silhouette_batch_metric,
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
-                    X=embedding,
+                    X=cell_representation,
                     labels=labels,
                     batch=batch_labels,
                 ),

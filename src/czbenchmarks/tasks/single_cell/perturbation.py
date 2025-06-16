@@ -26,14 +26,14 @@ class PerturbationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "perturbation"
 
-    def _run_task(self, expression_data: Embedding, var_names: ListLike) -> dict:
+    def _run_task(self, cell_representation: Embedding, var_names: ListLike) -> dict:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
         expression from the dataset for metric computation.
 
         Args:
-            expression_data: matrix containing perturbation data (AnnData.X)
+            cell_representation: gene expression data or embedding for task
             var_names: list of gene names
 
         Returns:
@@ -41,10 +41,10 @@ class PerturbationTask(BaseTask):
             perturbation truth, and perturbation control
         """
 
-        if sp.sparse.issparse(expression_data):
-            expression_data = expression_data.toarray()
+        if sp.sparse.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
 
-        perturbation_ctrl = expression_data.mean(0)
+        perturbation_ctrl = cell_representation.mean(0)
 
         avg_perturbation_ctrl = pd.Series(
             data=perturbation_ctrl,
@@ -300,7 +300,7 @@ class PerturbationTask(BaseTask):
 
     @staticmethod
     def set_baseline(
-        expression_data: Embedding,
+        cell_representation: Embedding,
         var_names: ListLike,
         obs_names: ListLike,
         baseline_type: Literal["median", "mean"] = "median",
@@ -312,7 +312,7 @@ class PerturbationTask(BaseTask):
         truth.
 
         Args:
-            data: PerturbationSingleCellDataset containing control and perturbed data
+            cell_representation: gene expression data or embedding for task
             gene_pert: The perturbation gene to evaluate
             baseline_type: The statistical method to use for baseline prediction
                 (median or mean)
@@ -330,7 +330,7 @@ class PerturbationTask(BaseTask):
         baseline_func = np.median if baseline_type == "median" else np.mean
         perturb_baseline_pred = pd.DataFrame(
             np.tile(
-                baseline_func(expression_data, axis=0), (expression_data.shape[0], 1)
+                baseline_func(cell_representation, axis=0), (cell_representation.shape[0], 1)
             ),
             columns=var_names,  # Use gene names from the dataset
             index=obs_names,  # Use cell names from the dataset
@@ -341,7 +341,7 @@ class PerturbationTask(BaseTask):
 
     def _run_task_for_dataset(
         self,
-        expression_data: Embedding,
+        cell_representation: Embedding,
         var_names: ListLike,
         gene_pert: str,
         perturbation_pred: Embedding,
@@ -352,7 +352,7 @@ class PerturbationTask(BaseTask):
         This method runs the task implementation and computes the corresponding metrics.
 
         Args:
-            expression_data: matrix containing perturbation data (AnnData.X)
+            cell_representation: gene expression data or embedding for task
             var_names: list of gene names
             gene_pert: perturbation gene to evaluate
             perturbation_pred: predicted perturbation effects
@@ -363,7 +363,7 @@ class PerturbationTask(BaseTask):
 
         """
         task_output = self._run_task(
-            expression_data=expression_data, var_names=var_names
+            cell_representation=cell_representation, var_names=var_names
         )
         metrics = self._compute_metrics(
             gene_pert=gene_pert,

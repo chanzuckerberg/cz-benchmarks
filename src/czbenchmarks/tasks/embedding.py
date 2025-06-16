@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class EmbeddingTask(BaseTask):
-    """Task for evaluating embedding quality using labeled data.
+    """Task for evaluating cell representation quality using labeled data.
 
-    This task computes quality metrics for embeddings using ground truth labels.
+    This task computes quality metrics for cell representations using ground truth labels.
     Currently supports silhouette score evaluation.
 
     Args:
@@ -24,13 +24,13 @@ class EmbeddingTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "embedding"
 
-    def _run_task(self, **kwargs):
+    def _run_task(self, cell_representation: Embedding, **kwargs):
         return {}
 
     def _compute_metrics(
-        self, embedding: Embedding, input_labels: ListLike
+        self, cell_representation: Embedding, input_labels: ListLike
     ) -> List[MetricResult]:
-        """Computes embedding quality metrics.
+        """Computes cell representation quality metrics.
 
         Returns:
             List of MetricResult objects containing silhouette score
@@ -41,7 +41,7 @@ class EmbeddingTask(BaseTask):
                 metric_type=metric_type,
                 value=metrics_registry.compute(
                     metric_type,
-                    X=embedding,
+                    X=cell_representation,
                     labels=input_labels,
                 ),
             )

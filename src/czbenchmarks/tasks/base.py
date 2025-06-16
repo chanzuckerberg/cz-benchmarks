@@ -34,14 +34,14 @@ class BaseTask(ABC):
         self.requires_multiple_datasets = False
 
     @abstractmethod
-    def _run_task(self, embedding: Embedding, **kwargs) -> dict:
+    def _run_task(self, cell_representation: Embedding, **kwargs) -> dict:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
         as instance variables.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding for task
             **kwargs: Additional arguments passed to the task
         Returns:
             Dictionary of output data for the task
@@ -57,7 +57,7 @@ class BaseTask(ABC):
 
     def _run_task_for_dataset(
         self,
-        embedding: Embedding,
+        cell_representation: Embedding,
         task_kwargs: dict = {},
         metric_kwargs: dict = {},
     ) -> List[MetricResult]:
@@ -66,7 +66,7 @@ class BaseTask(ABC):
         This method runs the task implementation and computes the corresponding metrics.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding for task
             task_kwargs: Additional arguments passed to the task
             metric_kwargs: Additional arguments passed to the metrics
         Returns:
@@ -74,11 +74,11 @@ class BaseTask(ABC):
 
         """
 
-        task_output = self._run_task(embedding=embedding, **task_kwargs)
+        task_output = self._run_task(cell_representation, **task_kwargs)
 
         # Handle cases where embedding required by metrics but not set by _run_task
-        if "embedding" not in metric_kwargs:
-            task_output.setdefault("embedding", embedding)
+        if "cell_representation" not in metric_kwargs:
+            task_output.setdefault("cell_representation", cell_representation)
 
         metrics = self._compute_metrics(**task_output, **metric_kwargs)
         return metrics
@@ -150,6 +150,6 @@ class BaseTask(ABC):
 
         return self._run_task_for_dataset(
             cell_representation,
-            task_kwargs=task_kwargs,
-            metric_kwargs=metric_kwargs,
+            task_kwargs,
+            metric_kwargs,
         )

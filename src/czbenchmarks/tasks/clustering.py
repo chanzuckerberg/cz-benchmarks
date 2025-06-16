@@ -35,7 +35,7 @@ class ClusteringTask(BaseTask):
 
     def _run_task(
         self,
-        embedding: Embedding,
+        cell_representation: Embedding,
         obs: pd.DataFrame,
         var: pd.DataFrame,
         use_rep: str = "X",
@@ -44,12 +44,12 @@ class ClusteringTask(BaseTask):
         key_added: str = KEY_ADDED,
         **kwargs,
     ) -> dict:
-        """Runs clustering on the embedding data.
+        """Runs clustering on the cell representation.
 
         Performs clustering and stores results for metric computation.
 
         Args:
-            embedding: Embedding matrix
+            cell_representation: gene expression data or embedding for task
             obs: Obs dataframe
             var: Var dataframe
             use_rep: Use representation, default is "X"
@@ -59,7 +59,7 @@ class ClusteringTask(BaseTask):
         """
 
         # Create the AnnData object
-        adata = ad.AnnData(X=embedding, obs=obs, var=var)
+        adata = ad.AnnData(X=cell_representation, obs=obs, var=var)
 
         predicted_labels = cluster_embedding(
             adata,

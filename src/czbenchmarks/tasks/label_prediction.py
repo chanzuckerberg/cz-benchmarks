@@ -46,14 +46,20 @@ class MetadataLabelPredictionTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "metadata label prediction"
 
-    def _run_task(self, embedding: Embedding, labels: ListLike, n_folds: int = N_FOLDS, min_class_size: int = MIN_CLASS_SIZE) -> dict:
+    def _run_task(
+        self,
+        cell_representation: Embedding,
+        labels: ListLike,
+        n_folds: int = N_FOLDS,
+        min_class_size: int = MIN_CLASS_SIZE,
+    ) -> dict:
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
-        embedding data. Stores results for metric computation.
+        cell representation data. Stores results for metric computation.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding for task
             labels: labels to use for the task
 
         Returns:
@@ -61,17 +67,19 @@ class MetadataLabelPredictionTask(BaseTask):
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
         logger.info(f"Starting prediction task for labels")
-        embedding = embedding.copy()  # Protect from destructive operations
+        cell_representation = (
+            cell_representation.copy()
+        )  # Protect from destructive operations
 
         logger.info(
-            f"Initial data shape: {embedding.shape}, labels shape: {labels.shape}"
+            f"Initial data shape: {cell_representation.shape}, labels shape: {labels.shape}"
         )
 
         # Filter classes with minimum size requirement
-        embedding, labels = filter_minimum_class(
-            embedding, labels, min_class_size=min_class_size
+        cell_representation, labels = filter_minimum_class(
+            cell_representation, labels, min_class_size=min_class_size
         )
-        logger.info(f"After filtering: {embedding.shape} samples remaining")
+        logger.info(f"After filtering: {cell_representation.shape} samples remaining")
 
         # Determine scoring metrics based on number of classes
         n_classes = len(labels.unique())
@@ -124,7 +132,7 @@ class MetadataLabelPredictionTask(BaseTask):
             logger.info(f"Running cross-validation for {name}...")
             cv_results = cross_validate(
                 clf,
-                embedding,
+                cell_representation,
                 labels.codes,
                 cv=skf,
                 scoring=scorers,
@@ -260,8 +268,8 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, expression_values: Embedding, **kwargs) -> Embedding:
-        """Set a baseline embedding using raw gene expression.
+    def set_baseline(self, cell_representation: Embedding, **kwargs) -> Embedding:
+        """Set a baseline cell representation using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene
         expression matrix as features for classification. This provides a baseline
@@ -269,12 +277,12 @@ class MetadataLabelPredictionTask(BaseTask):
         tasks.
 
         Args:
-            expression_values: expression values to use for the task
+            cell_representation: gene expression data or embedding
 
         Returns:
             Baseline embedding
         """
         # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(expression_values):
-            embedding = expression_values.toarray()
-        return embedding
+        if sp.sparse.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
+        return cell_representation

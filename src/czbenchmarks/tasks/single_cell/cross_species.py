@@ -25,7 +25,9 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self.display_name = "cross-species integration"
         self.requires_multiple_datasets = True
 
-    def _run_task(self, labels: List[ListLike], organism_list: List[str], **kwargs) -> dict:
+    def _run_task(
+        self, labels: List[ListLike], organism_list: List[str], **kwargs
+    ) -> dict:
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
@@ -38,23 +40,27 @@ class CrossSpeciesIntegrationTask(BaseTask):
         Returns:
             Dictionary of labels and species
         """
-        species = np.concatenate([organism] * len(label) for organism, label in zip(organism_list, labels))
+        species = np.concatenate(
+            [organism] * len(label) for organism, label in zip(organism_list, labels)
+        )
         labels = np.concatenate(labels)
-        
-        assert species.shape == labels.shape, AssertionError("Species and labels must have the same shape")
-        
+
+        assert species.shape == labels.shape, AssertionError(
+            "Species and labels must have the same shape"
+        )
+
         return {
             "labels": labels,
             "species": species,
         }
 
     def _compute_metrics(
-        self, embedding: Embedding, labels: ListLike, species: ListLike
+        self, cell_representation: Embedding, labels: ListLike, species: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            embedding: embedding to use for the task
+            cell_representation: gene expression data or embedding for task
             labels: labels to use for the task
             species: species to use for the task
 
@@ -71,7 +77,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=entropy_per_cell_metric,
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
-                    X=embedding,
+                    X=cell_representation,
                     labels=species,
                     random_seed=self.random_seed,
                 ),
@@ -80,7 +86,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=silhouette_batch_metric,
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
-                    X=embedding,
+                    X=cell_representation,
                     labels=labels,
                     batch=species,
                 ),
