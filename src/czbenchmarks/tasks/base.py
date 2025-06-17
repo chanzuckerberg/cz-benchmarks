@@ -126,7 +126,7 @@ class BaseTask(ABC):
             metric_kwargs: Additional arguments passed to the metrics
 
         Returns:
-            For single embedding: A metric result of list of metric results for the task
+            For single embedding: A one-element list containing a single metric result for the task
             For multiple embeddings: List of metric results for each task, one per dataset
 
         Raises:
