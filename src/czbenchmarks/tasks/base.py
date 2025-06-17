@@ -114,7 +114,7 @@ class BaseTask(ABC):
 
     def run(
         self,
-        cell_representation: Union[Embedding, List[Embedding]],
+        cell_representation: Union[CellRepresentation, List[CellRepresentation]],
         task_kwargs: dict = {},
         metric_kwargs: dict = {},
     ) -> List[MetricResult]:
