@@ -33,6 +33,23 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 # --------------------------------------------------------------------------- #
+# 1. Deserialize JSON payload
+# --------------------------------------------------------------------------- #
+def _deserialize_json(model, payload_path):
+    """Deserialize the json payload to PyFuncInput types."""
+    with sys.stdin if payload_path == "-" else open(Path(payload_path), "r") as fp:
+        body = json.load(fp)
+        LOGGER.info(f"Deserializing json payload: {body}")
+        parsed = _parse_json_data(
+            body,
+            model.metadata,
+            model.metadata.get_input_schema(),
+        )
+
+        return parsed
+
+
+# --------------------------------------------------------------------------- #
 # 2. Prediction
 # --------------------------------------------------------------------------- #
 def predict(model_uri: str, payload_path: str):
@@ -42,13 +59,7 @@ def predict(model_uri: str, payload_path: str):
 
     # Deserialize the json payload into the PyFuncInput types
     # accepted by PyFuncModel.predict()
-    with sys.stdin if payload_path == "-" else open(Path(payload_path), "r") as fp:
-        body = json.load(fp)
-        parsed = _parse_json_data(
-            body,
-            model.metadata,
-            model.metadata.get_input_schema(),
-        )
+    parsed = _deserialize_json(model, payload_path)
 
     LOGGER.info("Invoking predict(); data type=%s", type(parsed.data))
     return model.predict(parsed.data, params=parsed.params)  # pyfunc contract
