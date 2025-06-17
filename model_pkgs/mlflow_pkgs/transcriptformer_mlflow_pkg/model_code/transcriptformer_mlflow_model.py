@@ -114,7 +114,7 @@ class TranscriptformerMLflowModel(mlflow.pyfunc.PythonModel):
     # Public inference                                                   #
     # ------------------------------------------------------------------ #
     # No type hints → avoid MLflow’s “type hints override explicit
-    # signature” warning (docs). :contentReference[oaicite:1]{index=1}
+    # signature” warning (docs).
     def predict(self, context, model_input, params=None):
         """
         Execute embedding inference for *each* input file.
