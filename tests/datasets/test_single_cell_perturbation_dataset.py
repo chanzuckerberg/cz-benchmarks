@@ -13,13 +13,15 @@ def test_perturbation_dataset_load_data_missing_condition_key(
     perturbation_missing_condition,
 ):
     """Tests that loading data fails when the condition key is missing."""
-    with pytest.raises(ValueError, match="Condition key condition not found in adata.obs"):
+    with pytest.raises(
+        ValueError, match="Condition key 'condition' not found in adata.obs"
+    ):
         perturbation_missing_condition.load_data()
 
 
 def test_perturbation_dataset_load_data_missing_split_key(perturbation_missing_split):
     """Tests that loading data fails when the split key is missing."""
-    with pytest.raises(ValueError, match="Split key split not found in adata.obs"):
+    with pytest.raises(ValueError, match="Split key 'split' not found in adata.obs"):
         perturbation_missing_split.load_data()
 
 

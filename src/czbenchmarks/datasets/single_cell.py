@@ -103,11 +103,11 @@ class PerturbationSingleCellDataset(SingleCellDataset):
 
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
-                f"Condition key {self.condition_key} not found in adata.obs"
+                f"Condition key '{self.condition_key}' not found in adata.obs"
             )
 
         if self.split_key not in self.adata.obs.columns:
-            raise ValueError(f"Split key {self.split_key} not found in adata.obs")
+            raise ValueError(f"Split key '{self.split_key}' not found in adata.obs")
 
         # Store control data for each condition in the reference dataset
         conditions = np.array(list(self.adata.obs[self.condition_key]))
