@@ -652,6 +652,8 @@ def run_multi_dataset_task(
     return task_results
 
 
+# TODO handle returned value from task.set_baseline so that it can be returned as baseline model in output
+# See comment here: https://github.com/chanzuckerberg/cz-benchmarks/pull/269/files#r2150232334
 def run_task(
     dataset_name: str,
     dataset: BaseDataset,
