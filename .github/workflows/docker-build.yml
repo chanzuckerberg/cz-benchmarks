@@ -11,9 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # y4c8w5f9 is the assigned registry alias for the public ECR registry
-  # TODO: Swap to custom alias for the public ECR registry when it's approved (custom alias: czi-virtual-cells)
-  PUBLIC_ECR_REPO: public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public
+  # czi-virtual-cells is the assigned registry alias for the public ECR registry
+  PUBLIC_ECR_REPO: public.ecr.aws/czi-virtual-cells/cz-benchmarks-models-public
 
 jobs:
   build-push-images:
