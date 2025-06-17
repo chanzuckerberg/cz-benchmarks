@@ -636,6 +636,7 @@ def run_multi_dataset_task(
         model_detail = ModelDetail(
             type=model_type, args=model_args.get(model_type.value) or {}
         )
+        # FIXME task_args.task.display_name is now task.display_name
         task_result = TaskResult(
             task_name=task_args.name,
             task_name_display=task_args.task.display_name,
