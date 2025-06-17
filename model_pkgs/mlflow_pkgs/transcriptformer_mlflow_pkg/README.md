@@ -82,7 +82,7 @@ $ cat test_input_payload.json
 3. **Run inference** to test that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
 
 ```
-$ python predict_fn_test.py --model-uri mlflow_models/transcriptformer_tf_sapiens --json-payload-file test_input_payload.json
+$ python predict_func.py --model-uri mlflow_models/transcriptformer_tf_sapiens --json-payload-file test_input_payload.json
 ```
 4. **Run inference to test if the model can be served from a REST API endpoint.**_This tests if the json input payload round-trips through mlflow's native support for deserialization, datatype validation and finally serialization of the output back to json._ Run inference with the payload in its own `uv` virtual environment:
 
