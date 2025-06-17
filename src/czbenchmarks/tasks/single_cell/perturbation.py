@@ -4,6 +4,7 @@ import scanpy as sc
 import anndata as ad
 import numpy as np
 import logging
+import warnings
 from ..base import BaseTask
 from ...datasets import PerturbationSingleCellDataset, DataType
 from ...metrics import metrics_registry
@@ -299,14 +300,16 @@ class PerturbationTask(BaseTask):
         self,
         data: PerturbationSingleCellDataset,
         gene_pert: str,
-        baseline_type: Literal["median", "mean"] = "median",
+        baseline_type: Literal["median", "mean", "non_control_mean"] = "median",
         **kwargs,
     ):
         """Set a baseline embedding for perturbation prediction.
 
-        Creates baseline predictions using simple statistical methods (median and mean)
+        Creates baseline predictions using simple statistical methods 
+        -(median and mean)
         applied to the control data, and evaluates these predictions against ground
         truth.
+        -"non_control_mean": average across non-control cells (scGenePT-style) - requires annotated adata
 
         Args:
             data: PerturbationSingleCellDataset containing control and perturbed data
@@ -318,22 +321,63 @@ class PerturbationTask(BaseTask):
         Returns:
             List of MetricResult objects containing baseline performance metrics
             for different statistical methods (median, mean)
+            -mj comment: it returns norhing, it stores for evaluation
         """
 
         # Iterate through different statistical baseline functions (median and mean)
 
         # Create baseline prediction by replicating the aggregated expression values
         # across all cells in the dataset.
-        baseline_func = np.median if baseline_type == "median" else np.mean
-        perturb_baseline_pred = pd.DataFrame(
-            np.tile(
-                baseline_func(data.adata.X.toarray(), axis=0), (data.adata.shape[0], 1)
-            ),
-            columns=data.adata.var_names,  # Use gene names from the dataset
-            index=data.adata.obs_names,  # Use cell names from the dataset
-        )
+     
+        if baseline_type == "non_control_mean":
+            if not hasattr(data, "adata") or data.adata is None:
+                raise ValueError("Missing .adata in dataset. Ensure dataset was loaded with input AnnData.")
 
-        # Store the baseline prediction in the dataset for evaluation
+            adata = data.adata
+
+            # Try to find a usable condition label
+            if "condition_name" in adata.obs.columns:
+                condition_col = "condition_name"
+            elif "perturbation" in adata.obs.columns:
+                condition_col = "perturbation"
+                warnings.warn(
+                    "'condition_name' not found in obs. Falling back to 'perturbation'.",
+                    UserWarning,
+                )
+            elif "group" in adata.obs.columns:
+                condition_col = "group"
+                warnings.warn(
+                    "'condition_name' not found in obs. Falling back to 'group'.",
+                    UserWarning,
+                )
+            else:
+                raise KeyError(
+                    "The 'non_control_mean' baseline requires a column indicating control vs. perturbed cells. "
+                    "Expected one of: 'condition_name', 'perturbation', or 'group'."
+                )
+
+            nonctrl_mask = (adata.obs[condition_col] != "ctrl").values
+            X_nonctrl = adata.X[nonctrl_mask]
+            mean_vector = X_nonctrl.mean(axis=0)
+
+            perturb_baseline_pred = pd.DataFrame(
+                np.tile(mean_vector, (adata.shape[0], 1)),
+                columns=adata.var_names,
+                index=adata.obs_names,
+                )
+
+        else:
+            # Original cz-benchmark logic for "median" and "mean"
+            baseline_func = np.median if baseline_type == "median" else np.mean
+            perturb_baseline_pred = pd.DataFrame(
+                np.tile(
+                    baseline_func(data.adata.X.toarray(), axis=0),
+                    (data.adata.shape[0], 1),
+                ),
+                columns=data.adata.var_names,
+                index=data.adata.obs_names,
+            )
+
         data.set_output(
             ModelType.BASELINE,
             DataType.PERTURBATION_PRED,
