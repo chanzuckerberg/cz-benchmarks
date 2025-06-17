@@ -1,11 +1,18 @@
 {
-  "inputs": [
-    "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
-  ],
+  "dataframe_split": {
+    "columns": [
+      "input_uri"
+    ],
+    "data": [
+      [
+        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+      ]
+    ]
+  },
   "params": {
     "gene_col_name": "ensembl_id",
     "precision": "16-mixed",
     "pretrained_embedding": "",
-    "batch_size": 16
+    "batch_size": -1
   }
 }

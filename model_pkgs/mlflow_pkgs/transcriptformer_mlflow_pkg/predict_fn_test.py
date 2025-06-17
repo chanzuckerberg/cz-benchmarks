@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-test_predict_fn.py  –  local smoke-test for an MLflow 3.1 PyFunc model.
+predict_fn_test.py  –  local smoke-test for an MLflow 3.1 PyFunc model.
 
 Usage examples
 --------------
 # payload in a file
-python test_predict_fn.py \
+python predict_fn_test.py \
     --model-uri models:/single-cell-model/1 \
     --json-payload-file payload.json
 
 # payload from STDIN
-cat payload.json | python test_predict_fn.py \
+cat payload.json | python predict_fn_test.py \
     --model-uri runs:/abcdef123/model \
     --json-payload-file -
 """
@@ -38,9 +38,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 def predict(model_uri: str, payload_path: str):
     """Load model, parse payload, run predict(), return result."""
     LOGGER.info("Loading model from %s", model_uri)
-    model = mlflow.pyfunc.load_model(
-        model_uri
-    )  # generic loader :contentReference[oaicite:2]{index=2}
+    model = mlflow.pyfunc.load_model(model_uri)  # generic loader
 
     # Deserialize the json payload into the PyFuncInput types
     # accepted by PyFuncModel.predict()

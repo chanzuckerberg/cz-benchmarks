@@ -60,25 +60,37 @@ $ python generate_mlflow_test_payload.py --model-uri mlflow_models/transcriptfor
 $ cat test_input_payload.json
 
 {
-  "inputs": [
-    "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
-  ],
+  "dataframe_split": {
+    "columns": [
+      "input_uri"
+    ],
+    "data": [
+      [
+        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+      ]
+    ]
+  },
   "params": {
     "gene_col_name": "ensembl_id",
     "precision": "16-mixed",
     "pretrained_embedding": "",
-    "batch_size": 16
+    "batch_size": -1
   }
 }
 ```
 
-3. Run inference with the payload in its own `uv` virtual environment:
+3. **Run inference** to test that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
+
+```
+$ python predict_fn_test.py --model-uri mlflow_models/transcriptformer_tf_sapiens --json-payload-file test_input_payload.json
+```
+4. **Run inference to test if the model can be served from a REST API endpoint.**_This tests if the json input payload round-trips through mlflow's native support for deserialization, datatype validation and finally serialization of the output back to json._ Run inference with the payload in its own `uv` virtual environment:
 
 ```
 $ mlflow models predict --model-uri mlflow_models/transcriptformer_tf_sapiens --content-type json --input-path test_input_payload.json --output-path test_output.json --env-manager uv 
 ```
 
-4. Verify that the inference ran correctly by checking the `test_output.json` file:
+5. Verify that the inference ran correctly by checking the `test_output.json` file:
 
 ```
 $ head -c 1000 test_output.json | less

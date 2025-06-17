@@ -53,7 +53,7 @@ $ python generate_mlflow_test_payload.py --model-uri <mlflow-model-directory> --
 
 2. Flesh out the values in `test_input_payload.json`.
 
-3. **Run inference** to test that the that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
+3. **Run inference** to test that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
 
 ```
 $ python test_predict_fn.py --model-uri <mlflow-model-directory> --json-payload-file test_input_payload.json

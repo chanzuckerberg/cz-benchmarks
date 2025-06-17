@@ -1,13 +1,23 @@
 """
-Packager for TranscriptFormer (file-based API)
-=============================================
+MLflow packager for TranscriptFormer (multi-file)
+=================================================
 
-* Creates a minimal `input_example` / `output_example`
-  so `infer_signature()` captures dtypes without hand-coding.
-* Adds a ParamSchema for batch-wide runtime knobs.
-* Persists the model as an MLflow pyfunc artifact that expects
-  **string URI(s)** to `.h5ad` files and returns **list[np.ndarray]`
-  with shape `(n_cells, 2048)` per file.
+Signature overview
+------------------
+inputs  : ColSpec("string", **"input_uri"**)
+          – 1 column, any number of rows.
+          – Each cell is a URI that points to an *.h5ad* file.
+
+outputs : TensorSpec(float32, **(-1, 2048)**)
+          – Describes **one** embedding matrix.
+          – The Python model returns *list[np.ndarray]*; MLflow treats
+            the list as repeating this spec.
+
+params  : ParamSchema
+          * `gene_col_name`        (string, default "ensembl_id")
+          * `precision`            (string, default "16-mixed")
+          * `pretrained_embedding` (string, default "")
+          * `batch_size`           (integer, default -1)
 
 Example
 -------
@@ -26,15 +36,14 @@ from pathlib import Path
 import mlflow.pyfunc
 import numpy as np
 from mlflow.models.signature import ModelSignature
-from mlflow.types import Schema, TensorSpec, ParamSchema, ParamSpec
+from mlflow.types import ColSpec, ParamSchema, ParamSpec, Schema, TensorSpec
 from mlflow.types.schema import DataType
-from model_code.transcriptformer_mlflow_model import TranscriptformerMLflowModel
+from model_code.transcriptformer_mlflow_model import (
+    TranscriptformerMLflowModel,
+)
 
 
-# --------------------------------------------------------------------- #
-# CLI utilities                                                         #
-# --------------------------------------------------------------------- #
-def _parse_args() -> argparse.Namespace:
+def _parse() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument(
         "--model-variant",
@@ -44,31 +53,36 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--checkpoint-path", type=Path, required=True)
     p.add_argument("--output-dir", type=Path, default="mlflow_models")
     p.add_argument(
-        "--requirements", type=Path, default="transcriptformer-requirements.txt"
+        "--requirements",
+        type=Path,
+        default="transcriptformer_requirements.txt",
     )
     return p.parse_args()
 
 
-# --------------------------------------------------------------------- #
-# Main                                                                  #
-# --------------------------------------------------------------------- #
 def main() -> None:
-    args = _parse_args()
+    args = _parse()
     save_path = args.output_dir / f"transcriptformer_{args.model_variant}"
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # ---------------------- Explicit ModelSignature ---------------------- #
-    # Input: list of strings (each a URI → local .h5ad)
-    input_schema = Schema([TensorSpec(DataType.string.to_numpy(), shape=(-1,))])
-    # Output: list of 2048-dim float32 embeddings
+    # ----------------------- ModelSignature ------------------------ #
+    # INPUT  : DataFrame column "input_uri" (one H5AD per row).
+    input_schema = Schema([ColSpec(DataType.string, "input_uri")])
+
+    # OUTPUT : Single embedding matrix spec (row-count unknown).
     output_schema = Schema([TensorSpec(np.dtype("float32"), (-1, 2048))])
-    # Params: gene column, precision, pretrained_embedding, batch_size
+
+    # PARAMS : Runtime knobs (validated by MLflow).
     params_schema = ParamSchema(
         [
             ParamSpec("gene_col_name", "string", default="ensembl_id"),
             ParamSpec("precision", "string", default="16-mixed"),
             ParamSpec("pretrained_embedding", "string", default=""),
-            ParamSpec("batch_size", "integer", default=16),
+            ParamSpec(
+                "batch_size",
+                "integer",
+                default=-1,  # -1 ⇒ use family-specific heuristic
+            ),
         ]
     )
 
@@ -78,7 +92,7 @@ def main() -> None:
         params=params_schema,
     )
 
-    # ---------------------- Save model ------------------------------- #
+    # ------------------------ Save model --------------------------- #
     mlflow.pyfunc.save_model(
         path=str(save_path),
         python_model=TranscriptformerMLflowModel(args.model_variant),
@@ -88,7 +102,7 @@ def main() -> None:
         signature=signature,
         metadata={"tags": {"model_variant": args.model_variant}},
     )
-    print("✓ Model packaged →", save_path)
+    print(f"✓ Model packaged → {save_path}")
 
 
 if __name__ == "__main__":
