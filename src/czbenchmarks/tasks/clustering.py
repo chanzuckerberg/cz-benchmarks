@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 import anndata as ad
 
-from ..datasets.types import Embedding, ListLike
+from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -35,7 +35,7 @@ class ClusteringTask(BaseTask):
 
     def _run_task(
         self,
-        cell_representation: Embedding,
+        cell_representation: CellRepresentation,
         obs: pd.DataFrame,
         var: pd.DataFrame,
         use_rep: str = "X",

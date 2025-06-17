@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from ..constants import RANDOM_SEED
-from ..datasets.types import Embedding, ListLike
+from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -24,11 +24,11 @@ class EmbeddingTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "embedding"
 
-    def _run_task(self, cell_representation: Embedding, **kwargs):
+    def _run_task(self, cell_representation: CellRepresentation, **kwargs):
         return {}
 
     def _compute_metrics(
-        self, cell_representation: Embedding, input_labels: ListLike
+        self, cell_representation: CellRepresentation, input_labels: ListLike
     ) -> List[MetricResult]:
         """Computes cell representation quality metrics.
 

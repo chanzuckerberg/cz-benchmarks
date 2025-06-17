@@ -4,7 +4,7 @@ import pandas as pd
 import anndata as ad
 
 from ..constants import RANDOM_SEED
-from ..datasets.types import Embedding
+from ..datasets.types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
@@ -34,7 +34,7 @@ class BaseTask(ABC):
         self.requires_multiple_datasets = False
 
     @abstractmethod
-    def _run_task(self, cell_representation: Embedding, **kwargs) -> dict:
+    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
@@ -57,7 +57,7 @@ class BaseTask(ABC):
 
     def _run_task_for_dataset(
         self,
-        cell_representation: Embedding,
+        cell_representation: CellRepresentation,
         task_kwargs: dict = {},
         metric_kwargs: dict = {},
     ) -> List[MetricResult]:
@@ -85,11 +85,11 @@ class BaseTask(ABC):
 
     def set_baseline(
         self,
-        expression_data: Embedding,
+        expression_data: CellRepresentation,
         obs: Optional[pd.DataFrame] = None,
         var: Optional[pd.DataFrame] = None,
         **kwargs,
-    ) -> Embedding:
+    ) -> CellRepresentation:
         """Set a baseline embedding using PCA on gene expression data.
 
         This method performs standard preprocessing on the raw gene expression data
@@ -138,12 +138,12 @@ class BaseTask(ABC):
             error_message = "This task requires a list of cell representations"
             if not isinstance(cell_representation, list):
                 raise ValueError(error_message)
-            if not all([isinstance(emb, Embedding) for emb in cell_representation]):
+            if not all([isinstance(emb, CellRepresentation) for emb in cell_representation]):
                 raise ValueError(error_message)
             if len(cell_representation) < 2:
                 raise ValueError(f"{error_message} but only one was provided")
         else:
-            if not isinstance(cell_representation, Embedding):
+            if not isinstance(cell_representation, CellRepresentation):
                 raise ValueError(
                     "This task requires a single cell representation for input"
                 )

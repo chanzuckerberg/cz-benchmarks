@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from ..constants import RANDOM_SEED
-from ..datasets.types import Embedding, ListLike
+from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -24,11 +24,11 @@ class BatchIntegrationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "batch integration"
 
-    def _run_task(self, cell_representation: Embedding, **kwargs) -> dict:
+    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
         return {}
 
     def _compute_metrics(
-        self, cell_representation: Embedding, batch_labels: ListLike, labels: ListLike
+        self, cell_representation: CellRepresentation, batch_labels: ListLike, labels: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 

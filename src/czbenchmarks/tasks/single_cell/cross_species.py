@@ -4,7 +4,7 @@ import numpy as np
 
 from ...constants import RANDOM_SEED
 from ..base import BaseTask
-from ...datasets.types import Embedding, ListLike
+from ...datasets.types import CellRepresentation, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 
@@ -27,7 +27,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
     def _run_task(
         self,
-        cell_representation: Embedding,
+        cell_representation: CellRepresentation,
         labels: List[ListLike],
         organism_list: List[str],
         **kwargs,
@@ -68,7 +68,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         }
 
     def _compute_metrics(
-        self, cell_representation: Embedding, labels: ListLike, species: ListLike
+        self, cell_representation: CellRepresentation, labels: ListLike, species: ListLike
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 

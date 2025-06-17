@@ -17,7 +17,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..datasets.types import Embedding, ListLike
+from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
@@ -48,7 +48,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
     def _run_task(
         self,
-        cell_representation: Embedding,
+        cell_representation: CellRepresentation,
         labels: ListLike,
         n_folds: int = N_FOLDS,
         min_class_size: int = MIN_CLASS_SIZE,
@@ -268,7 +268,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, cell_representation: Embedding, **kwargs) -> Embedding:
+    def set_baseline(self, cell_representation: CellRepresentation, **kwargs) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene

@@ -3,7 +3,7 @@ import pandas as pd
 import anndata as ad
 import scipy.sparse as sp
 
-from czbenchmarks.datasets.types import Organism, Embedding
+from czbenchmarks.datasets.types import Organism, CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
 from czbenchmarks.tasks.base import BaseTask
@@ -85,7 +85,7 @@ class DummyTask(BaseTask):
         self.name = "dummy task"
         self.requires_multiple_datasets = requires_multiple_datasets
 
-    def _run_task(self, embedding: Embedding):
+    def _run_task(self, embedding: CellRepresentation):
         # Dummy implementation that does nothing
         return {}
 

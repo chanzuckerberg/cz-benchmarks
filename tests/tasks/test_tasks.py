@@ -11,7 +11,7 @@ from czbenchmarks.tasks.single_cell.cross_species import (
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 from czbenchmarks.datasets.types import (
     Organism,
-    Embedding,
+    CellRepresentation,
     ListLike,
 )
 from czbenchmarks.metrics.types import MetricResult
@@ -40,7 +40,7 @@ n_pert = n_cells - n_ctrl
 gene_pert = "ENSG00000123456+ctrl"
 adata.obs["condition"] = ["ctrl"] * n_ctrl + [gene_pert] * n_pert
 adata.obs["split"] = ["train"] * n_ctrl + ["test"] * n_pert
-PERT_PRED: Embedding = pd.DataFrame(
+PERT_PRED: CellRepresentation = pd.DataFrame(
     data=np.random.normal(size=(n_ctrl, n_genes)),
     columns=adata.var_names,
     index=adata[adata.obs["condition"] == "ctrl"].obs_names,
@@ -58,14 +58,14 @@ PERT_TRUTH: Dict[str, pd.DataFrame] = {
     for condition in test_conditions
 }
 
-EXPRESSION_MATRIX: Embedding = adata.X.copy()
+EXPRESSION_MATRIX: CellRepresentation = adata.X.copy()
 OBS: ListLike = adata.obs.copy()
 VAR_EXP: ListLike = adata.var.copy()
 
 # FIXME MICHELLE
 # sc.pp.pca(adata, n_comps=n_emb_dim, svd_solver="arpack",
 # random_state=RANDOM_SEED, use_highly_variable=True, key_added=OBSM_KEY)
-EMBEDDING_MATRIX: Embedding = (
+EMBEDDING_MATRIX: CellRepresentation = (
     adata.X.copy().toarray()
 )  # adata.obsm[OBSM_KEY].copy()
 VAR_EMB: ListLike = VAR_EXP

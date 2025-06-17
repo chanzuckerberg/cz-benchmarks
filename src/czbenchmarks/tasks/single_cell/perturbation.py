@@ -6,7 +6,7 @@ import numpy as np
 import scipy as sp
 import logging
 from ..base import BaseTask
-from ...datasets.types import Embedding, ListLike
+from ...datasets.types import CellRepresentation, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
@@ -26,7 +26,7 @@ class PerturbationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "perturbation"
 
-    def _run_task(self, cell_representation: Embedding, var_names: ListLike) -> dict:
+    def _run_task(self, cell_representation: CellRepresentation, var_names: ListLike) -> dict:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -60,9 +60,9 @@ class PerturbationTask(BaseTask):
     def _compute_metrics(
         self,
         gene_pert: str,
-        perturbation_pred: Embedding,
+        perturbation_pred: CellRepresentation,
         perturbation_truth: Dict[str, pd.DataFrame],
-        perturbation_ctrl: Embedding,
+        perturbation_ctrl: CellRepresentation,
         avg_perturbation_ctrl: pd.Series,
         **kwargs,
     ) -> List[MetricResult]:
@@ -300,11 +300,11 @@ class PerturbationTask(BaseTask):
 
     @staticmethod
     def set_baseline(
-        cell_representation: Embedding,
+        cell_representation: CellRepresentation,
         var_names: ListLike,
         obs_names: ListLike,
         baseline_type: Literal["median", "mean"] = "median",
-    ) -> Embedding:
+    ) -> CellRepresentation:
         """Set a baseline embedding for perturbation prediction.
 
         Creates baseline predictions using simple statistical methods (median and mean)
