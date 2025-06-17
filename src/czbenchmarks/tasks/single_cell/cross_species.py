@@ -46,6 +46,12 @@ class CrossSpeciesIntegrationTask(BaseTask):
         """
         cell_representation = np.vstack(cell_representation)
 
+        # FIXME BYODATASET move this into validation
+        assert len(set(organism_list)) >= 2, AssertionError(
+            "At least two organisms are required for cross-species integration "
+            f"but got {len(set(organism_list))} : {{set(organism_list)}}"
+        )
+
         species = np.concatenate(
             [
                 [
