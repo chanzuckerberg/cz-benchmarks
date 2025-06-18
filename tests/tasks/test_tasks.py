@@ -283,6 +283,3 @@ def test_perturbation_task(
     except Exception as e:
         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
 
-
-if __name__ == "__main__":
-    pytest.main(["-v", __file__, "-k", "test_perturbation_task"])
