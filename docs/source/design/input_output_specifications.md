@@ -656,8 +656,9 @@ class AnnDataValidator(BaseValidator):
 
 > **Note:** The code examples provided are for conceptual illustration and design purposes only and ocde have not been validated or tested.
 
+# Appendix
 
-# Difference between InputOutputSpecs and Declarative Validations
+## Difference between InputOutputSpecs and Declarative Validations
 
 
 |**Aspect**|**InputOutputSpecs**|**Declarative Validations**|
@@ -671,4 +672,16 @@ class AnnDataValidator(BaseValidator):
 |**Examples**|Defines fields like `name`, `modality`, `formats`, and `encodings`.|Defines properties like `X`, `obs`, `var`, and their types (e.g., `ndarray`, `DataFrame`).|
 
 
+
+## **Comparison of Declarative Validation vs. Python Code Validation**
+
+| **Aspect**          | **Declarative Validation**                                                                 | **Python Code Validation**                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Ease of Use**     | Easier and faster to define and modify validation rules using YAML or JSON.                | Depends on developer experience                                                                               |
+| **Readability**     | Human-readable and self-documenting; validation rules are explicit and easy to understand. | Validation logic can become complex and harder to read, especially for large datasets.                        |
+| **Reusability**     | Validation schemas can be reused across multiple projects without modification.            | Reusability depends on how well the Python code is modularized and abstracted.                                |
+| **Error Handling**  | Errors are descriptive and tied to schema violations, making debugging easier.             | Errors depend on how well the Python code is written; may require additional effort to make them descriptive. |
+| **Integration**     | Works well with configuration-driven workflows and pipelines.                              | Requires embedding validation logic directly into the codebase.                                               |
+| **Transparency**    | Validation criteria are explicit and standardized, improving reproducibility.              | Validation logic may be opaque if not well-documented or modularized.                                         |
+| **Tooling Support** | Can leverage existing tools for schema validation (e.g., JSON Schema, YAML parsers).       | Relies on Python libraries and custom implementations for validation.                                         |
 
