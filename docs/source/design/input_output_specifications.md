@@ -20,6 +20,7 @@ class InputOutputSpecs(BaseModel, extra="forbid"):
     name        : str                                 # Human-readable specification name
     modality    : str                                 # e.g. "rna", "dna", "image"
     semantic    : str                                 # Ontology reference (EDAM, OBI, GO, etc.)
+    organism    : str
     version     : str = "1.0.0"                       # Increment when axes or encoding expectations change
     axes        : Optional[List[Axis]] = None         # List of axes (e.g., cells, genes)
     formats     : List[str] = ["h5ad"]                # Preferred file formats, ordered by preference
