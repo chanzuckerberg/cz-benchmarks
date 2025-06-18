@@ -44,6 +44,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         Returns:
             Dictionary of labels and species
         """
+        # FIXME BYODATASETdatasets should be concatenated to align along genes?
         cell_representation = np.vstack(cell_representation)
 
         # FIXME BYODATASET move this into validation
