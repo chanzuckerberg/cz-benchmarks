@@ -44,10 +44,10 @@ class PerturbationTask(BaseTask):
         if sp.sparse.issparse(cell_representation):
             cell_representation = cell_representation.toarray()
 
-        perturbation_ctrl = cell_representation.mean(0, keepdims=True)
+        perturbation_ctrl = cell_representation
 
         avg_perturbation_ctrl = pd.Series(
-            data=perturbation_ctrl.squeeze(),
+            data=perturbation_ctrl.mean(0),
             index=var_names,
             name="ctrl",
         )
@@ -93,7 +93,7 @@ class PerturbationTask(BaseTask):
             # Run differential expression analysis between control and predicted/truth
             # Create AnnData objects for control, prediction, and truth
             adata_ctrl = ad.AnnData(X=perturbation_ctrl)
-            adata_pred = ad.AnnData(X=perturbation_pred)
+            adata_pred = ad.AnnData(X=perturbation_pred.values)
             adata_truth = ad.AnnData(X=perturbation_truth[gene_pert].values)
 
             # Ensure they have the same var_names
@@ -328,6 +328,9 @@ class PerturbationTask(BaseTask):
         # Create baseline prediction by replicating the aggregated expression values
         # across all cells in the dataset.
         baseline_func = np.median if baseline_type == "median" else np.mean
+        if baseline_type == "median" and sp.sparse.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
+
         perturb_baseline_pred = pd.DataFrame(
             np.tile(
                 baseline_func(cell_representation, axis=0),
