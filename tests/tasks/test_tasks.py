@@ -23,7 +23,7 @@ from tests.utils import (
 )
 
 
-# TODO these tests could be split into multiple files and fixtures moved to conftest.py
+# FIXME these tests could be split into multiple files and fixtures moved to conftest.py
 
 
 @pytest.fixture
