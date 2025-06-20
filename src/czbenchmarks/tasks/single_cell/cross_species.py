@@ -1,13 +1,12 @@
-from typing import List, Set
+from typing import List
 
 import numpy as np
 
-from ..constants import RANDOM_SEED
-from ...datasets import SingleCellDataset, DataType
+from ...constants import RANDOM_SEED
 from ..base import BaseTask
+from ...datasets.types import CellRepresentation, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from ...models.types import ModelType
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -18,68 +17,72 @@ class CrossSpeciesIntegrationTask(BaseTask):
     datasets from different species.
 
     Args:
-        label_key: Key to access ground truth cell type labels in metadata
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, label_key: str, *, random_seed: int = RANDOM_SEED):
+    def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.label_key = label_key
+        self.display_name = "cross-species integration"
+        self.requires_multiple_datasets = True
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "cross-species integration"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run (embedding coordinates)
-        """
-        return {DataType.EMBEDDING}
-
-    @property
-    def requires_multiple_datasets(self) -> bool:
-        """Whether this task requires multiple datasets.
-
-        Returns:
-            True as this task compares data across species
-        """
-        return True
-
-    def _run_task(self, data: List[SingleCellDataset], model_type: ModelType):
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        labels: List[ListLike],
+        organism_list: List[str],
+        **kwargs,
+    ) -> dict:
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
         for metric computation.
 
         Args:
-            data: List of datasets containing embeddings and labels from different
-                  species
+            labels: labels to use for the task
+            organism_list: list of organisms to use for the task
+
+        Returns:
+            Dictionary of labels and species
         """
-        self.embedding = np.vstack(
-            [d.get_output(model_type, DataType.EMBEDDING) for d in data]
-        )
-        self.labels = np.concatenate(
-            [d.get_input(DataType.METADATA)[self.label_key] for d in data]
-        )
-        self.species = np.concatenate(
-            [[d.organism.name] * d.adata.shape[0] for d in data]
+        # FIXME BYODATASETdatasets should be concatenated to align along genes?
+        cell_representation = np.vstack(cell_representation)
+
+        # FIXME BYODATASET move this into validation
+        assert len(set(organism_list)) >= 2, AssertionError(
+            "At least two organisms are required for cross-species integration "
+            f"but got {len(set(organism_list))} : {{set(organism_list)}}"
         )
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        species = np.concatenate(
+            [
+                [
+                    str(organism),
+                ]
+                * len(label)
+                for organism, label in zip(organism_list, labels)
+            ]
+        )
+        labels = np.concatenate(labels)
+
+        assert len(cell_representation) == len(species) == len(labels), AssertionError(
+            "Cell representation, species, and labels must have the same shape"
+        )
+
+        return {
+            "cell_representation": cell_representation,
+            "labels": labels,
+            "species": species,
+        }
+
+    def _compute_metrics(
+        self, cell_representation: CellRepresentation, labels: ListLike, species: ListLike
+    ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
+
+        Args:
+            cell_representation: gene expression data or embedding for task
+            labels: labels to use for the task
+            species: species to use for the task
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -94,8 +97,8 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=entropy_per_cell_metric,
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
-                    X=self.embedding,
-                    labels=self.species,
+                    X=cell_representation,
+                    labels=species,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -103,23 +106,19 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 metric_type=silhouette_batch_metric,
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
-                    X=self.embedding,
-                    labels=self.labels,
-                    batch=self.species,
+                    X=cell_representation,
+                    labels=labels,
+                    batch=species,
                 ),
             ),
         ]
 
-    def set_baseline(self, data: List[SingleCellDataset], **kwargs):
+    def set_baseline(self, **kwargs):
         """Set a baseline embedding for cross-species integration.
 
         This method is not implemented for cross-species integration tasks
         as standard preprocessing workflows are not directly applicable
         across different species.
-
-        Args:
-            data: List of SingleCellDataset objects from different species
-            **kwargs: Additional arguments passed to run_standard_scrna_workflow
 
         Raises:
             NotImplementedError: Always raised as baseline is not implemented

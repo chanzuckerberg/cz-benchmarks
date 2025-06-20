@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Set, Union
+from typing import List, Optional, Union
+import pandas as pd
+import anndata as ad
 
-from .constants import RANDOM_SEED
-from ..datasets import BaseDataset, DataType
-from ..models.types import ModelType
+from ..constants import RANDOM_SEED
+from ..datasets.types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
@@ -29,80 +30,25 @@ class BaseTask(ABC):
         random_seed: int = RANDOM_SEED,
     ):
         self.random_seed = random_seed
-
-    @property
-    @abstractmethod
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-
-    @property
-    @abstractmethod
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types this task requires.
-
-        Returns:
-            Set of DataType enums that must be present in input data
-        """
-
-    @property
-    @abstractmethod
-    def required_outputs(self) -> Set[DataType]:
-        """Required output types from models this task requires
-
-        Returns:
-            Set of DataType enums that must be present in output data
-        """
-
-    @property
-    def requires_multiple_datasets(self) -> bool:
-        """Whether this task requires multiple datasets"""
-        return False
-
-    def validate(self, data: BaseDataset):
-        error_msg = []
-        missing_inputs = self.required_inputs - set(data.inputs.keys())
-
-        if missing_inputs:
-            error_msg.append(f"Missing required inputs: {missing_inputs}")
-
-        # Check if there are any model outputs at all
-        if not data.outputs:
-            error_msg.append("No model outputs available")
-        else:
-            for model_type in data.outputs:
-                missing_outputs = self.required_outputs - set(
-                    data.outputs[model_type].keys()
-                )
-                if missing_outputs:
-                    error_msg.append(
-                        "Missing required outputs for model type "
-                        f"{model_type.name}: {missing_outputs}"
-                    )
-
-        if error_msg:
-            raise ValueError(
-                f"Data validation failed for {self.__class__.__name__}: "
-                f"{' | '.join(error_msg)}"
-            )
-
-        data.validate()
+        # FIXME should this be changed to requires_multiple_embeddings?
+        self.requires_multiple_datasets = False
 
     @abstractmethod
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
+    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
         as instance variables.
 
         Args:
-            data: Dataset containing required input and output data
-
+            cell_representation: gene expression data or embedding for task
+            **kwargs: Additional arguments passed to the task
         Returns:
-            Modified or unmodified dataset
+            Dictionary of output data for the task
         """
 
     @abstractmethod
-    def _compute_metrics(self) -> List[MetricResult]:
+    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 
         Returns:
@@ -111,70 +57,39 @@ class BaseTask(ABC):
 
     def _run_task_for_dataset(
         self,
-        data: Union[BaseDataset, List[BaseDataset]],
-        model_types: Optional[List[ModelType]] = None,
-    ) -> Dict[ModelType, List[MetricResult]]:
-        """Run task for a dataset or list of datasets and compute metrics for each model.
+        cell_representation: CellRepresentation,
+        task_kwargs: dict = {},
+        metric_kwargs: dict = {},
+    ) -> List[MetricResult]:
+        """Run task for a dataset or list of datasets and compute metrics.
 
-        This method determines which model types to evaluate, validates their
-        availability, runs the task implementation for each model type, and
-        computes the corresponding metrics.
+        This method runs the task implementation and computes the corresponding metrics.
 
         Args:
-            data: Single dataset or list of datasets containing required input and
-                  output data
-            model_types: Optional list of specific model types to evaluate. If None,
-                         will use all available model types common across datasets.
-
+            cell_representation: gene expression data or embedding for task
+            task_kwargs: Additional arguments passed to the task
+            metric_kwargs: Additional arguments passed to the metrics
         Returns:
-            Dictionary mapping model types to their list of MetricResult objects
+            List of MetricResult objects
 
-        Raises:
-            ValueError: If no common model types found across datasets or
-                       if a specified model type is not available in a dataset
         """
-        # Dictionary to store metrics for each model type
-        all_metrics_per_model = {}
 
-        # Determine which model types to evaluate if not explicitly provided
-        if model_types is None:
-            if isinstance(data, list):
-                # For multiple datasets, find model types available in all datasets
-                model_types = set.intersection(
-                    *[set(dataset.outputs.keys()) for dataset in data]
-                )
-                if not model_types:
-                    raise ValueError("No common model types found across all datasets")
-            else:
-                # For single dataset, use all available model types
-                model_types = list(data.outputs.keys())
+        task_output = self._run_task(cell_representation, **task_kwargs)
 
-        # Validate that all requested model types are available in all datasets
-        for model_type in model_types:
-            if isinstance(data, list):
-                for dataset in data:
-                    if model_type not in dataset.outputs:
-                        raise ValueError(
-                            f"Model type {model_type} not found in dataset"
-                        )
-            else:
-                if model_type not in data.outputs:
-                    raise ValueError(f"Model type {model_type} not found in dataset")
+        # Handle cases where embedding required by metrics but not set by _run_task
+        if "cell_representation" not in metric_kwargs:
+            task_output.setdefault("cell_representation", cell_representation)
 
-        # Process each model type
-        for model_type in model_types:
-            # Run the task implementation for this model
-            self._run_task(data, model_type)
+        metrics = self._compute_metrics(**task_output, **metric_kwargs)
+        return metrics
 
-            # Compute metrics based on task results
-            metrics = self._compute_metrics()
-
-            # Store metrics for this model type
-            all_metrics_per_model[model_type] = metrics
-
-        return all_metrics_per_model
-
-    def set_baseline(self, data: BaseDataset, **kwargs):
+    def set_baseline(
+        self,
+        expression_data: CellRepresentation,
+        obs: Optional[pd.DataFrame] = None,
+        var: Optional[pd.DataFrame] = None,
+        **kwargs,
+    ) -> CellRepresentation:
         """Set a baseline embedding using PCA on gene expression data.
 
         This method performs standard preprocessing on the raw gene expression data
@@ -183,63 +98,58 @@ class BaseTask(ABC):
         with other model embeddings.
 
         Args:
-            data: BaseDataset containing AnnData with gene expression data
+            expression_data: expression data to use for anndata
+            obs: obs dataframe to use for anndata
+            var: var dataframe to use for anndata
             **kwargs: Additional arguments passed to run_standard_scrna_workflow
         """
 
-        # Get the AnnData object from the dataset
-        adata = data.get_input(DataType.ANNDATA)
+        # Create the AnnData object
+        # FIXME MICHELLE -- obs var probably not needed, but needs debugging
+        adata = ad.AnnData(X=expression_data)  # , obs=obs, var=var)
 
         # Run the standard preprocessing workflow
-        adata_baseline = run_standard_scrna_workflow(adata, **kwargs)
-
-        # Use PCA result as the embedding for clustering
-        data.set_output(
-            ModelType.BASELINE, DataType.EMBEDDING, adata_baseline.obsm["X_pca"]
-        )
+        embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)
+        return embedding_baseline
 
     def run(
         self,
-        data: Union[BaseDataset, List[BaseDataset]],
-        model_types: Optional[List[ModelType]] = None,
-    ) -> Union[
-        Dict[ModelType, List[MetricResult]],
-        List[Dict[ModelType, List[MetricResult]]],
-    ]:
+        cell_representation: Union[CellRepresentation, List[CellRepresentation]],
+        task_kwargs: dict = {},
+        metric_kwargs: dict = {},
+    ) -> List[MetricResult]:
         """Run the task on input data and compute metrics.
 
         Args:
-            data: Single dataset or list of datasets to evaluate. Must contain
-                required input and output data types.
+            cell_representation: gene expression data or embedding to use for the task
+            task_kwargs: Additional arguments passed to the task
+            metric_kwargs: Additional arguments passed to the metrics
 
         Returns:
-            For single dataset: Dictionary of model types to metric results
-            For multiple datasets: List of metric dictionaries, one per dataset
+            For single embedding: A one-element list containing a single metric result for the task
+            For multiple embeddings: List of metric results for each task, one per dataset
 
         Raises:
-            ValueError: If data is invalid type or missing required fields
-            ValueError: If task requires multiple datasets but single dataset provided
+            ValueError: If input does not match multiple embedding requirement
         """
-        # Validate input data type and required fields
-        if isinstance(data, BaseDataset):
-            self.validate(data)
-        elif isinstance(data, list) and all(isinstance(d, BaseDataset) for d in data):
-            for d in data:
-                self.validate(d)
-        else:
-            raise ValueError(f"Invalid data type: {type(data)}")
 
-        # Check if task requires multiple datasets
-        if self.requires_multiple_datasets and not isinstance(data, list):
-            raise ValueError("This task requires a list of datasets")
-
-        # Handle single vs multiple datasets
-        if isinstance(data, list) and not self.requires_multiple_datasets:
-            # Process each dataset individually
-            all_metrics = []
-            for d in data:
-                all_metrics.append(self._run_task_for_dataset(d, model_types))
-            return all_metrics
+        # Check if task requires embeddings from multiple datasets
+        if self.requires_multiple_datasets:
+            error_message = "This task requires a list of cell representations"
+            if not isinstance(cell_representation, list):
+                raise ValueError(error_message)
+            if not all([isinstance(emb, CellRepresentation) for emb in cell_representation]):
+                raise ValueError(error_message)
+            if len(cell_representation) < 2:
+                raise ValueError(f"{error_message} but only one was provided")
         else:
-            # Process single dataset or multiple datasets as required by the task
-            return self._run_task_for_dataset(data, model_types)
+            if not isinstance(cell_representation, CellRepresentation):
+                raise ValueError(
+                    "This task requires a single cell representation for input"
+                )
+
+        return self._run_task_for_dataset(
+            cell_representation,
+            task_kwargs,
+            metric_kwargs,
+        )

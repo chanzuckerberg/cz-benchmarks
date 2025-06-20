@@ -1,4 +1,5 @@
-RANDOM_SEED = 42
+# FIXME: most  should be set directly in metric function call
+#        and random seed should be set for entire library
 
 N_FOLDS = 5
 
