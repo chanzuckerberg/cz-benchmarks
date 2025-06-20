@@ -16,27 +16,10 @@ from czbenchmarks.models.types import ModelType
 from czbenchmarks.datasets.types import DataType
 from czbenchmarks.runner import run_inference
 
-MODEL_VARIANT_DATASET_TASK_TEST_CASES = [
-    ("SCGPT", "human", "human_spermatogenesis", "clustering"),
-    ("SCVI", "homo_sapiens", "human_spermatogenesis", "clustering"),
-    ("GENEFORMER", "gf_6L_30M", "human_spermatogenesis", "clustering"),
-    ("SCGENEPT", "scgpt", "adamson_perturb", "perturbation"),
-    ("UCE", "4l", "human_spermatogenesis", "clustering"),
-    ("TRANSCRIPTFORMER", "tf-sapiens", "tsv2_bladder", "clustering"),
-    ("AIDO", "aido_cell_3m", "human_spermatogenesis", "clustering"),
-]
-
 
 @pytest.mark.skipif(
     not pytest.run_model_tests,
     reason="Model regression tests skipped. Use --run-model-tests to run them.",
-)
-@pytest.mark.parametrize(
-    "model_name,variant,dataset_name,task_name",
-    [
-        (model, variant, dataset, task)
-        for model, variant, dataset, task in MODEL_VARIANT_DATASET_TASK_TEST_CASES
-    ],
 )
 def test_model_regression(
     model_name, variant, dataset_name, task_name, tolerance_percent
@@ -56,6 +39,20 @@ def test_model_regression(
     Command line arguments:
     --run-model-tests: Required flag to run these tests (skipped by default)
     --tolerance-percent: Optional float (default: 0.2) for metric comparison tolerance
+
+    Environment variables:
+    MODEL_CASES: Optional semicolon-separated list of test cases to run.
+                 Each test case should be in the format: model,variant,dataset,task
+
+                 Example:
+                 SCGPT,human,human_spermatogenesis,clustering;SCVI,homo_sapiens,human_spermatogenesis,clustering
+
+                 If not set, runs all default test cases.
+
+    Alternative: You can also run a specific test from the default cases using pytest's node selection syntax:
+
+                 Example:
+                 pytest "tests/models/test_cli_model_regression.py::test_model_regression[SCGPT-human-human_spermatogenesis-clustering]" --run-model-tests
     """
     # region Setup
     dataset = load_dataset(dataset_name)
