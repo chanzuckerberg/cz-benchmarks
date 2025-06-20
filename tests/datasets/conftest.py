@@ -1,25 +1,11 @@
 import pytest
 import pandas as pd
-from tests.utils import create_dummy_anndata, DummyDataset
+from tests.utils import create_dummy_anndata
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.single_cell import (
     SingleCellDataset,
     PerturbationSingleCellDataset,
 )
-
-
-@pytest.fixture
-def dummy_anndata():
-    """Creates a dummy AnnData object with default characteristics."""
-    return create_dummy_anndata()
-
-
-@pytest.fixture
-def dummy_dataset(dummy_anndata):
-    """Creates a dummy dataset with AnnData and metadata inputs."""
-    ds = DummyDataset(path="dummy_path", organism=Organism.HUMAN)
-    ds.adata = dummy_anndata
-    return ds
 
 
 @pytest.fixture
