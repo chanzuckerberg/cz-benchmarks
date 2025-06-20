@@ -57,6 +57,61 @@ def create_dummy_anndata(
     return ad.AnnData(X=X, obs=obs_df, var=var_df)
 
 
+def create_dummy_perturbation_anndata(
+    n_cells=500,
+    n_genes=200,
+    organism: Organism = Organism.HUMAN,
+    condition_column="condition",
+    split_column="split",
+):
+    # Create dummy data with control and perturbed cells
+    n_genes = 200
+    n_ctrl = n_cells // 2
+    n_pert = n_cells - n_ctrl
+
+    # Create base anndata with all cells
+    adata = create_dummy_anndata(
+        n_cells=n_cells,
+        n_genes=n_genes,
+        obs_columns=None,
+        var_columns=None,
+        organism=organism,
+    )
+
+    # Create perturbed cells
+    gene_pert = f"{str(organism.prefix)}{str(123456).zfill(11)}+ctrl"
+    adata.obs[condition_column] = ["ctrl"] * n_ctrl + [gene_pert] * n_pert
+    adata.obs[split_column] = ["train"] * n_ctrl + ["test"] * n_pert
+
+    # Create and set predicted perturbation effect
+    pert_pred = pd.DataFrame(
+        data=np.random.normal(size=(n_ctrl, n_genes)),
+        columns=adata.var_names,
+        index=adata[adata.obs[condition_column] == "ctrl"].obs_names,
+    )
+
+    conditions = np.array(list(adata.obs[condition_column]))
+    test_conditions = set(
+        adata.obs[condition_column][adata.obs[split_column] == "test"]
+    )
+    
+    pert_truth = {
+        str(condition): pd.DataFrame(
+            data=adata[conditions == condition].X.toarray(),
+            index=adata[conditions == condition].obs_names,
+            columns=adata[conditions == condition].var_names,
+        )
+        for condition in test_conditions
+    }
+
+    return {
+        "adata": adata,
+        "gene_pert": gene_pert,
+        "pert_pred": pert_pred,
+        "pert_truth": pert_truth,
+    }
+
+
 class DummyDataset(BaseDataset):
     """A dummy dataset implementation for testing that skips file validation."""
 

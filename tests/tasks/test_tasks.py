@@ -1,6 +1,6 @@
 import pytest
 
-from typing import Dict
+import anndata as ad
 from czbenchmarks.tasks.clustering import ClusteringTask
 from czbenchmarks.tasks.embedding import EmbeddingTask
 from czbenchmarks.tasks.integration import BatchIntegrationTask
@@ -16,18 +16,19 @@ from czbenchmarks.datasets.types import (
 )
 from czbenchmarks.metrics.types import MetricResult
 
-from tests.utils import DummyTask, create_dummy_anndata
+from tests.utils import (
+    create_dummy_anndata,
+    DummyTask,
+    create_dummy_perturbation_anndata,
+)
 
 
-# FIXME MICHELLE
-# Move this data prep code to tasks/conftest.py ?
 n_cells: int = 500
-n_genes: int = 128
-n_emb_dim: int = 32
+n_genes: int = 200
 organism: Organism = Organism.HUMAN
-obs_columns = ["cell_type", "batch"]
-var_columns = ["feature_name"]
-adata = create_dummy_anndata(
+obs_columns: list[str] = ["cell_type", "batch"]
+var_columns: list[str] = ["feature_name"]
+anndata: ad.AnnData = create_dummy_anndata(
     n_cells=n_cells,
     n_genes=n_genes,
     organism=organism,
@@ -35,39 +36,11 @@ adata = create_dummy_anndata(
     var_columns=var_columns,
 )
 
-n_ctrl = n_cells // 2
-n_pert = n_cells - n_ctrl
-gene_pert = "ENSG00000123456+ctrl"
-adata.obs["condition"] = ["ctrl"] * n_ctrl + [gene_pert] * n_pert
-adata.obs["split"] = ["train"] * n_ctrl + ["test"] * n_pert
-PERT_PRED: CellRepresentation = pd.DataFrame(
-    data=np.random.normal(size=(n_ctrl, n_genes)),
-    columns=adata.var_names,
-    index=adata[adata.obs["condition"] == "ctrl"].obs_names,
-)
-conditions = np.array(list(adata.obs["condition"]))
-test_conditions = set(
-    adata.obs["condition"][adata.obs["split"] == "test"]
-)
-PERT_TRUTH: Dict[str, pd.DataFrame] = {
-    str(condition): pd.DataFrame(
-        data=adata[conditions == condition].X.toarray(),
-        index=adata[conditions == condition].obs_names,
-        columns=adata[conditions == condition].var_names,
-    )
-    for condition in test_conditions
-}
+EXPRESSION_MATRIX: CellRepresentation = anndata.X.copy()
+OBS: ListLike = anndata.obs.copy()
+VAR_EXP: ListLike = anndata.var.copy()
 
-EXPRESSION_MATRIX: CellRepresentation = adata.X.copy()
-OBS: ListLike = adata.obs.copy()
-VAR_EXP: ListLike = adata.var.copy()
-
-# FIXME MICHELLE
-# sc.pp.pca(adata, n_comps=n_emb_dim, svd_solver="arpack",
-# random_state=RANDOM_SEED, use_highly_variable=True, key_added=OBSM_KEY)
-EMBEDDING_MATRIX: CellRepresentation = (
-    adata.X.copy().toarray()
-)  # adata.obsm[OBSM_KEY].copy()
+EMBEDDING_MATRIX: CellRepresentation = EXPRESSION_MATRIX.toarray()
 VAR_EMB: ListLike = VAR_EXP
 
 
@@ -150,7 +123,6 @@ def test_embedding_invalid_input(
             {"labels": OBS["cell_type"]},
             {},
         ),
-
     ],
 )
 def test_task_execution(
@@ -176,9 +148,7 @@ def test_task_execution(
         # Test baseline execution if implemented
         try:
             n_pcs = min(50, expression_data.shape[1] - 1)
-            baseline_embedding = task.set_baseline(
-                expression_data, n_pcs=n_pcs
-            )
+            baseline_embedding = task.set_baseline(expression_data, n_pcs=n_pcs)
             if "var" in task_kwargs:
                 task_kwargs["var"] = task_kwargs["var"].iloc[:n_pcs]
 
@@ -197,9 +167,7 @@ def test_task_execution(
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-def test_cross_species_task(
-    embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"]
-):
+def test_cross_species_task(embedding=EMBEDDING_MATRIX, labels=OBS["cell_type"]):
     """Test that CrossSpeciesIntegrationTask executes without errors."""
     task = CrossSpeciesIntegrationTask()
     embedding_list = [embedding, embedding]
@@ -229,16 +197,23 @@ def test_cross_species_task(
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
 
 
-# FIXME MICHELLE
-def test_perturbation_task(
-    cell_representation = EXPRESSION_MATRIX,
-    var_names = VAR_EXP["feature_name"],
-    obs_names = OBS["cell_type"],
-    gene_pert = gene_pert,
-    pert_pred = PERT_PRED,
-    pert_truth = PERT_TRUTH,
-):
+# # FIXME MICHELLE
+def test_perturbation_task():
     """Test that PerturbationTask executes without errors."""
+    perturbation_anndata = create_dummy_perturbation_anndata(
+        n_cells=500,
+        n_genes=200,
+        organism=Organism.HUMAN,
+        condition_column="condition",
+        split_column="split",
+    )
+    pert_pred = perturbation_anndata["pert_pred"]
+    pert_truth = perturbation_anndata["pert_truth"]
+    gene_pert = perturbation_anndata["gene_pert"]
+    cell_representation = perturbation_anndata["adata"].X
+    var_names = perturbation_anndata["adata"].var_names
+    obs_names = perturbation_anndata["adata"].obs_names
+
     task = PerturbationTask()
     task_kwargs = {
         "var_names": var_names,
@@ -252,7 +227,7 @@ def test_perturbation_task(
     try:
         # Test regular task execution
         results = task.run(
-            cell_representation, 
+            cell_representation,
             task_kwargs,
             metric_kwargs,
         )
@@ -273,9 +248,7 @@ def test_perturbation_task(
                 obs_names=obs_names,
                 baseline_type=baseline_type,
             )
-            baseline_results = task.run(
-                baseline_embedding, task_kwargs, metric_kwargs
-            )
+            baseline_results = task.run(baseline_embedding, task_kwargs, metric_kwargs)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics
@@ -283,3 +256,6 @@ def test_perturbation_task(
     except Exception as e:
         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
 
+
+if __name__ == "__main__":
+    pytest.main(["-v", __file__, "-k", "test_perturbation_task"])
