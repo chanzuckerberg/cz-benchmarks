@@ -148,16 +148,20 @@ class Provenance(BaseModel, extra="forbid"):
 
 # Useful to validate hardware resource requirement for a model
 class Resource(BaseModel, extra="forbid"):
-    gpu_type       : str
-    gpu            : bool = False
-    gpu_mem_mb     : Optional[int]
-    cpu_cores      : int = 4
-    ram_mb         : int = 8_192
-    disk_mb        : int = 10_240
-    cloud_provider : Optional[Literal["aws", "gcp", "azure", "custom"]] = None
-    instance_type  : Optional[str] = None  # e.g., "n1-standard-8", "m5.large"
-    region         : Optional[str] = None  # e.g., "us-west-2"
-    validate_cloud : Optional[bool] = False
+  use_gpu            : bool = False
+  gpu_type       : str
+  gpu_count      : int = 1                              # Minimum number of GPUs required
+  gpu_min_memory     : Optional[int] = None                 # Minimum memory per GPU in MB
+  gpu_features       : set[str] = set()                     # e.g., {"flash_attention", "fp8"}
+  gpu_mem_mb     : Optional[int] = None                 # Total GPU memory required (legacy, prefer min_mem_mb)
+  gpu_compute_capability : Optional[str] = None         # e.g., "7.0", "8.0" (NVIDIA CUDA compute capability)
+  multi_gpu      : Optional[bool] = False               # Whether multi-GPU is required
+  cpu_cores      : int = 4
+  ram_mb         : int = 8_192
+  disk_mb        : int = 10_240
+  cloud_provider : Optional[Literal["aws", "gcp", "azure", "custom"]] = None
+  instance_type  : Optional[str] = None                 # e.g., "n1-standard-8", "m5.large"
+  region         : Optional[str] = None                 # e.g., "us-west-2"
 
     def validate(self) -> bool:
         """
@@ -662,15 +666,15 @@ class AnnDataValidator(BaseValidator):
 ## Difference between InputOutputSpecs and Declarative Validations
 
 
-|**Aspect**|**InputOutputSpecs**|**Declarative Validations**|
-|---|---|---|
-|**Definition**|A programmatic, reusable Python class that defines the structure and expectations for inputs/outputs.|A YAML-based schema that declaratively specifies validation rules for datasets and models.|
-|**Implementation**|Implemented using Python and Pydantic for type safety and validation.|Defined in YAML files, interpreted by a validation engine at runtime.|
-|**Purpose**|To describe the expected properties of inputs/outputs (e.g., format, modality, encoding).|To validate datasets and models against predefined rules without requiring custom code.|
-|**Validation Scope**|Focused on programmatically validating inputs/outputs of datasets, models, tasks, etc.|Focused on validating datasets and their properties in a declarative manner.|
-|**Use Case**|Best suited for defining reusable specifications for datasets, models, tasks, and metrics.|Best suited for validating datasets against predefined schemas in a benchmarking pipeline.|
-|**Integration**|Integrated directly into Python code and used in specifications like `DatasetSpec`.|Used as an external configuration file, interpreted by a validation engine.|
-|**Examples**|Defines fields like `name`, `modality`, `formats`, and `encodings`.|Defines properties like `X`, `obs`, `var`, and their types (e.g., `ndarray`, `DataFrame`).|
+| **Aspect**           | **InputOutputSpecs**                                                                                   | **Declarative Validations**                                                        |
+|----------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| **Definition**       | Programmatic, reusable Python class defining structure and expectations for inputs/outputs.             | YAML-based schema that declaratively specifies validation rules for datasets/models.|
+| **Implementation**   | Implemented using Python and Pydantic for type safety and validation.                                  | Defined in YAML files, interpreted by a validation engine at runtime.              |
+| **Purpose**          | Describes expected properties of inputs/outputs (e.g., format, modality, encoding).                    | Validates datasets/models against predefined rules without requiring custom code.   |
+| **Validation Scope** | Programmatically validates inputs/outputs of datasets, models, tasks, etc.                             | Validates datasets and their properties in a declarative manner.                   |
+| **Use Case**         | Best for defining reusable specifications for datasets, models, tasks, and metrics.                     | Best for validating datasets against predefined schemas in benchmarking pipelines.  |
+| **Integration**      | Integrated directly into Python code and used in specifications like `DatasetSpec`.                    | Used as an external configuration file, interpreted by a validation engine.        |
+| **Examples**         | Fields like `name`, `modality`, `formats`, and `encodings`.                                            | Properties like `X`, `obs`, `var`, and their types (e.g., `ndarray`, `DataFrame`). |
 
 
 
