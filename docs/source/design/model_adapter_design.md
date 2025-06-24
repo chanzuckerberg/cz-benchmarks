@@ -1,65 +1,111 @@
 
-
-
 ## ModelAdapter Design (C)
 
 **Consider for v1.0**
 
 This Model Adapter design leverages a strongly-typed `ModelConfig` object, defined as a Pydantic model, to encapsulate all model configuration parameters, resource requirements, and input/output specifications. By using structured configuration and validation, this approach ensures clarity, correctness, and early error detection, while enabling robust, extensible, and production-ready model adapters.
 
-```py
-import abc
-from typing import Any, Dict, Optional, Type
 
-from pydantic import BaseModel
+```py
+"""
+# New enhanced models.yaml Config file
+models:
+  - name: "example-model"
+    version: "1.2.3"
+    git-sha: "ff43a8b"
+    model_description: "Demo image classifier"
+    model_image_uri: "docker.io/example/model:1.2.3"
+    model_config_uri: "https://storage.myorg.com/configs/example-1.2.3.yaml"
+    model_dockerfile: "https://github.com/myorg/models/Dockerfile"
+"""
+
+from pathlib import Path
+from typing import Dict, Any, List
+
+import yaml
+
+
+class ModelRegistry:
+    """Tiny helper around `registry.yaml`."""
+
+    def __init__(self, path: Path):
+        self.data: Dict[str, List[Dict[str, Any]]] = yaml.safe_load(path.read_text())
+
+    def find(self, name: str, version: str) -> Dict[str, Any]:
+        for m in self.data["models"]:
+            if m["name"] == name and m["version"] == version:
+                return m
+        raise KeyError(f"{name}:{version} not in registry")
+
+    def load_config(self, config_path: Path) -> Dict[str, Any]: 
+        """Load a configuration file from the given path."""
+        if not config_path.exists():
+            raise FileNotFoundError(f"Config file not found at {config_path}")
+        return yaml.safe_load(config_path.read_text())
+
+from __future__ import annotations
+import json, urllib.request
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import yaml
+from pydantic import BaseModel, Field, validator
+
 
 class ModelConfig(BaseModel):
-    """
-    Simple enough for model authors to instantiate directly yet strict enough
-    for an orchestrator / scheduler to reason about.
-    """
-
-    input:  List[Any]                    # developer decides what type makes sense. Pass multiple files.
-    output: Any                   #
-
-    # ── Model-specific hyper-parameters/ arguments
-    model_parameters: Dict[str, Any] = Field(default_factory=dict)
-
-    # ── Resources (defaults are dev-box-friendly) 
-    use_gpu:     bool = True
-    gpu_memory:  Optional[int] = Field(
-        None, description="MiB; None ⇒ let scheduler decide"
-    )
-    cpu_cores:   int  = 2
-    cpu_memory:  int  = 4        # GB
-    disk_space:  int  = 100        # GB
-    gpu_properties: Optional[Dict[str, Any]] = None #(flash attention, type like A100, etc). Can be individual properties
-
-    # ── Execution behaviour
-    timeout:     Optional[int] = Field(
-        None, description="Wall-clock seconds before forcibly terminating" # Useful to restrict cost
-    )
+    # I/O
+    input_paths: Path
+    output_dir:  Path
+    # model arguments or hyper-params etc.
+    model_parameters:  Dict[str, Any]
     batch_size:  Optional[int] = None 
 
-    # ── Metadata / misc.
-    model_name:    Optional[str] = None
-    model_version: Optional[str] = None
+    # provenance Optional
+    model_name:    str
+    model_version: str
     model_variant : Optional[str] = None
-    extra_files:   Dict[str, Path] = Field(
-        default_factory=dict, description="tokenizer → /path/to/tokenizer.json"
-    )
 
+    # resources (inline, Or can be a separate class)
+    cpu:    int = Field(2, ge=1)
+    cpu_memory: int = Field(8, ge=1)
+    gpu:    int = Field(0, ge=0)
+    gpu_memory:  Optional[int]
+    gpu_properties: Optional[Dict[str, Any]] = None
+    disk_space:  int  = 100        # GB
+
+    # misc
+    timeout: Optional[int] = None
+
+
+    # ---------- validators ----------
+    @validator("input_paths", each_item=True)
+    def _in_exists(cls, p: Path) -> Path:
+        if not p.exists():
+            raise FileNotFoundError(p)
+        return p.resolve()
+
+    @validator("output_dir", pre=True)
+    def _out_dir(cls, p: Path | str) -> Path:
+        p = Path(p).resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    # ---------- helper ----------
+    @staticmethod
+    def load_from_uri(uri: str) -> Dict[str, Any]:
+        """Return dict from YAML or JSON at `uri` (http(s) or local path)."""
+        raw = (urllib.request.urlopen(uri).read().decode()
+               if uri.startswith(("http://", "https://"))
+               else Path(uri).read_text())
+        try:
+            return yaml.safe_load(raw)
+        except yaml.YAMLError:
+            return json.loads(raw)
 
 
 
 class ModelAdapter(abc.ABC):
-    """
-    ```
-    with MyAdapter(cfg) as m:
-        result = m.run()
-    ```
-    Guarantees `cleanup()` even when exceptions fly.
-    """
+
 
     def __init__(self, config: ModelConfig):
         self.config = config
@@ -85,7 +131,7 @@ class ModelAdapter(abc.ABC):
 
     # ── extension points for subclasses  
     @abc.abstractmethod
-    def validate(self) -> None:
+    def validate(self, data: Any) -> None:
         """Extra invariants beyond Pydantic’s checks (optional)."""
 
     @abc.abstractmethod
@@ -116,62 +162,132 @@ class ModelAdapter(abc.ABC):
 - **Lifecycle Management:** Orchestrates all steps in the inference pipeline.
 - **Resource Specification:** Explicit resource fields (CPU, GPU, RAM, disk).
 
-### Drawbacks
 
-- **Limited Input/Output Schema:** No explicit modeling of input/output modalities, formats, or validation schemas.
+### Example Implementation - DockerAdapter (WIP)
 
-
-### Example Implementation - DockerAdapter
-
+> **Note:** The following code is a conceptual example and has not been fully tested. It is intended to illustrate the design approach and may require further development and validation before use.
 
 ```python
-class DockerConfig(ModelConfig):
-    """
-    Configuration for running model inference inside a Docker container.
 
-    Attributes:
-        image (str): Docker image name to use for the container.
-        tag (str): Docker image tag (default: "latest").
-        entrypoint (Optional[Union[str, List[str]]]): Entrypoint command for the container.
-        command (Optional[Union[str, List[str]]]): Command to run in the container.
-        env (Dict[str, str]): Environment variables to set inside the container.
-        volumes (List[Volume]): List of volume mappings (host to container).
-        ports (Dict[str, Optional[int]]): Port mappings, e.g., {"8080/tcp": 8080} (None ⇒ random host port).
+import json
+import shutil
+import subprocess
+from pathlib import Path
+from typing import Dict, List, Any, Optional
 
-    """
-    image: str
-    tag: str = "latest"
+import docker
+from docker.types import Mount
 
-    env: Dict[str, str] = Field(default_factory=dict, description="Environment variables to set inside the container")
-    working_dir: Optional[str] = None
-    entrypoint: Optional[Union[str, List[str]]] = None
-    command: Optional[Union[str, List[str]]] = None
+from .config import ModelConfig
+from czbenchmarks.dataset import BaseDataset
 
-    gpus: Optional[str] = 'all'
+# Constants for container mount points
+CONTAINER_INPUTS_DIR = "/mnt/inputs"
+CONTAINER_OUTPUTS_DIR = "/mnt/outputs"
 
+class DockerAdapter(ModelAdapter):
+    def __init__(
+        self,
+        config: ModelConfig,
+        image_uri: str,
+        dataset: BaseDataset,
+        extra_env: Optional[Dict[str, str]] = None,
+    ):
+        super().__init__(config)
+        self.image = image_uri
+        self.env = extra_env or {}
+        self.cli = docker.from_env()
+        self.container = None
+        self.dataset = dataset
 
-    
-    # Optional
-    dataset_inputs: Optional[str] = Field(None, description="Host directory to store inputs") 
-    output_dir: Optional[str] = Field(None, description="Host directory to store outputs")
-    log_dir: Optional[str] = Field(None, description="Host directory to store logs")
+    def _make_mounts(self) -> List[Mount]:
+        mounts = [Mount(CONTAINER_OUTPUTS_DIR, str(self.config.output_dir), type="bind")]
+        for idx, host_p in enumerate(self.dataset.input_paths()):
+            mounts.append(
+                Mount(f"{CONTAINER_INPUTS_DIR}/{idx}", str(host_p), "bind", read_only=True)
+            )
+        return mounts
 
-    volumes: List[Volume] = Field(default_factory=list, description="List of volume mappings (host to container)")
-    ports: Dict[str, Optional[int]] = Field(
-        default_factory=dict,
-        description="container_port/PROTO → host_port (None ⇒ random)"
-    )
+    def _input_map(self) -> Dict[str, str]:
+        return {
+            str(i): f"{CONTAINER_INPUTS_DIR}/{i}"
+            for i, _ in enumerate(self.dataset.input_paths())
+        }
 
-    privileged: bool = False
+    def _ensure_container(self):
+        if self.container:
+            try:
+                c = self.cli.containers.get(self.container.id)
+                if c.status == "running":
+                    return
+            except docker.errors.NotFound:
+                pass
+        device_requests = (
+            [docker.types.DeviceRequest(count=self.config.gpu, capabilities=[["gpu"]])]
+            if getattr(self.config, "gpu", 0)
+            else None
+        )
+        self.container = self.cli.containers.run(
+            self.image,
+            command=["tail", "-f", "/dev/null"],
+            mounts=self._make_mounts(),
+            environment=self.env,
+            detach=True,
+            tty=True,
+            auto_remove=True,
+            device_requests=device_requests,
+        )
 
-    labels: Dict[str, str] = Field(default_factory=dict)
+    def validate(self, data: Any = None) -> None:
+        # Validate dataset and config
+        for p in self.dataset.input_paths():
+            if not Path(p).exists():
+                raise FileNotFoundError(f"Input file not found: {p}")
+        if not Path(self.config.output_dir).exists():
+            Path(self.config.output_dir).mkdir(parents=True, exist_ok=True)
 
+    def setup(self) -> None:
+        self._ensure_container()
 
-    dataset_inputs: Optional[List[Dict[str, Any]]] = Field(
-        default_factory=list,
-        description="List of datasets to mount or pass as input, e.g., [{'name': 'mydata', 'host_path': '/host/data', 'container_path': '/mnt/data'}]"
-    )
+    def preprocess(self) -> Dict[str, Any]:
+        # Prepare input mapping for the container
+        return {
+            "inputs": self._input_map(),
+            "parameters": self.config.model_parameters,
+            "output_dir": CONTAINER_OUTPUTS_DIR,
+        }
 
+    def predict(self, data: Dict[str, Any]) -> Any:
+        self._ensure_container()
+        # Write input spec to a temp file
+        input_spec_path = Path(self.config.output_dir) / "input_spec.json"
+        with open(input_spec_path, "w") as f:
+            json.dump(data, f)
+        # Copy input_spec.json into container
+        with open(input_spec_path, "rb") as f:
+            self.container.put_archive(CONTAINER_OUTPUTS_DIR, f.read())
+        # Run inference inside the container
+        cmd = ["python", "model.py", "--config", f"{CONTAINER_OUTPUTS_DIR}/input_spec.json"]
+        exit_code, output = self.container.exec_run(cmd, demux=True)
+        if exit_code != 0:
+            raise RuntimeError(f"Inference failed: {output}")
+        return output
+
+    def postprocess(self, result: Any) -> Any:
+        # Example: read results from output dir
+        output_file = Path(self.config.output_dir) / "results.json"
+        if output_file.exists():
+            with open(output_file) as f:
+                return json.load(f)
+        return result
+
+    def cleanup(self) -> None:
+        if self.container:
+            try:
+                self.container.stop(timeout=5)
+            except Exception:
+                pass
+            self.container = None
 
 ```
 
@@ -197,9 +313,7 @@ class DockerConfig(ModelConfig):
 - `pull_policy`: Image pull policy ("missing" by default).
 - `healthcheck`: Docker healthcheck configuration.
 - `extra_hosts`: Extra hosts to add to container.
-```
 
-```
 
 ------
 
@@ -689,7 +803,7 @@ class ModelAdapter(ABC):
 ## **Comparison**
 
 | Feature/Aspect             | Design A | Design B | Design C       | Design D          |
-| -------------------------- | -------- | -------- | -------------- | ----------------- |
+|                                  | -------- | -------- |                 - |                 ---- |
 | **Lifecycle Steps**        | Yes      | Yes      | Yes            | Yes               |
 | **Config Handling**        | No       | Yes      | Yes (typed)    | Yes (typed, adv.) |
 | **Input/Output Schema**    | No       | Partial  | No             | Yes (rich, typed) |
