@@ -277,6 +277,7 @@ def main(argv: list[str] | None = None) -> None:
         mlflow.pyfunc.save_model(
             path=tmp_dir,
             python_model=ModelClass(),
+            code_paths=["model_code"],
             artifacts=artifacts,
             model_config=model_config,
             signature=signature,

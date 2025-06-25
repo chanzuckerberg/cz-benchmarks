@@ -43,7 +43,9 @@ transcriptformer_mlflow_pkg
 ├── model_spec.py
 └── requirements.in
 ```
-5. Fill out the `requirements.in` file inside the generated directory. Example:
+5. Fill out the `requirements.in` file inside the generated directory.
+
+Example:
 
 ```
 $ cat requirements.in
@@ -58,14 +60,18 @@ transcriptformer>=0.3.0
 $ uv pip compile requirements.in -o requirements.txt
 ```
 
-7. Download all necessary artifacts (ex: model weights and auxiliary data) to the `model_data` directory. Example:
+7. Download all necessary artifacts (ex: model weights and auxiliary data) to the `model_data` directory.
+
+Example:
 
 ```
 $ transcriptformer download tf-sapiens --checkpoint-dir model_data/
 ```
 
-# Complete the implementation of the **MLflow PythonModel** wrapper
-1. Complete the implementation of the following methods in the `model_code/<model-name>_mlflow_model.py` file:
+# Create a **MLflow PythonModel** wrapper
+1. Specify the schema for the inputs and outputs of the model by filling out `model_spec.py`. The comments in that file provide guidance on how to how to specify the schema.
+
+2. Complete the implementation of the following methods in the `model_code/<model-name>_mlflow_model.py` file. The doc strings on these methods provide guidance on how to implement them:
 
 ```
 def load_context(self, context: mlflow.pyfunc.PythonModelContext) -> None:
@@ -83,56 +89,88 @@ def _forward(self, input_obj: Any, **params) -> np.ndarray:
 
 Example Usage:
 
-```bash
-python mlflow_packager.py \
-    --model-class model_code.transcriptformer_mlflow_model:TranscriptformerMLflowModel \
-    --checkpoint model_data/tf_sapiens \
-    --model-config-json '{"model_variant":"tf_sapiens"}' \
-    --model-tag model_variant=tf_sapiens \
-    --example-uri tiny.h5ad \
-    --output-shape '[-1,2048]' \
-    --output-dtype float32 \
-    --extra-params-spec-json '{"gene_col_name":"string", "precision":"string", "pretrained_embedding":"string", "batch_size":"integer"}' \
-    --out-dir mlflow_model_artifacts 
+```
+$ python mlflow_packager.py 
+  --model-class model_code.transcriptformer_mlflow_model:TranscriptformerMLflowModel \
+  --artifact checkpoint=tf_sapiens \
+  --model-config-json '{"model_variant":"tf_sapiens"}' \
+  --model-tag model_variant=tf_sapiens  \
+  --out-dir mlflow_model_artifact
 ```
 
-
-3. Check that it created a directory that has this structure:
+Example Artifact Output Directory Structure:
 
 ```
+$ tree mlflow_model_artifact/
+
+mlflow_model_artifact/
 ├── MLmodel
 ├── artifacts
-├── code
-│   └── model_code
-│       ├── __init__.py
-│       └── [model-name]_mlflow_model.py
+│   └── tf_sapiens
+│       ├── config.json
+│       ├── model_weights.pt
+│       └── vocabs
+│           ├── assay_vocab.json
+│           └── homo_sapiens_gene.h5
 ├── conda.yaml
 ├── input_example.json
 ├── python_env.yaml
 ├── python_model.pkl
 ├── requirements.txt
+└── serving_input_example.json
 ```
 
-# Verify that model package can be used to run inference
-1. Create a test input json payload from the **MLflow Model Signature**:
+# Use the **MLflow Model** to run inference locally!
+1. Create a json input payload by copying `serving_input_example.json` from the model artifact directory into your current directory and modifying its contents appropriately:
 
 ```
-$ python generate_mlflow_test_payload.py --model-uri <mlflow-model-directory> --json-payload-filepath test_input_payload.json
+$ cp mlflow_model_artifact/serving_input_example.json .
 ```
 
-2. Flesh out the values in `test_input_payload.json`.
-
-3. **Run inference** to test that a **python function invocation of inference succeeds and datatype validation passes** so that it can be included in a python script or jupyter notebook.
+Example:
 
 ```
-$ python predict_func.py --model-uri <mlflow-model-directory> --json-payload-file test_input_payload.json
+$ cat serving_input_example.json
+
+{
+  "dataframe_split": {
+    "columns": [
+      "input_uri"
+    ],
+    "data": [
+      [
+        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+      ]
+    ]
+  },
+  "params": {
+    "batch_size": 32,
+    "precision": "16-mixed",
+    "gene_col_name": "ensembl_id"
+  }
 ```
-4. **Run inference to test if the model can be served from a REST API endpoint.**_This tests if the json input payload round-trips through mlflow's native support for deserialization, datatype validation and finally serialization of the output back to json._
-The inference process will spin up its own virtual environment.
-This likely means you will use the same virtual environment library (conda, uv, virtualenv) recommended by the model's installation instructions. See [documentation](https://mlflow.org/docs/latest/api_reference/cli.html#mlflow-models-predict).
+
+2. Run inference:
 
 ```
 $ mlflow models predict --model-uri <mlflow-model-directory> --content-type json --input-path test_input_payload.json --output-path test_output.json --env-manager <virtualenv-manager>
 ```
 
-5. Verify that the inference ran correctly by checking the `test_output.json` file.
+**NOTE:** The admissible values for `--env-manager` are `[conda, uv, virtualenv, local]`. It is **HIGHLY RECOMMENDED** you specify `conda` or `uv` or `virtualenv` so that you can be sure that that the model can run on other machines.
+
+Example Usage:
+
+```
+$ mlflow models predict --model-uri ./mlflow_model_artifact --content-type json --input-path serving_input_example.json --output-path test_output.json --env-manager uv
+``` 
+
+3. Verify the output by examining the contents of the output file.
+
+Example:
+
+```
+$ head -c 1000 test_output.json
+
+{"predictions": [[-0.1429818570613861, -0.1260850429534912, 0.040420662611722946, -0.19157768785953522, 0.22647874057292938, 0.15660905838012695, -0.13574902713298798, 0.0721682459115982, 0.024216821417212486, -0.04561154171824455, -0.3007250130176544, 0.08299852907657623, 0.0005049569299444556, 0.003926896024495363, 0.08237997442483902, 0.18843598663806915, -0.008095022290945053, -0.012726053595542908, -0.11273445188999176, 0.03558430075645447, -0.050463370978832245, 0.18308386206626892, 0.07628823071718216, 0.017358627170324326, 0.027970347553491592, -0.33074551820755005, 0.0716106966137886, 0.15132226049900055, -0.0679834634065628, 0.06222778931260109, -0.13658343255519867, 0.2187119573354721, 0.1522756665945053, 0.023600872606039047, -0.1128731444478035, 0.08771258592605591, 0.045885197818279266, 0.05724436417222023, 0.16931083798408508, -0.1518353968858719, 0.03722844272851944, -0.13497602939605713, -0.015310755930840969, -0.10012456774711609, -0.03223331272602081, 0.2051643580198
+```
+
