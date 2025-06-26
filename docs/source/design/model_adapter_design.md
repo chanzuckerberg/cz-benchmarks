@@ -1,5 +1,5 @@
 
-## ModelAdapter Design (C)
+## ModelAdapter Design (C) - Work in progress
 
 **Consider for v1.0**
 
@@ -8,15 +8,26 @@ This Model Adapter design leverages a strongly-typed `ModelConfig` object, defin
 
 ```py
 """
-# New enhanced models.yaml Config file
+# New enhanced models.yaml Config file. May reside in repo or remote URL. Remote URL will allow us to update without updating code.
 models:
-  - name: "example-model"
+  - name: "SCVI"
     version: "1.2.3"
-    git-sha: "ff43a8b"
-    model_description: "Demo image classifier"
-    model_image_uri: "docker.io/example/model:1.2.3"
-    model_config_uri: "https://storage.myorg.com/configs/example-1.2.3.yaml"
-    model_dockerfile: "https://github.com/myorg/models/Dockerfile"
+    author: "Jane Doe"
+    description: "SCVI"
+    model_config_uri: "https://storage.myorg.com/configs/example-1.2.3.yaml" # A URL or local path pointing to the model's detailed execution definition file. This allows the execution logic to be stored and versioned.
+
+    # Below are better suited in Model Config YAML below.
+    supported_datasets:
+        - "pbmc3k"
+        - "tabula-muris"
+    supported_tasks:
+        - "cell_clustering"
+    metadata:  # Optional
+        author: "Jane Doe"
+        license: "Apache-2.0"
+        tags:
+            - "single-cell"
+
 """
 
 from pathlib import Path
@@ -43,6 +54,58 @@ class ModelRegistry:
             raise FileNotFoundError(f"Config file not found at {config_path}")
         return yaml.safe_load(config_path.read_text())
 
+
+"""
+# Model Config YAML
+packaging_format: "python_class" # OR docker, mlflow, etc
+supported_datasets: ["tsv2"] # Need to identify a grouping mechanism in datasets.yaml so multiple files from the same group can be used in model
+supported_tasks: ["cell_clustering", "dimensionality_reduction"]
+
+#  Format-Specific Fields  for "python_class" packaging format 
+source:
+  git:
+    repo_url: "https://github.com/czi/scvi-model.git"
+    commit_hash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+  python:
+    class_path: "src.adapters.SCVIAdapter"
+    dependencies: "requirements.txt"
+
+# Format-Specific Fields for docker
+image_uri: "docker.io/nvidia/cell_model:2.1.0"
+dockerfile: "optional url for docker file"
+command_template: >
+  python /app/run.py
+    --image {inputs.image}
+    --metadata {inputs.metadata}
+    --output-dir {output_dir}
+
+# Input Output
+input_spec: # Optional
+  anndata: { type: "h5ad", description: "The primary single-cell dataset." }  #  declarative schema design can be used here.
+output_spec: # Optional
+  numpy_array: { file: "embedding", type: "ndarray" }
+input_path: /data/tsv2_bladder.h5ad
+output_dir: /results
+
+model_parameters: # Optional for developer workflow
+  learning_rate: 0.001
+  num_epochs: 50
+  hidden_size: 256
+batch_size: 32
+
+# Resource
+cpu: 4
+cpu_memory: 16
+gpu: 1
+gpu_memory: 12
+gpu_properties:
+  flash_attention: no
+disk_space: 100
+
+"""
+
+
+
 from __future__ import annotations
 import json, urllib.request
 from pathlib import Path
@@ -53,25 +116,8 @@ from pydantic import BaseModel, Field, validator
 
 
 class ModelConfig(BaseModel):
-    # I/O
-    input_paths: Path
-    output_dir:  Path
-    # model arguments or hyper-params etc.
-    model_parameters:  Dict[str, Any]
-    batch_size:  Optional[int] = None 
-
-    # provenance Optional
-    model_name:    str
-    model_version: str
-    model_variant : Optional[str] = None
-
-    # resources (inline, Or can be a separate class)
-    cpu:    int = Field(2, ge=1)
-    cpu_memory: int = Field(8, ge=1)
-    gpu:    int = Field(0, ge=0)
-    gpu_memory:  Optional[int]
-    gpu_properties: Optional[Dict[str, Any]] = None
-    disk_space:  int  = 100        # GB
+    # parameters from model config above
+    # Can have multiple classes like Resource, PythonSource or a single ModelConfig class
 
     # misc
     timeout: Optional[int] = None
@@ -163,7 +209,35 @@ class ModelAdapter(abc.ABC):
 - **Resource Specification:** Explicit resource fields (CPU, GPU, RAM, disk).
 
 
-### Example Implementation - DockerAdapter (WIP)
+### Enhanced CLI (Command-Line Interface)
+
+A  CLI improvements to simplify the developer workflow.
+
+-   **`benchmark-tool init`**: An interactive wizard that guides a developer through creating their `model-definition.yaml`(ModelConfig object) file.
+    -   `? What is your model's packaging format? (python_class, docker_container)`
+    -   (If `python_class`): `? What is the Git repository URL?`
+    -   (If `docker_container`): `? What is the full Docker image URI?`
+    -   ...and so on. It then generates a perfectly formatted YAML file.
+        
+-   **`benchmark-tool validate <path/to/model-definition.yaml>`**: A command that loads a definition file and validates it. This gives developers immediate feedback on the correctness of their configuration without needing to run a full benchmark.
+-   **`benchmark-tool run ...`**:  Existing
+
+
+### Provide Template Repositories
+
+For each supported `packaging_format`, provide a "cookiecutter"/"other tool" or template repository on GitHub.
+
+-   A developer wanting to integrate a new Python-based model can simply fork this repository.
+-   The template would include:
+    -   A placeholder `model-def.yaml` with comments explaining each field.
+    -   A boilerplate `src/adapters/my_adapter.py` file inheriting from a `BaseAdapter` class.
+    -   A `requirements.txt`.
+    -   A pre-configured CI/CD workflow to build a `base_image` and run `benchmark-tool validate`.
+
+
+---
+
+### Example Implementation - DockerAdapter (WIP) - Do not review
 
 > **Note:** The following code is a conceptual example and has not been fully tested. It is intended to illustrate the design approach and may require further development and validation before use.
 
