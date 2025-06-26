@@ -63,6 +63,7 @@ class SCVI(SCVIValidator, BaseModelImplementation):
 
     def run_model(self, dataset: BaseDataset):
         adata = dataset.adata
+        del adata.varm
         batch_keys = self.required_obs_keys
         adata.obs["batch"] = functools.reduce(
             lambda a, b: a + b, [adata.obs[c].astype(str) for c in batch_keys]
