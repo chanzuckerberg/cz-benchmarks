@@ -3,7 +3,6 @@ import pathlib
 
 import scvi
 from omegaconf import OmegaConf
-from utils import filter_adata_by_hvg
 
 from czbenchmarks.datasets import BaseDataset, DataType, Organism
 from czbenchmarks.models.implementations.base_model_implementation import (
