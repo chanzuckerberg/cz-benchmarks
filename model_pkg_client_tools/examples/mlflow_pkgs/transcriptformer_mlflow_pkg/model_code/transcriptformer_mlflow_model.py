@@ -1,5 +1,5 @@
 """
-{{ MODEL_CAMEL }}{{ CLASS_SUFFIX }}
+TranscriptformerMLflowModel
 ==================================
 Generic **file-URI → NumPy tensor** adapter for the MLflow PyFunc flavor.
 
@@ -17,13 +17,17 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Optional
+import subprocess
+import tempfile
+
+import anndata as ad
 
 import mlflow.pyfunc
 import numpy as np
 import pandas as pd
 
 
-class {{ MODEL_CAMEL }}{{ CLASS_SUFFIX }}(mlflow.pyfunc.PythonModel):
+class TranscriptformerMLflowModel(mlflow.pyfunc.PythonModel):
     """
     PyFunc wrapper: one-row DataFrame → NumPy tensor.
 
@@ -51,7 +55,8 @@ class {{ MODEL_CAMEL }}{{ CLASS_SUFFIX }}(mlflow.pyfunc.PythonModel):
             self.variant = variant
         """
         # USER IMPLEMENTATION REQUIRED
-        raise NotImplementedError("load_context() must be implemented by the user")
+        self.ckpt_path = Path(context.artifacts["checkpoint"]).resolve()
+        self.model_variant = context.model_config.get("model_variant", "tf_sapiens")
 
     def predict(
         self,
@@ -105,7 +110,8 @@ class {{ MODEL_CAMEL }}{{ CLASS_SUFFIX }}(mlflow.pyfunc.PythonModel):
             Framework-specific input (e.g., AnnData, PIL Image, ndarray).
         """
         # USER IMPLEMENTATION REQUIRED
-        raise NotImplementedError("_get_input() must be implemented by the user")
+        uri = model_input.at[0, "input_uri"]
+        return uri
 
     def _forward(
         self,
@@ -128,7 +134,53 @@ class {{ MODEL_CAMEL }}{{ CLASS_SUFFIX }}(mlflow.pyfunc.PythonModel):
             NumPy array matching the ModelSignature’s output spec.
         """
         # USER IMPLEMENTATION REQUIRED
-        raise NotImplementedError("_forward() must be implemented by the user")
+        input_uri = input_obj
+        with tempfile.TemporaryDirectory() as td:
+            out_h5ad = Path(td) / "embeddings.h5ad"
+            self._run_cli(input_uri, out_h5ad, params)
+            adata_out = ad.read_h5ad(out_h5ad)
+            return np.asarray(adata_out.obsm["embeddings"], dtype=np.float32)
+
+    def _default_batch_size(self) -> int:
+        """Heuristic batch size per model family."""
+        return {"tf_sapiens": 32, "tf_exemplar": 8, "tf_metazoa": 2}.get(
+            self.model_variant, 8
+        )
+
+    def _run_cli(
+        self,
+        in_file: Path,
+        out_file: Path,
+        params: dict[str, Any],
+    ) -> None:
+        """Run **TranscriptFormer** inference for one file."""
+        batch_size = params.get("batch_size", -1)
+        if batch_size == -1:
+            batch_size = self._default_batch_size()
+
+        cmd = [
+            "transcriptformer",
+            "inference",
+            "--checkpoint-path",
+            str(self.ckpt_path),
+            "--data-file",
+            str(in_file),
+            "--output-path",
+            str(out_file.parent),
+            "--output-filename",
+            out_file.name,
+            "--batch-size",
+            str(batch_size),
+            "--precision",
+            str(params.get("precision", "16-mixed")),
+            "--gene-col-name",
+            str(params.get("gene_col_name", "ensembl_id")),
+        ]
+        pte = params.get("pretrained_embedding", "")
+        if pte:
+            cmd.extend(["--pretrained-embedding", str(pte)])
+
+        subprocess.run(cmd, check=True)
 
     @staticmethod
     def _validate_input_df(df: pd.DataFrame) -> None:

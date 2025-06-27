@@ -1,0 +1,17 @@
+{
+  "dataframe_split": {
+    "columns": [
+      "input_uri"
+    ],
+    "data": [
+      [
+        "/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"
+      ]
+    ]
+  },
+  "params": {
+    "batch_size": 32,
+    "precision": "16-mixed",
+    "gene_col_name": "ensembl_id"
+  }
+}

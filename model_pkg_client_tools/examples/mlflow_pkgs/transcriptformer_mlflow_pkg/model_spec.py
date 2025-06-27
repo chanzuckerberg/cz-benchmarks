@@ -60,22 +60,32 @@ MODEL_SIGNATURE = ModelSignature(
     outputs=Schema(
         [
             # **STEP 1.2:** ADD ONE OR MORE OUTPUT TENSOR SPECS (uncomment & edit)
-            # TensorSpec(type=np.dtype("float32"), shape=[-1, 2048]),
+            TensorSpec(type=np.dtype("float32"), shape=[-1, 2048]),
         ]
     ),
     params=ParamSchema(
         [
             # **STEP 1.3:** ADD ONE OR MORE OPTIONAL RUNTIME PARAMETERS (uncomment & edit)
-            # ParamSpec(
-            #     name="batch_size",
-            #     dtype="integer",
-            #     default=32,                     # required: must supply a default
-            # ),
-            # ParamSpec(
-            #     name="precision",
-            #     dtype="string",
-            #     default="16-mixed",            # required: must supply a default
-            # ),
+            ParamSpec(
+                name="batch_size",
+                dtype="integer",
+                default=-1,  # Sentinel value to trigger family specific heuristic
+            ),
+            ParamSpec(
+                name="precision",
+                dtype="string",
+                default="16-mixed",
+            ),
+            ParamSpec(
+                name="gene_col_name",
+                dtype="string",
+                default="ensembl_id",
+            ),
+            ParamSpec(
+                name="pretrained_embedding",
+                dtype="string",
+                default="",
+            ),
         ]
     ),
 )
@@ -90,16 +100,15 @@ MODEL_SIGNATURE = ModelSignature(
 INPUT_EXAMPLE: tuple[pd.DataFrame, dict] = (
     pd.DataFrame(
         {
-            "input_uri": ["path/to/example.h5ad"],  # CHANGE TO A REAL INPUT PATH
-            # Example: If you added gene_to_perturb ColSpec above, uncomment here:
-            # "gene_to_perturb": ["TP53"],
+            "input_uri": ["/home/ssm-user/.cz-benchmarks/datasets/example_small.h5ad"],
         }
     ),
     {
         # Provide key-value pairs matching your ParamSpec. If you omit keys
         # mlflow will substitute the omitted keys with their default values
         # as specified in ParamSpec:
-        # "batch_size": 32,
-        # "precision": "16-mixed",
+        "batch_size": 32,
+        "precision": "16-mixed",
+        "gene_col_name": "ensembl_id",
     },
 )
