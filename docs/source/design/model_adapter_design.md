@@ -193,7 +193,7 @@ class ModelAdapter(abc.ABC):
         """Run the forward pass / remote call."""
 
     @abc.abstractmethod
-    def postprocess(self, result: Any) -> Any:
+    def postprocess(self, prediction_result: Any) -> CellRepresentation:
         """Convert model output to cz-benchmark Task input type."""
 
     @abc.abstractmethod
