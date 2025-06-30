@@ -194,7 +194,7 @@ class ModelAdapter(abc.ABC):
 
     @abc.abstractmethod
     def postprocess(self, result: Any) -> Any:
-        """Convert model output to desired shape / schema."""
+        """Convert model output to cz-benchmark Task input type."""
 
     @abc.abstractmethod
     def cleanup(self) -> None:
