@@ -1,9 +1,9 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import ClassVar, Set, Type
+from typing import ClassVar, Type
 
 from ...datasets import BaseDataset
-from ..types import ModelType
+# from ..types import ModelType
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BaseModelValidator(ABC):
+class BaseDatasetValidator(ABC):
     """Abstract base class for model validators.
 
     Defines the interface for validating datasets against model requirements.
@@ -34,7 +34,7 @@ class BaseModelValidator(ABC):
 
     # Type annotation for class variables
     dataset_type: ClassVar[Type[BaseDataset]]
-    model_type: ClassVar[ModelType]
+    # model_type: ClassVar[ModelType]
 
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables and

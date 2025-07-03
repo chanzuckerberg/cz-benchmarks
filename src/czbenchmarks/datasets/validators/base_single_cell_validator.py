@@ -1,13 +1,13 @@
 from typing import ClassVar, List
 
 from ...datasets import SingleCellDataset, Organism
-from .base_model_validator import BaseModelValidator
+from .base_dataset_validator import BaseDatasetValidator
 
 
-class BaseSingleCellValidator(BaseModelValidator):
-    """Base validator for single-cell models.
+class BaseSingleCellValidator(BaseDatasetValidator):
+    """Base validator for single-cell datasets.
 
-    Defines common validation logic for single-cell models, including:
+    Defines common validation logic for single-cell datasets, including:
     - Organism compatibility checking
     - Required metadata validation
     - AnnData observation and variable key validation
