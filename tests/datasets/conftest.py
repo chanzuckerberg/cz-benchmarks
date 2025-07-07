@@ -2,30 +2,30 @@ import pytest
 import pandas as pd
 from tests.utils import create_dummy_anndata
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
 from czbenchmarks.datasets.perturbation_single_cell import PerturbationSingleCellDataset
 
 
 @pytest.fixture
 def dummy_human_anndata(tmp_path):
-    """Creates a SingleCellDataset with valid human gene names."""
+    """Creates a SingleCellLabeledDataset with valid human gene names."""
     file_path = tmp_path / "dummy.h5ad"
     adata = create_dummy_anndata(
         n_cells=5,
         n_genes=3,
-        obs_columns=["dataset_id", "assay", "suspension_type", "donor_id"],
+        obs_columns=["dataset_id", "assay", "suspension_type", "donor_id", "cell_type"],
         organism=Organism.HUMAN,
     )
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellLabeledDataset(path=file_path, organism=Organism.HUMAN)
     dataset.load_data()
     return dataset
 
 
 @pytest.fixture
 def dummy_human_anndata_wrong_prefix(tmp_path):
-    """Creates a SingleCellDataset with invalid gene name prefixes."""
+    """Creates a SingleCellLabeledDataset with invalid gene name prefixes."""
     file_path = tmp_path / "dummy_wrong.h5ad"
     # Create with wrong gene names but valid ensembl IDs in var
     gene_names = [f"BAD{i}" for i in range(1, 4)]
@@ -41,7 +41,7 @@ def dummy_human_anndata_wrong_prefix(tmp_path):
 
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(path=str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellLabeledDataset(path=file_path, organism=Organism.HUMAN)
     dataset.load_data()
     return dataset
 

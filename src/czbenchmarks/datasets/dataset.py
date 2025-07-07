@@ -15,11 +15,18 @@ class Dataset(ABC):
     Args:
         ABC (_type_): _description_
     """
+    
+    name: str
+    path: Path
+    dir: Path
+    organism: Organism
+    
+    
     def __init__(self, name: str, path: Path, organism: Organism, **kwargs: Any):
         self.name = name
         self.path = path
         self.dir = path.parent
-        if not self.path.is_dir():
+        if not self.dir.is_dir():
             raise ValueError(f"Dataset path {self.path} is not a directory")
         self.organism = organism
         self.kwargs = kwargs
@@ -42,18 +49,24 @@ class Dataset(ABC):
         """
 
     @abstractmethod
-    def store_task_inputs(self) -> None:
+    def store_task_inputs(self) -> Path:
         """
         Store the task-specific inputs that have been extracted from the dataset. These files should be stored under the dataset path in a subdirectory who name is keyed to the subclass.
 
         This method should be implemented by subclasses.
+        
+        Returns:
+            Path: The path to the directory storing the task input files.
         """
         pass
 
-    def _store_task_input(self, filename: str, data: IO) -> None:
-        output_path = Path(self.dir) / filename
-        with open(output_path, 'w') as f:
+    def _store_task_input(self, filename: str, data: IO) -> Path:
+        output_dir = Path(self.dir) / self.name
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / filename
+        with open(output_file, 'w') as f:
             f.write(data)
+        return output_file
 
     @abstractmethod
     def _validate(self) -> None:

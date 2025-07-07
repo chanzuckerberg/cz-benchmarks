@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
 from czbenchmarks.datasets.types import Organism
 

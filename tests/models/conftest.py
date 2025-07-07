@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
 from czbenchmarks.datasets.perturbation_single_cell import PerturbationSingleCellDataset
 from czbenchmarks.datasets.types import Organism, DataType
 from tests.utils import create_dummy_anndata
@@ -32,7 +32,7 @@ def dummy_single_cell_dataset(tmp_path):
     )
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(str(file_path), organism=Organism.HUMAN)
+    dataset = SingleCellLabeledDataset(str(file_path), organism=Organism.HUMAN)
     dataset.load_data()
     dataset.set_input(DataType.METADATA, adata.obs)
     return dataset
@@ -118,7 +118,7 @@ def dummy_mouse_dataset(tmp_path):
     )
     adata.write_h5ad(file_path)
 
-    dataset = SingleCellDataset(str(file_path), organism=Organism.MOUSE)
+    dataset = SingleCellLabeledDataset(str(file_path), organism=Organism.MOUSE)
     dataset.load_data()
     dataset.set_input(DataType.METADATA, adata.obs)
     return dataset

@@ -25,14 +25,15 @@ class SingleCellLabeledDataset(Dataset):
         # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
-    def store_task_inputs(self) -> None:
+    def store_task_inputs(self) -> Path:
         """Store task-specific inputs, such as cell type annotations."""
         cell_types = self.adata.obs["cell_type"]
 
         buffer = io.StringIO()
-        cell_types.to_json(buffer, index=True)
+        cell_types.to_json(buffer)
 
-        self._store_task_input("cell_types.json", buffer.getvalue())
+        return self._store_task_input("cell_types.json", buffer.getvalue())
+
 
     # FIXME VALIDATION: move to validation class?
     def _validate(self) -> None:
