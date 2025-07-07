@@ -2,10 +2,8 @@ import pytest
 import pandas as pd
 from tests.utils import create_dummy_anndata
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.single_cell import (
-    SingleCellDataset,
-    PerturbationSingleCellDataset,
-)
+from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.perturbation_single_cell import PerturbationSingleCellDataset
 
 
 @pytest.fixture
