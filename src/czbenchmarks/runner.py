@@ -16,7 +16,7 @@ from .constants import (
     RAW_INPUT_DIR_PATH_DOCKER,
     get_numbered_path,
 )
-from .datasets import BaseDataset
+from .datasets import Dataset
 from .models.types import ModelType
 
 logger = logging.getLogger(__name__)
@@ -90,8 +90,8 @@ class ContainerRunner:
         self.environment = environment or {}  # Store environment variables
 
     def run(
-        self, datasets: Union[BaseDataset, List[BaseDataset]]
-    ) -> Union[BaseDataset, List[BaseDataset]]:
+        self, datasets: Union[Dataset, List[Dataset]]
+    ) -> Union[Dataset, List[Dataset]]:
         """Run the model on one or more datasets.
 
         Args:
@@ -178,7 +178,7 @@ class ContainerRunner:
                         ),
                         i,
                     )
-                    dataset = BaseDataset.deserialize(output_path)
+                    dataset = Dataset.deserialize(output_path)
                     dataset.path = orig_paths[i]  # Restore original path
 
                     # Get new outputs from container
@@ -287,14 +287,14 @@ class ContainerRunner:
 
 def run_inference(
     model_name: str,
-    dataset: BaseDataset,
+    dataset: Dataset,
     gpu: bool = True,
     interactive: bool = False,
     app_mount_dir: Optional[str] = None,
     environment: Optional[Dict[str, str]] = None,
     custom_config_path: Optional[str] = None,
     **kwargs,
-) -> BaseDataset:
+) -> Dataset:
     """Convenience function to run inference on a single dataset.
 
     Args:

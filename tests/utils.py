@@ -8,7 +8,7 @@ from czbenchmarks.constants import RANDOM_SEED
 from typing import List
 from czbenchmarks.tasks.base import BaseTask
 from czbenchmarks.datasets import (
-    BaseDataset,
+    Dataset,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
 
@@ -112,7 +112,7 @@ def create_dummy_perturbation_anndata(
     }
 
 
-class DummyDataset(BaseDataset):
+class DummyDataset(Dataset):
     """A dummy dataset implementation for testing that skips file validation."""
 
     def _validate(self):

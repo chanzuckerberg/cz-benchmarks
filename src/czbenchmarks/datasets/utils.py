@@ -5,13 +5,13 @@ from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
 from ..utils import initialize_hydra
-from .base import BaseDataset
+from .dataset import Dataset
 
 
 def load_dataset(
     dataset_name: str,
     config_path: Optional[str] = None,
-) -> BaseDataset:
+) -> Dataset:
     """
     Download and instantiate a dataset using Hydra configuration.
 

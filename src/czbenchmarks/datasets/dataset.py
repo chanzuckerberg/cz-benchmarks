@@ -1,13 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from pathlib import Path
+from typing import IO, Any
 import os
 
 from .types import Organism
 
 
-class BaseDataset(ABC):
-    def __init__(self, path: str, organism: Organism, **kwargs: Any):
+class Dataset(ABC):
+    """
+    A base class for task-specific datasets. Each concrete dataset class will extract the data required for a specific type of task from the provided input file. These task specific data items can then be retrieved as object instance variables or written to files for later use.
+    
+    path: Path
+
+    Args:
+        ABC (_type_): _description_
+    """
+    def __init__(self, name: str, path: Path, organism: Organism, **kwargs: Any):
+        self.name = name
         self.path = path
+        self.dir = path.parent
+        if not self.path.is_dir():
+            raise ValueError(f"Dataset path {self.path} is not a directory")
         self.organism = organism
         self.kwargs = kwargs
 
@@ -29,14 +42,18 @@ class BaseDataset(ABC):
         """
 
     @abstractmethod
-    def cache_data(self) -> None:
+    def store_task_inputs(self) -> None:
         """
-        Cache existing data.
+        Store the task-specific inputs that have been extracted from the dataset. These files should be stored under the dataset path in a subdirectory who name is keyed to the subclass.
 
-        This method should be implemented by subclasses to cache existing data.
-        For example, after extracting dataset embeddings from a model,
-        the anndata object with the embeddings in the obsm slot can be cached.
+        This method should be implemented by subclasses.
         """
+        pass
+
+    def _store_task_input(self, filename: str, data: IO) -> None:
+        output_path = Path(self.dir) / filename
+        with open(output_path, 'w') as f:
+            f.write(data)
 
     @abstractmethod
     def _validate(self) -> None:
@@ -54,3 +71,5 @@ class BaseDataset(ABC):
             raise ValueError("Organism is not a valid Organism enum")
 
         self._validate()
+
+

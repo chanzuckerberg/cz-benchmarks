@@ -28,7 +28,7 @@ from czbenchmarks.cli.types import (
 )
 from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
-from czbenchmarks.datasets.base import BaseDataset
+from czbenchmarks.datasets.dataset import Dataset
 from czbenchmarks import exceptions
 from czbenchmarks.metrics.types import MetricResult
 from czbenchmarks.models import utils as model_utils
@@ -457,7 +457,7 @@ def run_with_inference(
         t for t in task_args if t.name in task_utils.MULTI_DATASET_TASK_NAMES
     ]
 
-    embeddings_for_multi_dataset_tasks: dict[str, BaseDataset] = {}
+    embeddings_for_multi_dataset_tasks: dict[str, Dataset] = {}
 
     # Get all unique combinations of model arguments: each requires a separate inference run
     model_arg_permutations = get_model_arg_permutations(model_args)
@@ -502,7 +502,7 @@ def run_with_inference(
                     task_results.extend(task_result)
 
     # Run multi-dataset tasks
-    embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
+    embeddings: list[Dataset] = list(embeddings_for_multi_dataset_tasks.values())
     for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
         log.info(
             f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
@@ -526,7 +526,7 @@ def run_inference_or_load_from_cache(
     model_name: str,
     model_args: ModelArgsDict,
     cache_options: CacheOptions,
-) -> BaseDataset:
+) -> Dataset:
     """
     Load the processed dataset from the cache if it exists, else run inference and save to cache.
     """
@@ -578,7 +578,7 @@ def run_without_inference(
         t for t in task_args if t.name in task_utils.MULTI_DATASET_TASK_NAMES
     ]
 
-    embeddings_for_multi_dataset_tasks: dict[str, BaseDataset] = {}
+    embeddings_for_multi_dataset_tasks: dict[str, Dataset] = {}
 
     for dataset_idx, dataset_name in enumerate(dataset_names):
         log.info(
@@ -598,7 +598,7 @@ def run_without_inference(
             task_results.extend(task_result)
 
     # Run multi-dataset tasks
-    embeddings: list[BaseDataset] = list(embeddings_for_multi_dataset_tasks.values())
+    embeddings: list[Dataset] = list(embeddings_for_multi_dataset_tasks.values())
     for task_arg_idx, task_arg in enumerate(multi_dataset_tasks):
         log.info(
             f'Starting multi-dataset task "{task_arg.name}" ({task_arg_idx + 1}/{len(task_args)}) for datasets "{dataset_names}"'
@@ -611,7 +611,7 @@ def run_without_inference(
 
 def run_multi_dataset_task(
     dataset_names: list[str],
-    embeddings: list[BaseDataset],
+    embeddings: list[Dataset],
     model_args: dict[str, ModelArgsDict],
     task_args: TaskArgs,
 ) -> list[TaskResult]:
@@ -657,7 +657,7 @@ def run_multi_dataset_task(
 # See comment here: https://github.com/chanzuckerberg/cz-benchmarks/pull/269/files#r2150232334
 def run_task(
     dataset_name: str,
-    dataset: BaseDataset,
+    dataset: Dataset,
     model_args: dict[str, ModelArgsDict],
     task_args: TaskArgs,
 ) -> list[TaskResult]:
@@ -790,7 +790,7 @@ def get_result_url_for_remote(remote_prefix_url: str) -> str:
 
 
 def set_processed_datasets_cache(
-    dataset: BaseDataset,
+    dataset: Dataset,
     dataset_name: str,
     *,
     model_name: str,
@@ -840,7 +840,7 @@ def try_processed_datasets_cache(
     model_name: str,
     model_args: ModelArgsDict,
     cache_options: CacheOptions,
-) -> BaseDataset | None:
+) -> Dataset | None:
     """
     Deserialize and return a processed dataset from the cache if it exists, else return None.
     """
@@ -913,7 +913,7 @@ def try_processed_datasets_cache(
         dataset.load_data()
 
         # Attach the cached results to the dataset
-        processed_dataset = BaseDataset.deserialize(str(cache_file))
+        processed_dataset = Dataset.deserialize(str(cache_file))
         dataset._outputs = processed_dataset._outputs
         return dataset
 

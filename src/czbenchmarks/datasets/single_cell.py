@@ -1,39 +1,38 @@
+from pathlib import Path
 import anndata as ad
 import pandas as pd
 import numpy as np
-from .base import BaseDataset
+from .dataset import Dataset
 from .types import Organism
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 
 
-class SingleCellDataset(BaseDataset):
-    """Single cell dataset containing gene expression data and metadata.
-
-    Handles loading and validation of AnnData objects with gene expression data
-    and associated metadata for a specific organism."""
+class SingleCellLabeledDataset(Dataset):
+    """Single cell dataset containing gene expression data and "cell_type" obs label column for cells."""
 
     def __init__(
         self,
-        path: str,
+        path: Path,
         organism: Organism,
     ):
-        super().__init__(path, organism)
+        super().__init__("single_cell_labeled", path, organism)
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
         # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
-    def cache_data(self, cache_path: str) -> None:
-        """Cache the dataset to the path.
+    def store_task_inputs(self) -> None:
+        """Store task-specific inputs, such as cell type annotations."""
+        cell_types = self.adata.obs["cell_type"]
 
-        Args:
-            cache_path: The path to cache the dataset to.
-        """
-        # FIXME: Implement this when cache PR is merged
-        pass
+        buffer = io.StringIO()
+        cell_types.to_json(buffer, index=True)
+
+        self._store_task_input("cell_types.json", buffer.getvalue())
 
     # FIXME VALIDATION: move to validation class?
     def _validate(self) -> None:

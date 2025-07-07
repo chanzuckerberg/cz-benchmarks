@@ -1,6 +1,6 @@
 from .utils import load_dataset, list_available_datasets
 from .single_cell import SingleCellDataset, PerturbationSingleCellDataset
-from .base import BaseDataset
+from .dataset import Dataset
 from .types import DataValue, Organism
 
 __all__ = [
@@ -8,7 +8,7 @@ __all__ = [
     "list_available_datasets",
     "SingleCellDataset",
     "PerturbationSingleCellDataset",
-    "BaseDataset",
+    "Dataset",
     "DataValue",
     "Organism",
 ]

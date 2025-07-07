@@ -13,7 +13,7 @@ from ...constants import (
     get_base_name,
     get_numbered_path,
 )
-from ...datasets import BaseDataset
+from ...datasets import Dataset
 from ..validators.base_model_validator import BaseModelValidator
 
 # Configure logging to output to stdout
@@ -37,7 +37,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
     - Saving results
     """
 
-    datasets: List[BaseDataset]
+    datasets: List[Dataset]
     """List of datasets to process"""
 
     model_weights_dir: str
@@ -61,7 +61,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         self.args = Namespace(**self.args)
 
     @abstractmethod
-    def get_model_weights_subdir(self, dataset: BaseDataset) -> str:
+    def get_model_weights_subdir(self, dataset: Dataset) -> str:
         """Get subdirectory for model variant weights.
 
         Args:
@@ -72,14 +72,14 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """
 
     @abstractmethod
-    def _download_model_weights(self, dataset: BaseDataset):
+    def _download_model_weights(self, dataset: Dataset):
         """Download model weights if needed.
 
         Args:
             dataset: Dataset being processed
         """
 
-    def download_model_weights(self, dataset: BaseDataset) -> None:
+    def download_model_weights(self, dataset: Dataset) -> None:
         """Download and verify model weights.
 
         Args:
@@ -103,7 +103,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
             logger.info("Model weights already downloaded...")
 
     @abstractmethod
-    def run_model(self, dataset: BaseDataset) -> None:
+    def run_model(self, dataset: Dataset) -> None:
         """Implement model-specific inference logic"""
 
     def parse_args(self) -> Namespace:
@@ -124,7 +124,7 @@ class BaseModelImplementation(BaseModelValidator, ABC):
         """Subclasses implement to define their CLI arguments"""
         return None
 
-    def run(self, datasets: Optional[BaseDataset | List[BaseDataset]] = None):
+    def run(self, datasets: Optional[Dataset | List[Dataset]] = None):
         """Run the full model pipeline.
 
         1. Load and validate all datasets

@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import ClassVar, Set, Type
 
-from ...datasets import BaseDataset
+from ...datasets import Dataset
 from ..types import ModelType
 
 # Configure logging to output to stdout
@@ -33,7 +33,7 @@ class BaseModelValidator(ABC):
     """
 
     # Type annotation for class variables
-    dataset_type: ClassVar[Type[BaseDataset]]
+    dataset_type: ClassVar[Type[Dataset]]
     model_type: ClassVar[ModelType]
 
     def __init_subclass__(cls) -> None:
@@ -56,7 +56,7 @@ class BaseModelValidator(ABC):
             )
 
     @abstractmethod
-    def _validate_dataset(self, dataset: BaseDataset):
+    def _validate_dataset(self, dataset: Dataset):
         """Perform model-specific dataset validation.
 
         Args:
@@ -84,7 +84,7 @@ class BaseModelValidator(ABC):
             Set of output DataType enums
         """
 
-    def validate_dataset(self, dataset: BaseDataset):
+    def validate_dataset(self, dataset: Dataset):
         """Validate a dataset meets all model requirements.
 
         Checks:
