@@ -15,7 +15,6 @@ This guide explains how to create and integrate your own evaluation task into cz
     from czbenchmarks.tasks.base import BaseTask
     from czbenchmarks.datasets import DataType
     from czbenchmarks.metrics.types import MetricResult
-    from czbenchmarks.models.types import ModelType
 
     class MyTask(BaseTask):
         def __init__(self, my_param: int = 10, *, random_seed: int = 123):
@@ -34,9 +33,9 @@ This guide explains how to create and integrate your own evaluation task into cz
         def required_outputs(self) -> Set[DataType]:
             return {DataType.EMBEDDING}
 
-        def _run_task(self, data, model_type: ModelType):
+        def _run_task(self, data, TODO):
             # Retrieve necessary data
-            self.embedding = data.get_output(model_type, DataType.EMBEDDING)
+            self.embedding = data.get_output(TODO, DataType.EMBEDDING)
             self.labels = data.get_input(DataType.METADATA)["cell_type"]
             # Implement your task logic here
             # e.g., calculate some predictions or transform embeddings

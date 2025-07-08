@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, Type
 
 from ...datasets import BaseDataset
-# from ..types import ModelType
+
 
 # Configure logging to output to stdout
 logging.basicConfig(
@@ -17,10 +17,10 @@ logger.setLevel(logging.INFO)
 
 
 class BaseDatasetValidator(ABC):
-    """Abstract base class for model validators.
+    """Abstract base class for dataset validators.
 
-    Defines the interface for validating datasets against model requirements.
-    Validators ensure datasets meet model-specific requirements like:
+    Defines the interface for validating datasets against dataset requirements.
+    Validators ensure datasets meet dataset-specific requirements like:
     - Compatible data types
     - Required metadata fields
     - Organism compatibility
@@ -28,13 +28,13 @@ class BaseDatasetValidator(ABC):
 
     Each validator must:
     1. Define a dataset_type class variable
-    2. Define a model_type class variable or model_name property
+    2. Define a dataset_type class variable or dataset_name property
     3. Implement _validate_dataset, inputs, and outputs
     """
 
     # Type annotation for class variables
     dataset_type: ClassVar[Type[BaseDataset]]
-    # model_type: ClassVar[ModelType]
+
 
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables and
@@ -46,8 +46,6 @@ class BaseDatasetValidator(ABC):
         """
         super().__init_subclass__()
 
-        if cls.__name__ == "BaseModelImplementation":
-            return
 
         # Check for dataset_type
         if not hasattr(cls, "dataset_type"):
@@ -57,7 +55,7 @@ class BaseDatasetValidator(ABC):
 
     @abstractmethod
     def _validate_dataset(self, dataset: BaseDataset):
-        """Perform model-specific dataset validation.
+        """Perform dataset-specific dataset validation.
 
         Args:
             dataset: Dataset to validate
@@ -69,7 +67,7 @@ class BaseDatasetValidator(ABC):
     @property
     @abstractmethod
     def inputs(self):
-        """Required input data types this model requires.
+        """Required input data types this dataset requires.
 
         Returns:
             Set of required DataType enums
@@ -78,17 +76,17 @@ class BaseDatasetValidator(ABC):
     @property
     @abstractmethod
     def outputs(self):
-        """Output data types produced by this model.
+        """Output data types produced by this dataset.
 
         Returns:
             Set of output DataType enums
         """
 
     def validate_dataset(self, dataset: BaseDataset):
-        """Validate a dataset meets all model requirements.
+        """Validate a dataset meets all dataset requirements.
 
         Checks:
-        1. Dataset type matches model requirements
+        1. Dataset type matches dataset requirements
         2. Required inputs are available
         3. Model-specific validation rules
 

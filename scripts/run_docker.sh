@@ -1,3 +1,5 @@
+# TODO: Remove
+
 #!/bin/bash
 #
 # Interactive docker container launch script for cz-benchmarks
