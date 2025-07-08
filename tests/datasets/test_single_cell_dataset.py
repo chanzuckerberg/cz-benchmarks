@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 import anndata as ad
-from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 
 
 def test_single_cell_dataset_init_load(dummy_human_anndata, n_cells=5, n_genes=3):
@@ -40,7 +40,7 @@ def test_single_cell_dataset_validate_success(dummy_human_anndata):
 def test_single_cell_dataset_store_task_inputs(dummy_human_anndata):
     """Tests that the store_task_inputs method writes labels to a file."""
     dummy_human_anndata.store_task_inputs()
-    output_file = dummy_human_anndata.dir / dummy_human_anndata.name / "cell_types.json"
+    output_file = dummy_human_anndata.dir / "single_cell_labeled" / "cell_types.json"
     assert output_file.exists()
     cell_types = pd.read_json(output_file, typ="series")
     assert not cell_types.empty

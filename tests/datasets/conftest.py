@@ -2,8 +2,8 @@ import pytest
 import pandas as pd
 from tests.utils import create_dummy_anndata
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
-from czbenchmarks.datasets.perturbation_single_cell import PerturbationSingleCellDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 
 
 @pytest.fixture
@@ -69,8 +69,8 @@ def dummy_perturbation_anndata(tmp_path):
 
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",
@@ -89,8 +89,8 @@ def perturbation_missing_condition(tmp_path):
     adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",
@@ -108,8 +108,8 @@ def perturbation_missing_split(tmp_path):
     adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",
@@ -131,8 +131,8 @@ def perturbation_invalid_split(tmp_path):
     adata.obs["split"] = ["invalid", "train", "test", "test", "test", "test"]
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",
@@ -162,8 +162,8 @@ def perturbation_invalid_condition(tmp_path):
     adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",
@@ -196,8 +196,8 @@ def perturbation_valid_conditions(tmp_path):
     adata.obs["split"] = ["train"] * 3 + ["test"] * 6
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
-        str(file_path),
+    dataset = SingleCellPerturbationDataset(
+        file_path,
         organism=Organism.HUMAN,
         condition_key="condition",
         split_key="split",

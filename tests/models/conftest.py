@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
-from czbenchmarks.datasets.perturbation_single_cell import PerturbationSingleCellDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.datasets.types import Organism, DataType
 from tests.utils import create_dummy_anndata
 
@@ -73,7 +73,7 @@ def dummy_perturbation_dataset(tmp_path):
 
     adata.write_h5ad(file_path)
 
-    dataset = PerturbationSingleCellDataset(
+    dataset = SingleCellPerturbationDataset(
         str(file_path),
         organism=Organism.HUMAN,
         condition_key="condition",

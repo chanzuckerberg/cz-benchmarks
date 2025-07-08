@@ -1,10 +1,12 @@
+import io
+from pathlib import Path
 import numpy as np
 import pandas as pd
-from czbenchmarks.datasets.single_cell import SingleCellLabeledDataset
+from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 
 
-class PerturbationSingleCellDataset(SingleCellLabeledDataset):
+class SingleCellPerturbationDataset(SingleCellDataset):
     """
     Single cell dataset with perturbation data, containing control and
     perturbed cells.
@@ -21,15 +23,18 @@ class PerturbationSingleCellDataset(SingleCellLabeledDataset):
       - ``{gene}+ctrl`` for single gene perturbations
       - ``{gene1}+{gene2}`` for combinatorial perturbations
     """
+    
+    perturbation_truth: dict[str, pd.DataFrame] = {}
 
     def __init__(
         self,
         path: str,
         organism: Organism,
+        # TODO: eliminate these keys and assume h5ad complies with "perturbation" schema
         condition_key: str = "condition",
         split_key: str = "split",
     ):
-        super().__init__(path, organism)
+        super().__init__("single_cell_perturbation", path, organism)
         self.condition_key = condition_key
         self.split_key = split_key
 
@@ -62,7 +67,17 @@ class PerturbationSingleCellDataset(SingleCellLabeledDataset):
 
         self.perturbation_truth = truth_data
         # FIXME BYODATASET: as originally implemented, this overwrites adata from SingleCellDataset
+        # TODO: Do we need to store model outputs as a file output? (e.g. store_model_input())
         self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
+
+    def store_task_inputs(self) -> Path:
+        # Save perturbation truth data to a file
+        buffer = io.StringIO()
+        for key, df in self.perturbation_truth.items():
+            buffer = io.StringIO()
+            df.to_json(buffer)
+            self._store_task_input(f"perturbation_truth_{key}.json", buffer.getvalue())
+
 
     # FIXME VALIDATION: move to validation class?
     def _validate(self) -> None:
