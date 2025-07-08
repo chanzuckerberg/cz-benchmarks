@@ -28,7 +28,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def __init__(
         self,
-        path: str,
+        path: Path,
         organism: Organism,
         # TODO: eliminate these keys and assume h5ad complies with "perturbation" schema
         condition_key: str = "condition",
@@ -77,6 +77,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             buffer = io.StringIO()
             df.to_json(buffer)
             self._store_task_input(f"perturbation_truth_{key}.json", buffer.getvalue())
+        
 
 
     # FIXME VALIDATION: move to validation class?

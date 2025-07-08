@@ -1,0 +1,54 @@
+from abc import abstractmethod
+import pytest
+
+from czbenchmarks.datasets.dataset import Dataset
+
+class DatasetTests:
+    """Tests for Dataset class that should be tested for each concrete subclass. This is accomplished by having the concrete subclass extend this class and implement the `valid_dataset` fixture, which returns a valid instance of the dataset class, used by the tests herein."""
+    
+    @pytest.fixture
+    @abstractmethod
+    def valid_dataset(self, tmp_path) -> Dataset:
+        pass
+
+    def test_single_cell_dataset_validate_success(self, valid_dataset):
+        """Test that Dataset load and validation succeeds for a valid dataset."""
+        # Should not raise any exceptions
+        valid_dataset.load_data()
+
+        # Should not raise any exceptions
+        valid_dataset.validate()
+        
+
+    def test_validate_dataset_wrong_organism_type(self, tmp_path, valid_dataset):
+        """Tests that dataset validation fails when the organism type is invalid."""
+        valid_dataset.organism = "invalid_organism"
+        invalid_dataset = valid_dataset
+
+        with pytest.raises(ValueError, match="Organism is not a valid Organism enum"):
+            invalid_dataset.validate()
+
+
+class TestDataset:
+    """Tests for Dataset class that cannot be easily tested for each concrete subclass."""
+    
+    class InvalidDataset(Dataset):
+        def __init__(self, path, organism, **kwargs):
+            super().__init__(name="invalid", path=path, organism=organism, **kwargs)
+
+        def load_data(self):
+            pass
+
+        def store_task_inputs(self):
+            pass
+
+        def _validate(self):
+            pass
+    
+
+    def test_validate_dataset_path_not_exists(self, tmp_path):
+        """Test that validation fails when dataset path does not exist.
+        Note that this cannot be tested with a concrete dataset class,"""
+        
+        with pytest.raises(ValueError, match="Dataset path does not exist"):
+            TestDataset.InvalidDataset(path=tmp_path / "non_existent_path", organism="HUMAN")

@@ -1,0 +1,54 @@
+from pathlib import Path
+import pandas as pd
+import pytest
+
+from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets.types import Organism
+from tests.datasets.test_single_cell_dataset import SingleCellDatasetTests
+from tests.utils import create_dummy_anndata
+
+class TestSingleCellLabeledDataset(SingleCellDatasetTests):
+
+    @pytest.fixture
+    def valid_dataset(self, tmp_path) -> SingleCellDataset:
+        """Fixture to provide a valid SingleCellLabeledDataset H5AD file with valid human gene names and organism."""
+        return SingleCellLabeledDataset(path=self.valid_dataset_file(tmp_path), organism=Organism.HUMAN)
+
+    def valid_dataset_file(self, tmp_path) -> Path:
+        """Fixture to provide a valid SingleCellLabeledDataset H5AD file with valid human gene names and organism."""
+        
+        file_path = tmp_path / "dummy.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=5,
+            n_genes=3,
+            obs_columns=["cell_type"],
+            organism=Organism.HUMAN,
+        )
+        adata.write_h5ad(file_path)
+
+        return file_path
+
+    def test_single_cell_labeled_dataset_validate_missing_cell_type(self, valid_dataset):
+        """Test that SingleCellDataset validation fails when cell_type is missing."""
+        valid_dataset.load_data()
+        
+        valid_dataset.adata.obs.drop(columns=["cell_type"], inplace=True)
+        invalid_dataset = valid_dataset
+
+        with pytest.raises(ValueError, match="Dataset does not contain 'cell_type' column in obs."):
+            invalid_dataset.validate()
+
+
+    def test_single_cell_labeled_dataset_store_task_inputs(self, valid_dataset):
+        """Tests that the store_task_inputs method writes labels to a file."""
+        valid_dataset.load_data()
+        
+        valid_dataset.store_task_inputs()
+
+        output_file = valid_dataset.dir / "single_cell_labeled" / "cell_types.json"
+        assert output_file.exists()
+        cell_types = pd.read_json(output_file, typ="series")
+        assert not cell_types.empty
+        assert all(cell_type in cell_types.values for cell_type in ["type_0", "type_1", "type_2"])
+        

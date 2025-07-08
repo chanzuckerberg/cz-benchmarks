@@ -16,7 +16,7 @@ class Dataset(ABC):
         ABC (_type_): _description_
     """
     
-    name: str
+    name: str # TODO: rename to dataset_type?
     path: Path
     dir: Path
     organism: Organism
@@ -24,13 +24,18 @@ class Dataset(ABC):
     
     def __init__(self, name: str, path: Path, organism: Organism, **kwargs: Any):
         self.name = name
+        
         self.path = path
+        if not os.path.exists(self.path):
+            raise ValueError("Dataset path does not exist")
+        
         self.dir = path.parent
         if not self.dir.is_dir():
             raise ValueError(f"Dataset path {self.path} is not a directory")
-        self.organism = organism
-        self.kwargs = kwargs
 
+        self.organism = organism
+
+        self.kwargs = kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -61,6 +66,7 @@ class Dataset(ABC):
         pass
 
     def _store_task_input(self, filename: str, data: IO) -> Path:
+        """ Store a task input data to a file in a subdirectory of the dataset directory, named after the dataset type."""
         output_dir = Path(self.dir) / self.name
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file = output_dir / filename
@@ -76,11 +82,7 @@ class Dataset(ABC):
     def validate(self) -> None:
         """Validate that all inputs and outputs match their expected types"""
 
-        if not os.path.exists(self.path):
-            raise ValueError("Dataset path does not exist")
-        
-        organism_list = [member.value[0] for member in Organism]
-        if str(self.organism) not in organism_list:
+        if not isinstance(self.organism, Organism):
             raise ValueError("Organism is not a valid Organism enum")
 
         self._validate()

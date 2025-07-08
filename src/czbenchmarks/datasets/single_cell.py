@@ -1,17 +1,18 @@
 from pathlib import Path
 import anndata as ad
-import pandas as pd
 import numpy as np
+import pandas as pd
 from .dataset import Dataset
 from .types import Organism
 import logging
-import io
 
 logger = logging.getLogger(__name__)
 
 
 class SingleCellDataset(Dataset):
-    """Single cell dataset containing gene expression data"""
+    """Abstract base class for single cell datasets containing gene expression data."""
+    
+    adata: ad.AnnData
     
     def __init__(
         self,
@@ -26,11 +27,19 @@ class SingleCellDataset(Dataset):
         # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
-    # FIXME VALIDATION: move to validation class?
-    def _validate(self) -> None:
-        if not isinstance(self.organism, Organism):
-            raise ValueError("Organism is not a valid Organism enum")
+    @property
+    def adata(self) -> ad.AnnData:
+        """Getter method for the AnnData object."""
+        if not hasattr(self, '_adata'):
+            raise AttributeError("The AnnData object has not been loaded yet. Call 'load_data()' first.")
+        return self._adata
 
+    @adata.setter
+    def adata(self, value: ad.AnnData) -> None:
+        """Setter method for the AnnData object."""
+        self._adata = value
+
+    def _validate(self) -> None:
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
         # Check if data contains non-integer or negative values
