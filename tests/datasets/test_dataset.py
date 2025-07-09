@@ -47,7 +47,7 @@ class TestDataset:
     
     class ConcreteDataset(Dataset):
         def __init__(self, path, organism, **kwargs):
-            super().__init__(path=path, organism=organism, **kwargs)
+            super().__init__(dataset_type_name="concrete_dataset", path=path, organism=organism, **kwargs)
 
         def load_data(self):
             pass
@@ -61,15 +61,14 @@ class TestDataset:
 
     def test_validate_dataset_path_not_exists(self, tmp_path):
         """Test that validation fails when dataset path does not exist.
-        Note that this cannot be tested with a concrete dataset class,"""
+        Note that this cannot be tested with a concrete dataset class."""
         
         with pytest.raises(ValueError, match="Dataset path does not exist"):
             TestDataset.ConcreteDataset(path=tmp_path / "non_existent_path", organism="HUMAN")
 
     def test_task_inputs_dir_correct(self, tmp_path):
-        """Test that validation fails when dataset path does not exist.
-        Note that this cannot be tested with a concrete dataset class,"""
+        """Test that task inputs directory is correctly set based on the dataset path."""
         dataset = TestDataset.ConcreteDataset(path=tmp_path, organism="HUMAN")
 
-        assert dataset.task_inputs_dir == Path(f"{tmp_path.with_suffix('')}_task_inputs"), \
+        assert dataset.task_inputs_dir == Path(f"{tmp_path.with_suffix('')}_task_inputs/concrete_dataset"), \
         "Task inputs directory is not correctly set based on the dataset path."

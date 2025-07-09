@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
+from io import StringIO
 from pathlib import Path
-from typing import IO, Any, Optional
-import os
+from typing import Any, Optional
 
 from .types import Organism
 
@@ -18,7 +18,7 @@ class Dataset(ABC):
     organism: Organism
     
     
-    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, task_inputs_dir: Optional[Path], **kwargs: Any):
+    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, task_inputs_dir: Optional[Path] = None, **kwargs: Any):
         self.path = path
         if not self.path.exists():
             raise ValueError("Dataset path does not exist")
@@ -57,7 +57,7 @@ class Dataset(ABC):
         """
         pass
 
-    def _store_task_input(self, path: Path|str, data: IO) -> None:
+    def _store_task_input(self, path: Path|str, data: StringIO) -> None:
         """
         Store a task input data to a file in a subdirectory of the dataset directory, named after the dataset type.
         """
