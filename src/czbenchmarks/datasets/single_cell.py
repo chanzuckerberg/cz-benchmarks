@@ -38,18 +38,6 @@ class SingleCellDataset(Dataset):
         # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
-    @property
-    def adata(self) -> ad.AnnData:
-        """Getter method for the AnnData object."""
-        if not hasattr(self, '_adata'):
-            raise AttributeError("The AnnData object has not been loaded yet. Call 'load_data()' first.")
-        return self._adata
-
-    @adata.setter
-    def adata(self, value: ad.AnnData) -> None:
-        """Setter method for the AnnData object."""
-        self._adata = value
-
     def _validate(self) -> None:
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
