@@ -17,7 +17,6 @@ RUN pip install -e /app/package[interactive]
 
 # TODO put utils into model file to simplify code mounting
 COPY docker/scvi/model.py .
-COPY docker/scvi/utils.py .
 COPY docker/scvi/config.yaml .
 
 ENTRYPOINT ["python3", "-u", "/app/model.py"]
