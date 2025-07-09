@@ -27,7 +27,6 @@ Additional Utilities
 
 ..     ./autoapi/czbenchmarks/cli/cli/index.rst
 ..     ./autoapi/czbenchmarks/datasets/index.rst
-..     ./autoapi/czbenchmarks/models/index.rst
 ..     ./autoapi/czbenchmarks/tasks/index.rst
 ..     ./autoapi/czbenchmarks/metrics/index.rst
 ..     ./autoapi/czbenchmarks/utils/index.rst
