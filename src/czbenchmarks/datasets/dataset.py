@@ -65,7 +65,6 @@ class Dataset(ABC):
         output_dir.mkdir(parents=True, exist_ok=True)
         
         output_file = self.task_inputs_dir / path
-        print(output_file)
         output_file.write_text(data)
 
 
