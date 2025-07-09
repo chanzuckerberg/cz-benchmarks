@@ -26,13 +26,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
       - ``{gene1}+{gene2}`` for combinatorial perturbations
     """
 
-    perturbation_truth: Dict[str, pd.DataFrame] = {}
+    perturbation_truth: Dict[str, pd.DataFrame]
 
     def __init__(
         self,
         path: Path,
         organism: Organism,
-        # TODO: eliminate these keys and assume h5ad complies with "perturbation" schema
+        # TODO: eliminate these keys and assume h5ad complies with "perturbation" schema; if removed, ensure validation logic is updated accordingly
         condition_key: str = "condition",
         split_key: str = "split",
         task_inputs_dir: Optional[Path] = None,
