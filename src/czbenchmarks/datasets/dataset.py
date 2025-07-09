@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Optional
 import os
 
 from .types import Organism
@@ -18,12 +18,12 @@ class Dataset(ABC):
     organism: Organism
     
     
-    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, **kwargs: Any):
+    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, task_inputs_dir: Optional[Path], **kwargs: Any):
         self.path = path
         if not self.path.exists():
             raise ValueError("Dataset path does not exist")
 
-        self.task_inputs_dir = Path(f"{path.with_suffix('')}_task_inputs") / dataset_type_name.lower()
+        self.task_inputs_dir = task_inputs_dir or (Path(f"{path.with_suffix('')}_task_inputs") / dataset_type_name.lower())
 
         self.organism = organism
 

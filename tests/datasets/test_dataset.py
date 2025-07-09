@@ -28,6 +28,18 @@ class DatasetTests:
 
         with pytest.raises(ValueError, match="Organism is not a valid Organism enum"):
             invalid_dataset.validate()
+            
+    def test_custom_input_tasks_dir_is_used(self, tmp_path, valid_dataset):
+        """Test that custom task inputs directory is used if provided."""
+        custom_task_inputs_dir = tmp_path / "custom_task_inputs"
+        valid_dataset.task_inputs_dir = custom_task_inputs_dir
+        
+        valid_dataset.load_data()
+        valid_dataset.store_task_inputs()
+        
+        assert custom_task_inputs_dir.exists()
+        assert len(list(custom_task_inputs_dir.iterdir())) > 0
+
 
 
 class TestDataset:

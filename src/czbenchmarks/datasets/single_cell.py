@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import anndata as ad
 import numpy as np
 import pandas as pd
@@ -27,8 +28,9 @@ class SingleCellDataset(Dataset):
         dataset_type_name: str,
         path: Path,
         organism: Organism,
+        task_inputs_dir: Optional[Path] = None,
     ):
-        super().__init__(dataset_type_name, path, organism)
+        super().__init__(dataset_type_name, path, organism, task_inputs_dir)
 
 
     def load_data(self) -> None:

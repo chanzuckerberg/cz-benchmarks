@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import pandas as pd
 
 from czbenchmarks.datasets.single_cell import SingleCellDataset
@@ -18,8 +19,9 @@ class SingleCellLabeledDataset(SingleCellDataset):
         self,
         path: Path,
         organism: Organism,
+        task_inputs_dir: Optional[Path] = None,
     ):
-        super().__init__("single_cell_labeled", path, organism)
+        super().__init__("single_cell_labeled", path, organism, task_inputs_dir)
 
     def load_data(self) -> None:
         """Load the dataset from the path."""

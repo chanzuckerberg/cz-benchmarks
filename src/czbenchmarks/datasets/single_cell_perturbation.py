@@ -1,6 +1,7 @@
-from typing import Dict
+from typing import Dict, Optional
 import io
 from pathlib import Path
+from annotated_types import T
 import numpy as np
 import pandas as pd
 from czbenchmarks.datasets.single_cell import SingleCellDataset
@@ -34,8 +35,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # TODO: eliminate these keys and assume h5ad complies with "perturbation" schema
         condition_key: str = "condition",
         split_key: str = "split",
+        task_inputs_dir: Optional[Path] = None,
     ):
-        super().__init__("single_cell_perturbation", path, organism)
+        super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
         self.split_key = split_key
 
