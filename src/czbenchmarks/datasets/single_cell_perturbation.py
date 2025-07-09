@@ -1,3 +1,4 @@
+from typing import Dict
 import io
 from pathlib import Path
 import numpy as np
@@ -23,8 +24,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
       - ``{gene}+ctrl`` for single gene perturbations
       - ``{gene1}+{gene2}`` for combinatorial perturbations
     """
-    
-    perturbation_truth: dict[str, pd.DataFrame] = {}
+
+    perturbation_truth: Dict[str, pd.DataFrame] = {}
 
     def __init__(
         self,
@@ -76,7 +77,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         for key, df in self.perturbation_truth.items():
             buffer = io.StringIO()
             df.to_json(buffer)
-            self._store_task_input(f"perturbation_truth_{key}.json", buffer.getvalue())
+            self._store_task_input(f"perturbation_truths/{key}.json", buffer.getvalue())
+        return self.task_inputs_dir
         
 
 

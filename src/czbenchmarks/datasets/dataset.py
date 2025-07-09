@@ -8,30 +8,22 @@ from .types import Organism
 
 class Dataset(ABC):
     """
-    A base class for task-specific datasets. Each concrete dataset class will extract the data required for a specific type of task from the provided input file. These task specific data items can then be retrieved as object instance variables or written to files for later use.
+    A base class for task-specific datasets. Each concrete Dataset class will extract the data required for a specific type of task from the provided input file. These task specific data items can then be retrieved as object instance variables or written to files for later use.
     
-    path: Path
-
-    Args:
-        ABC (_type_): _description_
+    Each concrete Dataset class should implement the `load_data` method to load the data from the input file, and the `store_task_inputs` method to store the task-specific inputs that have been extracted from the dataset.
     """
     
-    name: str # TODO: rename to dataset_type?
     path: Path
-    dir: Path
+    task_inputs_dir: Path
     organism: Organism
     
     
-    def __init__(self, name: str, path: Path, organism: Organism, **kwargs: Any):
-        self.name = name
-        
+    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, **kwargs: Any):
         self.path = path
-        if not os.path.exists(self.path):
+        if not self.path.exists():
             raise ValueError("Dataset path does not exist")
-        
-        self.dir = path.parent
-        if not self.dir.is_dir():
-            raise ValueError(f"Dataset path {self.path} is not a directory")
+
+        self.task_inputs_dir = Path(f"{path.with_suffix('')}_task_inputs") / dataset_type_name.lower()
 
         self.organism = organism
 
@@ -65,14 +57,17 @@ class Dataset(ABC):
         """
         pass
 
-    def _store_task_input(self, filename: str, data: IO) -> Path:
-        """ Store a task input data to a file in a subdirectory of the dataset directory, named after the dataset type."""
-        output_dir = Path(self.dir) / self.name
+    def _store_task_input(self, path: Path|str, data: IO) -> None:
+        """
+        Store a task input data to a file in a subdirectory of the dataset directory, named after the dataset type.
+        """
+        output_dir = self.task_inputs_dir / Path(path).parent
         output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / filename
-        with open(output_file, 'w') as f:
-            f.write(data)
-        return output_file
+        
+        output_file = self.task_inputs_dir / path
+        print(output_file)
+        output_file.write_text(data)
+
 
     @abstractmethod
     def _validate(self) -> None:

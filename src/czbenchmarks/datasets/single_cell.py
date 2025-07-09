@@ -24,11 +24,12 @@ class SingleCellDataset(Dataset):
     
     def __init__(
         self,
-        name: str,
+        dataset_type_name: str,
         path: Path,
         organism: Organism,
     ):
-        super().__init__(name, path, organism)
+        super().__init__(dataset_type_name, path, organism)
+
 
     def load_data(self) -> None:
         """Load the dataset from the path."""

@@ -202,14 +202,16 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             dataset.validate()
 
 
-    def test_perturbation_dataset_store_task_inputs(self, valid_dataset: SingleCellPerturbationDataset):
+    def test_perturbation_dataset_store_task_inputs(self, tmp_path, valid_dataset: SingleCellPerturbationDataset):
         """Tests that the store_task_inputs method writes labels to a file."""
         valid_dataset.load_data()
         
         valid_dataset.store_task_inputs()
         # TODO: Assert that multiple files are created for each condition. For now, we will just check one condition
-        output_file = valid_dataset.dir / "single_cell_perturbation"  / "perturbation_truth_test1+ctrl.json"
+        output_file = tmp_path / "dummy_perturbation_task_inputs" / "single_cell_perturbation" / "perturbation_truths" / "test1+ctrl.json"
         assert output_file.exists()
         truth_df = pd.read_json(output_file)
         assert not truth_df.empty
-        # TODO: Assert that the truth_df contains the expected data
+        assert ["cell_2", "cell_3"] == truth_df.index.tolist()
+        assert ["ENSG00000000000", "ENSG00000000001", "ENSG00000000002"] == truth_df.columns.tolist()
+

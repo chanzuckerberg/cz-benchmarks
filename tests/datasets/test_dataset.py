@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from pathlib import Path
 import pytest
 
 from czbenchmarks.datasets.dataset import Dataset
@@ -32,9 +33,9 @@ class DatasetTests:
 class TestDataset:
     """Tests for Dataset class that cannot be easily tested for each concrete subclass."""
     
-    class InvalidDataset(Dataset):
+    class ConcreteDataset(Dataset):
         def __init__(self, path, organism, **kwargs):
-            super().__init__(name="invalid", path=path, organism=organism, **kwargs)
+            super().__init__(path=path, organism=organism, **kwargs)
 
         def load_data(self):
             pass
@@ -51,4 +52,12 @@ class TestDataset:
         Note that this cannot be tested with a concrete dataset class,"""
         
         with pytest.raises(ValueError, match="Dataset path does not exist"):
-            TestDataset.InvalidDataset(path=tmp_path / "non_existent_path", organism="HUMAN")
+            TestDataset.ConcreteDataset(path=tmp_path / "non_existent_path", organism="HUMAN")
+
+    def test_task_inputs_dir_correct(self, tmp_path):
+        """Test that validation fails when dataset path does not exist.
+        Note that this cannot be tested with a concrete dataset class,"""
+        dataset = TestDataset.ConcreteDataset(path=tmp_path, organism="HUMAN")
+
+        assert dataset.task_inputs_dir == Path(f"{tmp_path.with_suffix('')}_task_inputs"), \
+        "Task inputs directory is not correctly set based on the dataset path."

@@ -32,7 +32,8 @@ class SingleCellLabeledDataset(SingleCellDataset):
         buffer = io.StringIO()
         self.labels.to_json(buffer)
 
-        return self._store_task_input("cell_types.json", buffer.getvalue())
+        self._store_task_input("cell_types.json", buffer.getvalue())
+        return self.task_inputs_dir
 
 
     # FIXME VALIDATION: move to validation class?

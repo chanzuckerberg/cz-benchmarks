@@ -40,13 +40,13 @@ class TestSingleCellLabeledDataset(SingleCellDatasetTests):
             invalid_dataset.validate()
 
 
-    def test_single_cell_labeled_dataset_store_task_inputs(self, valid_dataset):
+    def test_single_cell_labeled_dataset_store_task_inputs(self, tmp_path, valid_dataset):
         """Tests that the store_task_inputs method writes labels to a file."""
         valid_dataset.load_data()
         
         valid_dataset.store_task_inputs()
 
-        output_file = valid_dataset.dir / "single_cell_labeled" / "cell_types.json"
+        output_file = tmp_path / "dummy_task_inputs" / "single_cell_labeled" / "cell_types.json"
         assert output_file.exists()
         cell_types = pd.read_json(output_file, typ="series")
         assert not cell_types.empty
