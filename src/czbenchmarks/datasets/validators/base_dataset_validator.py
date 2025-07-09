@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 
 
 class BaseDatasetValidator(ABC):
-    """Abstract base class for dataset validators.
+    """Abstract base class for dataset validators. Not used in code and provided as convenience to validate user datasets.
 
     Defines the interface for validating datasets against dataset requirements.
     Validators ensure datasets meet dataset-specific requirements like:
@@ -28,24 +28,19 @@ class BaseDatasetValidator(ABC):
 
     Each validator must:
     1. Define a dataset_type class variable
-    2. Define a dataset_type class variable or dataset_name property
-    3. Implement _validate_dataset, inputs, and outputs
+    2. Implement _validate_dataset, inputs, and outputs as abstract methods/properties
     """
 
     # Type annotation for class variables
     dataset_type: ClassVar[Type[BaseDataset]]
 
-
     def __init_subclass__(cls) -> None:
-        """Validate that subclasses define required class variables and
-        follow naming conventions.
+        """Validate that subclasses define required class variables.
 
         Raises:
-            TypeError: If required class variables are missing or invalid
-            ValueError: If class naming doesn't follow conventions
+            TypeError: If required class variables are missing
         """
         super().__init_subclass__()
-
 
         # Check for dataset_type
         if not hasattr(cls, "dataset_type"):
@@ -55,7 +50,7 @@ class BaseDatasetValidator(ABC):
 
     @abstractmethod
     def _validate_dataset(self, dataset: BaseDataset):
-        """Perform dataset-specific dataset validation.
+        """Perform dataset-specific validation.
 
         Args:
             dataset: Dataset to validate
@@ -67,7 +62,7 @@ class BaseDatasetValidator(ABC):
     @property
     @abstractmethod
     def inputs(self):
-        """Required input data types this dataset requires.
+        """Required input data types for this dataset.
 
         Returns:
             Set of required DataType enums
@@ -83,12 +78,12 @@ class BaseDatasetValidator(ABC):
         """
 
     def validate_dataset(self, dataset: BaseDataset):
-        """Validate a dataset meets all dataset requirements.
+        """Validate that a dataset meets all requirements.
 
         Checks:
-        1. Dataset type matches dataset requirements
-        2. Required inputs are available
-        3. Model-specific validation rules
+        1. Dataset type matches dataset_type
+        2. Required inputs are available in the dataset
+        3. Runs dataset specific validation
 
         Args:
             dataset: Dataset to validate

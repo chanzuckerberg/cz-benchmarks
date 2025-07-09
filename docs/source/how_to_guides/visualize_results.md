@@ -6,6 +6,27 @@ This guide explains how to visualize and interpret benchmark results stored in J
 
 Benchmark results are JSON, and include metrics like Adjusted Rand Index (ARI), Normalized Mutual Information (NMI), and others. This guide demonstrates how to process these results for visualization and generate UMAP embeddings for deeper insights.
 
+## Example JSON Output
+
+Here is an example of the JSON structure for benchmark results:
+
+```json
+{
+    "Example_Model_A": [
+        {
+            "metric_type": "adjusted_rand_index",
+            "value": -4.2435515076099105e-05,
+            "params": {}
+        },
+        {
+            "metric_type": "normalized_mutual_info",
+            "value": 0.01401707774484544,
+            "params": {}
+        }
+    ]
+}
+```
+
 ## Visualizing Results with Python
 
 You can use Python libraries like `json`, `pandas`, and `matplotlib` to load and visualize the results.

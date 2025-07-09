@@ -7,10 +7,9 @@ from .base_dataset_validator import BaseDatasetValidator
 class BaseSingleCellValidator(BaseDatasetValidator):
     """Base validator for single-cell datasets.
 
-    Defines common validation logic for single-cell datasets, including:
-    - Organism compatibility checking
-    - Required metadata validation
-    - AnnData observation and variable key validation
+    Provides validation logic for single-cell datasets, including:
+    - Checking if the dataset organism is supported
+    - Validating presence of required observation and variable keys in AnnData
     """
 
     dataset_type = SingleCellDataset
@@ -19,15 +18,15 @@ class BaseSingleCellValidator(BaseDatasetValidator):
     required_var_keys: ClassVar[List[str]]
 
     def __init_subclass__(cls) -> None:
-        """Validate required class variables in child classes.
+        """Ensure required class variables are defined in subclasses.
 
-        Ensures child classes define:
+        Subclasses must define:
         - available_organisms
         - required_obs_keys
         - required_var_keys
 
         Raises:
-            TypeError: If any required class variable is missing
+            TypeError: If any required class variable is missing in the subclass
         """
         super().__init_subclass__()
         if not hasattr(cls, "available_organisms"):
@@ -52,15 +51,15 @@ class BaseSingleCellValidator(BaseDatasetValidator):
         """Validate a single-cell dataset.
 
         Checks:
-        1. Dataset organism is supported
-        2. Required observation keys are present
-        3. Required variable keys are present
+        1. Dataset organism is in available_organisms
+        2. All required observation keys are present in dataset.adata.obs.columns
+        3. All required variable keys are present in dataset.adata.var.columns
 
         Args:
             dataset: SingleCellDataset to validate
 
         Raises:
-            ValueError: If validation fails
+            ValueError: If any validation check fails
         """
         if dataset.organism not in self.available_organisms:
             raise ValueError(
@@ -68,6 +67,7 @@ class BaseSingleCellValidator(BaseDatasetValidator):
                 "is not supported for {self.__class__.__name__}"
             )
 
+        # Check for missing required observation keys in AnnData obs
         missing_keys = [
             key
             for key in self.required_obs_keys
@@ -77,6 +77,7 @@ class BaseSingleCellValidator(BaseDatasetValidator):
         if missing_keys:
             raise ValueError(f"Missing required obs keys: {missing_keys}")
 
+        # Check for missing required variable keys in AnnData var
         missing_keys = [
             key
             for key in self.required_var_keys

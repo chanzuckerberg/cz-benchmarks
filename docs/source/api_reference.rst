@@ -21,6 +21,8 @@ Additional Utilities
 - **Utils** (`czbenchmarks.utils`):  
    Contains utility functions and helpers used across the package. See the full documentation: :doc:`./autoapi/czbenchmarks/utils/index`.
 
+- **CLI** (`czbenchmarks.cli`):  
+   Command-line interface for interacting with the cz-benchmarks package. See the full documentation: :doc:`czbenchmarks.cli <./autoapi/czbenchmarks/cli/cli/index>`.
 
 .. .. toctree::
 ..     :maxdepth: 1
