@@ -96,10 +96,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             raise ValueError(f"Invalid split value(s): {invalid_splits}")
 
         # Validate condition format
-        conditions = set(
-            list(self.adata.obs[self.condition_key])
-            + list(self.perturbation_truth.keys())
-        )
+        conditions = set(self.adata.obs[self.condition_key]) | self.perturbation_truth.keys()
 
         for condition in conditions:
             if condition == "ctrl":
