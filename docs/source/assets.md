@@ -49,18 +49,6 @@ This task evaluates how well the model's embedding space separates different cel
 | Embedding Task  | Silhouette score                                                                                                                                                                                                                                                                                                                                           | Measures cluster separation based on within-cluster and between-cluster distances to evaluate the quality of clusters with respect to biological labels. Described in [Luecken et al.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) and implemented in [scib-metrics.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) |
 
   
-The following models were benchmarked using the Tabula Sapiens v2 dataset, per tissue:  
-- AIDO.Cell 3M
-- Geneformer  gf-12L-95M-i4096
-- Linear baseline
-- scGPT
-- scVI - Census 2023-12-15
-- Transcriptformer Examplar
-- Transcriptformer Metazoa
-- Transcriptformer  Sapiens
-- UCE 33-layer 
-- UCE 4 -layer
-
 ### Metadata label prediction - Cell type classification
 
 This task evaluates how well model embeddings capture information relevant to cell identity. This is achieved by a forward pass of the data through each model to retrieve embeddings, and then using the embeddings to train different classifiers, in this case we are using Logistic Regression, KNN, and RandomForest,to predict the cell type. To ensure a reliable evaluation, a 5-fold cross-validation strategy is employed. For each split, the classifier's predictions on the held-out data, along with the true cell type labels, are used to compute a range of classification metrics. The final benchmark output for each metric is the average across the 5 cross-validation folds.
@@ -76,20 +64,6 @@ This task evaluates how well model embeddings capture information relevant to ce
 | AUROC     | Measures the probability that the model will rank a randomly chosen data point belonging to that category higher than a randomly chosen data point not belonging to that category. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L126). |
 
   
-
-The following models were benchmarked using the Tabula Sapiens v2 dataset, per tissue:
-- AIDO.Cell 3M
-- Geneformer  gf-12L-95M-i4096
-- Linear baseline
-- scGPT
-- scVI - Census 2023-12-15
-- Transcriptformer Exemplar
-- Transcriptformer Metazoa
-- Transcriptformer Sapiens
-- UCE 33-layer
-- UCE 4-layer
-    
-
 ### Cross-Species Batch Integration
 
 This task evaluates the model's ability to learn representations that are consistent across different species. There is a forward pass of the data (each species is treated as an individual dataset) through the model. Once embeddings are generated for each species, they are concatenated into a single embedding matrix to enable cross-species comparison. Finally, the concatenated embeddings, along with the corresponding species labels, are used to compute evaluation metrics. 
@@ -100,13 +74,6 @@ This task evaluates the model's ability to learn representations that are consis
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entropy per cell | Measures the average entropy of the batch labels within the local neighborhood of each cell. Implemented [here](https://github.com/chanzuckerberg/cellxgene-census/blob/f44637ba33567400820407f4f7b9984e52966156/tools/models/metrics/run-scib.py#L86). |
 | Batch silhouette | A modified silhouette score to measure the extent of batch mixing within biological labels. Described by [Luecken et al](https://www.nature.com/articles/s41592-021-01336-8).                                                                           |
-
-The following models were benchmarked using the Spermatogenesis  dataset, per species:
-
-- Transcriptformer Exemplar
-- Transcriptformer Metazoa
-- UCE 33-layer
-- UCE 4-Layer
 
 
 ### Genetic Perturbation Prediction
@@ -124,16 +91,6 @@ This task evaluates the performance of models fine-tuned to predict cellular res
 | Pearson Delta Correlation - all genes       |             |
 | Jaccardian Similarity                       |             |
 
-- The following models were benchmarked using the Adamson et al.  dataset:
-    - scGenePTGO-all, fine tuned, Adamson
-    - scGenePTGO-C, fine-tuned, Adamson
-    - scGenePTNCBI+UniProt, fine-tuned, Adamson
-    
-- The following models were benchmarked using the Norman et al.  dataset:
-    - scGenePTGO−all, fine-tuned, Norman
-    - scGenePTGO-C, fine-tuned, Norman
-    - scGenePTNCBI+UniProt, fine-tuned, Norman
-    
 
 ## Guidelines for Included Assets
 
@@ -141,7 +98,7 @@ As cz-benchmarks develops, robust governance policies will be developed to suppo
 
 At this stage, the cz-benchmarks project represents an initial prototype and policy and project governance are intended to provide transparency and support the project in its current phase. Initial guidelines are as follows:
 
-- All content (models, tasks, metrics) included in cz-benchmarks currently represents a subset of recommendations from CZI staff.
+- All content (datasets, tasks, metrics) included in cz-benchmarks currently represents a subset of recommendations from CZI staff.
 - Future versions will incorporate an expanded and refined set of assets. However, not all assets are appropriate for inclusion in a benchmarking platform. Benchmark assets are chosen based on overall quality in relation to comparable reference points, current standards in the research community, and relationship to supported priority benchmark domains as outlined in the [roadmap](./roadmap.md). Formal asset contribution and asset governance policies are in development.
 - **Note**: TranscriptFormer was developed by the CZI AI team using separate task implementations. The cz-benchmarks task definitions, developed by the CZI SciTech team, were not included as a part of TranscriptFormer training and evaluation.
 - At this phase, the CZI SciTech team will guide initial decisions, coordinate updates, and ensure that all assets conform to policy requirements (licensing, versioning, etc.) through direct collaboration with working groups, composed of domain-specific experts from the broader scientific community and partners. 
