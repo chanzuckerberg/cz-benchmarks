@@ -1,8 +1,10 @@
 import pytest
+from czbenchmarks.datasets.dataset import Dataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets.validators.base_dataset_validator import BaseDatasetValidator
-from czbenchmarks.datasets import BaseDataset, SingleCellDataset, Organism
+from czbenchmarks.datasets import Organism
 from czbenchmarks.datasets.validators.base_single_cell_validator import (
-    BaseSingleCellValidator,
+    BaseSingleCellLabeledValidator,
 )
 
 import anndata as ad
@@ -12,36 +14,29 @@ from typing import ClassVar, List, Type
 
 
 # Mock Dataset Class for testing BaseDatasetValidator
-class MockDataset(BaseDataset):
+class MockDataset(Dataset):
     """A mock dataset for testing the base validator."""
 
     def load_data(self) -> None:
         pass
-
-    def cache_data(self) -> None:
+    
+    def store_task_inputs(self):
         pass
 
     def _validate(self) -> None:
         pass
 
-    @property
-    def inputs(self):
-        """
-        Return a dictionary to be compatible with the `dataset.inputs.keys()`
-        call in the validator's source code.
-        """
-        return {"X": True}
 
 
 # Test Cases for BaseDatasetValidator
-class TestBaseDatasetValidator:
+class TestDatasetValidator:
     def test_successful_instantiation(self):
         """Tests that a correctly defined subclass can be instantiated."""
 
         class ConcreteValidator(BaseDatasetValidator):
-            dataset_type: ClassVar[Type[BaseDataset]] = MockDataset
+            dataset_type: ClassVar[Type[Dataset]] = MockDataset
 
-            def _validate_dataset(self, dataset: BaseDataset):
+            def _validate_dataset(self, dataset: Dataset):
                 pass
 
             @property
@@ -60,7 +55,7 @@ class TestBaseDatasetValidator:
         with pytest.raises(TypeError, match="without dataset_type class variable"):
 
             class InvalidValidator(BaseDatasetValidator):
-                def _validate_dataset(self, dataset: BaseDataset):
+                def _validate_dataset(self, dataset: Dataset):
                     pass
 
                 @property
@@ -75,9 +70,9 @@ class TestBaseDatasetValidator:
         """Tests that a ValueError is raised for dataset type mismatch."""
 
         class ConcreteValidator(BaseDatasetValidator):
-            dataset_type: ClassVar[Type[BaseDataset]] = MockDataset
+            dataset_type: ClassVar[Type[Dataset]] = MockDataset
 
-            def _validate_dataset(self, dataset: BaseDataset):
+            def _validate_dataset(self, dataset: Dataset):
                 pass
 
             @property
@@ -90,53 +85,22 @@ class TestBaseDatasetValidator:
 
         validator = ConcreteValidator()
         # Use the actual SingleCellDataset which will cause a type mismatch
-        wrong_dataset = SingleCellDataset(path=str(tmp_path), organism=Organism.HUMAN)
+        wrong_dataset = SingleCellLabeledDataset(path=str(tmp_path), organism=Organism.HUMAN)
 
         with pytest.raises(ValueError, match="Dataset type mismatch"):
             validator.validate_dataset(wrong_dataset)
-
-    def test_missing_inputs(self, tmp_path):
-        """Tests that a ValueError is raised if required inputs are missing."""
-
-        class ValidatorWithInputs(BaseDatasetValidator):
-            dataset_type: ClassVar[Type[BaseDataset]] = MockDataset
-
-            def _validate_dataset(self, dataset: BaseDataset):
-                pass
-
-            @property
-            def inputs(self):
-                return {"X", "y"}  # Requires 'y' which is missing in MockDataset
-
-            @property
-            def outputs(self):
-                return set()
-
-        validator = ValidatorWithInputs()
-        dataset = MockDataset(path=str(tmp_path), organism=Organism.HUMAN)
-
-        with pytest.raises(ValueError, match="Missing required inputs: {'y'}"):
-            validator.validate_dataset(dataset)
 
     def test_successful_validation(self, tmp_path):
         """Tests that validation succeeds with a valid dataset."""
 
         class ConcreteValidator(BaseDatasetValidator):
-            dataset_type: ClassVar[Type[BaseDataset]] = MockDataset
+            dataset_type: ClassVar[Type[Dataset]] = MockDataset
 
-            def _validate_dataset(self, dataset: BaseDataset):
+            def _validate_dataset(self, dataset: Dataset):
                 pass
 
-            @property
-            def inputs(self):
-                return {"X"}
-
-            @property
-            def outputs(self):
-                return {"y"}
-
         validator = ConcreteValidator()
-        dataset = MockDataset(path=str(tmp_path), organism=Organism.HUMAN)
+        dataset = MockDataset(dataset_type_name="mock", path=str(tmp_path), organism=Organism.HUMAN)
 
         try:
             validator.validate_dataset(dataset)
@@ -145,13 +109,13 @@ class TestBaseDatasetValidator:
 
 
 # Test Cases for BaseSingleCellValidator
-class TestBaseSingleCellValidator:
+class TestBaseSingleCellLabeledValidator:
     @pytest.fixture
-    def sc_dataset(self, tmp_path) -> SingleCellDataset:
-        """Fixture to create a valid SingleCellDataset instance for testing."""
+    def sc_dataset(self, tmp_path) -> SingleCellLabeledDataset:
+        """Fixture to create a valid SingleCellLabeledDataset instance for testing."""
         # Create a dummy dataset instance.
         # We manually assign adata to avoid file I/O.
-        dataset = SingleCellDataset(path=str(tmp_path), organism=Organism.HUMAN)
+        dataset = SingleCellLabeledDataset(path=str(tmp_path), organism=Organism.HUMAN)
         dataset.adata = ad.AnnData(
             X=np.random.poisson(size=(10, 10)),
             obs=pd.DataFrame(index=[f"cell_{i}" for i in range(10)]),
@@ -167,7 +131,7 @@ class TestBaseSingleCellValidator:
     def test_successful_instantiation_sc(self):
         """Tests successful instantiation of a BaseSingleCellValidator subclass."""
 
-        class ConcreteSCValidator(BaseSingleCellValidator):
+        class ConcreteSCValidator(BaseSingleCellLabeledValidator):
             available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
             required_obs_keys: ClassVar[List[str]] = []
             required_var_keys: ClassVar[List[str]] = []
@@ -181,7 +145,7 @@ class TestBaseSingleCellValidator:
                 return set()
 
         validator = ConcreteSCValidator()
-        assert isinstance(validator, BaseSingleCellValidator)
+        assert isinstance(validator, BaseSingleCellLabeledValidator)
 
     def test_missing_available_organisms(self):
         """Tests TypeError for missing available_organisms."""
@@ -189,7 +153,7 @@ class TestBaseSingleCellValidator:
             TypeError, match="without available_organisms class variable"
         ):
 
-            class InvalidSCValidator(BaseSingleCellValidator):
+            class InvalidSCValidator(BaseSingleCellLabeledValidator):
                 required_obs_keys: ClassVar[List[str]] = []
                 required_var_keys: ClassVar[List[str]] = []
 
@@ -205,7 +169,7 @@ class TestBaseSingleCellValidator:
         """Tests TypeError for missing required_obs_keys."""
         with pytest.raises(TypeError, match="without required_obs_keys class variable"):
 
-            class InvalidSCValidator(BaseSingleCellValidator):
+            class InvalidSCValidator(BaseSingleCellLabeledValidator):
                 available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
                 required_var_keys: ClassVar[List[str]] = []
 
@@ -221,7 +185,7 @@ class TestBaseSingleCellValidator:
         """Tests TypeError for missing required_var_keys."""
         with pytest.raises(TypeError, match="without required_var_keys class variable"):
 
-            class InvalidSCValidator(BaseSingleCellValidator):
+            class InvalidSCValidator(BaseSingleCellLabeledValidator):
                 available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
                 required_obs_keys: ClassVar[List[str]] = []
 
@@ -236,7 +200,7 @@ class TestBaseSingleCellValidator:
     def test_unsupported_organism(self, sc_dataset):
         """Tests ValueError for an unsupported organism."""
 
-        class ConcreteSCValidator(BaseSingleCellValidator):
+        class ConcreteSCValidator(BaseSingleCellLabeledValidator):
             available_organisms: ClassVar[List[Organism]] = [
                 Organism.MOUSE
             ]  # Expects MOUSE
@@ -260,7 +224,7 @@ class TestBaseSingleCellValidator:
     def test_missing_obs_keys(self, sc_dataset):
         """Tests ValueError for missing required observation keys."""
 
-        class ConcreteSCValidator(BaseSingleCellValidator):
+        class ConcreteSCValidator(BaseSingleCellLabeledValidator):
             available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
             required_obs_keys: ClassVar[List[str]] = ["batch"]  # Requires 'batch'
             required_var_keys: ClassVar[List[str]] = []
@@ -283,7 +247,7 @@ class TestBaseSingleCellValidator:
     def test_missing_var_keys(self, sc_dataset):
         """Tests ValueError for missing required variable keys."""
 
-        class ConcreteSCValidator(BaseSingleCellValidator):
+        class ConcreteSCValidator(BaseSingleCellLabeledValidator):
             available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
             required_obs_keys: ClassVar[List[str]] = []
             required_var_keys: ClassVar[List[str]] = [
@@ -308,7 +272,7 @@ class TestBaseSingleCellValidator:
     def test_successful_sc_validation(self, sc_dataset):
         """Tests successful validation of a single-cell dataset."""
 
-        class ConcreteSCValidator(BaseSingleCellValidator):
+        class ConcreteSCValidator(BaseSingleCellLabeledValidator):
             available_organisms: ClassVar[List[Organism]] = [Organism.HUMAN]
             required_obs_keys: ClassVar[List[str]] = ["batch"]
             required_var_keys: ClassVar[List[str]] = ["gene_symbol"]
