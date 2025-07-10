@@ -7,6 +7,7 @@ from ..constants import RANDOM_SEED
 from ..datasets.types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
+from .types import TaskInput, MetricInput
 
 
 class BaseTask(ABC):
@@ -34,7 +35,9 @@ class BaseTask(ABC):
         self.requires_multiple_datasets = False
 
     @abstractmethod
-    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
+    def _run_task(
+        self, cell_representation: CellRepresentation, task_input: TaskInput
+    ) -> dict:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
@@ -42,13 +45,15 @@ class BaseTask(ABC):
 
         Args:
             cell_representation: gene expression data or embedding for task
-            **kwargs: Additional arguments passed to the task
+            task_input: Pydantic model with inputs for the task
         Returns:
             Dictionary of output data for the task
         """
 
     @abstractmethod
-    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
+    def _compute_metrics(
+        self, task_output: dict, metric_input: MetricInput
+    ) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 
         Returns:
@@ -58,8 +63,8 @@ class BaseTask(ABC):
     def _run_task_for_dataset(
         self,
         cell_representation: CellRepresentation,
-        task_kwargs: dict = {},
-        metric_kwargs: dict = {},
+        task_input: TaskInput,
+        metric_input: MetricInput,
     ) -> List[MetricResult]:
         """Run task for a dataset or list of datasets and compute metrics.
 
@@ -67,20 +72,15 @@ class BaseTask(ABC):
 
         Args:
             cell_representation: gene expression data or embedding for task
-            task_kwargs: Additional arguments passed to the task
-            metric_kwargs: Additional arguments passed to the metrics
+            task_input: Pydantic model with inputs for the task
+            metric_input: Pydantic model with inputs for the metrics
         Returns:
             List of MetricResult objects
 
         """
 
-        task_output = self._run_task(cell_representation, **task_kwargs)
-
-        # Handle cases where embedding required by metrics but not set by _run_task
-        if "cell_representation" not in metric_kwargs:
-            task_output.setdefault("cell_representation", cell_representation)
-
-        metrics = self._compute_metrics(**task_output, **metric_kwargs)
+        task_output = self._run_task(cell_representation, task_input)
+        metrics = self._compute_metrics(task_output, metric_input)
         return metrics
 
     def set_baseline(
@@ -115,15 +115,15 @@ class BaseTask(ABC):
     def run(
         self,
         cell_representation: Union[CellRepresentation, List[CellRepresentation]],
-        task_kwargs: dict = {},
-        metric_kwargs: dict = {},
+        task_input: TaskInput,
+        metric_input: MetricInput,
     ) -> List[MetricResult]:
         """Run the task on input data and compute metrics.
 
         Args:
             cell_representation: gene expression data or embedding to use for the task
-            task_kwargs: Additional arguments passed to the task
-            metric_kwargs: Additional arguments passed to the metrics
+            task_input: Pydantic model with inputs for the task
+            metric_input: Pydantic model with inputs for the metrics
 
         Returns:
             For single embedding: A one-element list containing a single metric result for the task
@@ -149,7 +149,7 @@ class BaseTask(ABC):
                 )
 
         return self._run_task_for_dataset(
-            cell_representation,
-            task_kwargs,
-            metric_kwargs,
+            cell_representation,  # type: ignore
+            task_input,
+            metric_input,
         )
