@@ -22,7 +22,6 @@ To get started with `cz-benchmarks`, refer to the [Quick Start Guide](https://
 
 - [How To Guides](https://chanzuckerberg.github.io/cz-benchmarks/how_to_guides/index.html)
     - [Add a Custom Dataset](https://chanzuckerberg.github.io/cz-benchmarks/how_to_guides/add_custom_dataset.html)
-    - [Add a Custom Model](https://chanzuckerberg.github.io/cz-benchmarks/how_to_guides/add_custom_model.html)
 - [Developer Guides](https://chanzuckerberg.github.io/cz-benchmarks/developer_guides/index.html)
 - [API Reference](https://chanzuckerberg.github.io/cz-benchmarks/api_reference.html)
 - [Assets](https://chanzuckerberg.github.io/cz-benchmarks/assets.html)

@@ -10,7 +10,6 @@ These guides are intended for developers who want to contribute to the project o
 
    design_overview
    datasets
-   models
    tasks
    metrics
    debugging

@@ -1,6 +1,6 @@
 # Datasets
 
-The `czbenchmarks.datasets` module defines the dataset abstraction used across all benchmark pipelines. It provides a uniform and type-safe way to manage dataset inputs and outputs, ensuring compatibility with models and tasks.
+The `czbenchmarks.datasets` module defines the dataset abstraction used across all benchmark pipelines. It provides a uniform and type-safe way to manage dataset inputs ensuring compatibility with tasks.
 
 ## Overview
 
@@ -11,7 +11,6 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 -  [BaseDataset](../autoapi/czbenchmarks/datasets/base/index)  
    An abstract class that provides methods for:
   
-   - Storing typed inputs and model outputs (`set_input`, `set_output`)
    - Type validation via `DataType` enums
    - Serialization and deserialization using [`dill`](https://dill.readthedocs.io/en/latest/) 
    - Loading/unloading memory-intensive data
@@ -68,7 +67,6 @@ To define a custom dataset:
    - `unload_data(self)` — clear memory-heavy inputs (e.g., `adata`) before serialization
 
 2. **Register all required inputs** using `self.set_input(data_type, value)`
-3. **Store model outputs** using `self.set_output(model_type, data_type, value)`
 4. **Use the `DataType` enum** to enforce type safety and input validation
 
 ### Example Skeleton
@@ -101,20 +99,8 @@ Use the following methods for safe access:
 ```python
 dataset.get_input(DataType.ANNDATA)
 dataset.get_input(DataType.METADATA)
-dataset.get_output(ModelType.SCVI, DataType.EMBEDDING)
 ```
 
-## Serialization Support
-
-Datasets can be serialized to disk after model inference. Internally, [`dill`](https://dill.readthedocs.io/en/latest/) is used to support complex Python objects like `AnnData`.
-
-```python
-dataset.serialize("/tmp/my_dataset.dill")
-loaded = BaseDataset.deserialize("/tmp/my_dataset.dill")
-
-# Don't forget to reload memory-intensive fields
-loaded.load_data()
-```
 
 ## Tips for Developers
 

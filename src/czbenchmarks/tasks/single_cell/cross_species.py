@@ -75,7 +75,10 @@ class CrossSpeciesIntegrationTask(BaseTask):
         }
 
     def _compute_metrics(
-        self, cell_representation: CellRepresentation, labels: ListLike, species: ListLike
+        self,
+        cell_representation: CellRepresentation,
+        labels: ListLike,
+        species: ListLike,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 

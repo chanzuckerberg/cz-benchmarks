@@ -28,7 +28,10 @@ class BatchIntegrationTask(BaseTask):
         return {}
 
     def _compute_metrics(
-        self, cell_representation: CellRepresentation, batch_labels: ListLike, labels: ListLike
+        self,
+        cell_representation: CellRepresentation,
+        batch_labels: ListLike,
+        labels: ListLike,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
