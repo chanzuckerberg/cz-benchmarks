@@ -14,7 +14,8 @@ from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
-def load_dataset( 
+
+def load_dataset(
     dataset_name: str,
     config_path: Optional[str] = None,
 ) -> BaseDataset:
@@ -61,12 +62,13 @@ def load_dataset(
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
-    dataset.path = dataset_path #os.path.expanduser(dataset.path)
+    dataset.path = dataset_path  # os.path.expanduser(dataset.path)
 
     # Load the dataset into memory
     dataset.load_data()
 
     return dataset
+
 
 def _handle_dataset_path(remote_path: str) -> str:
     """
@@ -111,25 +113,22 @@ def _download_from_s3(remote_path: str, local_path: Path) -> None:
         local_path.parent.mkdir(parents=True, exist_ok=True)
         # Get the size of the file for progress bar
         obj = s3.head_object(Bucket=bucket, Key=key)
-        total_size = obj.get('ContentLength', 0)
+        total_size = obj.get("ContentLength", 0)
 
-        with tqdm(total=total_size, unit='B', 
-                  unit_scale=True, 
-                  desc=f"Downloading {local_path.name}") as pbar:
-            
+        with tqdm(
+            total=total_size,
+            unit="B",
+            unit_scale=True,
+            desc=f"Downloading {local_path.name}",
+        ) as pbar:
+
             def progress_hook(bytes_amount):
                 pbar.update(bytes_amount)
 
-            s3.download_file(
-            bucket,
-            key,
-            str(local_path),
-            Callback=progress_hook
-            )
+            s3.download_file(bucket, key, str(local_path), Callback=progress_hook)
     except Exception as e:
         raise RuntimeError(
-            f"Failed to download dataset from S3: {remote_path}. "
-            f"Error: {str(e)}"
+            f"Failed to download dataset from S3: {remote_path}. Error: {str(e)}"
         ) from e
 
 
