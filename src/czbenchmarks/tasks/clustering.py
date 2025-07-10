@@ -37,7 +37,6 @@ class ClusteringTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         obs: pd.DataFrame,
-        var: pd.DataFrame,
         use_rep: str = "X",
         n_iterations: int = N_ITERATIONS,
         flavor: str = FLAVOR,
@@ -51,7 +50,6 @@ class ClusteringTask(BaseTask):
         Args:
             cell_representation: gene expression data or embedding for task
             obs: Obs dataframe
-            var: Var dataframe
             use_rep: Use representation, default is "X"
             n_iterations: Number of iterations, default is N_ITERATIONS
             flavor: Flavor, default is FLAVOR
@@ -59,7 +57,7 @@ class ClusteringTask(BaseTask):
         """
 
         # Create the AnnData object
-        adata = ad.AnnData(X=cell_representation, obs=obs, var=var)
+        adata = ad.AnnData(X=cell_representation, obs=obs)
 
         predicted_labels = cluster_embedding(
             adata,

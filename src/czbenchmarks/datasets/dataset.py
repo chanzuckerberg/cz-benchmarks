@@ -23,7 +23,7 @@ class Dataset(ABC):
         if not self.path.exists():
             raise ValueError("Dataset path does not exist")
 
-        self.task_inputs_dir = task_inputs_dir or (Path(f"{path.with_suffix('')}_task_inputs") / dataset_type_name.lower())
+        self.task_inputs_dir = task_inputs_dir or (Path(f"{self.path.with_suffix('')}_task_inputs") / dataset_type_name.lower())
 
         self.organism = organism
 
