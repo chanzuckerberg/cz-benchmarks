@@ -18,8 +18,8 @@ class Dataset(ABC):
     organism: Organism
     
     
-    def __init__(self, dataset_type_name: str, path: Path, organism: Organism, task_inputs_dir: Optional[Path] = None, **kwargs: Any):
-        self.path = path
+    def __init__(self, dataset_type_name: str, path: str|Path, organism: Organism, task_inputs_dir: Optional[Path] = None, **kwargs: Any):
+        self.path = Path(path)
         if not self.path.exists():
             raise ValueError("Dataset path does not exist")
 
