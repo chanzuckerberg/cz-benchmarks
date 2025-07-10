@@ -94,7 +94,7 @@ def create_dummy_perturbation_anndata(
     test_conditions = set(
         adata.obs[condition_column][adata.obs[split_column] == "test"]
     )
-    
+
     pert_truth = {
         str(condition): pd.DataFrame(
             data=adata[conditions == condition].X.toarray(),
@@ -134,7 +134,10 @@ class DummyTask(BaseTask):
     """A dummy task implementation for testing."""
 
     def __init__(
-        self, requires_multiple_datasets: bool = False, *, random_seed: int = RANDOM_SEED
+        self,
+        requires_multiple_datasets: bool = False,
+        *,
+        random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
         self.name = "dummy task"

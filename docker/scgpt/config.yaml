@@ -1,6 +1,0 @@
-_target_: model.ScGPT
-
-models:
-  human:
-    model_name: human
-    model_uri: s3://cz-benchmarks-data/models/v1/scgpt/human

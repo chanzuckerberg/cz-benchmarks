@@ -1,4 +1,4 @@
-# Tasks
+# Tasks 
 
 The `czbenchmarks.tasks` module defines **benchmarking tasks** that evaluate the performance of models based on their outputs. Tasks take in datasets with model-generated outputs and compute metrics specific to each task type.
 
@@ -91,7 +91,6 @@ To define a new evaluation task:
     ```python
     from czbenchmarks.tasks.base import BaseTask
     from czbenchmarks.datasets import DataType
-    from czbenchmarks.models.types import ModelType
     from czbenchmarks.metrics.types import MetricResult
 
     class MyNewTask(BaseTask):
@@ -103,7 +102,7 @@ To define a new evaluation task:
           def required_outputs(self):
                 return {DataType.EMBEDDING}
 
-          def _run_task(self, data, model_type: ModelType):
+          def _run_task(self, data, TODO):
                 self.embedding = data.get_output(model_type, DataType.EMBEDDING)
                 self.labels = data.get_input(DataType.METADATA)["cell_type"]
 

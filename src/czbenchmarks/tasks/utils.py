@@ -1,5 +1,5 @@
 import logging
-from typing import List, Literal, Optional
+from typing import List, Literal
 
 import numpy as np
 import pandas as pd
@@ -144,5 +144,5 @@ def run_standard_scrna_workflow(
 
     # Run PCA for dimensionality reduction
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
-    
+
     return adata.obsm[obsm_key]

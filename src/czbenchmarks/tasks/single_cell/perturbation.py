@@ -26,7 +26,9 @@ class PerturbationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "perturbation"
 
-    def _run_task(self, cell_representation: CellRepresentation, var_names: ListLike) -> dict:
+    def _run_task(
+        self, cell_representation: CellRepresentation, var_names: ListLike
+    ) -> dict:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control

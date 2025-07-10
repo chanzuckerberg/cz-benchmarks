@@ -66,7 +66,7 @@ class MetadataLabelPredictionTask(BaseTask):
             Dictionary of results
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
-        logger.info(f"Starting prediction task for labels")
+        logger.info("Starting prediction task for labels")
         cell_representation = (
             cell_representation.copy()
         )  # Protect from destructive operations
@@ -268,7 +268,9 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, cell_representation: CellRepresentation, **kwargs) -> CellRepresentation:
+    def set_baseline(
+        self, cell_representation: CellRepresentation, **kwargs
+    ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
 
         Instead of using embeddings from a model, this method uses the raw gene
