@@ -24,8 +24,23 @@ from .base import BaseTask
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
+from .types import TaskInput, MetricInput
 
 logger = logging.getLogger(__name__)
+
+
+class MetadataLabelPredictionTaskInput(TaskInput):
+    """Pydantic model for MetadataLabelPredictionTask inputs."""
+
+    labels: ListLike
+    n_folds: int = N_FOLDS
+    min_class_size: int = MIN_CLASS_SIZE
+
+
+class MetadataLabelPredictionMetricInput(MetricInput):
+    """Pydantic model for MetadataLabelPredictionTask metric inputs."""
+
+    pass
 
 
 class MetadataLabelPredictionTask(BaseTask):
@@ -49,9 +64,7 @@ class MetadataLabelPredictionTask(BaseTask):
     def _run_task(
         self,
         cell_representation: CellRepresentation,
-        labels: ListLike,
-        n_folds: int = N_FOLDS,
-        min_class_size: int = MIN_CLASS_SIZE,
+        task_input: MetadataLabelPredictionTaskInput,
     ) -> dict:
         """Runs cross-validation prediction task.
 
@@ -60,24 +73,26 @@ class MetadataLabelPredictionTask(BaseTask):
 
         Args:
             cell_representation: gene expression data or embedding for task
-            labels: labels to use for the task
+            task_input: Pydantic model with inputs for the task
 
         Returns:
             Dictionary of results
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
-        logger.info(f"Starting prediction task for labels")
+        logger.info("Starting prediction task for labels")
         cell_representation = (
             cell_representation.copy()
         )  # Protect from destructive operations
 
         logger.info(
-            f"Initial data shape: {cell_representation.shape}, labels shape: {labels.shape}"
+            f"Initial data shape: {cell_representation.shape}, labels shape: {task_input.labels.shape}"
         )
 
         # Filter classes with minimum size requirement
         cell_representation, labels = filter_minimum_class(
-            cell_representation, labels, min_class_size=min_class_size
+            cell_representation,
+            task_input.labels,
+            min_class_size=task_input.min_class_size,
         )
         logger.info(f"After filtering: {cell_representation.shape} samples remaining")
 
@@ -103,10 +118,10 @@ class MetadataLabelPredictionTask(BaseTask):
 
         # Setup cross validation
         skf = StratifiedKFold(
-            n_splits=n_folds, shuffle=True, random_state=self.random_seed
+            n_splits=task_input.n_folds, shuffle=True, random_state=self.random_seed
         )
         logger.info(
-            f"Using {n_folds}-fold cross validation with random_seed {self.random_seed}"
+            f"Using {task_input.n_folds}-fold cross validation with random_seed {self.random_seed}"
         )
 
         # Create classifiers
@@ -139,7 +154,7 @@ class MetadataLabelPredictionTask(BaseTask):
                 return_train_score=False,
             )
 
-            for fold in range(n_folds):
+            for fold in range(task_input.n_folds):
                 fold_results = {"classifier": name, "split": fold}
                 for metric in scorers.keys():
                     fold_results[metric] = cv_results[f"test_{metric}"][fold]
@@ -152,20 +167,23 @@ class MetadataLabelPredictionTask(BaseTask):
             "results": results,
         }
 
-    def _compute_metrics(self, results: List[dict], **kwargs) -> List[MetricResult]:
+    def _compute_metrics(
+        self, task_output: dict, metric_input: MetadataLabelPredictionMetricInput
+    ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics
         per classifier and overall.
 
         Args:
-            results: Results from cross-validation
+            task_output: Results from cross-validation
 
         Returns:
             List of MetricResult objects containing mean metrics across all
             classifiers and per-classifier metrics
         """
         logger.info("Computing final metrics...")
+        results = task_output["results"]
         results_df = pd.DataFrame(results)
         metrics_list = []
 
@@ -268,21 +286,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(self, cell_representation: CellRepresentation, **kwargs) -> CellRepresentation:
-        """Set a baseline cell representation using raw gene expression.
-
-        Instead of using embeddings from a model, this method uses the raw gene
-        expression matrix as features for classification. This provides a baseline
-        performance to compare against model-generated embeddings for classification
-        tasks.
-
-        Args:
-            cell_representation: gene expression data or embedding
-
-        Returns:
-            Baseline embedding
-        """
-        # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
-        return cell_representation
+    def set_baseline(
+        self, cell_representation: CellRepresentation, **kwargs
+    ) -> CellRepresentation:
+        raise NotImplementedError

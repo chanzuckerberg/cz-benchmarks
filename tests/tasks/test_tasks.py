@@ -18,8 +18,12 @@ from czbenchmarks.tasks.integration import (
     BatchIntegrationTaskInput,
     BatchIntegrationMetricInput,
 )
+from czbenchmarks.tasks.label_prediction import (
+    MetadataLabelPredictionTask,
+    MetadataLabelPredictionTaskInput,
+    MetadataLabelPredictionMetricInput,
+)
 
-# from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 # from czbenchmarks.tasks.single_cell.cross_species import (
 #     CrossSpeciesIntegrationTask,
 # )
@@ -197,11 +201,11 @@ def test_embedding_invalid_input(fixture_data):
                 labels=obs["cell_type"], batch_labels=obs["batch"]
             ),
         ),
-        # (
-        #     MetadataLabelPredictionTask,
-        #     ["labels"],
-        #     [],
-        # ),
+        (
+            MetadataLabelPredictionTask,
+            lambda obs, var: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
+            lambda obs: MetadataLabelPredictionMetricInput(),
+        ),
     ],
 )
 def test_task_execution(
