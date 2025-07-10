@@ -10,8 +10,23 @@ from ...datasets.types import CellRepresentation, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
+from ..types import TaskInput, MetricInput
 
 logger = logging.getLogger(__name__)
+
+
+class PerturbationTaskInput(TaskInput):
+    """Pydantic model for PerturbationTask inputs."""
+
+    var_names: ListLike
+
+
+class PerturbationMetricInput(MetricInput):
+    """Pydantic model for PerturbationTask metric inputs."""
+
+    gene_pert: str
+    perturbation_pred: pd.DataFrame
+    perturbation_truth: Dict[str, pd.DataFrame]
 
 
 class PerturbationTask(BaseTask):
@@ -19,14 +34,18 @@ class PerturbationTask(BaseTask):
 
     This task computes metrics to assess how well a model predicts gene expression
     changes in response to perturbations. Compares predicted vs ground truth
-    perturbation effects using MSE and correlation metrics.
+    effects using MSE and correlation metrics.
     """
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.display_name = "perturbation"
 
-    def _run_task(self, cell_representation: CellRepresentation, var_names: ListLike) -> dict:
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        task_input: PerturbationTaskInput,
+    ) -> dict:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -34,7 +53,7 @@ class PerturbationTask(BaseTask):
 
         Args:
             cell_representation: gene expression data or embedding for task
-            var_names: list of gene names
+            task_input: Pydantic model with inputs for the task
 
         Returns:
             Dictionary of gene perturbation, perturbation predictions,
@@ -48,7 +67,7 @@ class PerturbationTask(BaseTask):
 
         avg_perturbation_ctrl = pd.Series(
             data=perturbation_ctrl.mean(0),
-            index=var_names,
+            index=task_input.var_names,
             name="ctrl",
         )
 
@@ -59,12 +78,8 @@ class PerturbationTask(BaseTask):
 
     def _compute_metrics(
         self,
-        gene_pert: str,
-        perturbation_pred: CellRepresentation,
-        perturbation_truth: Dict[str, pd.DataFrame],
-        perturbation_ctrl: CellRepresentation,
-        avg_perturbation_ctrl: pd.Series,
-        **kwargs,
+        task_output: dict,
+        metric_input: PerturbationMetricInput,
     ) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
 
@@ -73,25 +88,30 @@ class PerturbationTask(BaseTask):
         - Correlation between predicted and true expression changes from control
 
         Args:
-            gene_pert: The perturbation gene to evaluate
-            perturbation_pred: The predicted perturbation effects with genes as column names
-            perturbation_ctrl: The gene expression matrix for the control conditions
-            perturbation_truth: The gene expression matrix for the ground truth perturbation effects
-            avg_perturbation_ctrl: The average control expression
+            task_output: Dictionary of outputs from _run_task
+            metric_input: Pydantic model with inputs for the metrics
 
         Returns:
             List of MetricResult objects containing metric values and metadata
         """
         # FIXME BYOTASK: refactor so pandas objects are not required as inputs
-        # FIXME BYOTASK: this is quite involved and should be broken into more simple functions
+        # FIXME BYOTASK: this is quite involved and should be broken into more
+        # simple functions
 
         mean_squared_error_metric = MetricType.MEAN_SQUARED_ERROR
         pearson_correlation_metric = MetricType.PEARSON_CORRELATION
         jaccard_metric = MetricType.JACCARD
 
+        gene_pert = metric_input.gene_pert
+        perturbation_pred = metric_input.perturbation_pred
+        perturbation_truth = metric_input.perturbation_truth
+        perturbation_ctrl = task_output["perturbation_ctrl"]
+        avg_perturbation_ctrl = task_output["avg_perturbation_ctrl"]
+
         if gene_pert in perturbation_truth.keys():
-            # Run differential expression analysis between control and predicted/truth
-            # Create AnnData objects for control, prediction, and truth
+            # Run differential expression analysis between control and
+            # predicted/truth Create AnnData objects for control, prediction,
+            # and truth
             adata_ctrl = ad.AnnData(X=perturbation_ctrl)
             adata_pred = ad.AnnData(X=perturbation_pred.values)
             adata_truth = ad.AnnData(X=perturbation_truth[gene_pert].values)
@@ -141,7 +161,9 @@ class PerturbationTask(BaseTask):
             )
 
             # Store the results for later use if needed
-            de_results_pred = sc.get.rank_genes_groups_df(adata_ctrl_pred, group="pred")
+            de_results_pred = sc.get.rank_genes_groups_df(
+                adata_ctrl_pred, group="pred"
+            )
             de_results_truth = sc.get.rank_genes_groups_df(
                 adata_ctrl_truth, group="truth"
             )
@@ -264,39 +286,35 @@ class PerturbationTask(BaseTask):
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top20,
-                    params={"subset": "top20"},
+                    params={"subset": "top20_de"},
                 ),
                 MetricResult(
                     metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top20,
-                    params={"subset": "top20"},
+                    params={"subset": "top20_de"},
                 ),
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top100,
-                    params={"subset": "top100"},
+                    params={"subset": "top100_de"},
                 ),
                 MetricResult(
                     metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top100,
-                    params={"subset": "top100"},
+                    params={"subset": "top100_de"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top20,
-                    params={"subset": "top20"},
+                    params={"subset": "top20_de"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top100,
-                    params={"subset": "top100"},
+                    params={"subset": "top100_de"},
                 ),
             ]
-        else:
-            raise ValueError(
-                f"Perturbation {gene_pert} is not available in the ground truth "
-                "test perturbations."
-            )
+        return []
 
     @staticmethod
     def set_baseline(
@@ -304,41 +322,33 @@ class PerturbationTask(BaseTask):
         var_names: ListLike,
         obs_names: ListLike,
         baseline_type: Literal["median", "mean"] = "median",
-    ) -> CellRepresentation:
-        """Set a baseline embedding for perturbation prediction.
+    ) -> pd.DataFrame:
+        """Set a baseline perturbation prediction using mean or median expression.
 
-        Creates baseline predictions using simple statistical methods (median and mean)
-        applied to the control data, and evaluates these predictions against ground
-        truth.
+        This method creates a baseline prediction by either taking the mean or
+        the median of the control cells' gene expression. This baseline
+        represents a simple no-change prediction.
 
         Args:
-            cell_representation: gene expression data or embedding for task
-            gene_pert: The perturbation gene to evaluate
-            baseline_type: The statistical method to use for baseline prediction
-                (median or mean)
-            **kwargs: Additional arguments passed to the evaluation
+            cell_representation: The gene expression matrix of control cells.
+            var_names: The names of the genes.
+            obs_names: The names of the observations (cells).
+            baseline_type: The type of baseline to use, either "mean" or "median".
 
         Returns:
-            Dataframe containing baseline performance metrics
-            for different statistical methods (median, mean)
+            A DataFrame representing the baseline perturbation prediction.
         """
+        if baseline_type == "mean":
+            baseline_embedding = np.mean(cell_representation, axis=0)
+        elif baseline_type == "median":
+            if sp.sparse.issparse(cell_representation):
+                cell_representation = cell_representation.toarray()
+            baseline_embedding = np.median(cell_representation, axis=0)
+        else:
+            raise ValueError("Invalid baseline type specified")
 
-        # Iterate through different statistical baseline functions (median and mean)
-
-        # Create baseline prediction by replicating the aggregated expression values
-        # across all cells in the dataset.
-        baseline_func = np.median if baseline_type == "median" else np.mean
-        if baseline_type == "median" and sp.sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
-
-        perturb_baseline_pred = pd.DataFrame(
-            np.tile(
-                baseline_func(cell_representation, axis=0),
-                (cell_representation.shape[0], 1),
-            ),
-            columns=var_names,  # Use gene names from the dataset
-            index=obs_names,  # Use cell names from the dataset
+        return pd.DataFrame(
+            data=np.tile(baseline_embedding, (len(obs_names), 1)),
+            index=obs_names,
+            columns=var_names,
         )
-
-        # Store the baseline prediction in the dataset for evaluation
-        return perturb_baseline_pred

@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 import pandas as pd
 
 import anndata as ad
@@ -29,11 +28,14 @@ from czbenchmarks.tasks.single_cell.cross_species import (
     CrossSpeciesIntegrationMetricInput,
 )
 
-from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks.tasks.single_cell.perturbation import (
+    PerturbationTask,
+    PerturbationTaskInput,
+    PerturbationMetricInput,
+)
 from czbenchmarks.datasets.types import (
     Organism,
     CellRepresentation,
-    ListLike,
 )
 from czbenchmarks.metrics.types import MetricResult
 
@@ -46,7 +48,8 @@ from tests.utils import (
 )
 
 
-# FIXME these tests could be split into multiple files and fixtures moved to conftest.py
+# FIXME these tests could be split into multiple files and fixtures moved to
+# conftest.py
 
 
 @pytest.fixture
@@ -102,7 +105,8 @@ def var(dummy_anndata):
 
 @pytest.fixture
 def fixture_data(request):
-    # Enables lazy generation of fixture data so fixtures can be used as parameters
+    # Enables lazy generation of fixture data so fixtures can be used as
+    # parameters
     valid_fixture_names = ["expression_matrix", "embedding_matrix", "obs", "var"]
     fixture_name, other_data = request.param
     if isinstance(fixture_name, str):
@@ -144,7 +148,10 @@ def test_embedding_valid_input_output(fixture_data):
 @pytest.mark.parametrize(
     "fixture_data",
     [
-        ("abcd", [False, "This task requires a single cell representation for input"]),
+        (
+            "abcd",
+            [False, "This task requires a single cell representation for input"],
+        ),
         (
             ["embedding_matrix"],
             [False, "This task requires a single cell representation for input"],
@@ -165,7 +172,8 @@ def test_embedding_valid_input_output(fixture_data):
             ["embedding_matrix"],
             [
                 True,
-                "This task requires a list of cell representations but only one was provided",
+                "This task requires a list of cell representations but only one "
+                "was provided",
             ],
         ),
     ],
@@ -205,7 +213,9 @@ def test_embedding_invalid_input(fixture_data):
         ),
         (
             MetadataLabelPredictionTask,
-            lambda obs, var: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
+            lambda obs, var: MetadataLabelPredictionTaskInput(
+                labels=obs["cell_type"]
+            ),
             lambda obs: MetadataLabelPredictionMetricInput(),
         ),
     ],
@@ -239,7 +249,9 @@ def test_task_execution(
         # Test baseline execution if implemented
         try:
             n_pcs = min(50, expression_matrix.shape[1] - 1)
-            baseline_embedding = task.set_baseline(expression_matrix, n_pcs=n_pcs)
+            baseline_embedding = task.set_baseline(
+                expression_matrix, n_pcs=n_pcs
+            )
             if hasattr(task_input, "var"):
                 task_input.var = task_input.var.iloc[:n_pcs]
 
@@ -309,24 +321,23 @@ def test_perturbation_task():
 
     # Task and argument setup
     task = PerturbationTask()
-    task_kwargs = {
-        "var_names": var_names,
-    }
-    metric_kwargs = {
-        "gene_pert": gene_pert,
-        "perturbation_pred": pert_pred,
-        "perturbation_truth": pert_truth,
-    }
+    task_input = PerturbationTaskInput(var_names=var_names)
+    metric_input = PerturbationMetricInput(
+        gene_pert=gene_pert,
+        perturbation_pred=pert_pred,
+        perturbation_truth=pert_truth,
+    )
 
-    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard top20/100
+    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard
+    # top20/100
     num_metrics = 8
 
     try:
         # Test regular task execution
         results = task.run(
             cell_representation,
-            task_kwargs,
-            metric_kwargs,
+            task_input,
+            metric_input,
         )
 
         # Verify results structure
@@ -342,7 +353,10 @@ def test_perturbation_task():
                 obs_names=obs_names,
                 baseline_type=baseline_type,
             )
-            baseline_results = task.run(baseline_embedding, task_kwargs, metric_kwargs)
+            metric_input.perturbation_pred = baseline_embedding
+            baseline_results = task.run(
+                cell_representation, task_input, metric_input
+            )
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics
