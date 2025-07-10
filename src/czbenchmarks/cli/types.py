@@ -7,6 +7,7 @@ from pydantic import BaseModel, computed_field
 
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.metrics.types import AggregatedMetricResult, MetricResult
+
 # from czbenchmarks.models.types import ModelType
 # from czbenchmarks.models import utils as model_utils
 from czbenchmarks.tasks.base import BaseTask
@@ -63,11 +64,6 @@ class DatasetDetail(BaseModel):
 #     @property
 #     def name_display(self) -> str:
 #         return self._display_info[0]
-
-#     @computed_field
-#     @property
-#     def variant_display(self) -> str:
-#         return self._display_info[1]
 
 
 class TaskResult(BaseModel):
