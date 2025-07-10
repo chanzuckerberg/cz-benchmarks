@@ -8,8 +8,12 @@ from czbenchmarks.tasks.clustering import (
     ClusteringTaskInput,
     ClusteringMetricInput,
 )
+from czbenchmarks.tasks.embedding import (
+    EmbeddingTask,
+    EmbeddingTaskInput,
+    EmbeddingMetricInput,
+)
 
-# from czbenchmarks.tasks.embedding import EmbeddingTask
 # from czbenchmarks.tasks.integration import BatchIntegrationTask
 # from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 # from czbenchmarks.tasks.single_cell.cross_species import (
@@ -177,11 +181,11 @@ def test_embedding_invalid_input(fixture_data):
             lambda obs, var: ClusteringTaskInput(obs=obs, var=var),
             lambda labels: ClusteringMetricInput(input_labels=labels),
         ),
-        # (
-        #     EmbeddingTask,
-        #     [],
-        #     ["input_labels"],
-        # ),
+        (
+            EmbeddingTask,
+            lambda obs, var: EmbeddingTaskInput(),
+            lambda labels: EmbeddingMetricInput(input_labels=labels),
+        ),
         # (
         #     BatchIntegrationTask,
         #     [],
