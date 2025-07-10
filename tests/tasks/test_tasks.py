@@ -23,11 +23,13 @@ from czbenchmarks.tasks.label_prediction import (
     MetadataLabelPredictionTaskInput,
     MetadataLabelPredictionMetricInput,
 )
+from czbenchmarks.tasks.single_cell.cross_species import (
+    CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
+    CrossSpeciesIntegrationMetricInput,
+)
 
-# from czbenchmarks.tasks.single_cell.cross_species import (
-#     CrossSpeciesIntegrationTask,
-# )
-# from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 from czbenchmarks.datasets.types import (
     Organism,
     CellRepresentation,
@@ -256,93 +258,94 @@ def test_task_execution(
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-# def test_cross_species_task(embedding_matrix, obs):
-#     """Test that CrossSpeciesIntegrationTask executes without errors."""
-#     task = CrossSpeciesIntegrationTask()
-#     embedding_list = [embedding_matrix, embedding_matrix]
-#     labels = obs["cell_type"]
-#     labels_list = [labels, labels]
-#     organism_list = [Organism.HUMAN, Organism.MOUSE]
-#     task_kwargs = {
-#         "labels": labels_list,
-#         "organism_list": organism_list,
-#     }
+def test_cross_species_task(embedding_matrix, obs):
+    """Test that CrossSpeciesIntegrationTask executes without errors."""
+    task = CrossSpeciesIntegrationTask()
+    embedding_list = [embedding_matrix, embedding_matrix]
+    labels = obs["cell_type"]
+    labels_list = [labels, labels]
+    organism_list = [Organism.HUMAN, Organism.MOUSE]
+    task_input = CrossSpeciesIntegrationTaskInput(
+        labels=labels_list, organism_list=organism_list
+    )
+    metric_input = CrossSpeciesIntegrationMetricInput()
 
-#     try:
-#         # Test regular task execution
-#         results = task.run(
-#             cell_representation=embedding_list,
-#             task_kwargs=task_kwargs,
-#         )
+    try:
+        # Test regular task execution
+        results = task.run(
+            cell_representation=embedding_list,
+            task_input=task_input,
+            metric_input=metric_input,
+        )
 
-#         # Verify results structure
-#         assert isinstance(results, list)
-#         assert all(isinstance(r, MetricResult) for r in results)
+        # Verify results structure
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
-#         # Test that baseline raises NotImplementedError
-#         with pytest.raises(NotImplementedError):
-#             task.set_baseline()
+        # Test that baseline raises NotImplementedError
+        with pytest.raises(NotImplementedError):
+            task.set_baseline()
 
-#     except Exception as e:
-#         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
+    except Exception as e:
+        pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
 
 
-# def test_perturbation_task():
-#     """Test that PerturbationTask executes without errors."""
-#     # Create dummy perturbation data
-#     perturbation_data: dict = create_dummy_perturbation_anndata(
-#         n_cells=500,
-#         n_genes=200,
-#         organism=Organism.HUMAN,
-#         condition_column="condition",
-#         split_column="split",
-#     )
-#     gene_pert = perturbation_data["gene_pert"]
-#     pert_pred = perturbation_data["pert_pred"]
-#     pert_truth = perturbation_data["pert_truth"]
-#     cell_representation = perturbation_data["adata"].X
-#     var_names = perturbation_data["adata"].var_names
-#     obs_names = perturbation_data["adata"].obs_names
+def test_perturbation_task():
+    """Test that PerturbationTask executes without errors."""
+    # Create dummy perturbation data
+    perturbation_data: dict = create_dummy_perturbation_anndata(
+        n_cells=500,
+        n_genes=200,
+        organism=Organism.HUMAN,
+        condition_column="condition",
+        split_column="split",
+    )
+    gene_pert = perturbation_data["gene_pert"]
+    pert_pred = perturbation_data["pert_pred"]
+    pert_truth = perturbation_data["pert_truth"]
+    cell_representation = perturbation_data["adata"].X
+    var_names = perturbation_data["adata"].var_names
+    obs_names = perturbation_data["adata"].obs_names
 
-#     # Task and argument setup
-#     task = PerturbationTask()
-#     task_kwargs = {
-#         "var_names": var_names,
-#     }
-#     metric_kwargs = {
-#         "gene_pert": gene_pert,
-#         "perturbation_pred": pert_pred,
-#         "perturbation_truth": pert_truth,
-#     }
+    # Task and argument setup
+    task = PerturbationTask()
+    task_kwargs = {
+        "var_names": var_names,
+    }
+    metric_kwargs = {
+        "gene_pert": gene_pert,
+        "perturbation_pred": pert_pred,
+        "perturbation_truth": pert_truth,
+    }
 
-#     # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard top20/100
-#     num_metrics = 8
+    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard top20/100
+    num_metrics = 8
 
-#     try:
-#         # Test regular task execution
-#         results = task.run(
-#             cell_representation,
-#             task_kwargs,
-#             metric_kwargs,
-#         )
+    try:
+        # Test regular task execution
+        results = task.run(
+            cell_representation,
+            task_kwargs,
+            metric_kwargs,
+        )
 
-#         # Verify results structure
-#         assert isinstance(results, list)
-#         assert all(isinstance(r, MetricResult) for r in results)
-#         assert len(results) == num_metrics
+        # Verify results structure
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        assert len(results) == num_metrics
 
-#         # Test baseline with both mean and median
-#         for baseline_type in ["mean", "median"]:
-#             baseline_embedding = task.set_baseline(
-#                 cell_representation=cell_representation,
-#                 var_names=var_names,
-#                 obs_names=obs_names,
-#                 baseline_type=baseline_type,
-#             )
-#             baseline_results = task.run(baseline_embedding, task_kwargs, metric_kwargs)
-#             assert isinstance(baseline_results, list)
-#             assert all(isinstance(r, MetricResult) for r in baseline_results)
-#             assert len(baseline_results) == num_metrics
+        # Test baseline with both mean and median
+        for baseline_type in ["mean", "median"]:
+            baseline_embedding = task.set_baseline(
+                cell_representation=cell_representation,
+                var_names=var_names,
+                obs_names=obs_names,
+                baseline_type=baseline_type,
+            )
+            baseline_results = task.run(baseline_embedding, task_kwargs, metric_kwargs)
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
+            assert len(baseline_results) == num_metrics
 
-#     except Exception as e:
-#         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
+    except Exception as e:
+        pytest.fail(f"PerturbationTask failed unexpectedly: {e}")

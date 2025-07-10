@@ -4,9 +4,23 @@ import numpy as np
 
 from ...constants import RANDOM_SEED
 from ..base import BaseTask
-from ...datasets.types import CellRepresentation, ListLike
+from ...datasets.types import CellRepresentation, ListLike, Organism
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
+from ..types import TaskInput, MetricInput
+
+
+class CrossSpeciesIntegrationTaskInput(TaskInput):
+    """Pydantic model for CrossSpeciesIntegrationTask inputs."""
+
+    labels: List[ListLike]
+    organism_list: List[Organism]
+
+
+class CrossSpeciesIntegrationMetricInput(MetricInput):
+    """Pydantic model for CrossSpeciesIntegrationTask metric inputs."""
+
+    pass
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -28,9 +42,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
     def _run_task(
         self,
         cell_representation: CellRepresentation,
-        labels: List[ListLike],
-        organism_list: List[str],
-        **kwargs,
+        task_input: CrossSpeciesIntegrationTaskInput,
     ) -> dict:
         """Runs the cross-species integration evaluation task.
 
@@ -38,20 +50,21 @@ class CrossSpeciesIntegrationTask(BaseTask):
         for metric computation.
 
         Args:
-            labels: labels to use for the task
-            organism_list: list of organisms to use for the task
+            cell_representation: list of cell representations for the task
+            task_input: Pydantic model with inputs for the task
 
         Returns:
             Dictionary of labels and species
         """
         # FIXME BYODATASETdatasets should be concatenated to align along genes?
+        # This operation is safe because requires_multiple_datasets is True
         cell_representation = np.vstack(cell_representation)
 
         # FIXME BYODATASET move this into validation
-        if len(set(organism_list)) < 2:
+        if len(set(task_input.organism_list)) < 2:
             raise AssertionError(
                 "At least two organisms are required for cross-species integration "
-                f"but got {len(set(organism_list))} : {{set(organism_list)}}"
+                f"but got {len(set(task_input.organism_list))} : {{set(task_input.organism_list)}}"
             )
 
         species = np.concatenate(
@@ -60,12 +73,16 @@ class CrossSpeciesIntegrationTask(BaseTask):
                     str(organism),
                 ]
                 * len(label)
-                for organism, label in zip(organism_list, labels)
+                for organism, label in zip(
+                    task_input.organism_list, task_input.labels
+                )
             ]
         )
-        labels = np.concatenate(labels)
+        labels = np.concatenate(task_input.labels)
 
-        if (len(cell_representation) != len(species)) | (len(species) != len(labels)):
+        if (len(cell_representation) != len(species)) or (
+            len(species) != len(labels)
+        ):
             raise AssertionError(
                 "Cell representation, species, and labels must have the same shape"
             )
@@ -78,16 +95,14 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
     def _compute_metrics(
         self,
-        cell_representation: CellRepresentation,
-        labels: ListLike,
-        species: ListLike,
+        task_output: dict,
+        metric_input: CrossSpeciesIntegrationMetricInput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            cell_representation: gene expression data or embedding for task
-            labels: labels to use for the task
-            species: species to use for the task
+            task_output: Dictionary of labels and species from _run_task
+            metric_input: Pydantic model with inputs for the metrics
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -96,6 +111,9 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+        cell_representation = task_output["cell_representation"]
+        labels = task_output["labels"]
+        species = task_output["species"]
 
         return [
             MetricResult(
