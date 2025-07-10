@@ -13,8 +13,12 @@ from czbenchmarks.tasks.embedding import (
     EmbeddingTaskInput,
     EmbeddingMetricInput,
 )
+from czbenchmarks.tasks.integration import (
+    BatchIntegrationTask,
+    BatchIntegrationTaskInput,
+    BatchIntegrationMetricInput,
+)
 
-# from czbenchmarks.tasks.integration import BatchIntegrationTask
 # from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
 # from czbenchmarks.tasks.single_cell.cross_species import (
 #     CrossSpeciesIntegrationTask,
@@ -179,18 +183,20 @@ def test_embedding_invalid_input(fixture_data):
         (
             ClusteringTask,
             lambda obs, var: ClusteringTaskInput(obs=obs, var=var),
-            lambda labels: ClusteringMetricInput(input_labels=labels),
+            lambda obs: ClusteringMetricInput(input_labels=obs["cell_type"]),
         ),
         (
             EmbeddingTask,
             lambda obs, var: EmbeddingTaskInput(),
-            lambda labels: EmbeddingMetricInput(input_labels=labels),
+            lambda obs: EmbeddingMetricInput(input_labels=obs["cell_type"]),
         ),
-        # (
-        #     BatchIntegrationTask,
-        #     [],
-        #     ["labels", "batch_labels"],
-        # ),
+        (
+            BatchIntegrationTask,
+            lambda obs, var: BatchIntegrationTaskInput(),
+            lambda obs: BatchIntegrationMetricInput(
+                labels=obs["cell_type"], batch_labels=obs["batch"]
+            ),
+        ),
         # (
         #     MetadataLabelPredictionTask,
         #     ["labels"],
@@ -210,7 +216,7 @@ def test_task_execution(
     """Test that each task executes without errors on compatible data."""
 
     task_input = task_input_builder(obs, var)
-    metric_input = metric_input_builder(obs["cell_type"])
+    metric_input = metric_input_builder(obs)
 
     task = task_class()
 

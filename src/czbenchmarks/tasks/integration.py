@@ -6,8 +6,22 @@ from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
+from .types import TaskInput, MetricInput
 
 logger = logging.getLogger(__name__)
+
+
+class BatchIntegrationTaskInput(TaskInput):
+    """Pydantic model for BatchIntegrationTask inputs."""
+
+    pass
+
+
+class BatchIntegrationMetricInput(MetricInput):
+    """Pydantic model for BatchIntegrationTask metric inputs."""
+
+    batch_labels: ListLike
+    labels: ListLike
 
 
 class BatchIntegrationTask(BaseTask):
@@ -24,11 +38,15 @@ class BatchIntegrationTask(BaseTask):
         super().__init__(random_seed=random_seed)
         self.display_name = "batch integration"
 
-    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
-        return {}
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        task_input: BatchIntegrationTaskInput,
+    ) -> dict:
+        return {"cell_representation": cell_representation}
 
     def _compute_metrics(
-        self, cell_representation: CellRepresentation, batch_labels: ListLike, labels: ListLike
+        self, task_output: dict, metric_input: BatchIntegrationMetricInput
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
@@ -44,6 +62,7 @@ class BatchIntegrationTask(BaseTask):
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+        cell_representation = task_output["cell_representation"]
 
         return [
             MetricResult(
@@ -51,7 +70,7 @@ class BatchIntegrationTask(BaseTask):
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
                     X=cell_representation,
-                    labels=batch_labels,
+                    labels=metric_input.batch_labels,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -60,8 +79,8 @@ class BatchIntegrationTask(BaseTask):
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
                     X=cell_representation,
-                    labels=labels,
-                    batch=batch_labels,
+                    labels=metric_input.labels,
+                    batch=metric_input.batch_labels,
                 ),
             ),
         ]
