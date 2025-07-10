@@ -48,7 +48,7 @@ def nearest_neighbors_hnsw(
     """
     import hnswlib
 
-    if n_neighbors <= data.shape[0]:
+    if n_neighbors > data.shape[0]:
         raise ValueError(
             f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
         )

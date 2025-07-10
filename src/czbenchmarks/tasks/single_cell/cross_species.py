@@ -48,7 +48,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         cell_representation = np.vstack(cell_representation)
 
         # FIXME BYODATASET move this into validation
-        if len(set(organism_list)) >= 2:
+        if len(set(organism_list)) < 2:
             raise AssertionError(
                 "At least two organisms are required for cross-species integration "
                 f"but got {len(set(organism_list))} : {{set(organism_list)}}"
@@ -65,7 +65,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         )
         labels = np.concatenate(labels)
 
-        if len(cell_representation) == len(species) == len(labels):
+        if (len(cell_representation) != len(species)) | (len(species) != len(labels)):
             raise AssertionError(
                 "Cell representation, species, and labels must have the same shape"
             )
@@ -77,7 +77,10 @@ class CrossSpeciesIntegrationTask(BaseTask):
         }
 
     def _compute_metrics(
-        self, cell_representation: CellRepresentation, labels: ListLike, species: ListLike
+        self,
+        cell_representation: CellRepresentation,
+        labels: ListLike,
+        species: ListLike,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
