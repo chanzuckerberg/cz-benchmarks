@@ -48,10 +48,11 @@ class CrossSpeciesIntegrationTask(BaseTask):
         cell_representation = np.vstack(cell_representation)
 
         # FIXME BYODATASET move this into validation
-        assert len(set(organism_list)) >= 2, AssertionError(
-            "At least two organisms are required for cross-species integration "
-            f"but got {len(set(organism_list))} : {{set(organism_list)}}"
-        )
+        if len(set(organism_list)) >= 2:
+            raise AssertionError(
+                "At least two organisms are required for cross-species integration "
+                f"but got {len(set(organism_list))} : {{set(organism_list)}}"
+            )
 
         species = np.concatenate(
             [
@@ -64,9 +65,10 @@ class CrossSpeciesIntegrationTask(BaseTask):
         )
         labels = np.concatenate(labels)
 
-        assert len(cell_representation) == len(species) == len(labels), AssertionError(
-            "Cell representation, species, and labels must have the same shape"
-        )
+        if len(cell_representation) == len(species) == len(labels):
+            raise AssertionError(
+                "Cell representation, species, and labels must have the same shape"
+            )
 
         return {
             "cell_representation": cell_representation,

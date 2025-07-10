@@ -48,9 +48,10 @@ def nearest_neighbors_hnsw(
     """
     import hnswlib
 
-    assert n_neighbors <= data.shape[0], ValueError(
-        f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
-    )
+    if n_neighbors <= data.shape[0]:
+        raise ValueError(
+            f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
+        )
     sample_indices = np.arange(data.shape[0])
     index = hnswlib.Index(space="l2", dim=data.shape[1])
     index.init_index(
