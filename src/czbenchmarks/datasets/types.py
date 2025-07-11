@@ -60,7 +60,7 @@ if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
 
 # TODO: may want to expand this to include subtypes: GeneExpression, Embedding, CellImage, etc.
 CellRepresentation = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
-# NB: Sequence does not include numpy.ndarray or pandas.Series
-ListLike = Union[Sequence, np.ndarray, pd.Series]
+# NB: Sequence does not include numpy or pandas objects
+ListLike = Union[Sequence, np.ndarray, pd.Series, pd.Index]
 
 DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]
