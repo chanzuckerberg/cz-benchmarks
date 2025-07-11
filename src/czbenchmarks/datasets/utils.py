@@ -4,10 +4,9 @@ from hydra.utils import instantiate
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
-from czbenchmarks.utils import download_file_from_remote, initialize_hydra
+from czbenchmarks.utils import initialize_hydra
+from czbenchmarks.file_utils import download_file_from_remote
 from .base import BaseDataset
-from czbenchmarks.constants import DATASETS_CACHE_PATH
-from pathlib import Path
 import logging
 
 log = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
 
     # Handle local caching and remote downloading
-    dataset_path = _handle_dataset_path(dataset_info["path"])
+    dataset_path = download_file_from_remote(dataset_info["path"])
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
@@ -68,24 +67,25 @@ def load_dataset(
     return dataset
 
 
-def _handle_dataset_path(remote_path: str) -> str:
-    """
-    Handle dataset path by checking local cache or downloading from remote sources.
+# def _handle_dataset_path(remote_path: str) -> str:
+#     """
+#     Handle dataset path by checking local cache or downloading from remote sources.
 
-    Args:
-        remote_path: Remote path (e.g., S3 URL) of the dataset.
+#     Args:
+#         remote_path: Remote path (e.g., S3 URL) of the dataset.
 
-    Returns:
-        str: Local path to the dataset file.
-    """
-    cache_dir = Path(DATASETS_CACHE_PATH).expanduser()
-    local_path = cache_dir / Path(remote_path).name
+#     Returns:
+#         str: Local path to the dataset file.
+#     """
+#     cache_dir = Path(DATASETS_CACHE_PATH).expanduser()
+#     local_path = cache_dir / Path(remote_path).name
 
-    # Check if the dataset is already cached locally
-    if local_path.exists():
-        log.info(f"Dataset available in local cache: {local_path}")
-        return str(local_path)
+#     # Check if the dataset is already cached locally
+#     if local_path.exists():
+#         log.info(f"Dataset available in local cache: {local_path}")
+#         return str(local_path)
 
+<<<<<<< HEAD
     # Download the dataset if it's not cached
     if remote_path.startswith("s3://"):
         log.info(f"Downloading dataset from S3: {remote_path} to {local_path}")
@@ -93,8 +93,16 @@ def _handle_dataset_path(remote_path: str) -> str:
         download_file_from_remote(remote_path, local_path.parent)
     else:
         raise ValueError(f"Unsupported remote path: {remote_path}")
+=======
+#     # Download the dataset if it's not cached
+#     if remote_path.startswith("s3://"):
+#         log.info(f"Downloading dataset from S3: {remote_path} to {local_path}")
+>>>>>>> e342dba (cache implemented. created file_utils)
 
-    return str(local_path)
+#     else:
+#         raise ValueError(f"Unsupported remote path: {remote_path}")
+
+#     return str(local_path)
 
 
 def list_available_datasets() -> List[str]:

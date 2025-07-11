@@ -9,7 +9,10 @@ from czbenchmarks.datasets.utils import load_dataset
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    # dataset = load_dataset("tsv2_lung")
+    # dataset = load_dataset("tsv2_bladder")
     dataset = load_dataset("tsv2_prostate")
+    print(dataset.adata)
 
     # task = ClusteringTask(label_key="cell_type")
     # clustering_results = task.run(dataset)
