@@ -637,27 +637,11 @@ def try_processed_datasets_cache(
                 "Skipping download."
             )
         else:
-            try:
-                utils.download_file_from_remote(remote_url, cache_dir)
-                log.info(
-                    f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
-                )
-            except exceptions.RemoteStorageError:
-                # not a great way to handle this, but maybe the cache bucket is not public
-                try:
-                    log.warning(
-                        "Unsigned request to remote storage cache failed. Trying signed request."
-                    )
-                    utils.download_file_from_remote(
-                        remote_url, cache_dir, make_unsigned_request=False
-                    )
-                    log.info(
-                        f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
-                    )
-                except exceptions.RemoteStorageError:
-                    log.warning(
-                        f"Unable to retrieve embeddings from remote cache at {remote_url!r}"
-                    )
+            utils.download_file_from_remote(remote_url, cache_dir)
+            log.info(
+                f"Downloaded cached embeddings from {remote_url} to {cache_dir}"
+            )
+            
 
     if cache_file.exists():
         # Load the original dataset

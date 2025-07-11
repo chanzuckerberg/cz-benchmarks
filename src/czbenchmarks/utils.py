@@ -235,7 +235,7 @@ def download_file_from_remote(
     local_filename: str | None = None,
     make_unsigned_request: bool = True,
 ) -> None:  # pragma: no cover
-    """Download a remote file from s3 to a local directory, preserving the filename if not specified"""
+    """Download a remote file from s3 to a local directory, preserving the filename if not specified. Fallback to signed request if unsigned fails."""
     try:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
     except ValueError:
@@ -252,7 +252,16 @@ def download_file_from_remote(
     s3 = _get_s3_client(make_unsigned_request)
     try:
         s3.download_file(bucket, remote_key, str(local_file))
+    except botocore.exceptions.RemoteStorageError:
+        if not make_unsigned_request:
+            raise
+        logger.warning(
+            "f{Unsigned request to remote storage cache failed. Trying signed request."
+        )
+        download_file_from_remote(
+            remote_url, local_directory, local_filename, make_unsigned_request=False)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         raise RemoteStorageError(
             f"Failed to download 's3://{bucket}/{remote_key}' to {local_file!r}"
         ) from e
+        
