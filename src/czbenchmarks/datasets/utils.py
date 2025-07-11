@@ -90,7 +90,7 @@ def _handle_dataset_path(remote_path: str) -> str:
     if remote_path.startswith("s3://"):
         log.info(f"Downloading dataset from S3: {remote_path} to {local_path}")
         
-        download_file_from_remote(remote_path, local_path)
+        download_file_from_remote(remote_path, local_path.parent)
     else:
         raise ValueError(f"Unsupported remote path: {remote_path}")
 
