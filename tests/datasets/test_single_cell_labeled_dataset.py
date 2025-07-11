@@ -51,4 +51,46 @@ class TestSingleCellLabeledDataset(SingleCellDatasetTests):
         cell_types = pd.read_json(output_file, typ="series")
         assert not cell_types.empty
         assert all(cell_type in cell_types.values for cell_type in ["type_0", "type_1", "type_2"])
+
+    @pytest.fixture
+    def custom_label_dataset_file(self, tmp_path) -> Path:
+        """Fixture to provide a SingleCellLabeledDataset H5AD file with custom label column."""
+        
+        file_path = tmp_path / "dummy_custom_label.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=5,
+            n_genes=3,
+            obs_columns=["annotation"],
+            organism=Organism.HUMAN,
+        )
+        adata.write_h5ad(file_path)
+
+        return file_path
+
+    def test_single_cell_labeled_dataset_custom_label_column_key(self, custom_label_dataset_file):
+        """Test that SingleCellLabeledDataset uses custom label_column_key parameter."""
+        dataset_file = custom_label_dataset_file
+        
+        # Test with custom label column key
+        dataset = SingleCellLabeledDataset(
+            path=dataset_file, 
+            organism=Organism.HUMAN, 
+            label_column_key="annotation"
+        )
+        
+        dataset.load_data()
+        
+        # Verify that the labels are extracted from the custom column
+        assert dataset.label_column_key == "annotation"
+        assert "annotation" in dataset.adata.obs.columns
+        assert len(dataset.labels) == 5
+        assert all(label.startswith("annotation_") for label in dataset.labels)
+        
+        # Test validation passes with custom column
+        dataset.validate()
+        
+        # Test that validation fails when custom column is missing
+        dataset.adata.obs.drop(columns=["annotation"], inplace=True)
+        with pytest.raises(ValueError, match="Dataset does not contain 'annotation' column in obs."):
+            dataset.validate()
         

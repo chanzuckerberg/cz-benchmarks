@@ -11,22 +11,25 @@ logger = logging.getLogger(__name__)
 
 
 class SingleCellLabeledDataset(SingleCellDataset):
-    """Single cell dataset containing gene expression data and "cell_type" obs label column for cells."""
+    """Single cell dataset containing gene expression data and a label column containing the expected prediction values for each cell."""
     
     labels: pd.Series
+    label_column_key: str
 
     def __init__(
         self,
         path: Path,
         organism: Organism,
+        label_column_key: str = "cell_type",
         task_inputs_dir: Optional[Path] = None,
     ):
         super().__init__("single_cell_labeled", path, organism, task_inputs_dir)
+        self.label_column_key = label_column_key
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
         super().load_data()
-        self.labels = self.adata.obs["cell_type"]
+        self.labels = self.adata.obs[self.label_column_key]
 
     def store_task_inputs(self) -> Path:
         """Store task-specific inputs, such as cell type annotations."""
@@ -43,5 +46,5 @@ class SingleCellLabeledDataset(SingleCellDataset):
         super()._validate()
 
         # TODO: This check needs to occur after loading the data, but before task inputs are extracted.
-        if "cell_type" not in self.adata.obs.columns:
-            raise ValueError("Dataset does not contain 'cell_type' column in obs.")
+        if self.label_column_key not in self.adata.obs.columns:
+            raise ValueError(f"Dataset does not contain '{self.label_column_key}' column in obs.")
