@@ -48,7 +48,7 @@ class BaseDataset(ABC):
 
         if not os.path.exists(self.path):
             raise ValueError("Dataset path does not exist")
-        
+
         organism_list = [member.value[0] for member in Organism]
         if str(self.organism) not in organism_list:
             raise ValueError("Organism is not a valid Organism enum")

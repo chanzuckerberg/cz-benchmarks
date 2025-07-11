@@ -83,10 +83,3 @@ After `release-please.yml` finishes publishing a new release, this workflow will
 
 The documentation is automatically updated whenever a new release is published, ensuring that the online documentation always matches the latest released version. The workflow can also be triggered manually through the GitHub Actions interface for testing purposes.
 
-## Building Model Images
-
-After `release-please.yml` finishes publishing a new release, this workflow will also be triggered (like `publish-pypy.yml`).
-
-This action will:
-
-- Build images of the models and push them to a private ECR repo that is publicly readable.

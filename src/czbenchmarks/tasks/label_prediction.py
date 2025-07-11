@@ -305,4 +305,20 @@ class MetadataLabelPredictionTask(BaseTask):
     def compute_baseline(
         self, cell_representation: CellRepresentation, **kwargs
     ) -> CellRepresentation:
-        raise NotImplementedError
+        """Set a baseline cell representation using raw gene expression.
+
+        Instead of using embeddings from a model, this method uses the raw gene
+        expression matrix as features for classification. This provides a baseline
+        performance to compare against model-generated embeddings for classification
+        tasks.
+
+        Args:
+            cell_representation: gene expression data or embedding
+
+        Returns:
+            Baseline embedding
+        """
+        # Convert sparse matrix to dense if needed
+        if sp.sparse.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
+        return cell_representation

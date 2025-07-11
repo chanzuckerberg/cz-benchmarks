@@ -95,12 +95,11 @@ Mac requires an additional dependency, `hnswlib`, which should be installed with
 3. **Memory Errors**  
     Reduce the dataset size or process the data in smaller batches during inference.
 
-4. **Dataset or Model Not Found**  
+4. **Dataset Not Found**  
     Use the `list` commands to verify available datasets and models:
 
     ```bash
     czbenchmarks list datasets
-    czbenchmarks list models
     ```
 
 5. **Dependency Conflicts**  

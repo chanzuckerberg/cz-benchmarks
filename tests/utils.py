@@ -103,7 +103,7 @@ def create_dummy_perturbation_anndata(
     test_conditions = set(
         adata.obs[condition_column][adata.obs[split_column] == "test"]
     )
-    
+
     pert_truth = {
         str(condition): pd.DataFrame(
             data=adata[conditions == condition].X.toarray(),

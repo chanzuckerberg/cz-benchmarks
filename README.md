@@ -21,7 +21,6 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 
 ### How-To Guides
 - [Add a Custom Dataset](docs/source/how_to_guides/add_custom_dataset.md)
-- [Add a Custom Model](docs/source/how_to_guides/add_custom_model.md)
 - [Add a New Metric](docs/source/how_to_guides/add_new_metric.md)
 - [Add a New Task](docs/source/how_to_guides/add_new_task.md)
 - [Interactive Mode](docs/source/how_to_guides/interactive_mode.md)
@@ -30,7 +29,6 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 ### Developer Guides
 - [Datasets](docs/source/developer_guides/datasets.md)
 - [Metrics](docs/source/developer_guides/metrics.md)
-- [Models](docs/source/developer_guides/models.md)
 - [Tasks](docs/source/developer_guides/tasks.md)
 - [Debugging](docs/source/developer_guides/debugging.md)
 - [Release Process](docs/source/developer_guides/release_process.md)

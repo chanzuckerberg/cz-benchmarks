@@ -131,7 +131,7 @@ def aggregate_task_results(results: typing.Iterable[TaskResult]) -> list[TaskRes
         aggregated_result = TaskResult(
             task_name=first_result.task_name,
             task_name_display=first_result.task_name_display,
-            model=first_result.model,
+            # model=first_result.model,
             datasets=first_result.datasets,
             metrics=aggregated_metrics,
             runtime_metrics={},

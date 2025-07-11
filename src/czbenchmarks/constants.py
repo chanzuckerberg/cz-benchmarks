@@ -18,6 +18,7 @@ MODEL_WEIGHTS_CACHE_PATH = os.environ.get(
 # Constants
 RANDOM_SEED = 42
 
+
 # Derived constants
 def get_numbered_path(base_path: str, index: int) -> str:
     """

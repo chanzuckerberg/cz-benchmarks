@@ -7,21 +7,22 @@ from pydantic import BaseModel, computed_field
 
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.metrics.types import AggregatedMetricResult, MetricResult
-from czbenchmarks.models.types import ModelType
-from czbenchmarks.models import utils as model_utils
+
+# from czbenchmarks.models.types import ModelType
+# from czbenchmarks.models import utils as model_utils
 from czbenchmarks.tasks.base import BaseTask
 
 
 TaskType = TypeVar("TaskType", bound=BaseTask)
-ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
+# ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
 RuntimeMetricsDict = dict[
     str, str | int | float
 ]  # runtime metrics like elapsed time or CPU count, not implemented yet
 
 
-class ModelArgs(BaseModel):
-    name: str  # Upper-case model name e.g. SCVI
-    args: dict[str, list[str | int]]  # Args forwarded to the model container
+# class ModelArgs(BaseModel):
+#     name: str  # Upper-case model name e.g. SCVI
+#     args: dict[str, list[str | int]]  # Args forwarded to the model container
 
 
 class TaskArgs(BaseModel, Generic[TaskType]):
@@ -51,29 +52,24 @@ class DatasetDetail(BaseModel):
         return self._display_info[1]
 
 
-class ModelDetail(BaseModel):
-    type: ModelType
-    args: ModelArgsDict
+# class ModelDetail(BaseModel):
+#     # type: ModelType
+#     args: ModelArgsDict
 
-    @cached_property
-    def _display_info(self) -> tuple[str, str]:
-        return model_utils.model_to_display(self.type, self.args)
+#     # @cached_property
+#     # def _display_info(self) -> tuple[str, str]:
+#     #     return model_utils.model_to_display(self.type, self.args)
 
-    @computed_field
-    @property
-    def name_display(self) -> str:
-        return self._display_info[0]
-
-    @computed_field
-    @property
-    def variant_display(self) -> str:
-        return self._display_info[1]
+#     @computed_field
+#     @property
+#     def name_display(self) -> str:
+#         return self._display_info[0]
 
 
 class TaskResult(BaseModel):
     task_name: str
     task_name_display: str
-    model: ModelDetail
+    # model: ModelDetail
     datasets: list[DatasetDetail]
     metrics: list[MetricResult | AggregatedMetricResult]
     runtime_metrics: RuntimeMetricsDict = {}  # not implementing any of these for now
