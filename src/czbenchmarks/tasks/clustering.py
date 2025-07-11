@@ -16,6 +16,13 @@ from .types import TaskInput, MetricInput
 logger = logging.getLogger(__name__)
 
 
+__all__ = [
+    "ClusteringTaskInput",
+    "ClusteringMetricInput",
+    "ClusteringTask",
+]
+
+
 class ClusteringTaskInput(TaskInput):
     obs: pd.DataFrame
     var: pd.DataFrame

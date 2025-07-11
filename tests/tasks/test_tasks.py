@@ -2,37 +2,29 @@ import pytest
 import pandas as pd
 
 import anndata as ad
-from czbenchmarks.tasks.clustering import (
+from czbenchmarks.tasks import (
     ClusteringTask,
     ClusteringTaskInput,
     ClusteringMetricInput,
-)
-from czbenchmarks.tasks.embedding import (
     EmbeddingTask,
     EmbeddingTaskInput,
     EmbeddingMetricInput,
-)
-from czbenchmarks.tasks.integration import (
     BatchIntegrationTask,
     BatchIntegrationTaskInput,
     BatchIntegrationMetricInput,
-)
-from czbenchmarks.tasks.label_prediction import (
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
     MetadataLabelPredictionMetricInput,
 )
-from czbenchmarks.tasks.single_cell.cross_species import (
+from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
     CrossSpeciesIntegrationMetricInput,
-)
-
-from czbenchmarks.tasks.single_cell.perturbation import (
     PerturbationTask,
     PerturbationTaskInput,
     PerturbationMetricInput,
 )
+
 from czbenchmarks.datasets.types import (
     Organism,
     CellRepresentation,

@@ -11,6 +11,13 @@ from .types import TaskInput, MetricInput
 logger = logging.getLogger(__name__)
 
 
+__all__ = [
+    "EmbeddingTaskInput",
+    "EmbeddingMetricInput",
+    "EmbeddingTask",
+]
+
+
 class EmbeddingTaskInput(TaskInput):
     """Pydantic model for EmbeddingTask inputs."""
 

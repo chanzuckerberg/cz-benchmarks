@@ -10,6 +10,13 @@ from ...metrics.types import MetricResult, MetricType
 from ..types import TaskInput, MetricInput
 
 
+__all__ = [
+    "CrossSpeciesIntegrationTaskInput",
+    "CrossSpeciesIntegrationMetricInput",
+    "CrossSpeciesIntegrationTask",
+]
+
+
 class CrossSpeciesIntegrationTaskInput(TaskInput):
     """Pydantic model for CrossSpeciesIntegrationTask inputs."""
 

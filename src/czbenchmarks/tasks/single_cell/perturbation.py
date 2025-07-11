@@ -15,6 +15,13 @@ from ..types import TaskInput, MetricInput
 logger = logging.getLogger(__name__)
 
 
+__all__ = [
+    "PerturbationTaskInput",
+    "PerturbationMetricInput",
+    "PerturbationTask",
+]
+
+
 class PerturbationTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 

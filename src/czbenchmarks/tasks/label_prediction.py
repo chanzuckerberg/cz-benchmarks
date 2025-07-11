@@ -29,6 +29,13 @@ from .types import TaskInput, MetricInput
 logger = logging.getLogger(__name__)
 
 
+__all__ = [
+    "MetadataLabelPredictionTaskInput",
+    "MetadataLabelPredictionMetricInput",
+    "MetadataLabelPredictionTask",
+]
+
+
 class MetadataLabelPredictionTaskInput(TaskInput):
     """Pydantic model for MetadataLabelPredictionTask inputs."""
 

@@ -11,6 +11,13 @@ from .types import TaskInput, MetricInput
 logger = logging.getLogger(__name__)
 
 
+__all__ = [
+    "BatchIntegrationTaskInput",
+    "BatchIntegrationMetricInput",
+    "BatchIntegrationTask",
+]
+
+
 class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
