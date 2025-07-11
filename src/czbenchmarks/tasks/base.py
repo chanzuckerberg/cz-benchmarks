@@ -86,8 +86,6 @@ class BaseTask(ABC):
     def compute_baseline(
         self,
         expression_data: CellRepresentation,
-        obs: Optional[pd.DataFrame] = None,
-        var: Optional[pd.DataFrame] = None,
         **kwargs,
     ) -> CellRepresentation:
         """Set a baseline embedding using PCA on gene expression data.
@@ -99,14 +97,11 @@ class BaseTask(ABC):
 
         Args:
             expression_data: expression data to use for anndata
-            obs: obs dataframe to use for anndata
-            var: var dataframe to use for anndata
             **kwargs: Additional arguments passed to run_standard_scrna_workflow
         """
 
         # Create the AnnData object
-        # FIXME MICHELLE -- obs var probably not needed, but needs debugging
-        adata = ad.AnnData(X=expression_data)  # , obs=obs, var=var)
+        adata = ad.AnnData(X=expression_data)
 
         # Run the standard preprocessing workflow
         embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)
