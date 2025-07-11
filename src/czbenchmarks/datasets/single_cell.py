@@ -23,7 +23,6 @@ class SingleCellDataset(BaseDataset):
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
-        # FIXME: Update as needed when cache PR is merged
         self.adata = ad.read_h5ad(self.path)
 
     def cache_data(self, cache_path: str) -> None:
