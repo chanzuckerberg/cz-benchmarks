@@ -8,9 +8,12 @@ from .types import Organism
 
 class Dataset(ABC):
     """
-    A base class for task-specific datasets. Each concrete Dataset class will extract the data required for a specific type of task from the provided input file. These task specific data items can then be retrieved as object instance variables or written to files for later use.
-    
-    Each concrete Dataset class should implement the `load_data` method to load the data from the input file, and the `store_task_inputs` method to store the task-specific inputs that have been extracted from the dataset.
+    A base class for task-specific datasets. Each concrete Dataset class will extract the data required for a specific
+    type of task from the provided input file and store in subclass-determined instance variables. These task specific
+    data items can then be retrieved as object instance variables or written to files for later use. All Dataset objects
+    specify an `Organism` enum value to indicate the organism from which the data was derived. Each concrete Dataset
+    class should implement the `load_data` method to load the data from the input file, and the `store_task_inputs`
+    method to store the task-specific inputs that have been extracted from the dataset.
     """
     
     path: Path
