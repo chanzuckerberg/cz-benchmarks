@@ -300,35 +300,39 @@ class PerturbationTask(BaseTask):
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top20,
-                    params={"subset": "top20_de"},
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top20,
-                    params={"subset": "top20_de"},
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=mean_squared_error_metric,
                     value=mse_top100,
-                    params={"subset": "top100_de"},
+                    params={"subset": "top100"},
                 ),
                 MetricResult(
                     metric_type=pearson_correlation_metric,
                     value=delta_pearson_corr_top100,
-                    params={"subset": "top100_de"},
+                    params={"subset": "top100"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top20,
-                    params={"subset": "top20_de"},
+                    params={"subset": "top20"},
                 ),
                 MetricResult(
                     metric_type=jaccard_metric,
                     value=jaccard_top100,
-                    params={"subset": "top100_de"},
+                    params={"subset": "top100"},
                 ),
             ]
-        return []
+        else:
+            raise ValueError(
+                f"Perturbation {gene_pert} is not available in the ground truth "
+                "test perturbations."
+            )
 
     @staticmethod
     def compute_baseline(
@@ -336,7 +340,7 @@ class PerturbationTask(BaseTask):
         var_names: ListLike,
         obs_names: ListLike,
         baseline_type: Literal["median", "mean"] = "median",
-    ) -> pd.DataFrame:
+    ) -> CellRepresentation:
         """Set a baseline perturbation prediction using mean or median expression.
 
         This method creates a baseline prediction by either taking the mean or
@@ -352,17 +356,20 @@ class PerturbationTask(BaseTask):
         Returns:
             A DataFrame representing the baseline perturbation prediction.
         """
-        if baseline_type == "mean":
-            baseline_embedding = np.mean(cell_representation, axis=0)
-        elif baseline_type == "median":
-            if sp.sparse.issparse(cell_representation):
-                cell_representation = cell_representation.toarray()
-            baseline_embedding = np.median(cell_representation, axis=0)
-        else:
-            raise ValueError("Invalid baseline type specified")
+        # Create baseline prediction by replicating the aggregated expression values
+        # across all cells in the dataset.
+        baseline_func = np.median if baseline_type == "median" else np.mean
+        if baseline_type == "median" and sp.sparse.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
 
-        return pd.DataFrame(
-            data=np.tile(baseline_embedding, (len(obs_names), 1)),
-            index=obs_names,
-            columns=var_names,
+        perturb_baseline_pred = pd.DataFrame(
+            np.tile(
+                baseline_func(cell_representation, axis=0),
+                (cell_representation.shape[0], 1),
+            ),
+            columns=var_names,  # Use gene names from the dataset
+            index=obs_names,  # Use cell names from the dataset
         )
+
+        # Store the baseline prediction in the dataset for evaluation
+        return perturb_baseline_pred
