@@ -38,6 +38,7 @@ class ClusteringMetricInput(MetricInput):
 
 class ClusteringOutput(TaskOutput):
     """Output for clustering task."""
+
     predicted_labels: List[int]  # Predicted cluster labels
 
 

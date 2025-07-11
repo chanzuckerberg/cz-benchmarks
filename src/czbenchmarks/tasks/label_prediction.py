@@ -54,6 +54,7 @@ class MetadataLabelPredictionMetricInput(MetricInput):
 
 class MetadataLabelPredictionOutput(TaskOutput):
     """Output for label prediction task."""
+
     results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
 
 
@@ -181,7 +182,9 @@ class MetadataLabelPredictionTask(BaseTask):
         return MetadataLabelPredictionOutput(results=results)
 
     def _compute_metrics(
-        self, task_output: MetadataLabelPredictionOutput, metric_input: MetadataLabelPredictionMetricInput
+        self,
+        task_output: MetadataLabelPredictionOutput,
+        metric_input: MetadataLabelPredictionMetricInput,
     ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 

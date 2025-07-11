@@ -33,6 +33,7 @@ class CrossSpeciesIntegrationMetricInput(MetricInput):
 
 class CrossSpeciesIntegrationOutput(TaskOutput):
     """Output for cross-species integration task."""
+
     cell_representation: CellRepresentation
     labels: ListLike
     species: ListLike
@@ -89,16 +90,12 @@ class CrossSpeciesIntegrationTask(BaseTask):
                     str(organism),
                 ]
                 * len(label)
-                for organism, label in zip(
-                    task_input.organism_list, task_input.labels
-                )
+                for organism, label in zip(task_input.organism_list, task_input.labels)
             ]
         )
         labels = np.concatenate(task_input.labels)
 
-        if (len(cell_representation) != len(species)) or (
-            len(species) != len(labels)
-        ):
+        if (len(cell_representation) != len(species)) or (len(species) != len(labels)):
             raise AssertionError(
                 "Cell representation, species, and labels must have the same shape"
             )

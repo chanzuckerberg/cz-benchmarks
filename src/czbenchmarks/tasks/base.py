@@ -133,7 +133,9 @@ class BaseTask(ABC):
             error_message = "This task requires a list of cell representations"
             if not isinstance(cell_representation, list):
                 raise ValueError(error_message)
-            if not all([isinstance(emb, CellRepresentation) for emb in cell_representation]):
+            if not all(
+                [isinstance(emb, CellRepresentation) for emb in cell_representation]
+            ):
                 raise ValueError(error_message)
             if len(cell_representation) < 2:
                 raise ValueError(f"{error_message} but only one was provided")

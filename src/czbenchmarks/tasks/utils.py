@@ -24,8 +24,7 @@ TASK_NAMES = frozenset(
 )
 
 
-# TODO: Later we can add cluster parameters as kwargs here and add them
-# to the task config
+# TODO: Add cluster parameters as kwargs here and add to task config
 def cluster_embedding(
     adata: AnnData,
     n_iterations: int = 2,
@@ -144,5 +143,5 @@ def run_standard_scrna_workflow(
 
     # Run PCA for dimensionality reduction
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
-    
+
     return adata.obsm[obsm_key]

@@ -33,6 +33,7 @@ class EmbeddingMetricInput(MetricInput):
 
 class EmbeddingOutput(TaskOutput):
     """Output for embedding task."""
+
     cell_representation: CellRepresentation  # The cell representation matrix
 
 

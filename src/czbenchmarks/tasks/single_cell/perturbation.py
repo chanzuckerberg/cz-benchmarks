@@ -40,6 +40,7 @@ class PerturbationMetricInput(MetricInput):
 
 class PerturbationOutput(TaskOutput):
     """Output for perturbation task."""
+
     perturbation_ctrl: CellRepresentation
     avg_perturbation_ctrl: pd.Series
 
@@ -176,9 +177,7 @@ class PerturbationTask(BaseTask):
             )
 
             # Store the results for later use if needed
-            de_results_pred = sc.get.rank_genes_groups_df(
-                adata_ctrl_pred, group="pred"
-            )
+            de_results_pred = sc.get.rank_genes_groups_df(adata_ctrl_pred, group="pred")
             de_results_truth = sc.get.rank_genes_groups_df(
                 adata_ctrl_truth, group="truth"
             )

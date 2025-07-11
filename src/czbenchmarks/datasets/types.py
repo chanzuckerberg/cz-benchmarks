@@ -7,6 +7,7 @@ from omegaconf import OmegaConf
 import scipy.sparse as sp
 from collections.abc import Sequence
 
+
 class Organism(Enum):
     HUMAN = ("homo_sapiens", "ENSG")
     MOUSE = ("mus_musculus", "ENSMUSG")

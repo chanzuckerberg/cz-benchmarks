@@ -34,6 +34,7 @@ class BatchIntegrationMetricInput(MetricInput):
 
 class BatchIntegrationOutput(TaskOutput):
     """Output for batch integration task."""
+
     cell_representation: CellRepresentation  # The cell representation matrix
 
 
@@ -68,7 +69,9 @@ class BatchIntegrationTask(BaseTask):
         return BatchIntegrationOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
-        self, task_output: BatchIntegrationOutput, metric_input: BatchIntegrationMetricInput
+        self,
+        task_output: BatchIntegrationOutput,
+        metric_input: BatchIntegrationMetricInput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
