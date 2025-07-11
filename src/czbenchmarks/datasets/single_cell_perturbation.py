@@ -1,7 +1,6 @@
 from typing import Dict, Optional
 import io
 from pathlib import Path
-from annotated_types import T
 import numpy as np
 import pandas as pd
 from czbenchmarks.datasets.single_cell import SingleCellDataset

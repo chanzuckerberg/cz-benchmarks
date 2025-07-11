@@ -1,4 +1,3 @@
-from operator import inv
 from pathlib import Path
 import re
 import pandas as pd
