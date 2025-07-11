@@ -41,9 +41,10 @@ class BatchIntegrationTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "batch integration"
+
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.display_name = "batch integration"
 
     def _run_task(
         self,

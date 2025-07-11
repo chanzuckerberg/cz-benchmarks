@@ -45,13 +45,14 @@ class ClusteringTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "clustering"
+
     def __init__(
         self,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
-        self.display_name = "clustering"
 
     def _run_task(
         self,

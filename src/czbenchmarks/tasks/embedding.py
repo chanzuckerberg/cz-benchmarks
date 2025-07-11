@@ -40,9 +40,10 @@ class EmbeddingTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "embedding"
+
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.display_name = "embedding"
 
     def _run_task(
         self, cell_representation: CellRepresentation, task_input: EmbeddingTaskInput

@@ -41,9 +41,10 @@ class CrossSpeciesIntegrationTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "cross-species integration"
+
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.display_name = "cross-species integration"
         self.requires_multiple_datasets = True
 
     def _run_task(

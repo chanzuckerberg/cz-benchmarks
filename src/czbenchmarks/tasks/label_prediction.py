@@ -60,13 +60,14 @@ class MetadataLabelPredictionTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "metadata label prediction"
+
     def __init__(
         self,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
-        self.display_name = "metadata label prediction"
 
     def _run_task(
         self,

@@ -44,9 +44,10 @@ class PerturbationTask(BaseTask):
     effects using MSE and correlation metrics.
     """
 
+    display_name = "perturbation"
+
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.display_name = "perturbation"
 
     def _run_task(
         self,
