@@ -25,7 +25,6 @@ __all__ = [
 
 class ClusteringTaskInput(TaskInput):
     obs: pd.DataFrame
-    var: pd.DataFrame
     use_rep: str = "X"
     n_iterations: int = N_ITERATIONS
     flavor: Literal["leidenalg", "igraph"] = FLAVOR
@@ -70,7 +69,8 @@ class ClusteringTask(BaseTask):
 
         # Create the AnnData object
         adata = ad.AnnData(
-            X=cell_representation, obs=task_input.obs, var=task_input.var
+            X=cell_representation,
+            obs=task_input.obs,
         )
 
         predicted_labels = cluster_embedding(

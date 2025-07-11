@@ -188,7 +188,7 @@ def test_embedding_invalid_input(fixture_data):
     [
         (
             ClusteringTask,
-            lambda obs, var: ClusteringTaskInput(obs=obs, var=var),
+            lambda obs, var: ClusteringTaskInput(obs=obs),
             lambda obs: ClusteringMetricInput(input_labels=obs["cell_type"]),
         ),
         (
