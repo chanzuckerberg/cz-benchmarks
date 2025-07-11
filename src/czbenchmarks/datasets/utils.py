@@ -17,15 +17,26 @@ def load_dataset(
     config_path: Optional[str] = None,
 ) -> BaseDataset:
     """
-    Download and instantiate a dataset using Hydra configuration.
+    Loads, downloads (if needed), and instantiates a dataset using Hydra configuration.
 
     Args:
-        dataset_name: Name of dataset as specified in config
-        config_path: Optional path to config yaml file. If not provided,
-                    will use only the package's default config.
+        dataset_name (str): Name of the dataset as specified in the configuration.
+        config_path (Optional[str]): Optional path to a custom config YAML file. If not provided,
+            only the package's default config is used.
+
     Returns:
-        BaseDataset: Instantiated dataset object
+        BaseDataset: Instantiated dataset object with data loaded.
+
+    Raises:
+        FileNotFoundError: If the custom config file does not exist.
+        ValueError: If the specified dataset is not found in the configuration.
+
+    Notes:
+        - Merges custom config with default config if provided.
+        - Downloads dataset file if remote path is specified.
+        - Uses Hydra for instantiation and configuration management.
     """
+
     initialize_hydra()
 
     # Load default config first and make it unstructured
@@ -67,50 +78,16 @@ def load_dataset(
     return dataset
 
 
-# def _handle_dataset_path(remote_path: str) -> str:
-#     """
-#     Handle dataset path by checking local cache or downloading from remote sources.
-
-#     Args:
-#         remote_path: Remote path (e.g., S3 URL) of the dataset.
-
-#     Returns:
-#         str: Local path to the dataset file.
-#     """
-#     cache_dir = Path(DATASETS_CACHE_PATH).expanduser()
-#     local_path = cache_dir / Path(remote_path).name
-
-#     # Check if the dataset is already cached locally
-#     if local_path.exists():
-#         log.info(f"Dataset available in local cache: {local_path}")
-#         return str(local_path)
-
-<<<<<<< HEAD
-    # Download the dataset if it's not cached
-    if remote_path.startswith("s3://"):
-        log.info(f"Downloading dataset from S3: {remote_path} to {local_path}")
-        
-        download_file_from_remote(remote_path, local_path.parent)
-    else:
-        raise ValueError(f"Unsupported remote path: {remote_path}")
-=======
-#     # Download the dataset if it's not cached
-#     if remote_path.startswith("s3://"):
-#         log.info(f"Downloading dataset from S3: {remote_path} to {local_path}")
->>>>>>> e342dba (cache implemented. created file_utils)
-
-#     else:
-#         raise ValueError(f"Unsupported remote path: {remote_path}")
-
-#     return str(local_path)
-
-
 def list_available_datasets() -> List[str]:
     """
-    Lists all available datasets defined in the datasets.yaml configuration file.
+    Returns a sorted list of all dataset names defined in the datasets.yaml Hydra configuration.
 
     Returns:
-        list: A sorted list of dataset names available in the configuration.
+        List[str]: Alphabetically sorted list of available dataset names.
+
+    Notes:
+        - Loads configuration using Hydra.
+        - Extracts dataset names from the 'datasets' section of the config.
     """
     initialize_hydra()
 
