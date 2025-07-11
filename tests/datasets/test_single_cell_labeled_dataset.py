@@ -46,7 +46,7 @@ class TestSingleCellLabeledDataset(SingleCellDatasetTests):
         
         valid_dataset.store_task_inputs()
 
-        output_file = tmp_path / "dummy_task_inputs" / "single_cell_labeled" / "cell_types.json"
+        output_file = tmp_path / "dummy_task_inputs" / "single_cell_labeled" / "labels_cell_type.json"
         assert output_file.exists()
         cell_types = pd.read_json(output_file, typ="series")
         assert not cell_types.empty
@@ -88,6 +88,14 @@ class TestSingleCellLabeledDataset(SingleCellDatasetTests):
         
         # Test validation passes with custom column
         dataset.validate()
+        
+        # Test that store_task_inputs creates file with custom label column name
+        dataset.store_task_inputs()
+        output_file = dataset.task_inputs_dir / "labels_annotation.json"
+        assert output_file.exists()
+        labels = pd.read_json(output_file, typ="series")
+        assert not labels.empty
+        assert all(label.startswith("annotation_") for label in labels.values)
         
         # Test that validation fails when custom column is missing
         dataset.adata.obs.drop(columns=["annotation"], inplace=True)

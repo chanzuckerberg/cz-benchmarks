@@ -37,7 +37,8 @@ class SingleCellLabeledDataset(SingleCellDataset):
         buffer = io.StringIO()
         self.labels.to_json(buffer)
 
-        self._store_task_input("cell_types.json", buffer.getvalue())
+        filename = f"labels_{self.label_column_key}.json"
+        self._store_task_input(filename, buffer.getvalue())
         return self.task_inputs_dir
 
 
