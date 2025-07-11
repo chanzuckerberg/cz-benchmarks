@@ -19,13 +19,12 @@ class MockDataset(Dataset):
 
     def load_data(self) -> None:
         pass
-    
+
     def store_task_inputs(self):
         pass
 
     def _validate(self) -> None:
         pass
-
 
 
 # Test Cases for BaseDatasetValidator
@@ -85,7 +84,9 @@ class TestDatasetValidator:
 
         validator = ConcreteValidator()
         # Use the actual SingleCellDataset which will cause a type mismatch
-        wrong_dataset = SingleCellLabeledDataset(path=str(tmp_path), organism=Organism.HUMAN)
+        wrong_dataset = SingleCellLabeledDataset(
+            path=str(tmp_path), organism=Organism.HUMAN
+        )
 
         with pytest.raises(ValueError, match="Dataset type mismatch"):
             validator.validate_dataset(wrong_dataset)
@@ -100,7 +101,9 @@ class TestDatasetValidator:
                 pass
 
         validator = ConcreteValidator()
-        dataset = MockDataset(dataset_type_name="mock", path=str(tmp_path), organism=Organism.HUMAN)
+        dataset = MockDataset(
+            dataset_type_name="mock", path=str(tmp_path), organism=Organism.HUMAN
+        )
 
         try:
             validator.validate_dataset(dataset)

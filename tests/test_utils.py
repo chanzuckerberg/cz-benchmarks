@@ -33,7 +33,11 @@ def test_initialize_hydra():
 def test_import_class_from_config(tmp_path):
     """Test importing a class from a configuration file."""
     # Create a temporary config file
-    config = {"_target_": "tests.test_utils.ImportTestClass", "param1": "test", "param2": 42}
+    config = {
+        "_target_": "tests.test_utils.ImportTestClass",
+        "param1": "test",
+        "param2": 42,
+    }
 
     config_path = tmp_path / "test_config.yaml"
     OmegaConf.save(config=config, f=config_path)

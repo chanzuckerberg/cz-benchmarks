@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 class SingleCellDataset(Dataset):
     """
     Abstract base class for single cell datasets containing gene expression data.
-    
+
     Handles loading and validation of AnnData objects with the following requirements:
     - Must have gene names in `adata.var['ensembl_id']`
     - Gene names must start with the organism prefix (e.g., "ENSG" for human)
     - Must contain raw counts in `adata.X` (non-negative integers)
     - Should be stored in H5AD format
     """
-    
+
     adata: ad.AnnData
-    
+
     def __init__(
         self,
         dataset_type_name: str,
@@ -31,7 +31,6 @@ class SingleCellDataset(Dataset):
         task_inputs_dir: Optional[Path] = None,
     ):
         super().__init__(dataset_type_name, path, organism, task_inputs_dir)
-
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
@@ -66,5 +65,3 @@ class SingleCellDataset(Dataset):
                 f" start with {self.organism.prefix} and be stored in either"
                 f" adata.var_names or adata.var['ensembl_id']."
             )
-
-

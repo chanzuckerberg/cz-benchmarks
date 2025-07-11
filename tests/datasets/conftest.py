@@ -5,8 +5,6 @@ from tests.utils import create_dummy_anndata
 from czbenchmarks.datasets.types import Organism
 
 
-
-
 @pytest.fixture
 def invalid_labeled_human_h5ad_wrong_prefix(tmp_path) -> Path:
     """Creates a SingleCellLabeledDataset with invalid gene name prefixes."""
@@ -24,7 +22,5 @@ def invalid_labeled_human_h5ad_wrong_prefix(tmp_path) -> Path:
     adata.var_names = pd.Index(gene_names)
 
     adata.write_h5ad(file_path)
-    
+
     return file_path
-
-

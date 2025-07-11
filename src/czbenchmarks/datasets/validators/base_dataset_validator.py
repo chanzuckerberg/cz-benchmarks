@@ -58,7 +58,6 @@ class BaseDatasetValidator(ABC):
             ValueError: If validation fails
         """
 
-
     def validate_dataset(self, dataset: Dataset):
         """Validate that a dataset meets all requirements.
 

@@ -80,8 +80,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             df.to_json(buffer)
             self._store_task_input(f"perturbation_truths/{key}.json", buffer.getvalue())
         return self.task_inputs_dir
-        
-
 
     # FIXME VALIDATION: move to validation class?
     def _validate(self) -> None:
@@ -95,7 +93,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             raise ValueError(f"Invalid split value(s): {invalid_splits}")
 
         # Validate condition format
-        conditions = set(self.adata.obs[self.condition_key]) | self.perturbation_truth.keys()
+        conditions = (
+            set(self.adata.obs[self.condition_key]) | self.perturbation_truth.keys()
+        )
 
         for condition in conditions:
             if condition == "ctrl":

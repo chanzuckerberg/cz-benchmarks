@@ -15,18 +15,26 @@ class Dataset(ABC):
     class should implement the `load_data` method to load the data from the input file, and the `store_task_inputs`
     method to store the task-specific inputs that have been extracted from the dataset.
     """
-    
+
     path: Path
     task_inputs_dir: Path
     organism: Organism
-    
-    
-    def __init__(self, dataset_type_name: str, path: str|Path, organism: Organism, task_inputs_dir: Optional[Path] = None, **kwargs: Any):
+
+    def __init__(
+        self,
+        dataset_type_name: str,
+        path: str | Path,
+        organism: Organism,
+        task_inputs_dir: Optional[Path] = None,
+        **kwargs: Any,
+    ):
         self.path = Path(path)
         if not self.path.exists():
             raise ValueError("Dataset path does not exist")
 
-        self.task_inputs_dir = task_inputs_dir or (Path(f"{self.path.with_suffix('')}_task_inputs") / dataset_type_name.lower())
+        self.task_inputs_dir = task_inputs_dir or (
+            Path(f"{self.path.with_suffix('')}_task_inputs") / dataset_type_name.lower()
+        )
 
         self.organism = organism
 
@@ -54,22 +62,21 @@ class Dataset(ABC):
         Store the task-specific inputs that have been extracted from the dataset. These files should be stored under the dataset path in a subdirectory who name is keyed to the subclass.
 
         This method should be implemented by subclasses.
-        
+
         Returns:
             Path: The path to the directory storing the task input files.
         """
         pass
 
-    def _store_task_input(self, path: Path|str, data: StringIO) -> None:
+    def _store_task_input(self, path: Path | str, data: StringIO) -> None:
         """
         Store a task input data to a file in a subdirectory of the dataset directory, named after the dataset type.
         """
         output_dir = self.task_inputs_dir / Path(path).parent
         output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         output_file = self.task_inputs_dir / path
         output_file.write_text(data)
-
 
     @abstractmethod
     def _validate(self) -> None:
@@ -83,5 +90,3 @@ class Dataset(ABC):
             raise ValueError("Organism is not a valid Organism enum")
 
         self._validate()
-
-

@@ -9,7 +9,7 @@ from .base_dataset_validator import BaseDatasetValidator
 
 class BaseSingleCellLabeledValidator(BaseDatasetValidator):
     """Base validator for single-cell labeled datasets.
-    
+
     Provides validation logic for single-cell labeled datasets, including:
     - Checking if the dataset organism is supported
     - Validating presence of required observation and variable keys in AnnData
