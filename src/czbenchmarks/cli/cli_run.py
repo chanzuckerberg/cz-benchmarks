@@ -387,8 +387,8 @@ def run_multi_dataset_task(
     pass
     # task_results: list[TaskResult] = []
 
-    if task_args.compute_baseline:
-        raise ValueError("Baseline embedding run not allowed for multi-dataset tasks")
+    # if task_args.compute_baseline:
+    #     raise ValueError("Baseline embedding run not allowed for multi-dataset tasks")
 
     # result: dict[ModelType, list[MetricResult]] = task_args.task.run(embeddings)
 
@@ -432,14 +432,8 @@ def run_task(
     """
     Run a task and return the results.
     """
-
-    task_results: list[TaskResult] = []
-
-    if task_args.compute_baseline:
-        dataset.load_data()
-        task_args.task.compute_baseline(dataset, **task_args.baseline_args)
-
-    result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
+    pass
+    # task_results: list[TaskResult] = []
 
     # if task_args.set_baseline:
     #     dataset.load_data()
