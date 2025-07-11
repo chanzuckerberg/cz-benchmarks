@@ -44,19 +44,19 @@ if __name__ == "__main__":
             dataset = run_inference(model_name, dataset)
 
         task = ClusteringTask(label_key="cell_type")
-        task.set_baseline(dataset)
+        task.compute_baseline(dataset)
         clustering_results = task.run(dataset)
 
         task = EmbeddingTask(label_key="cell_type")
-        task.set_baseline(dataset)
+        task.compute_baseline(dataset)
         embedding_results = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="cell_type")
-        task.set_baseline(dataset)
+        task.compute_baseline(dataset)
         metadata_results_cell_type = task.run(dataset)
 
         task = MetadataLabelPredictionTask(label_key="sex")
-        task.set_baseline(dataset)
+        task.compute_baseline(dataset)
         metadata_results_sex = task.run(dataset)
 
         all_results[dataset_name] = {

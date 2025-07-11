@@ -83,7 +83,7 @@ class BaseTask(ABC):
         metrics = self._compute_metrics(task_output, metric_input)
         return metrics
 
-    def set_baseline(
+    def compute_baseline(
         self,
         expression_data: CellRepresentation,
         obs: Optional[pd.DataFrame] = None,

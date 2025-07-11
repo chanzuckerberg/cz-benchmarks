@@ -241,7 +241,7 @@ def test_task_execution(
         # Test baseline execution if implemented
         try:
             n_pcs = min(50, expression_matrix.shape[1] - 1)
-            baseline_embedding = task.set_baseline(
+            baseline_embedding = task.compute_baseline(
                 expression_matrix, n_pcs=n_pcs
             )
             if hasattr(task_input, "var"):
@@ -255,7 +255,7 @@ def test_task_execution(
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
         except NotImplementedError:
-            # Some tasks may not implement set_baseline
+            # Some tasks may not implement compute_baseline
             pass
 
     except Exception as e:
@@ -288,7 +288,7 @@ def test_cross_species_task(embedding_matrix, obs):
 
         # Test that baseline raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            task.set_baseline()
+            task.compute_baseline()
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
@@ -339,7 +339,7 @@ def test_perturbation_task():
 
         # Test baseline with both mean and median
         for baseline_type in ["mean", "median"]:
-            baseline_embedding = task.set_baseline(
+            baseline_embedding = task.compute_baseline(
                 cell_representation=cell_representation,
                 var_names=var_names,
                 obs_names=obs_names,

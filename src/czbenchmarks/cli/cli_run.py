@@ -620,7 +620,7 @@ def run_multi_dataset_task(
     """
     task_results: list[TaskResult] = []
 
-    if task_args.set_baseline:
+    if task_args.compute_baseline:
         raise ValueError("Baseline embedding run not allowed for multi-dataset tasks")
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(embeddings)
@@ -653,7 +653,7 @@ def run_multi_dataset_task(
     return task_results
 
 
-# TODO handle returned value from task.set_baseline so that it can be returned as baseline model in output
+# TODO handle returned value from task.compute_baseline so that it can be returned as baseline model in output
 # See comment here: https://github.com/chanzuckerberg/cz-benchmarks/pull/269/files#r2150232334
 def run_task(
     dataset_name: str,
@@ -666,9 +666,9 @@ def run_task(
     """
     task_results: list[TaskResult] = []
 
-    if task_args.set_baseline:
+    if task_args.compute_baseline:
         dataset.load_data()
-        task_args.task.set_baseline(dataset, **task_args.baseline_args)
+        task_args.task.compute_baseline(dataset, **task_args.baseline_args)
 
     result: dict[ModelType, list[MetricResult]] = task_args.task.run(dataset)
 
@@ -987,12 +987,12 @@ def parse_task_args(
             else:
                 task_args[trimmed_k] = v
 
-    set_baseline = task_args.pop("set_baseline", False)
+    compute_baseline = task_args.pop("compute_baseline", False)
 
     return TaskArgs(
         name=task_name,
         task=TaskCls(**task_args),
-        set_baseline=set_baseline,
+        compute_baseline=compute_baseline,
         baseline_args=baseline_args,
     )
 

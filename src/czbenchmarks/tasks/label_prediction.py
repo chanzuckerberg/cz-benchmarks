@@ -293,7 +293,7 @@ class MetadataLabelPredictionTask(BaseTask):
 
         return metrics_list
 
-    def set_baseline(
+    def compute_baseline(
         self, cell_representation: CellRepresentation, **kwargs
     ) -> CellRepresentation:
         raise NotImplementedError

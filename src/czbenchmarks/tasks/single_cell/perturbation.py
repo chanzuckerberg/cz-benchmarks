@@ -324,7 +324,7 @@ class PerturbationTask(BaseTask):
         return []
 
     @staticmethod
-    def set_baseline(
+    def compute_baseline(
         cell_representation: CellRepresentation,
         var_names: ListLike,
         obs_names: ListLike,

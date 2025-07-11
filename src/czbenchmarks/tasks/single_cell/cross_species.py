@@ -143,7 +143,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
             ),
         ]
 
-    def set_baseline(self, **kwargs):
+    def compute_baseline(self, **kwargs):
         """Set a baseline embedding for cross-species integration.
 
         This method is not implemented for cross-species integration tasks
