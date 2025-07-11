@@ -7,7 +7,7 @@ from ..constants import RANDOM_SEED
 from ..datasets.types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
-from .types import TaskInput, MetricInput
+from .types import TaskInput, MetricInput, TaskOutput
 
 
 class BaseTask(ABC):
@@ -37,7 +37,7 @@ class BaseTask(ABC):
     @abstractmethod
     def _run_task(
         self, cell_representation: CellRepresentation, task_input: TaskInput
-    ) -> dict:
+    ) -> TaskOutput:
         """Run the task's core computation.
 
         Should store any intermediate results needed for metric computation
@@ -47,12 +47,12 @@ class BaseTask(ABC):
             cell_representation: gene expression data or embedding for task
             task_input: Pydantic model with inputs for the task
         Returns:
-            Dictionary of output data for the task
+            TaskOutput: Pydantic model with output data for the task
         """
 
     @abstractmethod
     def _compute_metrics(
-        self, task_output: dict, metric_input: MetricInput
+        self, task_output: TaskOutput, metric_input: MetricInput
     ) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 

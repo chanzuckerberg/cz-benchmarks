@@ -10,7 +10,7 @@ from .base import BaseTask
 from .utils import cluster_embedding
 from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
 from ..constants import RANDOM_SEED
-from .types import TaskInput, MetricInput
+from .types import TaskInput, MetricInput, TaskOutput
 
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "ClusteringTaskInput",
     "ClusteringMetricInput",
+    "ClusteringOutput",
     "ClusteringTask",
 ]
 
@@ -33,6 +34,11 @@ class ClusteringTaskInput(TaskInput):
 
 class ClusteringMetricInput(MetricInput):
     input_labels: ListLike
+
+
+class ClusteringOutput(TaskOutput):
+    """Output for clustering task."""
+    predicted_labels: List[int]  # Predicted cluster labels
 
 
 class ClusteringTask(BaseTask):
@@ -58,7 +64,7 @@ class ClusteringTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         task_input: ClusteringTaskInput,
-    ) -> dict:
+    ) -> ClusteringOutput:
         """Runs clustering on the cell representation.
 
         Performs clustering and stores results for metric computation.
@@ -66,6 +72,8 @@ class ClusteringTask(BaseTask):
         Args:
             cell_representation: gene expression data or embedding for task
             task_input: Pydantic model with inputs for the task
+        Returns:
+            ClusteringOutput: Pydantic model with predicted cluster labels
         """
 
         # Create the AnnData object
@@ -83,19 +91,17 @@ class ClusteringTask(BaseTask):
             key_added=task_input.key_added,
         )
 
-        return {
-            "predicted_labels": predicted_labels,
-        }
+        return ClusteringOutput(predicted_labels=predicted_labels)
 
     def _compute_metrics(
-        self, task_output: dict, metric_input: ClusteringMetricInput
+        self, task_output: ClusteringOutput, metric_input: ClusteringMetricInput
     ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
 
         Returns:
             List of MetricResult objects containing ARI and NMI scores
         """
-        predicted_labels = task_output["predicted_labels"]
+        predicted_labels = task_output.predicted_labels
         return [
             MetricResult(
                 metric_type=metric_type,

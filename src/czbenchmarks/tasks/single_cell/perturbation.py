@@ -10,7 +10,8 @@ from ...datasets.types import CellRepresentation, ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
-from ..types import TaskInput, MetricInput
+from ..types import TaskInput, MetricInput, TaskOutput
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "PerturbationTaskInput",
     "PerturbationMetricInput",
+    "PerturbationOutput",
     "PerturbationTask",
 ]
 
@@ -34,6 +36,12 @@ class PerturbationMetricInput(MetricInput):
     gene_pert: str
     perturbation_pred: pd.DataFrame
     perturbation_truth: Dict[str, pd.DataFrame]
+
+
+class PerturbationOutput(TaskOutput):
+    """Output for perturbation task."""
+    perturbation_ctrl: CellRepresentation
+    avg_perturbation_ctrl: pd.Series
 
 
 class PerturbationTask(BaseTask):
@@ -53,7 +61,7 @@ class PerturbationTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         task_input: PerturbationTaskInput,
-    ) -> dict:
+    ) -> PerturbationOutput:
         """Runs the perturbation evaluation task.
 
         Gets predicted perturbation effects, ground truth effects, and control
@@ -64,8 +72,7 @@ class PerturbationTask(BaseTask):
             task_input: Pydantic model with inputs for the task
 
         Returns:
-            Dictionary of gene perturbation, perturbation predictions,
-            perturbation truth, and perturbation control
+            PerturbationOutput: Pydantic model with control data and averages
         """
 
         if sp.sparse.issparse(cell_representation):
@@ -79,14 +86,14 @@ class PerturbationTask(BaseTask):
             name="ctrl",
         )
 
-        return {
-            "perturbation_ctrl": perturbation_ctrl,
-            "avg_perturbation_ctrl": avg_perturbation_ctrl,
-        }
+        return PerturbationOutput(
+            perturbation_ctrl=perturbation_ctrl,
+            avg_perturbation_ctrl=avg_perturbation_ctrl,
+        )
 
     def _compute_metrics(
         self,
-        task_output: dict,
+        task_output: PerturbationOutput,
         metric_input: PerturbationMetricInput,
     ) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
@@ -96,7 +103,7 @@ class PerturbationTask(BaseTask):
         - Correlation between predicted and true expression changes from control
 
         Args:
-            task_output: Dictionary of outputs from _run_task
+            task_output: Pydantic model with outputs from _run_task
             metric_input: Pydantic model with inputs for the metrics
 
         Returns:
@@ -113,8 +120,8 @@ class PerturbationTask(BaseTask):
         gene_pert = metric_input.gene_pert
         perturbation_pred = metric_input.perturbation_pred
         perturbation_truth = metric_input.perturbation_truth
-        perturbation_ctrl = task_output["perturbation_ctrl"]
-        avg_perturbation_ctrl = task_output["avg_perturbation_ctrl"]
+        perturbation_ctrl = task_output.perturbation_ctrl
+        avg_perturbation_ctrl = task_output.avg_perturbation_ctrl
 
         if gene_pert in perturbation_truth.keys():
             # Run differential expression analysis between control and

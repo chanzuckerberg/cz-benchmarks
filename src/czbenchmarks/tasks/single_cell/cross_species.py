@@ -7,12 +7,13 @@ from ..base import BaseTask
 from ...datasets.types import CellRepresentation, ListLike, Organism
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from ..types import TaskInput, MetricInput
+from ..types import TaskInput, MetricInput, TaskOutput
 
 
 __all__ = [
     "CrossSpeciesIntegrationTaskInput",
     "CrossSpeciesIntegrationMetricInput",
+    "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
 ]
 
@@ -28,6 +29,13 @@ class CrossSpeciesIntegrationMetricInput(MetricInput):
     """Pydantic model for CrossSpeciesIntegrationTask metric inputs."""
 
     pass
+
+
+class CrossSpeciesIntegrationOutput(TaskOutput):
+    """Output for cross-species integration task."""
+    cell_representation: CellRepresentation
+    labels: ListLike
+    species: ListLike
 
 
 class CrossSpeciesIntegrationTask(BaseTask):
@@ -51,7 +59,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         task_input: CrossSpeciesIntegrationTaskInput,
-    ) -> dict:
+    ) -> CrossSpeciesIntegrationOutput:
         """Runs the cross-species integration evaluation task.
 
         Gets embedding coordinates and labels from multiple datasets and combines them
@@ -62,7 +70,7 @@ class CrossSpeciesIntegrationTask(BaseTask):
             task_input: Pydantic model with inputs for the task
 
         Returns:
-            Dictionary of labels and species
+            CrossSpeciesIntegrationOutput: Pydantic model with combined data and labels
         """
         # FIXME BYODATASETdatasets should be concatenated to align along genes?
         # This operation is safe because requires_multiple_datasets is True
@@ -95,21 +103,21 @@ class CrossSpeciesIntegrationTask(BaseTask):
                 "Cell representation, species, and labels must have the same shape"
             )
 
-        return {
-            "cell_representation": cell_representation,
-            "labels": labels,
-            "species": species,
-        }
+        return CrossSpeciesIntegrationOutput(
+            cell_representation=cell_representation,
+            labels=labels,
+            species=species,
+        )
 
     def _compute_metrics(
         self,
-        task_output: dict,
+        task_output: CrossSpeciesIntegrationOutput,
         metric_input: CrossSpeciesIntegrationMetricInput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            task_output: Dictionary of labels and species from _run_task
+            task_output: Pydantic model with outputs from _run_task
             metric_input: Pydantic model with inputs for the metrics
 
         Returns:
@@ -119,9 +127,9 @@ class CrossSpeciesIntegrationTask(BaseTask):
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
-        cell_representation = task_output["cell_representation"]
-        labels = task_output["labels"]
-        species = task_output["species"]
+        cell_representation = task_output.cell_representation
+        labels = task_output.labels
+        species = task_output.species
 
         return [
             MetricResult(

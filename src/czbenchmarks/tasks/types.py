@@ -2,12 +2,15 @@ from pydantic import BaseModel
 
 
 class TaskInput(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
-        extra = "forbid"
+    """Base class for task inputs."""
+    model_config = {"arbitrary_types_allowed": True}
 
 
 class MetricInput(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
-        extra = "forbid" 
+    """Base class for metric inputs."""
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class TaskOutput(BaseModel):
+    """Base class for task outputs."""
+    model_config = {"arbitrary_types_allowed": True} 

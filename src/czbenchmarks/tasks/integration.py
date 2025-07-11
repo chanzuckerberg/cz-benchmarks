@@ -6,7 +6,7 @@ from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
-from .types import TaskInput, MetricInput
+from .types import TaskInput, MetricInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "BatchIntegrationTaskInput",
     "BatchIntegrationMetricInput",
+    "BatchIntegrationOutput",
     "BatchIntegrationTask",
 ]
 
@@ -29,6 +30,11 @@ class BatchIntegrationMetricInput(MetricInput):
 
     batch_labels: ListLike
     labels: ListLike
+
+
+class BatchIntegrationOutput(TaskOutput):
+    """Output for batch integration task."""
+    cell_representation: CellRepresentation  # The cell representation matrix
 
 
 class BatchIntegrationTask(BaseTask):
@@ -50,11 +56,19 @@ class BatchIntegrationTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         task_input: BatchIntegrationTaskInput,
-    ) -> dict:
-        return {"cell_representation": cell_representation}
+    ) -> BatchIntegrationOutput:
+        """Run the task's core computation.
+
+        Args:
+            cell_representation: gene expression data or embedding for task
+            task_input: Pydantic model with inputs for the task
+        Returns:
+            BatchIntegrationOutput: Pydantic model with cell representation
+        """
+        return BatchIntegrationOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
-        self, task_output: dict, metric_input: BatchIntegrationMetricInput
+        self, task_output: BatchIntegrationOutput, metric_input: BatchIntegrationMetricInput
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
@@ -70,7 +84,7 @@ class BatchIntegrationTask(BaseTask):
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
-        cell_representation = task_output["cell_representation"]
+        cell_representation = task_output.cell_representation
 
         return [
             MetricResult(

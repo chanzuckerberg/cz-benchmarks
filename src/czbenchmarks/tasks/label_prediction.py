@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Dict, Any
 import pandas as pd
 import scipy as sp
 from sklearn.linear_model import LogisticRegression
@@ -24,7 +24,8 @@ from .base import BaseTask
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
-from .types import TaskInput, MetricInput
+from .types import TaskInput, MetricInput, TaskOutput
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "MetadataLabelPredictionTaskInput",
     "MetadataLabelPredictionMetricInput",
+    "MetadataLabelPredictionOutput",
     "MetadataLabelPredictionTask",
 ]
 
@@ -48,6 +50,11 @@ class MetadataLabelPredictionMetricInput(MetricInput):
     """Pydantic model for MetadataLabelPredictionTask metric inputs."""
 
     pass
+
+
+class MetadataLabelPredictionOutput(TaskOutput):
+    """Output for label prediction task."""
+    results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
 
 
 class MetadataLabelPredictionTask(BaseTask):
@@ -73,7 +80,7 @@ class MetadataLabelPredictionTask(BaseTask):
         self,
         cell_representation: CellRepresentation,
         task_input: MetadataLabelPredictionTaskInput,
-    ) -> dict:
+    ) -> MetadataLabelPredictionOutput:
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
@@ -84,7 +91,7 @@ class MetadataLabelPredictionTask(BaseTask):
             task_input: Pydantic model with inputs for the task
 
         Returns:
-            Dictionary of results
+            MetadataLabelPredictionOutput: Pydantic model with results from cross-validation
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
         logger.info("Starting prediction task for labels")
@@ -171,12 +178,10 @@ class MetadataLabelPredictionTask(BaseTask):
 
         logger.info("Completed cross-validation for all classifiers")
 
-        return {
-            "results": results,
-        }
+        return MetadataLabelPredictionOutput(results=results)
 
     def _compute_metrics(
-        self, task_output: dict, metric_input: MetadataLabelPredictionMetricInput
+        self, task_output: MetadataLabelPredictionOutput, metric_input: MetadataLabelPredictionMetricInput
     ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
@@ -191,7 +196,7 @@ class MetadataLabelPredictionTask(BaseTask):
             classifiers and per-classifier metrics
         """
         logger.info("Computing final metrics...")
-        results = task_output["results"]
+        results = task_output.results
         results_df = pd.DataFrame(results)
         metrics_list = []
 

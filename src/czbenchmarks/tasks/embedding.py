@@ -6,7 +6,7 @@ from ..datasets.types import CellRepresentation, ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
-from .types import TaskInput, MetricInput
+from .types import TaskInput, MetricInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "EmbeddingTaskInput",
     "EmbeddingMetricInput",
+    "EmbeddingOutput",
     "EmbeddingTask",
 ]
 
@@ -28,6 +29,11 @@ class EmbeddingMetricInput(MetricInput):
     """Pydantic model for EmbeddingTask metric inputs."""
 
     input_labels: ListLike
+
+
+class EmbeddingOutput(TaskOutput):
+    """Output for embedding task."""
+    cell_representation: CellRepresentation  # The cell representation matrix
 
 
 class EmbeddingTask(BaseTask):
@@ -47,11 +53,19 @@ class EmbeddingTask(BaseTask):
 
     def _run_task(
         self, cell_representation: CellRepresentation, task_input: EmbeddingTaskInput
-    ) -> dict:
-        return {"cell_representation": cell_representation}
+    ) -> EmbeddingOutput:
+        """Run the task's core computation.
+
+        Args:
+            cell_representation: gene expression data or embedding for task
+            task_input: Pydantic model with inputs for the task
+        Returns:
+            EmbeddingOutput: Pydantic model with cell representation
+        """
+        return EmbeddingOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
-        self, task_output: dict, metric_input: EmbeddingMetricInput
+        self, task_output: EmbeddingOutput, metric_input: EmbeddingMetricInput
     ) -> List[MetricResult]:
         """Computes cell representation quality metrics.
 
@@ -59,7 +73,7 @@ class EmbeddingTask(BaseTask):
             List of MetricResult objects containing silhouette score
         """
         metric_type = MetricType.SILHOUETTE_SCORE
-        cell_representation = task_output["cell_representation"]
+        cell_representation = task_output.cell_representation
         return [
             MetricResult(
                 metric_type=metric_type,
