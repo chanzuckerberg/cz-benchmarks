@@ -1,11 +1,5 @@
 from enum import Enum
-from typing import Union
-import numpy as np
-import pandas as pd
-import anndata as ad
 from omegaconf import OmegaConf
-import scipy.sparse as sp
-from collections.abc import Sequence
 
 
 class Organism(Enum):
@@ -58,10 +52,3 @@ class Organism(Enum):
 # Register Organism resolver
 if not OmegaConf.has_resolver("organism"):  # Required for dataset test cases
     OmegaConf.register_new_resolver("organism", lambda name: getattr(Organism, name))
-
-# TODO: may want to expand this to include subtypes: GeneExpression, Embedding, CellImage, etc.
-CellRepresentation = Union[np.ndarray, sp.csr_matrix, pd.DataFrame]
-# NB: Sequence does not include numpy or pandas objects
-ListLike = Union[Sequence, np.ndarray, pd.Series, pd.Index]
-
-DataValue = Union[pd.DataFrame, ad.AnnData, np.ndarray, Organism]

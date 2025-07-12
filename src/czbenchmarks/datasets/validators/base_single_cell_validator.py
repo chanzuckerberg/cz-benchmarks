@@ -1,18 +1,21 @@
 from typing import ClassVar, List
 
-from ...datasets import SingleCellDataset, Organism
+from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+
+from ...datasets import Organism
 from .base_dataset_validator import BaseDatasetValidator
 
 
-class BaseSingleCellValidator(BaseDatasetValidator):
-    """Base validator for single-cell datasets.
+class BaseSingleCellLabeledValidator(BaseDatasetValidator):
+    """Base validator for single-cell labeled datasets.
 
-    Provides validation logic for single-cell datasets, including:
+    Provides validation logic for single-cell labeled datasets, including:
     - Checking if the dataset organism is supported
     - Validating presence of required observation and variable keys in AnnData
     """
 
-    dataset_type = SingleCellDataset
+    dataset_type: ClassVar[type] = SingleCellLabeledDataset
     available_organisms: ClassVar[List[Organism]]
     required_obs_keys: ClassVar[List[str]]
     required_var_keys: ClassVar[List[str]]

@@ -4,7 +4,8 @@ import numpy as np
 
 from ...constants import RANDOM_SEED
 from ..base import BaseTask
-from ...datasets.types import CellRepresentation, ListLike, Organism
+from ...tasks.types import CellRepresentation
+from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ..types import TaskInput, MetricInput, TaskOutput

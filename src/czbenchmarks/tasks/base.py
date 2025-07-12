@@ -4,7 +4,7 @@ import pandas as pd
 import anndata as ad
 
 from ..constants import RANDOM_SEED
-from ..datasets.types import CellRepresentation
+from .types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 from .types import TaskInput, MetricInput, TaskOutput

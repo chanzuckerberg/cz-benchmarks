@@ -1,25 +1,36 @@
+from pathlib import Path
+from typing import Optional
 import anndata as ad
-import pandas as pd
 import numpy as np
-from .base import BaseDataset
+import pandas as pd
+from .dataset import Dataset
 from .types import Organism
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class SingleCellDataset(BaseDataset):
-    """Single cell dataset containing gene expression data and metadata.
+class SingleCellDataset(Dataset):
+    """
+    Abstract base class for single cell datasets containing gene expression data.
 
-    Handles loading and validation of AnnData objects with gene expression data
-    and associated metadata for a specific organism."""
+    Handles loading and validation of AnnData objects with the following requirements:
+    - Must have gene names in `adata.var['ensembl_id']`
+    - Gene names must start with the organism prefix (e.g., "ENSG" for human)
+    - Must contain raw counts in `adata.X` (non-negative integers)
+    - Should be stored in H5AD format
+    """
+
+    adata: ad.AnnData
 
     def __init__(
         self,
-        path: str,
+        dataset_type_name: str,
+        path: Path,
         organism: Organism,
+        task_inputs_dir: Optional[Path] = None,
     ):
-        super().__init__(path, organism)
+        super().__init__(dataset_type_name, path, organism, task_inputs_dir)
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
@@ -27,21 +38,7 @@ class SingleCellDataset(BaseDataset):
         logger.info(f"Loading dataset from {self.path}")
         self.adata = ad.read_h5ad(self.path)
 
-    # FIXME: Rmove this method
-    def cache_data(self, cache_path: str) -> None:
-        """Cache the dataset to the path.
-
-        Args:
-            cache_path: The path to cache the dataset to.
-        """
-        # FIXME: Implement this when cache PR is merged
-        pass
-
-    # FIXME VALIDATION: move to validation class?
     def _validate(self) -> None:
-        if not isinstance(self.organism, Organism):
-            raise ValueError("Organism is not a valid Organism enum")
-
         var = all(self.adata.var_names.str.startswith(self.organism.prefix))
 
         # Check if data contains non-integer or negative values
@@ -69,92 +66,3 @@ class SingleCellDataset(BaseDataset):
                 f" start with {self.organism.prefix} and be stored in either"
                 f" adata.var_names or adata.var['ensembl_id']."
             )
-
-
-class PerturbationSingleCellDataset(SingleCellDataset):
-    """
-    Single cell dataset with perturbation data, containing control and
-    perturbed cells.
-
-    Input data requirements:
-
-    - H5AD file containing single cell gene expression data
-    - Must have a condition column in adata.obs specifying control ("ctrl") and
-      perturbed conditions.
-    - Must have a split column in adata.obs to identify test samples
-    - Condition format must be one of:
-
-      - ``ctrl`` for control samples
-      - ``{gene}+ctrl`` for single gene perturbations
-      - ``{gene1}+{gene2}`` for combinatorial perturbations
-    """
-
-    def __init__(
-        self,
-        path: str,
-        organism: Organism,
-        condition_key: str = "condition",
-        split_key: str = "split",
-    ):
-        super().__init__(path, organism)
-        self.condition_key = condition_key
-        self.split_key = split_key
-
-    def load_data(self) -> None:
-        super().load_data()
-
-        if self.condition_key not in self.adata.obs.columns:
-            raise ValueError(
-                f"Condition key '{self.condition_key}' not found in adata.obs"
-            )
-
-        if self.split_key not in self.adata.obs.columns:
-            raise ValueError(f"Split key '{self.split_key}' not found in adata.obs")
-
-        # Store control data for each condition in the reference dataset
-        conditions = np.array(list(self.adata.obs[self.condition_key]))
-
-        test_conditions = set(
-            self.adata.obs[self.condition_key][self.adata.obs[self.split_key] == "test"]
-        )
-
-        truth_data = {
-            str(condition): pd.DataFrame(
-                data=self.adata[conditions == condition].X.toarray(),
-                index=self.adata[conditions == condition].obs_names,
-                columns=self.adata[conditions == condition].var_names,
-            )
-            for condition in set(test_conditions)
-        }
-
-        self.perturbation_truth = truth_data
-        # FIXME BYODATASET: as originally implemented, this overwrites adata from SingleCellDataset
-        self.adata = self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy()
-
-    # FIXME VALIDATION: move to validation class?
-    def _validate(self) -> None:
-        super()._validate()
-
-        # Validate split values
-        valid_splits = {"train", "test", "val"}
-        splits = set(self.adata.obs[self.split_key])
-        invalid_splits = splits - valid_splits
-        if invalid_splits:
-            raise ValueError(f"Invalid split value(s): {invalid_splits}")
-
-        # Validate condition format
-        conditions = set(
-            list(self.adata.obs[self.condition_key])
-            + list(self.perturbation_truth.keys())
-        )
-
-        for condition in conditions:
-            if condition == "ctrl":
-                continue
-
-            parts = condition.split("+")
-            if len(parts) != 2:
-                raise ValueError(
-                    f"Invalid perturbation condition format: {condition}. "
-                    "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
-                )
