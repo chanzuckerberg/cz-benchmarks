@@ -3,8 +3,8 @@ import io
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from czbenchmarks.datasets.single_cell import SingleCellDataset
-from czbenchmarks.datasets.types import Organism
+from .single_cell import SingleCellDataset
+from .types import Organism
 
 
 class SingleCellPerturbationDataset(SingleCellDataset):

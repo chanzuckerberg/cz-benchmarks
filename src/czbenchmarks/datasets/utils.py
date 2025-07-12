@@ -4,9 +4,9 @@ from hydra.utils import instantiate
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
+from .dataset import Dataset
 from czbenchmarks.utils import initialize_hydra
 from czbenchmarks.file_utils import download_file_from_remote
-from czbenchmarks.datasets import Dataset
 import logging
 
 log = logging.getLogger(__name__)

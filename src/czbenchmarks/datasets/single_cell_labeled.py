@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 import pandas as pd
 
-from czbenchmarks.datasets.single_cell import SingleCellDataset
+from .single_cell import SingleCellDataset
 from .types import Organism
 import logging
 import io

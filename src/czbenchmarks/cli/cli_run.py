@@ -585,23 +585,23 @@ def set_processed_datasets_cache(
     dataset.load_data()
 
 
-def try_processed_datasets_cache(
-    dataset_name: str,
-    *,
-    model_name: str,  # TODO: consider to fetch model embedding
-    # model_args: ModelArgsDict,
-    cache_options: CacheOptions,
-) -> Dataset | None:
-    """
-    Deserialize and return a processed dataset from the cache if it exists, else return None.
-    """
-    dataset_filename = get_processed_dataset_cache_filename(
-        dataset_name,
-        model_name=model_name,
-        # model_args=model_args
-    )
-    cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
-    cache_file = cache_dir / dataset_filename
+# def try_processed_datasets_cache(
+#     dataset_name: str,
+#     *,
+#     model_name: str,  # TODO: consider to fetch model embedding
+#     # model_args: ModelArgsDict,
+#     cache_options: CacheOptions,
+# ) -> Dataset | None:
+#     """
+#     Deserialize and return a processed dataset from the cache if it exists, else return None.
+#     """
+#     dataset_filename = get_processed_dataset_cache_filename(
+#         dataset_name,
+#         model_name=model_name,
+#         # model_args=model_args
+#     )
+#     cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
+#     cache_file = cache_dir / dataset_filename
 
 #     if cache_options.download_embeddings:
 #         # check the remote cache and download the file if a local version doesn't
@@ -649,10 +649,10 @@ def try_processed_datasets_cache(
 #         dataset = dataset_utils.load_dataset(dataset_name)
 #         dataset.load_data()
 
-        # Attach the cached results to the dataset
-        processed_dataset = Dataset.deserialize(str(cache_file))
-        dataset._outputs = processed_dataset._outputs
-        return dataset
+#        # Attach the cached results to the dataset
+#        processed_dataset = Dataset.deserialize(str(cache_file))
+#        dataset._outputs = processed_dataset._outputs
+#        return dataset
 
 #     return None
 

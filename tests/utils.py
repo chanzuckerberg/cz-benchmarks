@@ -3,7 +3,8 @@ import pandas as pd
 import anndata as ad
 import scipy.sparse as sp
 
-from czbenchmarks.datasets.types import Organism, CellRepresentation
+from czbenchmarks.datasets.types import Organism
+from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
 from czbenchmarks.tasks.base import BaseTask

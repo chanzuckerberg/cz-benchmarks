@@ -2,7 +2,7 @@ import logging
 import sys
 from czbenchmarks.datasets import dataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
-from czbenchmarks.datasets.types import CellRepresentation
+from czbenchmarks.tasks.types import CellRepresentation
 
 # from czbenchmarks.datasets.utils import load_dataset
 import numpy as np

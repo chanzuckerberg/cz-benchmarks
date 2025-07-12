@@ -3,7 +3,9 @@ from typing import List
 import pandas as pd
 import anndata as ad
 
-from ..datasets.types import CellRepresentation, ListLike
+from czbenchmarks.types import ListLike
+
+from .types import CellRepresentation
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .base import BaseTask
