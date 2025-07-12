@@ -2,6 +2,7 @@ import logging
 import sys
 from czbenchmarks.datasets import dataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.types import CellRepresentation
 
 # from czbenchmarks.datasets.utils import load_dataset
@@ -15,12 +16,7 @@ from czbenchmarks.tasks import (
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-    # dataset: SingleCellLabeledDataset = load_dataset("tsv2_bladder")
-    dataset = SingleCellLabeledDataset(
-        path="/Users/atolopko/.cz-benchmarks/datasets/example_small.h5ad",
-        organism="human",
-    )
-    dataset.load_data()
+    dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 
     model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
 

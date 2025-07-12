@@ -66,11 +66,10 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
 
     # Handle local caching and remote downloading
-    dataset_path = download_file_from_remote(dataset_info["path"])
+    dataset_info["path"] = download_file_from_remote(dataset_info["path"])
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
-    dataset.path = dataset_path  # os.path.expanduser(dataset.path)
 
     # Load the dataset into memory
     dataset.load_data()
