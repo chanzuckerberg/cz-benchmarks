@@ -4,9 +4,9 @@ from hydra.utils import instantiate
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
+from .dataset import Dataset
 from czbenchmarks.utils import initialize_hydra
 from czbenchmarks.file_utils import download_file_from_remote
-from .base import BaseDataset
 import logging
 
 log = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 def load_dataset(
     dataset_name: str,
     config_path: Optional[str] = None,
-) -> BaseDataset:
+) -> Dataset:
     """
     Loads, downloads (if needed), and instantiates a dataset using Hydra configuration.
 
@@ -66,11 +66,10 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
 
     # Handle local caching and remote downloading
-    dataset_path = download_file_from_remote(dataset_info["path"])
+    dataset_info["path"] = download_file_from_remote(dataset_info["path"])
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
-    dataset.path = dataset_path  # os.path.expanduser(dataset.path)
 
     # Load the dataset into memory
     dataset.load_data()

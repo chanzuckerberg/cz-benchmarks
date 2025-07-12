@@ -6,7 +6,8 @@ import numpy as np
 import scipy as sp
 import logging
 from ..base import BaseTask
-from ...datasets.types import CellRepresentation, ListLike
+from ...tasks.types import CellRepresentation
+from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED

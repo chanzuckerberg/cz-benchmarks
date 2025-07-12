@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import ClassVar, Type
 
-from ...datasets import BaseDataset
+from ...datasets import Dataset
 
 
 # Configure logging to output to stdout
@@ -22,7 +22,6 @@ class BaseDatasetValidator(ABC):
     Defines the interface for validating datasets against dataset requirements.
     Validators ensure datasets meet dataset-specific requirements like:
     - Compatible data types
-    - Required metadata fields
     - Organism compatibility
     - Feature name formats
 
@@ -32,7 +31,7 @@ class BaseDatasetValidator(ABC):
     """
 
     # Type annotation for class variables
-    dataset_type: ClassVar[Type[BaseDataset]]
+    dataset_type: ClassVar[Type[Dataset]]
 
     def __init_subclass__(cls) -> None:
         """Validate that subclasses define required class variables.
@@ -49,7 +48,7 @@ class BaseDatasetValidator(ABC):
             )
 
     @abstractmethod
-    def _validate_dataset(self, dataset: BaseDataset):
+    def _validate_dataset(self, dataset: Dataset):
         """Perform dataset-specific validation.
 
         Args:
@@ -59,31 +58,12 @@ class BaseDatasetValidator(ABC):
             ValueError: If validation fails
         """
 
-    @property
-    @abstractmethod
-    def inputs(self):
-        """Required input data types for this dataset.
-
-        Returns:
-            Set of required DataType enums
-        """
-
-    @property
-    @abstractmethod
-    def outputs(self):
-        """Output data types produced by this dataset.
-
-        Returns:
-            Set of output DataType enums
-        """
-
-    def validate_dataset(self, dataset: BaseDataset):
+    def validate_dataset(self, dataset: Dataset):
         """Validate that a dataset meets all requirements.
 
         Checks:
         1. Dataset type matches dataset_type
-        2. Required inputs are available in the dataset
-        3. Runs dataset specific validation
+        2. Runs dataset specific validation
 
         Args:
             dataset: Dataset to validate
@@ -96,10 +76,5 @@ class BaseDatasetValidator(ABC):
                 f"Dataset type mismatch. Expected {self.dataset_type.__name__}, "
                 f"got {type(dataset).__name__}"
             )
-
-        # Validate required inputs are available
-        missing_inputs = self.inputs - set(dataset.inputs.keys())
-        if missing_inputs:
-            raise ValueError(f"Missing required inputs: {missing_inputs}")
 
         self._validate_dataset(dataset)

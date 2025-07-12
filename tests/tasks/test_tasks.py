@@ -9,11 +9,9 @@ from czbenchmarks.tasks.single_cell.cross_species import (
     CrossSpeciesIntegrationTask,
 )
 from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
-from czbenchmarks.datasets.types import (
-    Organism,
-    CellRepresentation,
-    ListLike,
-)
+from czbenchmarks.tasks.types import CellRepresentation
+from czbenchmarks.types import ListLike
+from czbenchmarks.datasets.types import Organism
 from czbenchmarks.metrics.types import MetricResult
 
 from tests.utils import (
