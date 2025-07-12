@@ -34,7 +34,8 @@ class SingleCellDataset(Dataset):
 
     def load_data(self) -> None:
         """Load the dataset from the path."""
-        # FIXME: Update as needed when cache PR is merged
+        # cache implemented
+        logger.info(f"Loading dataset from {self.path}")
         self.adata = ad.read_h5ad(self.path)
 
     def _validate(self) -> None:

@@ -4,8 +4,12 @@ from hydra.utils import instantiate
 from typing import List, Optional
 import yaml
 from omegaconf import OmegaConf
-from ..utils import initialize_hydra
-from .dataset import Dataset
+from czbenchmarks.utils import initialize_hydra
+from czbenchmarks.file_utils import download_file_from_remote
+from czbenchmarks.datasets import Dataset
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def load_dataset(
@@ -13,15 +17,26 @@ def load_dataset(
     config_path: Optional[str] = None,
 ) -> Dataset:
     """
-    Download and instantiate a dataset using Hydra configuration.
+    Loads, downloads (if needed), and instantiates a dataset using Hydra configuration.
 
     Args:
-        dataset_name: Name of dataset as specified in config
-        config_path: Optional path to config yaml file. If not provided,
-                    will use only the package's default config.
+        dataset_name (str): Name of the dataset as specified in the configuration.
+        config_path (Optional[str]): Optional path to a custom config YAML file. If not provided,
+            only the package's default config is used.
+
     Returns:
-        BaseDataset: Instantiated dataset object
+        BaseDataset: Instantiated dataset object with data loaded.
+
+    Raises:
+        FileNotFoundError: If the custom config file does not exist.
+        ValueError: If the specified dataset is not found in the configuration.
+
+    Notes:
+        - Merges custom config with default config if provided.
+        - Downloads dataset file if remote path is specified.
+        - Uses Hydra for instantiation and configuration management.
     """
+
     initialize_hydra()
 
     # Load default config first and make it unstructured
@@ -50,19 +65,29 @@ def load_dataset(
 
     dataset_info = cfg.datasets[dataset_name]
 
+    # Handle local caching and remote downloading
+    dataset_path = download_file_from_remote(dataset_info["path"])
+
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
-    dataset.path = os.path.expanduser(dataset.path)
+    dataset.path = dataset_path  # os.path.expanduser(dataset.path)
+
+    # Load the dataset into memory
+    dataset.load_data()
 
     return dataset
 
 
 def list_available_datasets() -> List[str]:
     """
-    Lists all available datasets defined in the datasets.yaml configuration file.
+    Returns a sorted list of all dataset names defined in the datasets.yaml Hydra configuration.
 
     Returns:
-        list: A sorted list of dataset names available in the configuration.
+        List[str]: Alphabetically sorted list of available dataset names.
+
+    Notes:
+        - Loads configuration using Hydra.
+        - Extracts dataset names from the 'datasets' section of the config.
     """
     initialize_hydra()
 

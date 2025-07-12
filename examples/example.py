@@ -35,7 +35,11 @@ if __name__ == "__main__":
 
     # task = EmbeddingTask(label_key="cell_type")
     # embedding_results = task.run(dataset)
+    # task = EmbeddingTask(label_key="cell_type")
+    # embedding_results = task.run(dataset)
 
+    # task = MetadataLabelPredictionTask(label_key="cell_type")
+    # prediction_results = task.run(dataset)
     # task = MetadataLabelPredictionTask(label_key="cell_type")
     # prediction_results = task.run(dataset)
 
