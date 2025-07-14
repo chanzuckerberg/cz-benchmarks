@@ -6,12 +6,12 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
+from .base import Task
 
 logger = logging.getLogger(__name__)
 
 
-class BatchIntegrationTask(BaseTask):
+class BatchIntegrationTask(Task):
     """Task for evaluating batch integration quality.
 
     This task computes metrics to assess how well different batches are integrated

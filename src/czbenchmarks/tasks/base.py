@@ -9,7 +9,7 @@ from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
 
-class BaseTask(ABC):
+class Task(ABC):
     """Abstract base class for all benchmark tasks.
 
     Defines the interface that all tasks must implement. Tasks are responsible for:

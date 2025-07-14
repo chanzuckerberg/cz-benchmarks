@@ -21,7 +21,7 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
+from .base import Task
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
@@ -29,7 +29,7 @@ from ..constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
-class MetadataLabelPredictionTask(BaseTask):
+class MetadataLabelPredictionTask(Task):
     """Task for predicting labels from embeddings using cross-validation.
 
     Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
