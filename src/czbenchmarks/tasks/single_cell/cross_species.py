@@ -9,6 +9,7 @@ from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ..types import TaskInput, MetricInput, TaskOutput
+from czbenchmarks.datasets.types import Organism
 
 
 __all__ = [
