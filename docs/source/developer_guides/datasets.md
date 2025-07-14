@@ -8,7 +8,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
 ## Key Components
 
--  [Dataset](../autoapi/czbenchmarks/datasets/base/index)  
+-  [Dataset](../autoapi/czbenchmarks/datasets/dataset/index)  
    An abstract class that provides ensures all concrete classes provide the following functionality:
 
    - Loading a dataset file into memory.
@@ -106,7 +106,7 @@ TODO: Add others?
 ## Related References
 
 - [Add Custom Dataset Guide](../how_to_guides/add_custom_dataset)
-- [Dataset API](../autoapi/czbenchmarks/datasets/base/index)
+- [Dataset API](../autoapi/czbenchmarks/datasets/dataset/index)
 - [SingleCellDataset API](../autoapi/czbenchmarks/datasets/single_cell/index)
 - [Organism Enum](../autoapi/czbenchmarks/datasets/types/index)
 

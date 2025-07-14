@@ -5,18 +5,18 @@ This guide explains how to create and integrate your own evaluation task into cz
 ## Steps to Add a New Task
 
 ### 1. Create a New Task Class
-- Extend the `BaseTask` class to define your custom task.
+- Extend the `Task` class to define your custom task.
 - Create a new Python file in the `czbenchmarks/tasks/` directory (or in a subdirectory if the task is modality-specific).
 
     Example:
 
     ```python
     from typing import List, Set
-    from czbenchmarks.tasks.base import BaseTask
+    from czbenchmarks.tasks.base import Task
     from czbenchmarks.datasets import DataType
     from czbenchmarks.metrics.types import MetricResult
 
-    class MyTask(BaseTask):
+    class MyTask(Task):
         def __init__(self, my_param: int = 10, *, random_seed: int = 123):
             super().__init__(random_seed=random_seed)
             self.my_param = my_param
