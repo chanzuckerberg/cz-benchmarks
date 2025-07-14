@@ -24,9 +24,7 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationTaskInput,
     PerturbationMetricInput,
 )
-# from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
 from czbenchmarks.tasks.types import CellRepresentation
-# from czbenchmarks.types import ListLike
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.metrics.types import MetricResult
 
@@ -204,9 +202,7 @@ def test_embedding_invalid_input(fixture_data):
         ),
         (
             MetadataLabelPredictionTask,
-            lambda obs, var: MetadataLabelPredictionTaskInput(
-                labels=obs["cell_type"]
-            ),
+            lambda obs, var: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
             lambda obs: MetadataLabelPredictionMetricInput(),
         ),
     ],
@@ -240,9 +236,7 @@ def test_task_execution(
         # Test baseline execution if implemented
         try:
             n_pcs = min(50, expression_matrix.shape[1] - 1)
-            baseline_embedding = task.compute_baseline(
-                expression_matrix, n_pcs=n_pcs
-            )
+            baseline_embedding = task.compute_baseline(expression_matrix, n_pcs=n_pcs)
             if hasattr(task_input, "var"):
                 task_input.var = task_input.var.iloc[:n_pcs]
 
@@ -345,9 +339,7 @@ def test_perturbation_task():
                 baseline_type=baseline_type,
             )
             metric_input.perturbation_pred = baseline_embedding
-            baseline_results = task.run(
-                cell_representation, task_input, metric_input
-            )
+            baseline_results = task.run(cell_representation, task_input, metric_input)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics
