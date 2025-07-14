@@ -85,7 +85,9 @@ class ClusteringTask(Task):
         return ClusteringOutput(predicted_labels=predicted_labels)
 
     def _compute_metrics(
-        self, task_input: ClusteringTaskInput, task_output: ClusteringOutput,
+        self,
+        task_input: ClusteringTaskInput,
+        task_output: ClusteringOutput,
     ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
 

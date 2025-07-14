@@ -82,7 +82,7 @@ class PerturbationTask(Task):
     def _compute_metrics(
         self,
         task_input: PerturbationTaskInput,
-        task_output: PerturbationOutput,    
+        task_output: PerturbationOutput,
     ) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
 

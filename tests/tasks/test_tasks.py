@@ -184,7 +184,9 @@ def test_embedding_invalid_input(fixture_data):
         ),
         (
             BatchIntegrationTask,
-            lambda obs: BatchIntegrationTaskInput(labels=obs["cell_type"], batch_labels=obs["batch"]),
+            lambda obs: BatchIntegrationTaskInput(
+                labels=obs["cell_type"], batch_labels=obs["batch"]
+            ),
         ),
         (
             MetadataLabelPredictionTask,
