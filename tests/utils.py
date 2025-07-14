@@ -7,8 +7,7 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
-from czbenchmarks.tasks.task import Task
-from czbenchmarks.tasks.task import TaskInput, MetricInput
+from czbenchmarks.tasks.task import Task, TaskInput, TaskOutput
 from czbenchmarks.datasets import (
     Dataset,
 )
@@ -16,10 +15,6 @@ from czbenchmarks.metrics.types import MetricResult, MetricType
 
 
 class DummyTaskInput(TaskInput):
-    pass
-
-
-class DummyMetricInput(MetricInput):
     pass
 
 
@@ -158,7 +153,7 @@ class DummyTask(Task):
         return {}
 
     def _compute_metrics(
-        self, task_output: dict, metric_input: MetricInput
+        self, task_input: TaskInput, task_output: TaskOutput
     ) -> List[MetricResult]:
         # Return a dummy metric result
         return [

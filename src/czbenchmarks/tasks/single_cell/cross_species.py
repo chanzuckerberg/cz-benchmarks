@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from ...constants import RANDOM_SEED
-from ..task import Task, TaskInput, MetricInput, TaskOutput
+from ..task import Task, TaskInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry
@@ -16,12 +16,6 @@ class CrossSpeciesIntegrationTaskInput(TaskInput):
 
     labels: List[ListLike]
     organism_list: List[Organism]
-
-
-class CrossSpeciesIntegrationMetricInput(MetricInput):
-    """Pydantic model for CrossSpeciesIntegrationTask metric inputs."""
-
-    pass
 
 
 class CrossSpeciesIntegrationOutput(TaskOutput):
@@ -101,14 +95,14 @@ class CrossSpeciesIntegrationTask(Task):
 
     def _compute_metrics(
         self,
+        task_input: CrossSpeciesIntegrationTaskInput,
         task_output: CrossSpeciesIntegrationOutput,
-        metric_input: CrossSpeciesIntegrationMetricInput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
+            task_input: Pydantic model with input for the task
             task_output: Pydantic model with outputs from _run_task
-            metric_input: Pydantic model with inputs for the metrics
 
         Returns:
             List of MetricResult objects containing entropy per cell and

@@ -6,19 +6,13 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, MetricInput, TaskOutput
+from .task import Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
 
 class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
-
-    pass
-
-
-class BatchIntegrationMetricInput(MetricInput):
-    """Pydantic model for BatchIntegrationTask metric inputs."""
 
     batch_labels: ListLike
     labels: ListLike
@@ -62,15 +56,14 @@ class BatchIntegrationTask(Task):
 
     def _compute_metrics(
         self,
+        task_input: BatchIntegrationTaskInput,
         task_output: BatchIntegrationOutput,
-        metric_input: BatchIntegrationMetricInput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            cell_representation: gene expression data or embedding for task
-            batch_labels: batch labels to use for the task
-            labels: cell type labels to use for the task
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with task outputs from _run_task
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -87,7 +80,7 @@ class BatchIntegrationTask(Task):
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
                     X=cell_representation,
-                    labels=metric_input.batch_labels,
+                    labels=task_input.batch_labels,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -96,8 +89,8 @@ class BatchIntegrationTask(Task):
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
                     X=cell_representation,
-                    labels=metric_input.labels,
-                    batch=metric_input.batch_labels,
+                    labels=task_input.labels,
+                    batch=task_input.batch_labels,
                 ),
             ),
         ]

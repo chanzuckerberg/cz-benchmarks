@@ -15,12 +15,6 @@ class TaskInput(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class MetricInput(BaseModel):
-    """Base class for metric inputs."""
-
-    model_config = {"arbitrary_types_allowed": True}
-
-
 class TaskOutput(BaseModel):
     """Base class for task outputs."""
 
@@ -69,7 +63,7 @@ class Task(ABC):
 
     @abstractmethod
     def _compute_metrics(
-        self, task_output: TaskOutput, metric_input: MetricInput
+        self, task_input: TaskInput, task_output: TaskOutput
     ) -> List[MetricResult]:
         """Compute evaluation metrics for the task.
 
@@ -81,7 +75,6 @@ class Task(ABC):
         self,
         cell_representation: CellRepresentation,
         task_input: TaskInput,
-        metric_input: MetricInput,
     ) -> List[MetricResult]:
         """Run task for a dataset or list of datasets and compute metrics.
 
@@ -90,14 +83,13 @@ class Task(ABC):
         Args:
             cell_representation: gene expression data or embedding for task
             task_input: Pydantic model with inputs for the task
-            metric_input: Pydantic model with inputs for the metrics
         Returns:
             List of MetricResult objects
 
         """
 
         task_output = self._run_task(cell_representation, task_input)
-        metrics = self._compute_metrics(task_output, metric_input)
+        metrics = self._compute_metrics(task_input, task_output)
         return metrics
 
     def compute_baseline(
@@ -128,14 +120,12 @@ class Task(ABC):
         self,
         cell_representation: Union[CellRepresentation, List[CellRepresentation]],
         task_input: TaskInput,
-        metric_input: MetricInput,
     ) -> List[MetricResult]:
         """Run the task on input data and compute metrics.
 
         Args:
             cell_representation: gene expression data or embedding to use for the task
             task_input: Pydantic model with inputs for the task
-            metric_input: Pydantic model with inputs for the metrics
 
         Returns:
             For single embedding: A one-element list containing a single metric result for the task
@@ -165,5 +155,4 @@ class Task(ABC):
         return self._run_task_for_dataset(
             cell_representation,  # type: ignore
             task_input,
-            metric_input,
         )

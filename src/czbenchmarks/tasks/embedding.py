@@ -6,19 +6,13 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, MetricInput, TaskOutput
+from .task import Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
 
 class EmbeddingTaskInput(TaskInput):
     """Pydantic model for EmbeddingTask inputs."""
-
-    pass
-
-
-class EmbeddingMetricInput(MetricInput):
-    """Pydantic model for EmbeddingTask metric inputs."""
 
     input_labels: ListLike
 
@@ -58,9 +52,13 @@ class EmbeddingTask(Task):
         return EmbeddingOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
-        self, task_output: EmbeddingOutput, metric_input: EmbeddingMetricInput
+        self, task_input: EmbeddingTaskInput, task_output: EmbeddingOutput
     ) -> List[MetricResult]:
         """Computes cell representation quality metrics.
+
+        Args:
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with task outputs
 
         Returns:
             List of MetricResult objects containing silhouette score
@@ -73,7 +71,7 @@ class EmbeddingTask(Task):
                 value=metrics_registry.compute(
                     metric_type,
                     X=cell_representation,
-                    labels=metric_input.input_labels,
+                    labels=task_input.input_labels,
                 ),
             )
         ]

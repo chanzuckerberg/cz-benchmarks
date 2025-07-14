@@ -5,7 +5,7 @@ import anndata as ad
 import numpy as np
 import scipy as sp
 import logging
-from ..task import Task, TaskInput, MetricInput, TaskOutput
+from ..task import Task, TaskInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry
@@ -20,11 +20,6 @@ class PerturbationTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
     var_names: ListLike
-
-
-class PerturbationMetricInput(MetricInput):
-    """Pydantic model for PerturbationTask metric inputs."""
-
     gene_pert: str
     perturbation_pred: pd.DataFrame
     perturbation_truth: Dict[str, pd.DataFrame]
@@ -86,8 +81,8 @@ class PerturbationTask(Task):
 
     def _compute_metrics(
         self,
-        task_output: PerturbationOutput,
-        metric_input: PerturbationMetricInput,
+        task_input: PerturbationTaskInput,
+        task_output: PerturbationOutput,    
     ) -> List[MetricResult]:
         """Computes perturbation prediction quality metrics.
 
@@ -96,8 +91,8 @@ class PerturbationTask(Task):
         - Correlation between predicted and true expression changes from control
 
         Args:
-            task_output: Pydantic model with outputs from _run_task
-            metric_input: Pydantic model with inputs for the metrics
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with task outputs from _run_task
 
         Returns:
             List of MetricResult objects containing metric values and metadata
@@ -110,9 +105,9 @@ class PerturbationTask(Task):
         pearson_correlation_metric = MetricType.PEARSON_CORRELATION
         jaccard_metric = MetricType.JACCARD
 
-        gene_pert = metric_input.gene_pert
-        perturbation_pred = metric_input.perturbation_pred
-        perturbation_truth = metric_input.perturbation_truth
+        gene_pert = task_input.gene_pert
+        perturbation_pred = task_input.perturbation_pred
+        perturbation_truth = task_input.perturbation_truth
         perturbation_ctrl = task_output.perturbation_ctrl
         avg_perturbation_ctrl = task_output.avg_perturbation_ctrl
 

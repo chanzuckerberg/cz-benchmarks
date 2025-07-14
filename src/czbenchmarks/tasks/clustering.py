@@ -8,7 +8,7 @@ from czbenchmarks.types import ListLike
 from .types import CellRepresentation
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, MetricInput, TaskOutput
+from .task import Task, TaskInput, TaskOutput
 from .utils import cluster_embedding
 from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
 from ..constants import RANDOM_SEED
@@ -19,14 +19,11 @@ logger = logging.getLogger(__name__)
 
 class ClusteringTaskInput(TaskInput):
     obs: pd.DataFrame
+    input_labels: ListLike
     use_rep: str = "X"
     n_iterations: int = N_ITERATIONS
     flavor: Literal["leidenalg", "igraph"] = FLAVOR
     key_added: str = KEY_ADDED
-
-
-class ClusteringMetricInput(MetricInput):
-    input_labels: ListLike
 
 
 class ClusteringOutput(TaskOutput):
@@ -88,9 +85,13 @@ class ClusteringTask(Task):
         return ClusteringOutput(predicted_labels=predicted_labels)
 
     def _compute_metrics(
-        self, task_output: ClusteringOutput, metric_input: ClusteringMetricInput
+        self, task_input: ClusteringTaskInput, task_output: ClusteringOutput,
     ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
+
+        Args:
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with outputs from _run_task
 
         Returns:
             List of MetricResult objects containing ARI and NMI scores
@@ -101,7 +102,7 @@ class ClusteringTask(Task):
                 metric_type=metric_type,
                 value=metrics_registry.compute(
                     metric_type,
-                    labels_true=metric_input.input_labels,
+                    labels_true=task_input.input_labels,
                     labels_pred=predicted_labels,
                 ),
                 params={},

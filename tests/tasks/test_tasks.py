@@ -5,24 +5,18 @@ import anndata as ad
 from czbenchmarks.tasks import (
     ClusteringTask,
     ClusteringTaskInput,
-    ClusteringMetricInput,
     EmbeddingTask,
     EmbeddingTaskInput,
-    EmbeddingMetricInput,
     BatchIntegrationTask,
     BatchIntegrationTaskInput,
-    BatchIntegrationMetricInput,
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
-    MetadataLabelPredictionMetricInput,
 )
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
-    CrossSpeciesIntegrationMetricInput,
     PerturbationTask,
     PerturbationTaskInput,
-    PerturbationMetricInput,
 )
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
@@ -33,7 +27,6 @@ from tests.utils import (
     DummyTask,
     create_dummy_perturbation_anndata,
     DummyTaskInput,
-    DummyMetricInput,
 )
 
 
@@ -127,7 +120,6 @@ def test_embedding_valid_input_output(fixture_data):
     results = task.run(
         cell_representation=embedding,
         task_input=DummyTaskInput(),
-        metric_input=DummyMetricInput(),
     )
 
     assert isinstance(results, list)
@@ -176,50 +168,40 @@ def test_embedding_invalid_input(fixture_data):
         task.run(
             cell_representation=embedding_list,
             task_input=DummyTaskInput(),
-            metric_input=DummyMetricInput(),
         )
 
 
 @pytest.mark.parametrize(
-    "task_class,task_input_builder,metric_input_builder",
+    "task_class,task_input_builder",
     [
         (
             ClusteringTask,
-            lambda obs, var: ClusteringTaskInput(obs=obs),
-            lambda obs: ClusteringMetricInput(input_labels=obs["cell_type"]),
+            lambda obs: ClusteringTaskInput(obs=obs, input_labels=obs["cell_type"]),
         ),
         (
             EmbeddingTask,
-            lambda obs, var: EmbeddingTaskInput(),
-            lambda obs: EmbeddingMetricInput(input_labels=obs["cell_type"]),
+            lambda obs: EmbeddingTaskInput(input_labels=obs["cell_type"]),
         ),
         (
             BatchIntegrationTask,
-            lambda obs, var: BatchIntegrationTaskInput(),
-            lambda obs: BatchIntegrationMetricInput(
-                labels=obs["cell_type"], batch_labels=obs["batch"]
-            ),
+            lambda obs: BatchIntegrationTaskInput(labels=obs["cell_type"], batch_labels=obs["batch"]),
         ),
         (
             MetadataLabelPredictionTask,
-            lambda obs, var: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
-            lambda obs: MetadataLabelPredictionMetricInput(),
+            lambda obs: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
         ),
     ],
 )
 def test_task_execution(
     task_class,
     task_input_builder,
-    metric_input_builder,
     embedding_matrix,
     expression_matrix,
     obs,
-    var,
 ):
     """Test that each task executes without errors on compatible data."""
 
-    task_input = task_input_builder(obs, var)
-    metric_input = metric_input_builder(obs)
+    task_input = task_input_builder(obs)
 
     task = task_class()
 
@@ -228,7 +210,6 @@ def test_task_execution(
         results = task.run(
             cell_representation=embedding_matrix,
             task_input=task_input,
-            metric_input=metric_input,
         )
         assert isinstance(results, list)
         assert all(isinstance(r, MetricResult) for r in results)
@@ -243,7 +224,6 @@ def test_task_execution(
             baseline_results = task.run(
                 cell_representation=baseline_embedding,
                 task_input=task_input,
-                metric_input=metric_input,
             )
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
@@ -265,14 +245,12 @@ def test_cross_species_task(embedding_matrix, obs):
     task_input = CrossSpeciesIntegrationTaskInput(
         labels=labels_list, organism_list=organism_list
     )
-    metric_input = CrossSpeciesIntegrationMetricInput()
 
     try:
         # Test regular task execution
         results = task.run(
             cell_representation=embedding_list,
             task_input=task_input,
-            metric_input=metric_input,
         )
 
         # Verify results structure
@@ -306,8 +284,8 @@ def test_perturbation_task():
 
     # Task and argument setup
     task = PerturbationTask()
-    task_input = PerturbationTaskInput(var_names=var_names)
-    metric_input = PerturbationMetricInput(
+    task_input = PerturbationTaskInput(
+        var_names=var_names,
         gene_pert=gene_pert,
         perturbation_pred=pert_pred,
         perturbation_truth=pert_truth,
@@ -322,7 +300,6 @@ def test_perturbation_task():
         results = task.run(
             cell_representation,
             task_input,
-            metric_input,
         )
 
         # Verify results structure
@@ -338,8 +315,8 @@ def test_perturbation_task():
                 obs_names=obs_names,
                 baseline_type=baseline_type,
             )
-            metric_input.perturbation_pred = baseline_embedding
-            baseline_results = task.run(cell_representation, task_input, metric_input)
+            task_input.perturbation_pred = baseline_embedding
+            baseline_results = task.run(cell_representation, task_input)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics

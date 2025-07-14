@@ -21,7 +21,7 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, MetricInput, TaskOutput
+from .task import Task, TaskInput, TaskOutput
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
@@ -36,12 +36,6 @@ class MetadataLabelPredictionTaskInput(TaskInput):
     labels: ListLike
     n_folds: int = N_FOLDS
     min_class_size: int = MIN_CLASS_SIZE
-
-
-class MetadataLabelPredictionMetricInput(MetricInput):
-    """Pydantic model for MetadataLabelPredictionTask metric inputs."""
-
-    pass
 
 
 class MetadataLabelPredictionOutput(TaskOutput):
@@ -175,8 +169,8 @@ class MetadataLabelPredictionTask(Task):
 
     def _compute_metrics(
         self,
+        task_input: MetadataLabelPredictionTaskInput,
         task_output: MetadataLabelPredictionOutput,
-        metric_input: MetadataLabelPredictionMetricInput,
     ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
@@ -184,7 +178,8 @@ class MetadataLabelPredictionTask(Task):
         per classifier and overall.
 
         Args:
-            task_output: Results from cross-validation
+            task_input: Pydantic model with input for the task
+            task_output: Pydantic model results from cross-validation
 
         Returns:
             List of MetricResult objects containing mean metrics across all
@@ -295,7 +290,9 @@ class MetadataLabelPredictionTask(Task):
         return metrics_list
 
     def compute_baseline(
-        self, cell_representation: CellRepresentation, **kwargs
+        self,
+        cell_representation: CellRepresentation,
+        **kwargs,
     ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
 
