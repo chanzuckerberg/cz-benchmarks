@@ -7,7 +7,7 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
-from czbenchmarks.tasks.base import Task
+from czbenchmarks.tasks.task import Task
 from czbenchmarks.datasets import (
     Dataset,
 )

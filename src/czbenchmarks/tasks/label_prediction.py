@@ -21,7 +21,7 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import Task
+from .task import Task
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED

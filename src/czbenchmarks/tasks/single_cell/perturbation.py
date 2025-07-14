@@ -5,7 +5,7 @@ import anndata as ad
 import numpy as np
 import scipy as sp
 import logging
-from ..base import Task
+from ..task import Task
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry

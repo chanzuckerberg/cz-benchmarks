@@ -1,4 +1,4 @@
-from .base import Task
+from .task import Task
 from .clustering import ClusteringTask
 from .embedding import EmbeddingTask
 from .label_prediction import MetadataLabelPredictionTask

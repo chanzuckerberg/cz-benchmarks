@@ -10,7 +10,7 @@ from czbenchmarks.metrics.types import AggregatedMetricResult, MetricResult
 
 # from czbenchmarks.models.types import ModelType
 # from czbenchmarks.models import utils as model_utils
-from czbenchmarks.tasks.base import Task
+from czbenchmarks.tasks.task import Task
 
 
 TaskType = TypeVar("TaskType", bound=Task)
