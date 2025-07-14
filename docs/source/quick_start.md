@@ -25,7 +25,7 @@ pip install cz-benchmarks
 
 ### Option 2: Install from Source (For Development)
 
-If you plan to contribute or dpleaseebug the library, install it from source:
+If you plan to contribute or debug the library, install it from source:
 
 1. Clone the repository:
 
