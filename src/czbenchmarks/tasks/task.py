@@ -1,16 +1,31 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
-import pandas as pd
+from typing import List, Union
 import anndata as ad
+from pydantic import BaseModel
 
 from ..constants import RANDOM_SEED
 from .types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
-from .types import TaskInput, MetricInput, TaskOutput
+from .task import TaskInput, MetricInput, TaskOutput
 
 
-class BaseTask(ABC):
+class TaskInput(BaseModel):
+    """Base class for task inputs."""
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class MetricInput(BaseModel):
+    """Base class for metric inputs."""
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class TaskOutput(BaseModel):
+    """Base class for task outputs."""
+    model_config = {"arbitrary_types_allowed": True} 
+
+
+class Task(ABC):
     """Abstract base class for all benchmark tasks.
 
     Defines the interface that all tasks must implement. Tasks are responsible for:

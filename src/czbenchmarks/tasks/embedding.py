@@ -6,18 +6,9 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
-from .types import TaskInput, MetricInput, TaskOutput
+from .task import Task, TaskInput, MetricInput, TaskOutput
 
 logger = logging.getLogger(__name__)
-
-
-__all__ = [
-    "EmbeddingTaskInput",
-    "EmbeddingMetricInput",
-    "EmbeddingOutput",
-    "EmbeddingTask",
-]
 
 
 class EmbeddingTaskInput(TaskInput):
@@ -38,7 +29,7 @@ class EmbeddingOutput(TaskOutput):
     cell_representation: CellRepresentation  # The cell representation matrix
 
 
-class EmbeddingTask(BaseTask):
+class EmbeddingTask(Task):
     """Task for evaluating cell representation quality using labeled data.
 
     This task computes quality metrics for cell representations using ground truth labels.

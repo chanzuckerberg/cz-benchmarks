@@ -8,11 +8,10 @@ from czbenchmarks.types import ListLike
 from .types import CellRepresentation
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
+from .task import Task, TaskInput, MetricInput, TaskOutput
 from .utils import cluster_embedding
 from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
 from ..constants import RANDOM_SEED
-from .types import TaskInput, MetricInput, TaskOutput
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ class ClusteringOutput(TaskOutput):
     predicted_labels: List[int]  # Predicted cluster labels
 
 
-class ClusteringTask(BaseTask):
+class ClusteringTask(Task):
     """Task for evaluating clustering performance against ground truth labels.
 
     This task performs clustering on embeddings and evaluates the results

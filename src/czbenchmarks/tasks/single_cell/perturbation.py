@@ -5,24 +5,15 @@ import anndata as ad
 import numpy as np
 import scipy as sp
 import logging
-from ..base import BaseTask
+from ..task import Task, TaskInput, MetricInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...constants import RANDOM_SEED
-from ..types import TaskInput, MetricInput, TaskOutput
 
 
 logger = logging.getLogger(__name__)
-
-
-__all__ = [
-    "PerturbationTaskInput",
-    "PerturbationMetricInput",
-    "PerturbationOutput",
-    "PerturbationTask",
-]
 
 
 class PerturbationTaskInput(TaskInput):
@@ -46,7 +37,7 @@ class PerturbationOutput(TaskOutput):
     avg_perturbation_ctrl: pd.Series
 
 
-class PerturbationTask(BaseTask):
+class PerturbationTask(Task):
     """Task for evaluating perturbation prediction quality.
 
     This task computes metrics to assess how well a model predicts gene expression

@@ -7,7 +7,7 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
-from czbenchmarks.tasks.base import BaseTask
+from czbenchmarks.tasks.task import Task
 from czbenchmarks.tasks.types import TaskInput, MetricInput
 from czbenchmarks.datasets import (
     Dataset,
@@ -140,7 +140,7 @@ class DummyDataset(Dataset):
         pass
 
 
-class DummyTask(BaseTask):
+class DummyTask(Task):
     """A dummy task implementation for testing."""
 
     def __init__(

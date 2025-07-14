@@ -21,22 +21,13 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
+from .task import Task, TaskInput, MetricInput, TaskOutput
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
-from .types import TaskInput, MetricInput, TaskOutput
 
 
 logger = logging.getLogger(__name__)
-
-
-__all__ = [
-    "MetadataLabelPredictionTaskInput",
-    "MetadataLabelPredictionMetricInput",
-    "MetadataLabelPredictionOutput",
-    "MetadataLabelPredictionTask",
-]
 
 
 class MetadataLabelPredictionTaskInput(TaskInput):
@@ -59,7 +50,7 @@ class MetadataLabelPredictionOutput(TaskOutput):
     results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
 
 
-class MetadataLabelPredictionTask(BaseTask):
+class MetadataLabelPredictionTask(Task):
     """Task for predicting labels from embeddings using cross-validation.
 
     Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
