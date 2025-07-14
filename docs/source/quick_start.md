@@ -46,7 +46,7 @@ If you plan to contribute or dpleaseebug the library, install it from source:
     pip install -e ".[dev]"
     ```
 
-## Building and using the Patched cz-benchmarks SCGENEPT Image
+## Building and using the Patched cz-benchmarks SCGENEPT Image for Performance Evaluation
 1. From the root of your repo, run:
 
    ```bash
