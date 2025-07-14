@@ -12,7 +12,7 @@ This guide explains how to create and integrate your own evaluation task into cz
 
     ```python
     from typing import List, Set
-    from czbenchmarks.tasks.base import Task
+    from czbenchmarks.tasks.task import Task
     from czbenchmarks.datasets import DataType
     from czbenchmarks.metrics.types import MetricResult
 
@@ -46,7 +46,7 @@ This guide explains how to create and integrate your own evaluation task into cz
             return [MetricResult(metric_type="my_metric", value=metric_value)]
     ```
 
-- Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
+- Consult `czbenchmarks/tasks/task.py` for interface details and best practices.
 - Use `display_name` to provide a human-readable name for use when displaying your task
 - The `random_seed` should be used for all sources of randomness so results are reproducible
 - Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.

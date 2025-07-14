@@ -4,7 +4,7 @@ The `czbenchmarks.tasks` module defines **benchmarking tasks** that evaluate the
 
 ## Core Concepts
 
-- [Task](../autoapi/czbenchmarks/tasks/base/index)  
+- [Task](../autoapi/czbenchmarks/tasks/task/index)  
    All task classes inherit from this abstract base class. It defines the standard lifecycle of a task:
    
    1. **Input and Output Validation** via `required_inputs` and `required_outputs`
@@ -45,7 +45,7 @@ Each task class implements a specific evaluation goal. All tasks are located und
 
 To define a new evaluation task:
 
-1. **Inherit from** [Task](../autoapi/czbenchmarks/tasks/base/index)
+1. **Inherit from** [Task](../autoapi/czbenchmarks/tasks/task/index)
 
 
 2. **Choose the Right Location**:  
@@ -89,7 +89,7 @@ To define a new evaluation task:
 9. **Example Skeleton**:  
 
     ```python
-    from czbenchmarks.tasks.base import Task
+    from czbenchmarks.tasks.task import Task
     from czbenchmarks.datasets import DataType
     from czbenchmarks.metrics.types import MetricResult
 
