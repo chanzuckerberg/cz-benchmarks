@@ -134,10 +134,10 @@ class PerturbationSingleCellDataset(SingleCellDataset):
             truth_data,
         )
 
-        self.set_input(
-            DataType.ANNDATA,
-            self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy(),
-        )
+        # self.set_input(
+        #     DataType.ANNDATA,
+        #     self.adata[self.adata.obs[self.condition_key] == "ctrl"].copy(),
+        # )
 
     def unload_data(self) -> None:
         super().unload_data()
