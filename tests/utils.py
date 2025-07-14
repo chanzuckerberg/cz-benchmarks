@@ -8,7 +8,7 @@ from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
 from czbenchmarks.tasks.task import Task
-from czbenchmarks.tasks.types import TaskInput, MetricInput
+from czbenchmarks.tasks.task import TaskInput, MetricInput
 from czbenchmarks.datasets import (
     Dataset,
 )

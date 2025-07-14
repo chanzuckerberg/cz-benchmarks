@@ -7,7 +7,6 @@ from ..constants import RANDOM_SEED
 from .types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
-from .task import TaskInput, MetricInput, TaskOutput
 
 
 class TaskInput(BaseModel):
