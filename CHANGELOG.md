@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.10.0...v0.10.1) (2025-07-14)
+
+
+### Bug Fixes
+
+* scvi hvg alignment ([#290](https://github.com/chanzuckerberg/cz-benchmarks/issues/290)) ([2c90ec8](https://github.com/chanzuckerberg/cz-benchmarks/commit/2c90ec8b2de64072c13190965d0d64b242264fb3))
+
 ## [0.10.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.9.2...v0.10.0) (2025-06-16)
 
 
