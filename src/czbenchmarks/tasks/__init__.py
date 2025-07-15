@@ -1,16 +1,35 @@
-from .task import Task
-from .clustering import ClusteringTask
-from .embedding import EmbeddingTask
-from .label_prediction import MetadataLabelPredictionTask
-from .integration import BatchIntegrationTask
-from .single_cell import PerturbationTask, CrossSpeciesIntegrationTask
+from .clustering import (
+    ClusteringTaskInput,
+    ClusteringOutput,
+    ClusteringTask,
+)
+from .embedding import (
+    EmbeddingTaskInput,
+    EmbeddingOutput,
+    EmbeddingTask,
+)
+from .label_prediction import (
+    MetadataLabelPredictionTaskInput,
+    MetadataLabelPredictionOutput,
+    MetadataLabelPredictionTask,
+)
+from .integration import (
+    BatchIntegrationTaskInput,
+    BatchIntegrationOutput,
+    BatchIntegrationTask,
+)
 
 __all__ = [
-    "Task",
-    "EmbeddingTask",
+    "ClusteringTaskInput",
+    "ClusteringOutput",
     "ClusteringTask",
+    "EmbeddingTaskInput",
+    "EmbeddingOutput",
+    "EmbeddingTask",
+    "MetadataLabelPredictionTaskInput",
+    "MetadataLabelPredictionOutput",
     "MetadataLabelPredictionTask",
+    "BatchIntegrationTaskInput",
+    "BatchIntegrationOutput",
     "BatchIntegrationTask",
-    "PerturbationTask",
-    "CrossSpeciesIntegrationTask",
 ]

@@ -29,7 +29,7 @@ class TaskArgs(BaseModel, Generic[TaskType]):
     model_config = {"arbitrary_types_allowed": True}  # Required to support TaskType
     name: str  # Lower-case task name e.g. embedding
     task: TaskType
-    set_baseline: bool
+    compute_baseline: bool
     baseline_args: dict[str, Any]
 
 

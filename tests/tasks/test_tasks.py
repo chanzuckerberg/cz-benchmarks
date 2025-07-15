@@ -1,16 +1,24 @@
 import pytest
+import pandas as pd
 
 import anndata as ad
-from czbenchmarks.tasks.clustering import ClusteringTask
-from czbenchmarks.tasks.embedding import EmbeddingTask
-from czbenchmarks.tasks.integration import BatchIntegrationTask
-from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
-from czbenchmarks.tasks.single_cell.cross_species import (
-    CrossSpeciesIntegrationTask,
+from czbenchmarks.tasks import (
+    ClusteringTask,
+    ClusteringTaskInput,
+    EmbeddingTask,
+    EmbeddingTaskInput,
+    BatchIntegrationTask,
+    BatchIntegrationTaskInput,
+    MetadataLabelPredictionTask,
+    MetadataLabelPredictionTaskInput,
 )
-from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
+from czbenchmarks.tasks.single_cell import (
+    CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
+    PerturbationTask,
+    PerturbationTaskInput,
+)
 from czbenchmarks.tasks.types import CellRepresentation
-from czbenchmarks.types import ListLike
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.metrics.types import MetricResult
 
@@ -18,10 +26,12 @@ from tests.utils import (
     create_dummy_anndata,
     DummyTask,
     create_dummy_perturbation_anndata,
+    DummyTaskInput,
 )
 
 
-# FIXME these tests could be split into multiple files and fixtures moved to conftest.py
+# FIXME these tests could be split into multiple files and fixtures moved to
+# conftest.py
 
 
 @pytest.fixture
@@ -40,8 +50,8 @@ def dummy_anndata():
     )
 
     expression_matrix: CellRepresentation = anndata.X.copy()
-    obs: ListLike = anndata.obs.copy()
-    var: ListLike = anndata.var.copy()
+    obs: pd.DataFrame = anndata.obs.copy()
+    var: pd.DataFrame = anndata.var.copy()
 
     # TODO perform PCA on expression matrix to get true embedding
     embedding_matrix: CellRepresentation = expression_matrix.toarray()
@@ -77,7 +87,8 @@ def var(dummy_anndata):
 
 @pytest.fixture
 def fixture_data(request):
-    # Enables lazy generation of fixture data so fixtures can be used as parameters
+    # Enables lazy generation of fixture data so fixtures can be used as
+    # parameters
     valid_fixture_names = ["expression_matrix", "embedding_matrix", "obs", "var"]
     fixture_name, other_data = request.param
     if isinstance(fixture_name, str):
@@ -106,7 +117,10 @@ def test_embedding_valid_input_output(fixture_data):
     """Test that embedding is accepted and List[MetricResult] is returned."""
     embedding, requires_multiple_datasets = fixture_data
     task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
-    results = task.run(cell_representation=embedding)
+    results = task.run(
+        cell_representation=embedding,
+        task_input=DummyTaskInput(),
+    )
 
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
@@ -115,7 +129,10 @@ def test_embedding_valid_input_output(fixture_data):
 @pytest.mark.parametrize(
     "fixture_data",
     [
-        ("abcd", [False, "This task requires a single cell representation for input"]),
+        (
+            "abcd",
+            [False, "This task requires a single cell representation for input"],
+        ),
         (
             ["embedding_matrix"],
             [False, "This task requires a single cell representation for input"],
@@ -136,7 +153,8 @@ def test_embedding_valid_input_output(fixture_data):
             ["embedding_matrix"],
             [
                 True,
-                "This task requires a list of cell representations but only one was provided",
+                "This task requires a list of cell representations but only one "
+                "was provided",
             ],
         ),
     ],
@@ -147,48 +165,45 @@ def test_embedding_invalid_input(fixture_data):
     embedding_list, (requires_multiple_datasets, error_message) = fixture_data
     task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
     with pytest.raises(ValueError, match=error_message):
-        task.run(cell_representation=embedding_list)
+        task.run(
+            cell_representation=embedding_list,
+            task_input=DummyTaskInput(),
+        )
 
 
 @pytest.mark.parametrize(
-    "task_class, task_list, metric_list",
+    "task_class,task_input_builder",
     [
         (
             ClusteringTask,
-            ["obs", "var"],
-            ["input_labels"],
+            lambda obs: ClusteringTaskInput(obs=obs, input_labels=obs["cell_type"]),
         ),
         (
             EmbeddingTask,
-            [],
-            ["input_labels"],
+            lambda obs: EmbeddingTaskInput(input_labels=obs["cell_type"]),
         ),
         (
             BatchIntegrationTask,
-            [],
-            ["labels", "batch_labels"],
+            lambda obs: BatchIntegrationTaskInput(
+                labels=obs["cell_type"], batch_labels=obs["batch"]
+            ),
         ),
         (
             MetadataLabelPredictionTask,
-            ["labels"],
-            [],
+            lambda obs: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
         ),
     ],
 )
 def test_task_execution(
-    task_class, task_list, metric_list, embedding_matrix, expression_matrix, obs, var
+    task_class,
+    task_input_builder,
+    embedding_matrix,
+    expression_matrix,
+    obs,
 ):
     """Test that each task executes without errors on compatible data."""
 
-    kwargs_dict = {
-        "obs": obs,
-        "var": var,
-        "labels": obs["cell_type"],
-        "input_labels": obs["cell_type"],
-        "batch_labels": obs["batch"],
-    }
-    task_kwargs = {key: kwargs_dict[key] for key in task_list}
-    metric_kwargs = {key: kwargs_dict[key] for key in metric_list}
+    task_input = task_input_builder(obs)
 
     task = task_class()
 
@@ -196,8 +211,7 @@ def test_task_execution(
         # Test regular task execution
         results = task.run(
             cell_representation=embedding_matrix,
-            task_kwargs=task_kwargs,
-            metric_kwargs=metric_kwargs,
+            task_input=task_input,
         )
         assert isinstance(results, list)
         assert all(isinstance(r, MetricResult) for r in results)
@@ -205,19 +219,18 @@ def test_task_execution(
         # Test baseline execution if implemented
         try:
             n_pcs = min(50, expression_matrix.shape[1] - 1)
-            baseline_embedding = task.set_baseline(expression_matrix, n_pcs=n_pcs)
-            if "var" in task_kwargs:
-                task_kwargs["var"] = task_kwargs["var"].iloc[:n_pcs]
+            baseline_embedding = task.compute_baseline(expression_matrix, n_pcs=n_pcs)
+            if hasattr(task_input, "var"):
+                task_input.var = task_input.var.iloc[:n_pcs]
 
             baseline_results = task.run(
                 cell_representation=baseline_embedding,
-                task_kwargs=task_kwargs,
-                metric_kwargs=metric_kwargs,
+                task_input=task_input,
             )
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
         except NotImplementedError:
-            # Some tasks may not implement set_baseline
+            # Some tasks may not implement compute_baseline
             pass
 
     except Exception as e:
@@ -231,16 +244,15 @@ def test_cross_species_task(embedding_matrix, obs):
     labels = obs["cell_type"]
     labels_list = [labels, labels]
     organism_list = [Organism.HUMAN, Organism.MOUSE]
-    task_kwargs = {
-        "labels": labels_list,
-        "organism_list": organism_list,
-    }
+    task_input = CrossSpeciesIntegrationTaskInput(
+        labels=labels_list, organism_list=organism_list
+    )
 
     try:
         # Test regular task execution
         results = task.run(
             cell_representation=embedding_list,
-            task_kwargs=task_kwargs,
+            task_input=task_input,
         )
 
         # Verify results structure
@@ -249,7 +261,7 @@ def test_cross_species_task(embedding_matrix, obs):
 
         # Test that baseline raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            task.set_baseline()
+            task.compute_baseline()
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
@@ -274,24 +286,22 @@ def test_perturbation_task():
 
     # Task and argument setup
     task = PerturbationTask()
-    task_kwargs = {
-        "var_names": var_names,
-    }
-    metric_kwargs = {
-        "gene_pert": gene_pert,
-        "perturbation_pred": pert_pred,
-        "perturbation_truth": pert_truth,
-    }
+    task_input = PerturbationTaskInput(
+        var_names=var_names,
+        gene_pert=gene_pert,
+        perturbation_pred=pert_pred,
+        perturbation_truth=pert_truth,
+    )
 
-    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard top20/100
+    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard
+    # top20/100
     num_metrics = 8
 
     try:
         # Test regular task execution
         results = task.run(
             cell_representation,
-            task_kwargs,
-            metric_kwargs,
+            task_input,
         )
 
         # Verify results structure
@@ -301,13 +311,14 @@ def test_perturbation_task():
 
         # Test baseline with both mean and median
         for baseline_type in ["mean", "median"]:
-            baseline_embedding = task.set_baseline(
+            baseline_embedding = task.compute_baseline(
                 cell_representation=cell_representation,
                 var_names=var_names,
                 obs_names=obs_names,
                 baseline_type=baseline_type,
             )
-            baseline_results = task.run(baseline_embedding, task_kwargs, metric_kwargs)
+            task_input.perturbation_pred = baseline_embedding
+            baseline_results = task.run(cell_representation, task_input)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics

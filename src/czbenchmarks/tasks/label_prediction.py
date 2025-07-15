@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Dict, Any
 import pandas as pd
 import scipy as sp
 from sklearn.linear_model import LogisticRegression
@@ -21,12 +21,27 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task
+from .task import Task, TaskInput, TaskOutput
 from .utils import filter_minimum_class
 from .constants import N_FOLDS, MIN_CLASS_SIZE
 from ..constants import RANDOM_SEED
 
+
 logger = logging.getLogger(__name__)
+
+
+class MetadataLabelPredictionTaskInput(TaskInput):
+    """Pydantic model for MetadataLabelPredictionTask inputs."""
+
+    labels: ListLike
+    n_folds: int = N_FOLDS
+    min_class_size: int = MIN_CLASS_SIZE
+
+
+class MetadataLabelPredictionOutput(TaskOutput):
+    """Output for label prediction task."""
+
+    results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
 
 
 class MetadataLabelPredictionTask(Task):
@@ -39,21 +54,20 @@ class MetadataLabelPredictionTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "metadata label prediction"
+
     def __init__(
         self,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
-        self.display_name = "metadata label prediction"
 
     def _run_task(
         self,
         cell_representation: CellRepresentation,
-        labels: ListLike,
-        n_folds: int = N_FOLDS,
-        min_class_size: int = MIN_CLASS_SIZE,
-    ) -> dict:
+        task_input: MetadataLabelPredictionTaskInput,
+    ) -> MetadataLabelPredictionOutput:
         """Runs cross-validation prediction task.
 
         Evaluates multiple classifiers using k-fold cross-validation on the
@@ -61,10 +75,10 @@ class MetadataLabelPredictionTask(Task):
 
         Args:
             cell_representation: gene expression data or embedding for task
-            labels: labels to use for the task
+            task_input: Pydantic model with inputs for the task
 
         Returns:
-            Dictionary of results
+            MetadataLabelPredictionOutput: Pydantic model with results from cross-validation
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
         logger.info("Starting prediction task for labels")
@@ -73,12 +87,14 @@ class MetadataLabelPredictionTask(Task):
         )  # Protect from destructive operations
 
         logger.info(
-            f"Initial data shape: {cell_representation.shape}, labels shape: {labels.shape}"
+            f"Initial data shape: {cell_representation.shape}, labels shape: {task_input.labels.shape}"
         )
 
         # Filter classes with minimum size requirement
         cell_representation, labels = filter_minimum_class(
-            cell_representation, labels, min_class_size=min_class_size
+            cell_representation,
+            task_input.labels,
+            min_class_size=task_input.min_class_size,
         )
         logger.info(f"After filtering: {cell_representation.shape} samples remaining")
 
@@ -104,10 +120,10 @@ class MetadataLabelPredictionTask(Task):
 
         # Setup cross validation
         skf = StratifiedKFold(
-            n_splits=n_folds, shuffle=True, random_state=self.random_seed
+            n_splits=task_input.n_folds, shuffle=True, random_state=self.random_seed
         )
         logger.info(
-            f"Using {n_folds}-fold cross validation with random_seed {self.random_seed}"
+            f"Using {task_input.n_folds}-fold cross validation with random_seed {self.random_seed}"
         )
 
         # Create classifiers
@@ -140,7 +156,7 @@ class MetadataLabelPredictionTask(Task):
                 return_train_score=False,
             )
 
-            for fold in range(n_folds):
+            for fold in range(task_input.n_folds):
                 fold_results = {"classifier": name, "split": fold}
                 for metric in scorers.keys():
                     fold_results[metric] = cv_results[f"test_{metric}"][fold]
@@ -149,24 +165,28 @@ class MetadataLabelPredictionTask(Task):
 
         logger.info("Completed cross-validation for all classifiers")
 
-        return {
-            "results": results,
-        }
+        return MetadataLabelPredictionOutput(results=results)
 
-    def _compute_metrics(self, results: List[dict], **kwargs) -> List[MetricResult]:
+    def _compute_metrics(
+        self,
+        _: MetadataLabelPredictionTaskInput,
+        task_output: MetadataLabelPredictionOutput,
+    ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
 
         Aggregates results from cross-validation and computes mean metrics
         per classifier and overall.
 
         Args:
-            results: Results from cross-validation
+            _: (unused) Pydantic model with input for the task
+            task_output: Pydantic model results from cross-validation
 
         Returns:
             List of MetricResult objects containing mean metrics across all
             classifiers and per-classifier metrics
         """
         logger.info("Computing final metrics...")
+        results = task_output.results
         results_df = pd.DataFrame(results)
         metrics_list = []
 
@@ -269,8 +289,10 @@ class MetadataLabelPredictionTask(Task):
 
         return metrics_list
 
-    def set_baseline(
-        self, cell_representation: CellRepresentation, **kwargs
+    def compute_baseline(
+        self,
+        cell_representation: CellRepresentation,
+        **kwargs,
     ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
 

@@ -6,11 +6,11 @@ This document describes the test structure and patterns used in the CZ Benchmark
 
 ```
 tests/
-├── datasets/         # Tests for dataset handling and loading
-├── metrics/          # Tests for evaluation metrics
-├── models/          # Tests for model implementations
-├── tasks/           # Tests for different benchmark tasks
-└── utils.py         # Common test utilities
+├── datasets/     # Tests for dataset handling and loading
+├── metrics/      # Tests for evaluation metrics
+├── tasks/        # Tests for different benchmark tasks
+├── test_utils.py # Tests for library utilities
+└── utils.py      # Common utilities
 ```
 
 ## Test Patterns

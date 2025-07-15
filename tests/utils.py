@@ -7,11 +7,15 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.constants import RANDOM_SEED
 from typing import List
-from czbenchmarks.tasks.task import Task
+from czbenchmarks.tasks.task import Task, TaskInput, TaskOutput
 from czbenchmarks.datasets import (
     Dataset,
 )
 from czbenchmarks.metrics.types import MetricResult, MetricType
+
+
+class DummyTaskInput(TaskInput):
+    pass
 
 
 def create_dummy_anndata(
@@ -144,11 +148,13 @@ class DummyTask(Task):
         self.name = "dummy task"
         self.requires_multiple_datasets = requires_multiple_datasets
 
-    def _run_task(self, embedding: CellRepresentation):
+    def _run_task(self, embedding: CellRepresentation, task_input: TaskInput):
         # Dummy implementation that does nothing
         return {}
 
-    def _compute_metrics(self, **kwargs) -> List[MetricResult]:
+    def _compute_metrics(
+        self, task_input: TaskInput, task_output: TaskOutput
+    ) -> List[MetricResult]:
         # Return a dummy metric result
         return [
             MetricResult(

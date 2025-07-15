@@ -1,6 +1,3 @@
-# FIXME: most  should be set directly in metric function call
-#        and random seed should be set for entire library
-
 N_FOLDS = 5
 
 MIN_CLASS_SIZE = 10

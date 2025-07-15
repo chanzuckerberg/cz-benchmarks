@@ -48,9 +48,10 @@ def nearest_neighbors_hnsw(
     """
     import hnswlib
 
-    assert n_neighbors <= data.shape[0], ValueError(
-        f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
-    )
+    if n_neighbors > data.shape[0]:
+        raise ValueError(
+            f"n_neighbors ({n_neighbors}) must be less than or equal to the number of samples: {data.shape[0]}"
+        )
     sample_indices = np.arange(data.shape[0])
     index = hnswlib.Index(space="l2", dim=data.shape[1])
     index.init_index(
@@ -126,11 +127,11 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     Args:
         results_df: DataFrame containing cross-validation results. Must have columns:
             - "classifier": Name of the classifier (e.g., "lr", "knn")
-            - One of the following metric columns:
-                - "accuracy": For accuracy scores
-                - "f1": For F1 scores
-                - "precision": For precision scores
-                - "recall": For recall scores
+            And one of the following metric columns:
+            - "accuracy": For accuracy scores
+            - "f1": For F1 scores
+            - "precision": For precision scores
+            - "recall": For recall scores
         metric: Name of metric column to average ("accuracy", "f1", etc.)
         classifier: Optional classifier name to filter results
 

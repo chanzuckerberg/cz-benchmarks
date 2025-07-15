@@ -1,7 +1,19 @@
-from .cross_species import CrossSpeciesIntegrationTask
-from .perturbation import PerturbationTask
+from .cross_species import (
+    CrossSpeciesIntegrationTaskInput,
+    CrossSpeciesIntegrationOutput,
+    CrossSpeciesIntegrationTask,
+)
+from .perturbation import (
+    PerturbationTaskInput,
+    PerturbationOutput,
+    PerturbationTask,
+)
 
 __all__ = [
+    "CrossSpeciesIntegrationTaskInput",
+    "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
+    "PerturbationTaskInput",
+    "PerturbationOutput",
     "PerturbationTask",
 ]

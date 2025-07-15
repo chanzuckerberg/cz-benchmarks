@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 
 
-ListLike = list | np.ndarray | pd.Series
+ListLike = Sequence | np.ndarray | pd.Series | pd.Index

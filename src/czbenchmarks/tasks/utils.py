@@ -24,8 +24,7 @@ TASK_NAMES = frozenset(
 )
 
 
-# TODO: Later we can add cluster parameters as kwargs here and add them
-# to the task config
+# TODO: Add cluster parameters as kwargs here and add to task config
 def cluster_embedding(
     adata: AnnData,
     n_iterations: int = 2,

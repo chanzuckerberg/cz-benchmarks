@@ -6,9 +6,22 @@ from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .task import Task
+from .task import Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
+
+
+class BatchIntegrationTaskInput(TaskInput):
+    """Pydantic model for BatchIntegrationTask inputs."""
+
+    batch_labels: ListLike
+    labels: ListLike
+
+
+class BatchIntegrationOutput(TaskOutput):
+    """Output for batch integration task."""
+
+    cell_representation: CellRepresentation  # The cell representation matrix
 
 
 class BatchIntegrationTask(Task):
@@ -21,25 +34,36 @@ class BatchIntegrationTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "batch integration"
+
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.display_name = "batch integration"
 
-    def _run_task(self, cell_representation: CellRepresentation, **kwargs) -> dict:
-        return {}
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        _: BatchIntegrationTaskInput,
+    ) -> BatchIntegrationOutput:
+        """Run the task's core computation.
+
+        Args:
+            cell_representation: gene expression data or embedding for task
+            _: (unused) Pydantic model with inputs for the task
+        Returns:
+            BatchIntegrationOutput: Pydantic model with cell representation
+        """
+        return BatchIntegrationOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
         self,
-        cell_representation: CellRepresentation,
-        batch_labels: ListLike,
-        labels: ListLike,
+        task_input: BatchIntegrationTaskInput,
+        task_output: BatchIntegrationOutput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            cell_representation: gene expression data or embedding for task
-            batch_labels: batch labels to use for the task
-            labels: cell type labels to use for the task
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with task outputs from _run_task
 
         Returns:
             List of MetricResult objects containing entropy per cell and
@@ -48,6 +72,7 @@ class BatchIntegrationTask(Task):
 
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
+        cell_representation = task_output.cell_representation
 
         return [
             MetricResult(
@@ -55,7 +80,7 @@ class BatchIntegrationTask(Task):
                 value=metrics_registry.compute(
                     entropy_per_cell_metric,
                     X=cell_representation,
-                    labels=batch_labels,
+                    labels=task_input.batch_labels,
                     random_seed=self.random_seed,
                 ),
             ),
@@ -64,8 +89,8 @@ class BatchIntegrationTask(Task):
                 value=metrics_registry.compute(
                     silhouette_batch_metric,
                     X=cell_representation,
-                    labels=labels,
-                    batch=batch_labels,
+                    labels=task_input.labels,
+                    batch=task_input.batch_labels,
                 ),
             ),
         ]
