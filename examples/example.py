@@ -24,40 +24,74 @@ if __name__ == "__main__":
 
     model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
 
-    task_input = ClusteringTaskInput(
+    # Initialize all tasks
+    clustering_task = ClusteringTask(random_seed=42)
+    embedding_task = EmbeddingTask()
+    prediction_task = MetadataLabelPredictionTask()
+    
+    # Get raw expression data for baseline computation
+    expression_data = dataset.adata.X
+    
+    # Compute baseline embeddings for each task
+    clustering_baseline = clustering_task.compute_baseline(expression_data)
+    embedding_baseline = embedding_task.compute_baseline(expression_data)
+    prediction_baseline = prediction_task.compute_baseline(expression_data)
+    
+    # Run clustering task with both model output and baseline
+    clustering_task_input = ClusteringTaskInput(
         obs=dataset.adata.obs,
         input_labels=dataset.labels,
         use_rep="X",
     )
-    
-    clustering_results = ClusteringTask(random_seed=42).run(
+    clustering_results = clustering_task.run(
         cell_representation=model_output,
-        task_input=task_input,
+        task_input=clustering_task_input,
+    )
+    clustering_baseline_results = clustering_task.run(
+        cell_representation=clustering_baseline,
+        task_input=clustering_task_input,
     )
 
+    # Run embedding task with both model output and baseline
     embedding_task_input = EmbeddingTaskInput(
         input_labels=dataset.labels,
     )
-    embedding_task = EmbeddingTask()
     embedding_results = embedding_task.run(
         cell_representation=model_output,
         task_input=embedding_task_input,
     )
+    embedding_baseline_results = embedding_task.run(
+        cell_representation=embedding_baseline,
+        task_input=embedding_task_input,
+    )
 
+    # Run prediction task with both model output and baseline
     prediction_task_input = MetadataLabelPredictionTaskInput(
         labels=dataset.labels,
     )
-    prediction_task = MetadataLabelPredictionTask()
     prediction_results = prediction_task.run(
         cell_representation=model_output,
+        task_input=prediction_task_input,
+    )
+    prediction_baseline_results = prediction_task.run(
+        cell_representation=prediction_baseline,
         task_input=prediction_task_input,
     )
 
     # Combine all results into a single dictionary
     all_results = {
-        "clustering": [result.model_dump() for result in clustering_results],
-        "embedding": [result.model_dump() for result in embedding_results],
-        "prediction": [result.model_dump() for result in prediction_results],
+        "clustering": {
+            "model": [result.model_dump() for result in clustering_results],
+            "baseline": [result.model_dump() for result in clustering_baseline_results],
+        },
+        "embedding": {
+            "model": [result.model_dump() for result in embedding_results],
+            "baseline": [result.model_dump() for result in embedding_baseline_results],
+        },
+        "prediction": {
+            "model": [result.model_dump() for result in prediction_results],
+            "baseline": [result.model_dump() for result in prediction_baseline_results],
+        },
     }
     
     # Print as nicely formatted JSON
