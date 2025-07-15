@@ -28,15 +28,15 @@ if __name__ == "__main__":
     clustering_task = ClusteringTask(random_seed=42)
     embedding_task = EmbeddingTask()
     prediction_task = MetadataLabelPredictionTask()
-    
+
     # Get raw expression data for baseline computation
     expression_data = dataset.adata.X
-    
+
     # Compute baseline embeddings for each task
     clustering_baseline = clustering_task.compute_baseline(expression_data)
     embedding_baseline = embedding_task.compute_baseline(expression_data)
     prediction_baseline = prediction_task.compute_baseline(expression_data)
-    
+
     # Run clustering task with both model output and baseline
     clustering_task_input = ClusteringTaskInput(
         obs=dataset.adata.obs,
@@ -93,6 +93,6 @@ if __name__ == "__main__":
             "baseline": [result.model_dump() for result in prediction_baseline_results],
         },
     }
-    
+
     # Print as nicely formatted JSON
     print(json.dumps(all_results, indent=2, default=str))
