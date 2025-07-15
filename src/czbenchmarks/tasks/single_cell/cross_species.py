@@ -95,13 +95,13 @@ class CrossSpeciesIntegrationTask(Task):
 
     def _compute_metrics(
         self,
-        task_input: CrossSpeciesIntegrationTaskInput,
+        _: CrossSpeciesIntegrationTaskInput,
         task_output: CrossSpeciesIntegrationOutput,
     ) -> List[MetricResult]:
         """Computes batch integration quality metrics.
 
         Args:
-            task_input: Pydantic model with input for the task
+            _: (unused) Pydantic model with input for the task
             task_output: Pydantic model with outputs from _run_task
 
         Returns:

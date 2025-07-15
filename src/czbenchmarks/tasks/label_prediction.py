@@ -169,7 +169,7 @@ class MetadataLabelPredictionTask(Task):
 
     def _compute_metrics(
         self,
-        task_input: MetadataLabelPredictionTaskInput,
+        _: MetadataLabelPredictionTaskInput,
         task_output: MetadataLabelPredictionOutput,
     ) -> List[MetricResult]:
         """Computes classification metrics across all folds.
@@ -178,7 +178,7 @@ class MetadataLabelPredictionTask(Task):
         per classifier and overall.
 
         Args:
-            task_input: Pydantic model with input for the task
+            _: (unused) Pydantic model with input for the task
             task_output: Pydantic model results from cross-validation
 
         Returns:

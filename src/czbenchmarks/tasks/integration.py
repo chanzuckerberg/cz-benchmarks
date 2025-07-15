@@ -42,13 +42,13 @@ class BatchIntegrationTask(Task):
     def _run_task(
         self,
         cell_representation: CellRepresentation,
-        task_input: BatchIntegrationTaskInput,
+        _: BatchIntegrationTaskInput,
     ) -> BatchIntegrationOutput:
         """Run the task's core computation.
 
         Args:
             cell_representation: gene expression data or embedding for task
-            task_input: Pydantic model with inputs for the task
+            _: (unused) Pydantic model with inputs for the task
         Returns:
             BatchIntegrationOutput: Pydantic model with cell representation
         """
