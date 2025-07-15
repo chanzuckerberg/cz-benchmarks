@@ -8,7 +8,7 @@ from czbenchmarks.types import ListLike
 from .types import CellRepresentation
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
-from .base import BaseTask
+from .task import Task
 from .utils import cluster_embedding
 from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
 from ..constants import RANDOM_SEED
@@ -16,7 +16,7 @@ from ..constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
-class ClusteringTask(BaseTask):
+class ClusteringTask(Task):
     """Task for evaluating clustering performance against ground truth labels.
 
     This task performs clustering on embeddings and evaluates the results

@@ -10,10 +10,10 @@ from czbenchmarks.metrics.types import AggregatedMetricResult, MetricResult
 
 # from czbenchmarks.models.types import ModelType
 # from czbenchmarks.models import utils as model_utils
-from czbenchmarks.tasks.base import BaseTask
+from czbenchmarks.tasks.task import Task
 
 
-TaskType = TypeVar("TaskType", bound=BaseTask)
+TaskType = TypeVar("TaskType", bound=Task)
 # ModelArgsDict = dict[str, str | int]  # Arguments passed to model inference
 RuntimeMetricsDict = dict[
     str, str | int | float

@@ -5,7 +5,7 @@ import anndata as ad
 import numpy as np
 import scipy as sp
 import logging
-from ..base import BaseTask
+from ..task import Task
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry
@@ -15,7 +15,7 @@ from ...constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
-class PerturbationTask(BaseTask):
+class PerturbationTask(Task):
     """Task for evaluating perturbation prediction quality.
 
     This task computes metrics to assess how well a model predicts gene expression

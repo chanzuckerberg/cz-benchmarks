@@ -5,18 +5,18 @@ This guide explains how to create and integrate your own evaluation task into cz
 ## Steps to Add a New Task
 
 ### 1. Create a New Task Class
-- Extend the `BaseTask` class to define your custom task.
+- Extend the `Task` class to define your custom task.
 - Create a new Python file in the `czbenchmarks/tasks/` directory (or in a subdirectory if the task is modality-specific).
 
     Example:
 
     ```python
     from typing import List, Set
-    from czbenchmarks.tasks.base import BaseTask
+    from czbenchmarks.tasks.task import Task
     from czbenchmarks.datasets import DataType
     from czbenchmarks.metrics.types import MetricResult
 
-    class MyTask(BaseTask):
+    class MyTask(Task):
         def __init__(self, my_param: int = 10, *, random_seed: int = 123):
             super().__init__(random_seed=random_seed)
             self.my_param = my_param
@@ -46,7 +46,7 @@ This guide explains how to create and integrate your own evaluation task into cz
             return [MetricResult(metric_type="my_metric", value=metric_value)]
     ```
 
-- Consult `czbenchmarks/tasks/base.py` for interface details and best practices.
+- Consult `czbenchmarks/tasks/task.py` for interface details and best practices.
 - Use `display_name` to provide a human-readable name for use when displaying your task
 - The `random_seed` should be used for all sources of randomness so results are reproducible
 - Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.

@@ -9,7 +9,7 @@ cz-benchmarks is designed with modularity and reproducibility in mind. Its core 
 
 
 - **Tasks**:  
-    Define evaluation operations such as clustering, embedding evaluation, label prediction, and perturbation assessment. Tasks extend the `BaseTask` class and serve as blueprints for benchmarking.  
+    Define evaluation operations such as clustering, embedding evaluation, label prediction, and perturbation assessment. Tasks extend the `Task` class and serve as blueprints for benchmarking.  
     See :doc:`tasks` for more details.
 
 - **Metrics**:  

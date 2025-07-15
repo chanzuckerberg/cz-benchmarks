@@ -4,10 +4,10 @@ from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 
 from ...datasets import Organism
-from .base_dataset_validator import BaseDatasetValidator
+from .dataset_validator import DatasetValidator
 
 
-class BaseSingleCellLabeledValidator(BaseDatasetValidator):
+class SingleCellLabeledValidator(DatasetValidator):
     """Base validator for single-cell labeled datasets.
 
     Provides validation logic for single-cell labeled datasets, including:

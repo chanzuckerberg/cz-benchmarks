@@ -10,7 +10,7 @@ Core Modules
    Contains classes for loading and validating datasets (e.g., `SingleCellDataset`), with support for AnnData and custom metadata. See the full documentation: :doc:`./autoapi/czbenchmarks/datasets/index`.
 
 - **Tasks** (`czbenchmarks.tasks`):  
-   Provides evaluation tasks (e.g., clustering, embedding, perturbation prediction) by extending the `BaseTask` class. See the full documentation: :doc:`./autoapi/czbenchmarks/tasks/index`.
+   Provides evaluation tasks (e.g., clustering, embedding, perturbation prediction) by extending the `Task` class. See the full documentation: :doc:`./autoapi/czbenchmarks/tasks/index`.
 
 - **Metrics** (`czbenchmarks.metrics`):  
    Maintains a registry of metric functions through the `MetricRegistry` interface and organizes metrics into categories (clustering, embedding, etc.). See the full documentation: :doc:`./autoapi/czbenchmarks/metrics/index`.

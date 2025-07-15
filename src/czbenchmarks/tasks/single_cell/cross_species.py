@@ -3,14 +3,14 @@ from typing import List
 import numpy as np
 
 from ...constants import RANDOM_SEED
-from ..base import BaseTask
+from ..task import Task
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 
 
-class CrossSpeciesIntegrationTask(BaseTask):
+class CrossSpeciesIntegrationTask(Task):
     """Task for evaluating cross-species integration quality.
 
     This task computes metrics to assess how well different species' data are integrated
