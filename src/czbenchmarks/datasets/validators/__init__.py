@@ -1,7 +1,7 @@
-from .base_dataset_validator import BaseDatasetValidator
-from .base_single_cell_validator import BaseSingleCellLabeledValidator
+from .dataset_validator import DatasetValidator
+from .single_cell_validator import SingleCellLabeledValidator
 
 __all__ = [
-    "BaseDatasetValidator",
-    "BaseSingleCellLabeledValidator",
+    "DatasetValidator",
+    "SingleCellLabeledValidator",
 ]

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BaseDatasetValidator(ABC):
+class DatasetValidator(ABC):
     """Abstract base class for dataset validators. Not used in code and provided as convenience to validate user datasets.
 
     Defines the interface for validating datasets against dataset requirements.
