@@ -127,11 +127,11 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     Args:
         results_df: DataFrame containing cross-validation results. Must have columns:
             - "classifier": Name of the classifier (e.g., "lr", "knn")
-            - One of the following metric columns:
-                - "accuracy": For accuracy scores
-                - "f1": For F1 scores
-                - "precision": For precision scores
-                - "recall": For recall scores
+            And one of the following metric columns:
+            - "accuracy": For accuracy scores
+            - "f1": For F1 scores
+            - "precision": For precision scores
+            - "recall": For recall scores
         metric: Name of metric column to average ("accuracy", "f1", etc.)
         classifier: Optional classifier name to filter results
 
