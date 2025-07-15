@@ -39,13 +39,13 @@ class EmbeddingTask(Task):
         super().__init__(random_seed=random_seed)
 
     def _run_task(
-        self, cell_representation: CellRepresentation, task_input: EmbeddingTaskInput
+        self, cell_representation: CellRepresentation, _: EmbeddingTaskInput
     ) -> EmbeddingOutput:
         """Run the task's core computation.
 
         Args:
             cell_representation: gene expression data or embedding for task
-            task_input: Pydantic model with inputs for the task
+            _: (unused) Pydantic model with inputs for the task
         Returns:
             EmbeddingOutput: Pydantic model with cell representation
         """
