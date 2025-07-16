@@ -8,6 +8,9 @@ from anndata import AnnData
 from ..constants import RANDOM_SEED
 from ..tasks.types import CellRepresentation
 from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
+import anndata as ad
+from typing import Tuple
+
 
 logger = logging.getLogger(__name__)
 
@@ -145,3 +148,45 @@ def run_standard_scrna_workflow(
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]
+
+
+def align_adata_to_model_output(
+    adata: ad.AnnData, embeddings: np.ndarray, model_output_index: list[str]
+) -> Tuple[ad.AnnData, np.ndarray]:
+    """
+    Aligns an AnnData object and an embedding array to a shared index.
+
+    Args:
+        adata: The original AnnData object.
+        embeddings: The numpy array output from a model.
+        model_output_index: A list of cell ID strings corresponding to the rows
+                            of the embeddings array.
+
+    Returns:
+        A tuple containing:
+        - aligned_adata (ad.AnnData): A new AnnData object containing only the
+                                      cells present in the model output, in the
+                                      same order.
+        - embeddings (np.ndarray): The embeddings array filtered and aligned
+                                   to match the aligned_adata.
+    """
+    if embeddings.shape[0] != len(model_output_index):
+        raise ValueError(
+            f"Shape mismatch: The embeddings array has {embeddings.shape[0]} rows, "
+            f"but the model_output_index has {len(model_output_index)} entries."
+        )
+
+    output_index = pd.Index(model_output_index)
+    common_index = adata.obs.index.intersection(output_index)
+
+    if len(common_index) == 0:
+        raise ValueError(
+            "Alignment failed: None of the cell IDs from the model output were found in the AnnData object."
+        )
+
+    reordered_index = output_index[output_index.isin(common_index)]
+    aligned_adata = adata[reordered_index, :].copy()
+    embedding_filter = output_index.get_indexer(reordered_index)
+    aligned_embeddings = embeddings[embedding_filter]
+
+    return aligned_adata, aligned_embeddings
