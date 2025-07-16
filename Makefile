@@ -22,6 +22,10 @@ scgpt:
 scgenept:
 	docker build -t cz-benchmarks-models:scgenept -f docker/scgenept/Dockerfile .
 
+.PHONY: scgenept-patched
+scgenept-patched:
+	docker build -t cz-benchmarks-models:scgenept_patched -f docker/scgenept/Dockerfile.patch .
+	
 # Build the geneformer image
 .PHONY: geneformer
 geneformer:

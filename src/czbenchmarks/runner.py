@@ -220,13 +220,21 @@ class ContainerRunner:
         )
         os.makedirs(model_weights_cache_path, exist_ok=True)
 
-        # Pull the image first if it's from ECR
-        if public_ecr_registry in self.image:
-            try:
-                logger.info(f"Pulling image {self.image}...")
-                self.client.images.pull(self.image, platform="linux/amd64")
-            except Exception as e:
-                raise RuntimeError(f"Failed to pull image {self.image}: {str(e)}")
+        
+        # Check if image exists locally first
+        try:
+            self.client.images.get(self.image)
+            logger.info(f"Using existing image {self.image}")
+        except docker.errors.ImageNotFound:
+            # Pull the image if it's from ECR and not found locally
+            if public_ecr_registry in self.image:
+                try:
+                    logger.info(f"Pulling image {self.image}...")
+                    self.client.images.pull(self.image, platform="linux/amd64")
+                except Exception as e:
+                    raise RuntimeError(f"Failed to pull image {self.image}: {str(e)}")
+            else:
+                raise RuntimeError(f"Image {self.image} not found locally and not from ECR")
 
         # Prepare command based on mode (interactive or CLI args)
         command = None

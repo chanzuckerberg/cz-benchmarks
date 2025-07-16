@@ -1,0 +1,4 @@
+FROM public.ecr.aws/y4c8w5f9/cz-benchmarks-models-public:scgenept
+
+# overwrite the dataset loader inside the image
+COPY src/czbenchmarks/datasets/single_cell.py /app/package/src/czbenchmarks/datasets/single_cell.py
