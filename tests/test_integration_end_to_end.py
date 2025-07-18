@@ -5,14 +5,12 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 from czbenchmarks.constants import RANDOM_SEED
-from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.clustering import ClusteringTask, ClusteringTaskInput
 from czbenchmarks.tasks.embedding import EmbeddingTask, EmbeddingTaskInput
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask, MetadataLabelPredictionTaskInput
 from czbenchmarks.tasks.integration import BatchIntegrationTask, BatchIntegrationTaskInput
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask, CrossSpeciesIntegrationTaskInput
-from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask, PerturbationTaskInput
 from czbenchmarks.tasks.types import CellRepresentation
 
 
@@ -89,7 +87,7 @@ def mouse_dataset():
 @pytest.mark.integration
 def test_clustering_task_regression(dataset):
     """Regression test for clustering task using fixture embeddings and expected results."""
-    # Load fixture embedding instead of random values
+    # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
     # Load expected results
@@ -151,7 +149,7 @@ def test_clustering_task_regression(dataset):
 @pytest.mark.integration
 def test_embedding_task_regression(dataset):
     """Regression test for embedding task using fixture embeddings and expected results."""
-    # Load fixture embedding instead of random values
+    # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
     # Load expected results
@@ -199,7 +197,7 @@ def test_embedding_task_regression(dataset):
 @pytest.mark.integration
 def test_metadata_label_prediction_task_regression(dataset):
     """Regression test for metadata label prediction task using fixture embeddings and expected results."""
-    # Load fixture embedding instead of random values
+    # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
     # Load expected results
@@ -295,7 +293,7 @@ def test_batch_integration_task_integration(dataset):
 @pytest.mark.integration
 def test_cross_species_integration_task_regression(human_dataset, mouse_dataset):
     """Regression test for cross-species integration task using fixture embeddings and expected results."""
-    # Load fixture embeddings instead of random values
+    # Load fixture embeddings 
     human_model_output: CellRepresentation = load_embedding_fixture("human_spermatogenesis")
     mouse_model_output: CellRepresentation = load_embedding_fixture("mouse_spermatogenesis")
     multi_species_model_output = [human_model_output, mouse_model_output]
