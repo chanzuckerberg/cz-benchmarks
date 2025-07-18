@@ -21,12 +21,14 @@ from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTaskInput
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    
+
     print("Available datasets:", list_available_datasets())
-    
+
     dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], dataset.adata.shape[0])
+    model_output: CellRepresentation = np.random.rand(
+        dataset.adata.shape[0], dataset.adata.shape[0]
+    )
     np.save("/tmp/random_model_output.npy", model_output)
 
     # Initialize all tasks
