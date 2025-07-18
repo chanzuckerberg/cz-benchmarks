@@ -1,3 +1,4 @@
+import functools
 import json
 import numpy as np
 import pytest
@@ -256,7 +257,7 @@ def test_metadata_label_prediction_task_regression(dataset):
 def test_batch_integration_task_integration(dataset):
     """Integration test for batch integration task with model and baseline embeddings."""
     # Create random model output as a stand-in for real model results
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+    model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
     # Initialize batch integration task
     batch_integration_task = BatchIntegrationTask(random_seed=RANDOM_SEED)
@@ -268,9 +269,13 @@ def test_batch_integration_task_integration(dataset):
     batch_integration_baseline = batch_integration_task.compute_baseline(expression_data)
     assert batch_integration_baseline is not None
     
+    # Create batch labels from dataset metadata
+    batch_columns = ["dataset_id", "assay", "suspension_type", "donor_id"]
+    batch_labels = functools.reduce(
+            lambda a, b: a + b, [dataset.adata.obs[c].astype(str) for c in batch_columns]
+        )
+
     # Run batch integration task with both model output and baseline
-    # Create artificial batch labels for testing (ensure there are multiple batches)
-    batch_labels = np.random.choice(["batch_1", "batch_2", "batch_3"], size=len(dataset.labels))
     batch_integration_task_input = BatchIntegrationTaskInput(
         labels=dataset.labels,
         batch_labels=batch_labels,
@@ -331,16 +336,17 @@ def test_cross_species_integration_task_regression(human_dataset, mouse_dataset,
     assert "entropy_per_cell" in cross_species_model_metrics
     assert "batch_silhouette" in cross_species_model_metrics
     
-    # Regression test: Compare against expected results
-    if expected_metrics:
-        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.01)
-    
     # Verify cross-species task doesn't have baseline
     try:
         cross_species_task.compute_baseline()
         assert False, "Cross-species task should not support baseline computation"
     except NotImplementedError:
         pass  # Expected behavior
+
+    # Regression test: Compare against expected results
+    if expected_metrics:
+        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.01)
+    
 
 
 @pytest.mark.integration
