@@ -22,6 +22,34 @@ from czbenchmarks.tasks.single_cell.cross_species import (
 )
 from czbenchmarks.tasks.types import CellRepresentation
 
+"""
+This test file performs regression tests on various benchmarking tasks, using past validated expected results.
+It depends on real datasets and fixture embeddings hosted in the cloud.
+
+The regression tests ensure that the tasks produce consistent results over time, validating against expected metrics
+captured from previous successful runs. If a test fails, the expected metrics should be updated only after validation
+by a computational biologist.
+
+Fixtures:
+- Embedding fixtures are downloaded from the cloud using the `fixtures/embeddings/download_and_process_embeddings.py` script.
+- Datasets are loaded using the `load_dataset` utility, which fetches real datasets hosted in the cloud.
+
+Tasks Tested:
+1. Clustering Task
+2. Embedding Task
+3. Metadata Label Prediction Task
+4. Batch Integration Task
+5. Cross-Species Integration Task
+
+Each test validates:
+- The structure of the results.
+- Specific expectations for task-specific metrics.
+- Regression against expected metrics within a defined tolerance.
+
+Note:
+- The perturbation task integration test is currently skipped as it has not been validated for benchmarking purposes.
+"""
+
 
 # Helper functions for loading fixtures
 def load_embedding_fixture(dataset_name: str) -> np.ndarray:
