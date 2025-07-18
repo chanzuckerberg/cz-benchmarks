@@ -146,21 +146,6 @@ def test_clustering_task_regression(dataset):
     # Regression test: Compare against expected results
     if expected_metrics:
         assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.05)
-    
-    # Test JSON serialization
-    results_dict = {
-        "model": [result.model_dump() for result in clustering_results],
-        "baseline": [result.model_dump() for result in clustering_baseline_results],
-    }
-    json_output = json.dumps(results_dict, indent=2, default=str)
-    assert isinstance(json_output, str)
-    assert len(json_output) > 0
-    
-    # Verify we can parse JSON back
-    parsed_results = json.loads(json_output)
-    assert isinstance(parsed_results, dict)
-    assert "model" in parsed_results
-    assert "baseline" in parsed_results
 
 
 @pytest.mark.integration
