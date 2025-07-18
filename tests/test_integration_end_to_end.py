@@ -197,8 +197,8 @@ def test_embedding_task_regression(dataset):
 
 
 @pytest.mark.integration
-def test_prediction_task_regression(dataset):
-    """Regression test for prediction task using fixture embeddings and expected results."""
+def test_metadata_label_prediction_task_regression(dataset):
+    """Regression test for metadata label prediction task using fixture embeddings and expected results."""
     # Load fixture embedding instead of random values
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
@@ -206,46 +206,46 @@ def test_prediction_task_regression(dataset):
     expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
     expected_metrics = find_metrics_for_task_and_dataset(expected_results, "label_prediction", "tsv2_bone_marrow")
     
-    # Initialize prediction task
-    prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
+    # Initialize metadata label prediction task
+    metadata_label_prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
     
     # Get raw expression data for baseline computation
     expression_data = dataset.adata.X
     
     # Compute baseline embedding
-    prediction_baseline = prediction_task.compute_baseline(expression_data)
-    assert prediction_baseline is not None
+    metadata_label_prediction_baseline = metadata_label_prediction_task.compute_baseline(expression_data)
+    assert metadata_label_prediction_baseline is not None
     
-    # Run prediction task with fixture embedding
-    prediction_task_input = MetadataLabelPredictionTaskInput(
+    # Run metadata label prediction task with fixture embedding
+    metadata_label_prediction_task_input = MetadataLabelPredictionTaskInput(
         labels=dataset.labels,
     )
-    prediction_results = prediction_task.run(
+    metadata_label_prediction_results = metadata_label_prediction_task.run(
         cell_representation=model_output,
-        task_input=prediction_task_input,
+        task_input=metadata_label_prediction_task_input,
     )
-    prediction_baseline_results = prediction_task.run(
-        cell_representation=prediction_baseline,
-        task_input=prediction_task_input,
+    metadata_label_prediction_baseline_results = metadata_label_prediction_task.run(
+        cell_representation=metadata_label_prediction_baseline,
+        task_input=metadata_label_prediction_task_input,
     )
     
     # Validate results structure
-    assert isinstance(prediction_results, list)
-    assert len(prediction_results) > 0
-    assert isinstance(prediction_baseline_results, list)
-    assert len(prediction_baseline_results) > 0
+    assert isinstance(metadata_label_prediction_results, list)
+    assert len(metadata_label_prediction_results) > 0
+    assert isinstance(metadata_label_prediction_baseline_results, list)
+    assert len(metadata_label_prediction_baseline_results) > 0
     
-    # Test specific expectations for prediction
-    prediction_model_metrics = [r.metric_type.value for r in prediction_results]
-    assert "mean_fold_accuracy" in prediction_model_metrics
-    assert "mean_fold_f1" in prediction_model_metrics
-    assert "mean_fold_precision" in prediction_model_metrics
-    assert "mean_fold_recall" in prediction_model_metrics
-    assert "mean_fold_auroc" in prediction_model_metrics
+    # Test specific expectations for metadata label prediction
+    metadata_label_prediction_model_metrics = [r.metric_type.value for r in metadata_label_prediction_results]
+    assert "mean_fold_accuracy" in metadata_label_prediction_model_metrics
+    assert "mean_fold_f1" in metadata_label_prediction_model_metrics
+    assert "mean_fold_precision" in metadata_label_prediction_model_metrics
+    assert "mean_fold_recall" in metadata_label_prediction_model_metrics
+    assert "mean_fold_auroc" in metadata_label_prediction_model_metrics
     
     # Regression test: Compare against expected results
     if expected_metrics:
-        assert_metrics_match_expected(prediction_results, expected_metrics, tolerance=0.05)
+        assert_metrics_match_expected(metadata_label_prediction_results, expected_metrics, tolerance=0.05)
 
 
 @pytest.mark.integration
