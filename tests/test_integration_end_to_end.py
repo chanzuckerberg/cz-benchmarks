@@ -84,6 +84,12 @@ def mouse_dataset():
     return load_dataset("mouse_spermatogenesis")
 
 
+@pytest.fixture
+def rhesus_dataset():
+    """Load rhesus macaque dataset for cross-species testing."""
+    return load_dataset("rhesus_macaque_spermatogenesis")
+
+
 @pytest.mark.integration
 def test_clustering_task_regression(dataset):
     """Regression test for clustering task using fixture embeddings and expected results."""
@@ -291,12 +297,13 @@ def test_batch_integration_task_integration(dataset):
 
 
 @pytest.mark.integration
-def test_cross_species_integration_task_regression(human_dataset, mouse_dataset):
+def test_cross_species_integration_task_regression(human_dataset, mouse_dataset, rhesus_dataset):
     """Regression test for cross-species integration task using fixture embeddings and expected results."""
-    # Load fixture embeddings 
+    # Load fixture embeddings for all 3 species
     human_model_output: CellRepresentation = load_embedding_fixture("human_spermatogenesis")
     mouse_model_output: CellRepresentation = load_embedding_fixture("mouse_spermatogenesis")
-    multi_species_model_output = [human_model_output, mouse_model_output]
+    rhesus_model_output: CellRepresentation = load_embedding_fixture("rhesus_macaque_spermatogenesis")
+    multi_species_model_output = [human_model_output, mouse_model_output, rhesus_model_output]
     
     # Load expected results
     expected_results = load_expected_results_fixture("20250529_115809-1e669592.json")
@@ -305,10 +312,10 @@ def test_cross_species_integration_task_regression(human_dataset, mouse_dataset)
     # Initialize cross-species integration task
     cross_species_task = CrossSpeciesIntegrationTask(random_seed=RANDOM_SEED)
     
-    # Run cross-species integration task with fixture embeddings
+    # Run cross-species integration task with fixture embeddings for all 3 species
     cross_species_task_input = CrossSpeciesIntegrationTaskInput(
-        labels=[human_dataset.labels, mouse_dataset.labels],
-        organism_list=[human_dataset.organism, mouse_dataset.organism],
+        labels=[human_dataset.labels, mouse_dataset.labels, rhesus_dataset.labels],
+        organism_list=[human_dataset.organism, mouse_dataset.organism, rhesus_dataset.organism],
     )
     cross_species_results = cross_species_task.run(
         cell_representation=multi_species_model_output,
