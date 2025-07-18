@@ -254,10 +254,18 @@ def test_metadata_label_prediction_task_regression(dataset):
 
 
 @pytest.mark.integration
-def test_batch_integration_task_integration(dataset):
-    """Integration test for batch integration task with model and baseline embeddings."""
-    # Create random model output as a stand-in for real model results
+def test_batch_integration_task_regression(dataset):
+    """Regression test for batch integration task using fixture embeddings and expected results."""
+    # Load fixture embedding
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
+    
+    # Expected results (captured from test run on 2025-01-18)
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    # TODO: THESE RESULTS NEED TO BE VALIDATED BY A COMPUTATIONAL BIOLOGIST
+    expected_metrics = [
+        {"metric_type": "entropy_per_cell", "value": 0.5016479710268167},
+        {"metric_type": "batch_silhouette", "value": 0.8620882630348206}
+    ]
     
     # Initialize batch integration task
     batch_integration_task = BatchIntegrationTask(random_seed=RANDOM_SEED)
@@ -275,7 +283,7 @@ def test_batch_integration_task_integration(dataset):
             lambda a, b: a + b, [dataset.adata.obs[c].astype(str) for c in batch_columns]
         )
 
-    # Run batch integration task with both model output and baseline
+    # Run batch integration task with fixture embedding
     batch_integration_task_input = BatchIntegrationTaskInput(
         labels=dataset.labels,
         batch_labels=batch_labels,
@@ -299,6 +307,9 @@ def test_batch_integration_task_integration(dataset):
     batch_integration_model_metrics = [r.metric_type.value for r in batch_integration_results]
     assert "entropy_per_cell" in batch_integration_model_metrics
     assert "batch_silhouette" in batch_integration_model_metrics
+    
+    # Regression test: Compare against expected results
+    assert_metrics_match_expected(batch_integration_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
