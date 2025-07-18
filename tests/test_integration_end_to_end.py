@@ -149,7 +149,7 @@ def test_clustering_task_regression(dataset):
     
     # Regression test: Compare against expected results
     if expected_metrics:
-        assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.05)
+        assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -197,7 +197,7 @@ def test_embedding_task_regression(dataset):
     
     # Regression test: Compare against expected results
     if expected_metrics:
-        assert_metrics_match_expected(embedding_results, expected_metrics, tolerance=0.05)
+        assert_metrics_match_expected(embedding_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -249,7 +249,7 @@ def test_metadata_label_prediction_task_regression(dataset):
     
     # Regression test: Compare against expected results
     if expected_metrics:
-        assert_metrics_match_expected(metadata_label_prediction_results, expected_metrics, tolerance=0.05)
+        assert_metrics_match_expected(metadata_label_prediction_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -333,7 +333,7 @@ def test_cross_species_integration_task_regression(human_dataset, mouse_dataset,
     
     # Regression test: Compare against expected results
     if expected_metrics:
-        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.05)
+        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.01)
     
     # Verify cross-species task doesn't have baseline
     try:
