@@ -1,6 +1,8 @@
 import json
 import numpy as np
 import pytest
+from pathlib import Path
+from typing import Dict, List, Any
 
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
@@ -14,10 +16,62 @@ from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask, Pertur
 from czbenchmarks.tasks.types import CellRepresentation
 
 
+# Helper functions for loading fixtures
+def load_embedding_fixture(dataset_name: str) -> np.ndarray:
+    """Load embedding fixture from tests/fixtures/embeddings/."""
+    fixtures_dir = Path(__file__).parent / "fixtures" / "embeddings"
+    embedding_file = fixtures_dir / f"{dataset_name}_UCE_model_variant-4l.npy"
+    if dataset_name == "tsv2_bone_marrow":
+        embedding_file = fixtures_dir / f"{dataset_name}_UCE_model_variant-4l-embedding.npy"
+    
+    if not embedding_file.exists():
+        raise FileNotFoundError(f"Embedding fixture not found: {embedding_file}")
+    
+    return np.load(embedding_file)
+
+
+def load_expected_results_fixture(filename: str) -> Dict[str, Any]:
+    """Load expected results fixture from tests/fixtures/results/."""
+    fixtures_dir = Path(__file__).parent / "fixtures" / "results"
+    results_file = fixtures_dir / filename
+    
+    if not results_file.exists():
+        raise FileNotFoundError(f"Results fixture not found: {results_file}")
+    
+    with open(results_file, 'r') as f:
+        return json.load(f)
+
+
+def find_metrics_for_task_and_dataset(results: Dict[str, Any], task_name: str, dataset_name: str) -> List[Dict[str, Any]]:
+    """Find metrics for a specific task and dataset in the results fixture."""
+    for task_result in results.get("task_results", []):
+        if task_result.get("task_name") == task_name:
+            for dataset in task_result.get("datasets", []):
+                if dataset.get("name") == dataset_name:
+                    return task_result.get("metrics", [])
+    return []
+
+
+def assert_metrics_match_expected(actual_metrics: List[Any], expected_metrics: List[Dict[str, Any]], tolerance: float = 0.01):
+    """Assert that actual metrics match expected metrics within tolerance."""
+    # Convert actual metrics to comparable format
+    actual_dict = {m.metric_type.value: m.value for m in actual_metrics}
+    expected_dict = {m["metric_type"]: m["value"] for m in expected_metrics}
+    
+    # Check that all expected metrics are present
+    for metric_type, expected_value in expected_dict.items():
+        assert metric_type in actual_dict, f"Missing metric: {metric_type}"
+        actual_value = actual_dict[metric_type]
+        
+        # Allow for small numerical differences
+        assert abs(actual_value - expected_value) <= tolerance, \
+            f"Metric {metric_type}: expected {expected_value}, got {actual_value} (tolerance: {tolerance})"
+
+
 @pytest.fixture
 def dataset():
     """Load the main dataset for testing."""
-    return load_dataset("tsv2_prostate")
+    return load_dataset("tsv2_bone_marrow")
 
 
 @pytest.fixture
@@ -33,10 +87,14 @@ def mouse_dataset():
 
 
 @pytest.mark.integration
-def test_clustering_task_integration(dataset):
-    """Integration test for clustering task with model and baseline embeddings."""
-    # Create random model output as a stand-in for real model results
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+def test_clustering_task_regression(dataset):
+    """Regression test for clustering task using fixture embeddings and expected results."""
+    # Load fixture embedding instead of random values
+    model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
+    
+    # Load expected results
+    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
+    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "clustering", "tsv2_bone_marrow")
     
     # Initialize clustering task
     clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
@@ -48,7 +106,7 @@ def test_clustering_task_integration(dataset):
     clustering_baseline = clustering_task.compute_baseline(expression_data)
     assert clustering_baseline is not None
     
-    # Run clustering task with both model output and baseline
+    # Run clustering task with fixture embedding
     clustering_task_input = ClusteringTaskInput(
         obs=dataset.adata.obs,
         input_labels=dataset.labels,
@@ -85,6 +143,10 @@ def test_clustering_task_integration(dataset):
     assert "adjusted_rand_index" in clustering_model_metrics
     assert "normalized_mutual_info" in clustering_model_metrics
     
+    # Regression test: Compare against expected results
+    if expected_metrics:
+        assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.05)
+    
     # Test JSON serialization
     results_dict = {
         "model": [result.model_dump() for result in clustering_results],
@@ -102,10 +164,14 @@ def test_clustering_task_integration(dataset):
 
 
 @pytest.mark.integration
-def test_embedding_task_integration(dataset):
-    """Integration test for embedding task with model and baseline embeddings."""
-    # Create random model output as a stand-in for real model results
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+def test_embedding_task_regression(dataset):
+    """Regression test for embedding task using fixture embeddings and expected results."""
+    # Load fixture embedding instead of random values
+    model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
+    
+    # Load expected results
+    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
+    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "embedding", "tsv2_bone_marrow")
     
     # Initialize embedding task
     embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
@@ -117,7 +183,7 @@ def test_embedding_task_integration(dataset):
     embedding_baseline = embedding_task.compute_baseline(expression_data)
     assert embedding_baseline is not None
     
-    # Run embedding task with both model output and baseline
+    # Run embedding task with fixture embedding
     embedding_task_input = EmbeddingTaskInput(
         input_labels=dataset.labels,
     )
@@ -139,13 +205,21 @@ def test_embedding_task_integration(dataset):
     # Test specific expectations for embedding
     embedding_model_metrics = [r.metric_type.value for r in embedding_results]
     assert "silhouette_score" in embedding_model_metrics
+    
+    # Regression test: Compare against expected results
+    if expected_metrics:
+        assert_metrics_match_expected(embedding_results, expected_metrics, tolerance=0.05)
 
 
 @pytest.mark.integration
-def test_prediction_task_integration(dataset):
-    """Integration test for prediction task with model and baseline embeddings."""
-    # Create random model output as a stand-in for real model results
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+def test_prediction_task_regression(dataset):
+    """Regression test for prediction task using fixture embeddings and expected results."""
+    # Load fixture embedding instead of random values
+    model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
+    
+    # Load expected results
+    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
+    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "label_prediction", "tsv2_bone_marrow")
     
     # Initialize prediction task
     prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
@@ -157,7 +231,7 @@ def test_prediction_task_integration(dataset):
     prediction_baseline = prediction_task.compute_baseline(expression_data)
     assert prediction_baseline is not None
     
-    # Run prediction task with both model output and baseline
+    # Run prediction task with fixture embedding
     prediction_task_input = MetadataLabelPredictionTaskInput(
         labels=dataset.labels,
     )
@@ -183,6 +257,10 @@ def test_prediction_task_integration(dataset):
     assert "mean_fold_precision" in prediction_model_metrics
     assert "mean_fold_recall" in prediction_model_metrics
     assert "mean_fold_auroc" in prediction_model_metrics
+    
+    # Regression test: Compare against expected results
+    if expected_metrics:
+        assert_metrics_match_expected(prediction_results, expected_metrics, tolerance=0.05)
 
 
 @pytest.mark.integration
@@ -230,17 +308,21 @@ def test_batch_integration_task_integration(dataset):
 
 
 @pytest.mark.integration
-def test_cross_species_integration_task_integration(human_dataset, mouse_dataset):
-    """Integration test for cross-species integration task (model only, no baseline)."""
-    # Create random multi-species model outputs for cross-species task
-    human_model_output: CellRepresentation = np.random.rand(human_dataset.adata.shape[0], 10)
-    mouse_model_output: CellRepresentation = np.random.rand(mouse_dataset.adata.shape[0], 10)
+def test_cross_species_integration_task_regression(human_dataset, mouse_dataset):
+    """Regression test for cross-species integration task using fixture embeddings and expected results."""
+    # Load fixture embeddings instead of random values
+    human_model_output: CellRepresentation = load_embedding_fixture("human_spermatogenesis")
+    mouse_model_output: CellRepresentation = load_embedding_fixture("mouse_spermatogenesis")
     multi_species_model_output = [human_model_output, mouse_model_output]
+    
+    # Load expected results
+    expected_results = load_expected_results_fixture("20250529_115809-1e669592.json")
+    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "cross_species", "human_spermatogenesis")
     
     # Initialize cross-species integration task
     cross_species_task = CrossSpeciesIntegrationTask(random_seed=RANDOM_SEED)
     
-    # Run cross-species integration task (only with model output, no baseline)
+    # Run cross-species integration task with fixture embeddings
     cross_species_task_input = CrossSpeciesIntegrationTaskInput(
         labels=[human_dataset.labels, mouse_dataset.labels],
         organism_list=[human_dataset.organism, mouse_dataset.organism],
@@ -258,6 +340,10 @@ def test_cross_species_integration_task_integration(human_dataset, mouse_dataset
     cross_species_model_metrics = [r.metric_type.value for r in cross_species_results]
     assert "entropy_per_cell" in cross_species_model_metrics
     assert "batch_silhouette" in cross_species_model_metrics
+    
+    # Regression test: Compare against expected results
+    if expected_metrics:
+        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.05)
     
     # Verify cross-species task doesn't have baseline
     try:
