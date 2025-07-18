@@ -14,8 +14,15 @@ def initialize_hydra(config_path="./conf"):
     """
     Initialize Hydra configuration system.
 
+    This function sets up Hydra's configuration system using the specified
+    configuration directory. If Hydra is already initialized, it clears the
+    existing instance before reinitializing.
+
     Args:
-        config_path: Path to the configuration directory
+        config_path (str): Path to the configuration directory.
+
+    Returns:
+        None
     """
     if hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.core.global_hydra.GlobalHydra.instance().clear()
@@ -28,13 +35,20 @@ def initialize_hydra(config_path="./conf"):
 
 def import_class_from_config(config_path: str):
     """
-    Import a class based on the _target_ field in a configuration file.
+    Import a class based on the `_target_` field in a configuration file.
+
+    This function reads a configuration file, extracts the `_target_` field,
+    and dynamically imports the specified class.
 
     Args:
-        config_path: Path to the configuration file
+        config_path (str): Path to the configuration file.
 
     Returns:
-        class_obj: The imported class object
+        class_obj: The imported class object.
+
+    Raises:
+        AttributeError: If the specified class does not exist in the module.
+        ImportError: If the module cannot be imported.
     """
     # Load the configuration
     logger.info(f"Loading model configuration from {config_path}")

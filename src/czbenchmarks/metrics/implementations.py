@@ -1,4 +1,21 @@
-"""Implementation of metric functions and registration with the registry."""
+"""
+Implementation of metric functions and registration with the registry.
+
+This file defines and registers various metrics with a global `MetricRegistry`.
+Metrics are categorized into the following types:
+- Clustering metrics (e.g., Adjusted Rand Index, Normalized Mutual Information)
+- Embedding quality metrics (e.g., Silhouette Score)
+- Integration metrics (e.g., Entropy Per Cell, Batch Silhouette)
+- Perturbation metrics (e.g., Mean Squared Error, Pearson Correlation)
+- Label prediction metrics (e.g., Mean Fold Accuracy, Mean Fold F1 Score)
+
+Each metric is registered with:
+- A unique `MetricType` identifier.
+- The function implementing the metric.
+- Required arguments for the metric function.
+- A description of the metric's purpose.
+- Tags categorizing the metric.
+"""
 
 from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
