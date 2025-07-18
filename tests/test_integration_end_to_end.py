@@ -10,6 +10,7 @@ from czbenchmarks.tasks.embedding import EmbeddingTask, EmbeddingTaskInput
 from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask, MetadataLabelPredictionTaskInput
 from czbenchmarks.tasks.integration import BatchIntegrationTask, BatchIntegrationTaskInput
 from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask, CrossSpeciesIntegrationTaskInput
+from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask, PerturbationTaskInput
 from czbenchmarks.tasks.types import CellRepresentation
 
 
@@ -264,3 +265,12 @@ def test_cross_species_integration_task_integration(human_dataset, mouse_dataset
         assert False, "Cross-species task should not support baseline computation"
     except NotImplementedError:
         pass  # Expected behavior
+
+
+@pytest.mark.integration
+@pytest.mark.skip(reason="Perturbation task has not yet been validated as being effective")
+def test_perturbation_task_integration():
+    """Integration test for perturbation task (skipped - task not yet validated)."""
+    # This test is skipped because the perturbation task has not yet been
+    # validated as being effective for benchmarking purposes
+    pass
