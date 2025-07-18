@@ -13,9 +13,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install Miniconda
 # TODO: remove conda as it does not appear to be needed
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -p /opt/conda && \
-    rm miniconda.sh
+RUN wget -O miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh" && \
+    bash miniforge3.sh -b -p /opt/conda && \
+    rm miniforge3.sh
 
 # Add conda to path and create Python 3.11 environment
 ENV PATH="/opt/conda/bin:${PATH}"
