@@ -1,9 +1,11 @@
 import logging
 import sys
 import json
+
+from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets import dataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
-from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.datasets.utils import list_available_datasets, load_dataset
 from czbenchmarks.tasks.types import CellRepresentation
 
 # from czbenchmarks.datasets.utils import load_dataset
@@ -19,23 +21,23 @@ from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTaskInput
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
+    
+    print("Available datasets:", list_available_datasets())
+    
     dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 
-    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], dataset.adata.shape[0])
+    np.save("/tmp/random_model_output.npy", model_output)
 
     # Initialize all tasks
-    clustering_task = ClusteringTask(random_seed=42)
-    embedding_task = EmbeddingTask()
-    prediction_task = MetadataLabelPredictionTask()
-
-    # Get raw expression data for baseline computation
-    expression_data = dataset.adata.X
+    clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
+    embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
+    prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
 
     # Compute baseline embeddings for each task
-    clustering_baseline = clustering_task.compute_baseline(expression_data)
-    embedding_baseline = embedding_task.compute_baseline(expression_data)
-    prediction_baseline = prediction_task.compute_baseline(expression_data)
+    clustering_baseline = clustering_task.compute_baseline(model_output)
+    embedding_baseline = embedding_task.compute_baseline(model_output)
+    prediction_baseline = prediction_task.compute_baseline(model_output)
 
     # Run clustering task with both model output and baseline
     clustering_task_input = ClusteringTaskInput(
