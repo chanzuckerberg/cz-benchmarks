@@ -97,9 +97,12 @@ def test_clustering_task_regression(dataset):
     # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
     
-    # Load expected results
-    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
-    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "clustering", "tsv2_bone_marrow")
+    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    expected_metrics = [
+        {"metric_type": "adjusted_rand_index", "value": 0.39411565248721414},
+        {"metric_type": "normalized_mutual_info", "value": 0.6947935391845789}
+    ]
     
     # Initialize clustering task
     clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
@@ -149,8 +152,7 @@ def test_clustering_task_regression(dataset):
     assert "normalized_mutual_info" in clustering_model_metrics
     
     # Regression test: Compare against expected results
-    if expected_metrics:
-        assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.01)
+    assert_metrics_match_expected(clustering_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -158,10 +160,12 @@ def test_embedding_task_regression(dataset):
     """Regression test for embedding task using fixture embeddings and expected results."""
     # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
-    
-    # Load expected results
-    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
-    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "embedding", "tsv2_bone_marrow")
+
+    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    expected_metrics = [
+        {"metric_type": "silhouette_score", "value": 0.5428805351257324}
+    ]
     
     # Initialize embedding task
     embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
@@ -197,8 +201,7 @@ def test_embedding_task_regression(dataset):
     assert "silhouette_score" in embedding_model_metrics
     
     # Regression test: Compare against expected results
-    if expected_metrics:
-        assert_metrics_match_expected(embedding_results, expected_metrics, tolerance=0.01)
+    assert_metrics_match_expected(embedding_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -206,10 +209,16 @@ def test_metadata_label_prediction_task_regression(dataset):
     """Regression test for metadata label prediction task using fixture embeddings and expected results."""
     # Load fixture embedding 
     model_output: CellRepresentation = load_embedding_fixture("tsv2_bone_marrow")
-    
-    # Load expected results
-    expected_results = load_expected_results_fixture("20250529_004446-f1736d11.json")
-    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "label_prediction", "tsv2_bone_marrow")
+
+    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    expected_metrics = [
+        {"metric_type": "mean_fold_accuracy", "value": 0.8498314736043509},
+        {"metric_type": "mean_fold_f1", "value": 0.6800767942482768},
+        {"metric_type": "mean_fold_precision", "value": 0.7103881595031953},
+        {"metric_type": "mean_fold_recall", "value": 0.6713332088941601},
+        {"metric_type": "mean_fold_auroc", "value": 0.9864645320019907}
+    ]
     
     # Initialize metadata label prediction task
     metadata_label_prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
@@ -249,8 +258,7 @@ def test_metadata_label_prediction_task_regression(dataset):
     assert "mean_fold_auroc" in metadata_label_prediction_model_metrics
     
     # Regression test: Compare against expected results
-    if expected_metrics:
-        assert_metrics_match_expected(metadata_label_prediction_results, expected_metrics, tolerance=0.01)
+    assert_metrics_match_expected(metadata_label_prediction_results, expected_metrics, tolerance=0.01)
 
 
 @pytest.mark.integration
@@ -321,9 +329,12 @@ def test_cross_species_integration_task_regression(human_dataset, mouse_dataset,
     rhesus_model_output: CellRepresentation = load_embedding_fixture("rhesus_macaque_spermatogenesis")
     multi_species_model_output = [human_model_output, mouse_model_output, rhesus_model_output]
     
-    # Load expected results
-    expected_results = load_expected_results_fixture("20250529_115809-1e669592.json")
-    expected_metrics = find_metrics_for_task_and_dataset(expected_results, "cross_species", "human_spermatogenesis")
+    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_115809-1e669592.json)
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    expected_metrics = [
+        {"metric_type": "entropy_per_cell", "value": 0.11187911057813454},
+        {"metric_type": "batch_silhouette", "value": 0.8448842167854309}
+    ]
     
     # Initialize cross-species integration task
     cross_species_task = CrossSpeciesIntegrationTask(random_seed=RANDOM_SEED)
@@ -355,8 +366,7 @@ def test_cross_species_integration_task_regression(human_dataset, mouse_dataset,
         pass  # Expected behavior
 
     # Regression test: Compare against expected results
-    if expected_metrics:
-        assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.01)
+    assert_metrics_match_expected(cross_species_results, expected_metrics, tolerance=0.01)
     
 
 
