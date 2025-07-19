@@ -19,7 +19,8 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register custom markers
     config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests (deselect with '-m \"not integration\"')"
+        "markers",
+        "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
     )
     pytest.run_model_tests = config.getoption("--run-model-tests")
 
