@@ -9,7 +9,7 @@ import typing
 
 import tomli
 
-from czbenchmarks.cli.types import TaskResult
+# from czbenchmarks.cli.types import TaskResult
 import czbenchmarks.metrics.utils as metric_utils
 
 import click
@@ -123,38 +123,38 @@ def get_version() -> str:
     return "v" + version + git_commit
 
 
-def aggregate_task_results(results: typing.Iterable[TaskResult]) -> list[TaskResult]:
-    """Aggregate the task results by task_name, model (with args), and set(datasets).
-    Each new result will have a new set of metrics, created by aggregating together
-    metrics of the same type.
-    """
-    grouped_results = collections.defaultdict(list)
-    for result in results:
-        grouped_results[result.aggregation_key].append(result)
+# def aggregate_task_results(results: typing.Iterable[TaskResult]) -> list[TaskResult]:
+#     """Aggregate the task results by task_name, model (with args), and set(datasets).
+#     Each new result will have a new set of metrics, created by aggregating together
+#     metrics of the same type.
+#     """
+#     grouped_results = collections.defaultdict(list)
+#     for result in results:
+#         grouped_results[result.aggregation_key].append(result)
 
-    aggregated = []
-    for results_to_agg in grouped_results.values():
-        aggregated_metrics = metric_utils.aggregate_results(
-            list(
-                itertools.chain.from_iterable(tr.metrics for tr in results_to_agg)
-            )  # cast to list is unnecessary but helps testing
-        )
-        if any(tr.runtime_metrics for tr in results_to_agg):
-            raise ValueError(
-                "Aggregating runtime_metrics for TaskResults is not supported"
-            )
+#     aggregated = []
+#     for results_to_agg in grouped_results.values():
+#         aggregated_metrics = metric_utils.aggregate_results(
+#             list(
+#                 itertools.chain.from_iterable(tr.metrics for tr in results_to_agg)
+#             )  # cast to list is unnecessary but helps testing
+#         )
+#         if any(tr.runtime_metrics for tr in results_to_agg):
+#             raise ValueError(
+#                 "Aggregating runtime_metrics for TaskResults is not supported"
+#             )
 
-        first_result = results_to_agg[0]  # everything but the metrics should be common
-        aggregated_result = TaskResult(
-            task_name=first_result.task_name,
-            task_name_display=first_result.task_name_display,
-            # model=first_result.model,
-            datasets=first_result.datasets,
-            metrics=aggregated_metrics,
-            runtime_metrics={},
-        )
-        aggregated.append(aggregated_result)
-    return aggregated
+#         first_result = results_to_agg[0]  # everything but the metrics should be common
+#         aggregated_result = TaskResult(
+#             task_name=first_result.task_name,
+#             task_name_display=first_result.task_name_display,
+#             # model=first_result.model,
+#             datasets=first_result.datasets,
+#             metrics=aggregated_metrics,
+#             runtime_metrics={},
+#         )
+#         aggregated.append(aggregated_result)
+#     return aggregated
 
 
 # ----------------------------------------
