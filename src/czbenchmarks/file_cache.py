@@ -25,6 +25,16 @@ log = logging.getLogger(__name__)
 
 
 class CacheOptions(BaseModel):
+    """
+    Configuration options for caching datasets and model outputs.
+
+    Attributes:
+        download_embeddings (bool): Whether to download embeddings from the remote cache.
+        upload_embeddings (bool): Whether to upload embeddings to the remote cache.
+        upload_results (bool): Whether to upload results to the remote cache.
+        remote_cache_url (str): URL of the remote cache.
+    """
+
     download_embeddings: bool
     upload_embeddings: bool
     upload_results: bool
@@ -44,7 +54,15 @@ class CacheOptions(BaseModel):
 
 
 def get_result_url_for_remote(remote_prefix_url: str) -> str:
-    """Generate a unique URL for storing results in remote cache."""
+    """
+    Generate a unique URL for storing results in the remote cache.
+
+    Args:
+        remote_prefix_url (str): The base URL of the remote cache.
+
+    Returns:
+        str: A unique URL for storing results in the remote cache.
+    """
     nonce = token_hex(4)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     version = cli_utils.get_version()
@@ -55,13 +73,22 @@ def set_processed_datasets_cache(
     dataset: Dataset,
     dataset_name: str,
     *,
-    model_name: str,  # TODO: consider to fetch model embedding
-    # model_args: ModelArgsDict,
+    model_name: str,
     cache_options: CacheOptions,
 ) -> None:
     """
-    Write a dataset to the cache
+    Write a processed dataset to the local cache and optionally upload it to the remote cache.
+
     A "processed" dataset has been run with model inference for the given arguments.
+
+    Args:
+        dataset (Dataset): The dataset to cache.
+        dataset_name (str): Name of the dataset.
+        model_name (str): Name of the model used for processing the dataset.
+        cache_options (CacheOptions): Configuration options for caching.
+
+    Raises:
+        Exception: If serialization or upload to remote cache fails.
     """
     dataset_filename = get_processed_dataset_cache_filename(
         dataset_name,
@@ -101,12 +128,19 @@ def set_processed_datasets_cache(
 def try_processed_datasets_cache(
     dataset_name: str,
     *,
-    model_name: str,  # TODO: consider to fetch model embedding
-    # model_args: ModelArgsDict,
+    model_name: str,
     cache_options: CacheOptions,
 ) -> Dataset | None:
     """
     Deserialize and return a processed dataset from the cache if it exists, else return None.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+        model_name (str): Name of the model used for processing the dataset.
+        cache_options (CacheOptions): Configuration options for caching.
+
+    Returns:
+        Dataset | None: The processed dataset if found in the cache, otherwise None.
     """
     dataset_filename = get_processed_dataset_cache_filename(
         dataset_name,
@@ -187,7 +221,15 @@ def try_processed_datasets_cache(
 
 
 def get_remote_cache_prefix(cache_options: CacheOptions) -> str:
-    """Get the prefix ending in '/' that the remote processed datasets go under."""
+    """
+    Get the prefix ending in '/' that the remote processed datasets go under.
+
+    Args:
+        cache_options (CacheOptions): Configuration options for caching.
+
+    Returns:
+        str: The prefix URL for remote processed datasets.
+    """
     return f"{cache_options.remote_cache_url.rstrip('/')}/{cli_utils.get_version()}/processed-datasets/"
 
 
@@ -195,10 +237,16 @@ def get_processed_dataset_cache_filename(
     dataset_name: str,
     *,
     model_name: str,
-    # model_args: ModelArgsDict
 ) -> str:
     """
     Generate a unique filename for the given dataset and model arguments.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+        model_name (str): Name of the model used for processing the dataset.
+
+    Returns:
+        str: A unique filename for the processed dataset.
     """
     # if model_args:
     #     model_args_str = f"{model_name}_" + "_".join(
@@ -214,10 +262,16 @@ def get_processed_dataset_cache_path(
     dataset_name: str,
     *,
     model_name: str,
-    #  model_args: ModelArgsDict
 ) -> Path:
     """
     Return a unique file path in the cache directory for the given dataset and model arguments.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+        model_name (str): Name of the model used for processing the dataset.
+
+    Returns:
+        Path: The file path for the processed dataset in the cache directory.
     """
     cache_dir = Path(PROCESSED_DATASETS_CACHE_PATH).expanduser().absolute()
     filename = get_processed_dataset_cache_filename(
