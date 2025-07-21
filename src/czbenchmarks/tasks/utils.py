@@ -8,8 +8,6 @@ from anndata import AnnData
 from ..constants import RANDOM_SEED
 from ..tasks.types import CellRepresentation
 from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
-import anndata as ad
-from typing import Tuple
 
 
 logger = logging.getLogger(__name__)
