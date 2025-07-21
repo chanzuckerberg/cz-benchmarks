@@ -46,6 +46,29 @@ If you plan to contribute or debug the library, install it from source:
     pip install -e ".[dev]"
     ```
 
+## Building and using the Patched cz-benchmarks SCGENEPT Image for Performance Evaluation
+1. From the root of your repo, run:
+
+   ```bash
+   make scgenept-patched
+   ```
+
+2.	Verify the image was built:
+
+    ```
+    docker images | grep scgenept_patched
+    ```
+
+3.	Point the CZ-Benchmarks runner at your patched image by using the custom models config:
+    ```    
+    dataset = run_inference(
+        "SCGENEPT",
+        ...        
+        custom_config_path="conf/models-patched.yaml",
+        ...
+        )
+    ```
+
 ## Running Benchmarks
 
 You can run benchmarks using the CLI or programmatically in Python.
