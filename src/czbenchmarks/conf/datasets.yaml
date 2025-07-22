@@ -189,34 +189,34 @@ datasets:
   allen_soundlife_cd4_t_cells:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/eac87a3e-7243-4821-8244-dd558e20d230.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_cd4_t_cells.h5ad
 
   allen_soundlife_cd8_t_cells:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/4b1ae172-2b43-48e8-ba0e-7cc62cd95b78.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_cd8_t_cells.h5ad
 
   allen_soundlife_monocytes:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/4ce0b6ee-f388-439a-b403-1046224eb74c.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_monocytes.h5ad
 
   allen_soundlife_b_and_plasma_cells:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/52b013d7-21d5-4c0f-a8ea-af6abdcc045b.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_b_and_plasma_cells.h5ad
 
   allen_soundlife_nk_cells_and_ilcs:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/2fd624a4-55f0-4877-99f9-e04b4a89b8b5.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_nk_cells_and_ilcs.h5ad
 
   allen_soundlife_dcs:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/33929345-ded7-470b-9947-68c0223625ba.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_dcs.h5ad
 
   allen_soundlife_other_cells:
     _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/0712266c-8a39-4b8f-842b-3b6c75a8215e.h5ad
+    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_other_cells.h5ad
