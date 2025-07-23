@@ -28,30 +28,28 @@ For single-cell datasets:
 
 ```yaml
 datasets:
-  ...
+  my_labeled_dataset:
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    path: /path/to/your/labeled_data.h5ad
+    organism: ${organism:HUMAN}
+    label_column_key: "cell_type" # Column in adata.obs with labels
 
-  my_labeled_dataset:
-    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
-    path: /path/to/your/labeled_data.h5ad
-    organism: ${organism:HUMAN}
-    label_column_key: "cell_type" # Column in adata.obs with labels
-
-  my_perturbation_dataset:
-    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
-    path: /path/to/your/perturb_data.h5ad
-    organism: ${organism:MOUSE}
-    condition_key: "condition" # Column in adata.obs for 'ctrl' vs perturbation
-    split_key: "split" # Column in adata.obs for 'train'/'test'/'val'
+  my_perturbation_dataset:
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
+    path: /path/to/your/perturb_data.h5ad
+    organism: ${organism:MOUSE}
+    condition_key: "condition" # Column in adata.obs for 'ctrl' vs perturbation
+    split_key: "split" # Column in adata.obs for 'train'/'test'/'val'
 ```
 
 - **Explanation:**
-  -   `datasets`: Defines the datasets to be loaded.
-  -   `my_labeled_dataset`: A unique identifier for your dataset.
-  -   `_target_`: Specifies the `Dataset` class to instantiate. `cz-benchmarks` supports `SingleCellLabeledDataset` (for tasks requiring ground-truth labels like clustering or classification) and `SingleCellPerturbationDataset` (for perturbation prediction tasks).
-  -   `path`: Path to your `.h5ad` file. This may be a local filesystem path or an S3 URL (`s3://...`).
-  -   `organism`: Specify the organism, which must be a value from the `czbenchmarks.datasets.types.Organism` enum (e.g., HUMAN, MOUSE).
-  -   `label_column_key`: (For `SingleCellLabeledDataset`) The column in `.obs` containing the labels.
-  -   `condition_key` / `split_key`: (For `SingleCellPerturbationDataset`) Columns in `.obs` for perturbation conditions and data splits.
+  - `datasets`: Defines the datasets to be loaded.
+  - `my_labeled_dataset`: A unique identifier for your dataset.
+  - `_target_`: Specifies the `Dataset` class to instantiate. `cz-benchmarks` supports `SingleCellLabeledDataset` (for tasks requiring ground-truth labels like clustering or classification) and `SingleCellPerturbationDataset` (for perturbation prediction tasks).
+  - `path`: Path to your `.h5ad` file. This may be a local filesystem path or an S3 URL (`s3://...`).
+  - `organism`: Specify the organism, which must be a value from the `czbenchmarks.datasets.types.Organism` enum (e.g., HUMAN, MOUSE).
+  - `label_column_key`: (For `SingleCellLabeledDataset`) The column in `.obs` containing the labels.
+  - `condition_key` / `split_key`: (For `SingleCellPerturbationDataset`) Columns in `.obs` for perturbation conditions and data splits.
 
   You may add multiple datasets to thie files, as children of `datasets`.
 

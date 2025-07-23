@@ -124,21 +124,25 @@ These errors occur when calling `task.run()` and are often related to mismatches
 
 ## General Tips for Debugging
 
-  - **Start Small**: When debugging, use a small, fast-running dataset (like `tsv2_bladder`) or a subset of your custom data to quickly iterate.
-  - **Isolate the Problem**: Determine if the issue is in data loading or task execution. First, ensure your dataset loads and validates successfully:
+- **Start Small**: When debugging, use a small, fast-running dataset (like `tsv2_bladder`) or a subset of your custom data to quickly iterate.
+- **Isolate the Problem**: Determine if the issue is in data loading or task execution. First, ensure your dataset loads and validates successfully:
     ```python
     dataset = load_dataset("my_dataset", config_path="my_config.yaml")
     dataset.load_data()
     dataset.validate()
     print(dataset.adata)
     ```
-  - **Check Shapes and Types**: Before running a task, print the shapes and types of your inputs to catch mismatches early.
+- **Check Shapes and Types**: Before running a task, print the shapes and types of your inputs to catch mismatches early.
     ```python
     print(f"Embedding shape: {my_embedding.shape}")
     print(f"Labels length: {len(dataset.labels)}")
     print(f"Embedding type: {type(my_embedding)}")
     ```
-  - **Use a Debugger**: Use an interactive debugger like `pdb` or your IDE's built-in debugger to step through the code, inspect variables, and understand the execution flow.
+
+- **Use a Debugger**: Use an interactive debugger like `pdb` or your IDE's built-in debugger to step through the code, inspect variables, and understand the execution flow.
     ```python
     import pdb; pdb.set_trace()
     ```
+- **Dependency Conflicts**: Ensure all dependencies are installed in a clean virtual environment. Recreate the environment if needed.
+
+- **hnswlib package installation error**: If the `hnswlib` package fails to install with an error like `fatal error: Python.h: No such file or directory`, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via `sudo apt-get install python3-dev`.

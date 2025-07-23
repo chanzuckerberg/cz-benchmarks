@@ -68,29 +68,3 @@ Mac requires an additional dependency, `hnswlib`, which should be installed with
     ```
 
 > 💡 **Tip**: For more details, refer to the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
-
----
-
-# Troubleshooting
-
-## Common Issues and Fixes
-
-1. **Command Not Found**  
-    Ensure the package is installed and accessible in your shell. If not, reinstall it:
-
-    ```bash
-    pip install czbenchmarks
-    ```
-
-2. **Docker Fails to Run**  
-    Verify Docker is installed and running. Check permissions for your user account. Restart Docker if necessary.
-
-3. **Memory Errors**  
-    Reduce the dataset size or process the data in smaller batches during inference.
-
-54. **Dependency Conflicts**  
-    Ensure all dependencies are installed in a clean virtual environment. Recreate the environment if needed.
-
-5. **hnswlib package installation error**
-
-    If the `hnswlib` package fails to install with an error like `fatal error: Python.h: No such file or directory`, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via `sudo apt-get install python3-dev`.

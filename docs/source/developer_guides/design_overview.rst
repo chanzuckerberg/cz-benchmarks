@@ -32,15 +32,16 @@ Its core components include:
     These are Pydantic models that ensure type-safe data transfer. ``TaskInput`` bundles the necessary information from a ``Dataset`` (like ground-truth labels), while ``TaskOutput`` structures the results from a task's internal computation before metrics are calculated.
 
 - **Tasks**:  
-  Define the different types of evaluations you can run, such as clustering, embedding quality, label prediction, and perturbation analysis. Think of Tasks as the "evaluation engine" of the framework. Each `Task` (like `ClusteringTask` or `PerturbationTask`) contains all the logic needed to run a specific biological benchmark. You give a Task your model’s `CellRepresentation`, and it computes the relevant performance metrics for you.  
-  Tasks are built by extending the base `Task` class, making it easy to create new types of evaluations or customize existing ones.  
-  See :doc:`tasks` for more details.
+    Define the different types of evaluations you can run, such as clustering, embedding quality, label prediction, and perturbation analysis. Think of Tasks as the "evaluation engine" of the framework. Each `Task` (like `ClusteringTask` or `PerturbationTask`) contains all the logic needed to run a specific biological benchmark. You give a Task your model’s `CellRepresentation`, and it computes the relevant performance metrics for you.  
+    Tasks are built by extending the base `Task` class, making it easy to create new types of evaluations or customize existing ones.  
+    See :doc:`tasks` for more details.
 
 - **Metrics**:  
     A central `MetricRegistry` handles the registration and computation of metrics, enabling consistent and reusable evaluation criteria.  
     See :doc:`metrics` for more details.
 
-- **MetricRegistry** and **MetricResult**: The registry provides a centralized way to compute metrics (`ADJUSTED_RAND_INDEX`, `MEAN_SQUARED_ERROR`, etc.). All tasks use this registry to produce a standardized list of `MetricResult` objects.    
+- **MetricRegistry** and **MetricResult**: 
+    The registry provides a centralized way to compute metrics (`ADJUSTED_RAND_INDEX`, `MEAN_SQUARED_ERROR`, etc.). All tasks use this registry to produce a standardized list of `MetricResult` objects.    
 
 - **Configuration Management**:  
     Uses Hydra and OmegaConf to dynamically compose configurations for datasets.
@@ -73,20 +74,20 @@ The Standard Workflow
 
 A typical benchmarking workflow follows these steps:
 
-1. **Load Dataset**  
-  Use ``dataset = load_dataset(...)`` to load a dataset. This gives you a `Dataset` object with loaded data (e.g., `dataset.adata`) and relevant metadata (`dataset.labels`).
+1. **Load Dataset**:  
+    Use ``dataset = load_dataset(...)`` to load a dataset. This gives you a ``Dataset`` object with loaded data (e.g., ``dataset.adata``) and relevant metadata (e.g., ``dataset.labels``).
 
-2. **User Generates Model Output**  
-  Run your own AI model using the data from the `Dataset` object (e.g., `dataset.adata.X`) to produce a `CellRepresentation` (like a cell embedding). For example: ``embedding = my_model(dataset.adata)``. This step happens outside the `cz-benchmarks` package.
+2. **User Generates Model Output**:  
+    Run your own AI model using the data from the ``Dataset`` object (e.g., ``dataset.adata.X``) to produce a ``CellRepresentation`` (such as a cell embedding). For example: ``embedding = my_model(dataset.adata)``. This step happens outside the ``cz-benchmarks`` package.
 
-3. **Prepare Task Inputs**  
-  Create an instance of the task-specific `TaskInput` class, populating it with the necessary ground-truth data from the `Dataset` object. For example: ``task_input = TaskInput(labels=dataset.labels)``.
+3. **Prepare Task Inputs**:
+    Create an instance of the task-specific ``TaskInput`` class, populating it with the necessary ground-truth data from the ``Dataset`` object. For example: ``task_input = TaskInput(labels=dataset.labels)``.
 
-4. **Instantiate and Run Task**  
-  Instantiate the desired `Task` and call its `.run()` method, passing your `CellRepresentation` and the prepared `TaskInput`. For example: ``results = task.run(embedding, task_input)``.
+4. **Instantiate and Run Task**:
+    Instantiate the desired ``Task`` and call its ``.run()`` method, passing your ``CellRepresentation`` and the prepared ``TaskInput``. For example: ``results = task.run(embedding, task_input)``.
 
-5. **Analyze Results**  
-  The task returns a list of `MetricResult` objects, which you can then analyze, plot, or save.
+5. **Analyze Results**:
+    The task returns a list of ``MetricResult`` objects, which you can then analyze, plot, or save.
 
 .. raw:: html
 

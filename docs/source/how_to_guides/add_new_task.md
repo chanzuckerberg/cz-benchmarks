@@ -6,13 +6,13 @@ This guide explains how to create and integrate your own evaluation task into cz
 
 ### 1. Define Task-Specific Input and Output Classes
 
--   Create Pydantic models that inherit from `TaskInput` and `TaskOutput` to define the data your task needs and produces.
+- Create Pydantic models that inherit from `TaskInput` and `TaskOutput` to define the data your task needs and produces.
     
 
 ### 2. Create a New Task Class
 
--   Extend the `Task` class to define your custom task.
--   Create a new Python file in the `czbenchmarks/tasks/` directory.
+- Extend the `Task` class to define your custom task.
+- Create a new Python file in the `czbenchmarks/tasks/` directory.
     
     Example:
     
@@ -73,16 +73,16 @@ This guide explains how to create and integrate your own evaluation task into cz
     
     ```
     
--   Consult `czbenchmarks/tasks/task.py` for interface details.
--   Use `display_name` to provide a human-readable name for your task.
--   The `random_seed` should be used for all sources of randomness so results are reproducible.
--   Implement the `_run_task` method to define the core logic of your task. It takes a `cell_representation` (e.g., a model's embedding) and your custom `TaskInput` model. It should return an instance of your custom `TaskOutput` model.
--   Implement the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a metric that is not already supported, refer to [Adding a New Metric](./add_new_metric.md).
+- Consult `czbenchmarks/tasks/task.py` for interface details.
+- Use `display_name` to provide a human-readable name for your task.
+- The `random_seed` should be used for all sources of randomness so results are reproducible.
+- Implement the `_run_task` method to define the core logic of your task. It takes a `cell_representation` (e.g., a model's embedding) and your custom `TaskInput` model. It should return an instance of your custom `TaskOutput` model.
+- Implement the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a metric that is not already supported, refer to [Adding a New Metric](./add_new_metric.md).
     
 
 ### 3. Register the Task
 
--   Import and add your new task classes to the `__all__` list in `czbenchmarks/tasks/__init__.py` to make them easily accessible.
+- Import and add your new task classes to the `__all__` list in `czbenchmarks/tasks/__init__.py` to make them easily accessible.
     
     ```python
     # In czbenchmarks/tasks/__init__.py

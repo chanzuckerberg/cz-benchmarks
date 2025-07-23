@@ -8,7 +8,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
 ## Key Components
 
--  [Dataset](../autoapi/czbenchmarks/datasets/dataset/index)  
+- [Dataset](../autoapi/czbenchmarks/datasets/dataset/index)  
    An abstract class that provides ensures all concrete classes provide the following functionality:
 
    - Loading a dataset file into memory.
@@ -19,7 +19,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    All dataset types must inherit from `Dataset`.
 
--  [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
+- [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
    An abstract implementation of `Dataset` for single-cell data.
 
    Responsibilities:
@@ -28,7 +28,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - Stores Anndata in `adata` instance variable.
    - Validates gene name prefixes and that expression values are raw counts.
 
--  [SingleCellLabeledDataset](../autoapi/czbenchmarks/datasets/single_cell_labeled/index)  
+- [SingleCellLabeledDataset](../autoapi/czbenchmarks/datasets/single_cell_labeled/index)  
    Subclass of `SingleCellDataset` designed for perturbation benchmarks.
 
    Responsibilities:
@@ -37,7 +37,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - Validates the label column exists
 
 
--  [SingleCellPerturbationDataset](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index)  
+- [SingleCellPerturbationDataset](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index)  
    Subclass of `SingleCellDataset` designed for perturbation benchmarks.
 
    Responsibilities:
@@ -53,7 +53,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - `"GENE+ctrl"`: single-gene perturbation
    - `"GENE1+GENE2"`: combinatorial perturbation
 
--  [Organism](../autoapi/czbenchmarks/datasets/types/index)  
+- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
    Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
 ## Adding a New Dataset
