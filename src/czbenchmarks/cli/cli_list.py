@@ -1,32 +1,14 @@
-import argparse
-import sys
+import click
+from .registry import TASK_REGISTRY
+from ..datasets import utils as dataset_utils
 
-
-from czbenchmarks.datasets import utils as dataset_utils
-from czbenchmarks.tasks import utils as task_utils
-
-
-def add_arguments(parser: argparse.ArgumentParser) -> None:
-    """
-    Add list command arguments to the parser.
-    """
-    parser.add_argument(
-        "list_type",
-        choices=["datasets", "tasks"],
-        help="List available datasets or tasks.",
-    )
-
-
-def get_resource_list(resource: str) -> str:
-    """
-    List available datasets or tasks.
-    """
-    if resource == "datasets":
-        sys.stdout.write(" ".join(dataset_utils.list_available_datasets()))
-    elif resource == "tasks":
-        sys.stdout.write(" ".join(task_utils.TASK_NAMES))
-    sys.stdout.write("\n")
-
-
-def main(args: argparse.Namespace) -> None:
-    get_resource_list(args.list_type)
+@click.command(name="list")
+@click.argument("list_type", type=click.Choice(["datasets", "tasks"]))
+def list_cmd(list_type: str):
+    """List available datasets or tasks."""
+    if list_type == "tasks":
+        for name, task_def in TASK_REGISTRY.items():
+            click.echo(f"- {name}: {task_def.description}")
+    elif list_type == "datasets":
+        datasets = dataset_utils.list_available_datasets()
+        click.echo("\n".join(datasets))
