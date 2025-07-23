@@ -101,7 +101,7 @@ To add a new metric to the registry:
    )
    ```
 
-4. **Use in your task or CLI:**  
+4. **Use in your task:**  
    Now the metric is available for any task to compute.
 
 ## Using Metric Tags
