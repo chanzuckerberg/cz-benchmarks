@@ -60,46 +60,58 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
 To define a custom dataset:
 
-1. **Inherit from `Dataset`** and implement:
-
-   TODO: update
-
-   - `_validate(self)` — raise exceptions for missing or malformed data
-   - `load_data(self)` — populate `self.inputs` with required values
-
+1. **Inherit from `Dataset`** or one of its subclasses (e.g., `SingleCellDataset`).
+2. Implement the abstract methods:
+    - `load_data(self)` — Populate instance variables (e.g., `self.adata`, `self.labels`) with data loaded from `self.path`.
+    - `store_task_inputs(self)` — Save processed data needed by tasks to the `task_inputs_dir`.
+    - `_validate(self)` — Raise exceptions for missing or malformed data.
 
 
 ### Example Skeleton
 
-TODO: Update
-
 ```python
-from czbenchmarks.datasets.base import Dataset
-from czbenchmarks.datasets.types import DataType, Organism
+from czbenchmarks.datasets import SingleCellDataset
+from czbenchmarks.datasets.types import Organism
 import anndata as ad
 
-class MyCustomDataset(Dataset):
+class MyCustomDataset(SingleCellDataset):
     def load_data(self):
-        adata = ad.read_h5ad(self.path)
+        # First, load the base data
+        super().load_data()
+        # Then, load any custom data. For example, a special annotation.
+        if "my_custom_key" not in self.adata.obs:
+            raise ValueError("Dataset is missing 'my_custom_key' in obs.")
+        self.my_annotation = self.adata.obs["my_custom_key"]
 
     def _validate(self):
-        adata = self.get_input(DataType.ANNDATA)
-        assert "my_custom_key" in adata.obs.columns, "Missing key!"
+        # First, run parent validation
+        super()._validate()
+        # Then, add custom validation logic
+        assert all(self.my_annotation.notna()), "Custom annotation has missing values!"
+
+    def store_task_inputs(self):
+        # This method would be implemented to save any derived data
+        # that tasks might need.
+        pass
 ```
 
-## Accessing Inputs and Outputs
+## Accessing Data
 
-Use the following methods for safe access:
+Once a dataset is loaded, its data is stored in instance attributes, which can be accessed directly.
 
 ```python
-dataset.get_input(DataType.ANNDATA)
-dataset.get_input(DataType.METADATA)
+# For a SingleCellLabeledDataset
+dataset.load_data()
+adata_object = dataset.adata
+labels_series = dataset.labels
+
+# For a SingleCellPerturbationDataset
+dataset.load_data()
+control_adata = dataset.adata
+truth_data_dict = dataset.perturbation_truth
 ```
 
-
 ## Tips for Developers
-
-TODO: Add others?
 
 - **AnnData Views:** Use `.copy()` when slicing to avoid "view" issues in Scanpy.
 

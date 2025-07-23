@@ -21,8 +21,12 @@ Additional Utilities
 - **Utils** (`czbenchmarks.utils`):  
    Contains utility functions and helpers used across the package. See the full documentation: :doc:`./autoapi/czbenchmarks/utils/index`.
 
-- **CLI** (`czbenchmarks.cli`):  
-   Command-line interface for interacting with the cz-benchmarks package. See the full documentation: :doc:`czbenchmarks.cli <./autoapi/czbenchmarks/cli/cli/index>`.
+- **File Utils** (`czbenchmarks.file_utils`):  
+   Provides file handling utilities, such as loading datasets from various formats. See the full documentation: :doc:`./autoapi/czbenchmarks/file_utils/index`.
+
+- **Cache** (`czbenchmarks.file_cache`):  
+   Implements caching mechanisms to speed up repeated evaluations by storing results. See the full documentation: :doc:`./autoapi/czbenchmarks/file_cache/index`.
+
 
 .. .. toctree::
 ..     :maxdepth: 1
@@ -32,4 +36,3 @@ Additional Utilities
 ..     ./autoapi/czbenchmarks/tasks/index.rst
 ..     ./autoapi/czbenchmarks/metrics/index.rst
 ..     ./autoapi/czbenchmarks/utils/index.rst
-..     ./autoapi/czbenchmarks/runner/index.rst
