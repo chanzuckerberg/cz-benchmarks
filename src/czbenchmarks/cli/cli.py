@@ -4,12 +4,15 @@ from .cli_list import list_cmd
 from .cli_run import run
 from .utils import get_version
 
+
 @click.group()
 @click.version_option(version=get_version(), prog_name="czbenchmarks")
 @click.option(
     "--log-level",
     "-ll",
-    type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
+    type=click.Choice(
+        ["debug", "info", "warning", "error", "critical"], case_sensitive=False
+    ),
     default="info",
     help="Set the logging level.",
 )
@@ -22,6 +25,7 @@ def main(log_level: str):
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         force=True,
     )
+
 
 # Add subcommands to the main group
 main.add_command(list_cmd)

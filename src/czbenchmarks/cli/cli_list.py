@@ -2,6 +2,7 @@ import click
 from .registry import TASK_REGISTRY
 from ..datasets import utils as dataset_utils
 
+
 @click.command(name="list")
 @click.argument("list_type", type=click.Choice(["datasets", "tasks"]))
 def list_cmd(list_type: str):

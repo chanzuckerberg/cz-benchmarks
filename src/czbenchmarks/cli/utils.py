@@ -13,8 +13,10 @@ import subprocess
 import functools
 import logging
 import tomli
-import os
 from pathlib import Path
+import inspect
+from typing import Set
+
 
 log = logging.getLogger(__name__)
 
@@ -107,25 +109,89 @@ def get_version() -> str:
     git_commit = _get_git_commit(version)
     return "v" + version + git_commit
 
-def add_options(options: List[TaskParameter], is_baseline: bool = False) -> Callable:
+
+# These names are sourced from data objects, not the CLI.
+RESERVED_INPUT_NAMES: Set[str] = {
+    "obs",
+    "var_names",
+    "input_labels",
+    "labels",
+    "batch_labels",
+    "perturbation_truth",
+    "organism_list",
+    "cell_representation",
+}
+RESERVED_BASELINE_NAMES: Set[str] = {
+    "self",
+    "expression_data",
+    "cell_representation",
+    "kwargs",
+    "obs_names",
+    "var_names",
+}
+
+
+def add_options(options: List[TaskParameter]) -> Callable:
     """A decorator that adds a list of click options to a command."""
+
     def decorator(f):
         for option in reversed(options):
-            # Prefix baseline parameters to avoid clashes
-            param_name = f"--baseline-{option.name.replace('_', '-')}" if is_baseline else f"--{option.name.replace('_', '-')}"
-            kwarg_name = f"baseline_{option.name}" if is_baseline else option.name
-
             f = click.option(
-                param_name,
-                kwarg_name,
+                f"--{option.name.replace('_', '-')}",
+                option.name,
                 type=option.type,
-                help=f"{option.help}{' (for baseline)' if is_baseline else ''}",
+                help=option.help,
                 default=option.default,
                 required=option.required,
                 is_flag=option.is_flag,
             )(f)
         return f
+
     return decorator
+
+
+def discover_task_parameters(task_def: TaskDefinition) -> List[TaskParameter]:
+    """Inspects a Task's Input model and discovers its CLI parameters."""
+    params = []
+    for name, field in task_def.input_model.model_fields.items():
+        if name in RESERVED_INPUT_NAMES:
+            continue
+        params.append(
+            TaskParameter(
+                name=name,
+                type=field.annotation,
+                help=field.description or "",
+                default=field.default,
+                required=field.is_required(),
+            )
+        )
+    return params
+
+
+def discover_baseline_parameters(task_def: TaskDefinition) -> List[TaskParameter]:
+    """Inspects a Task's compute_baseline method for configurable args."""
+    params = []
+    try:
+        sig = inspect.signature(task_def.task_class.compute_baseline)
+        for param in sig.parameters.values():
+            if param.name in RESERVED_BASELINE_NAMES or param.kind == param.VAR_KEYWORD:
+                continue
+            params.append(
+                TaskParameter(
+                    name=f"baseline_{param.name}",
+                    type=param.annotation
+                    if param.annotation != inspect.Parameter.empty
+                    else str,
+                    help=f"Baseline parameter for {param.name}.",
+                    default=param.default
+                    if param.default != inspect.Parameter.empty
+                    else None,
+                    required=param.default == inspect.Parameter.empty,
+                )
+            )
+    except (TypeError, AttributeError):
+        pass  # Task may not have a compute_baseline method
+    return params
 
 
 def get_datasets(dataset_names: List[str]) -> List[Dataset]:
@@ -142,52 +208,66 @@ def load_embedding(path: str) -> CellRepresentation:
         if path.endswith(".npy"):
             return np.load(path)
         elif path.endswith(".csv"):
-            return pd.read_csv(path).values
+            return pd.read_csv(path, index_col=0).values
         else:
-            raise NotImplementedError("Only .npy and .csv embedding files are supported.")
+            raise NotImplementedError(
+                "Only .npy and .csv embedding files are supported."
+            )
     except Exception as e:
         raise click.BadParameter(f"Could not load embedding from '{path}': {e}")
 
 
-def prepare_task_inputs(task_def: TaskDefinition, datasets: List[Dataset], cli_args: dict) -> Any:
-    """
-    Gathers all necessary data from datasets and CLI args, then validates
-    and constructs the Pydantic TaskInput model.
-    """
-    # This dictionary holds everything the TaskInput model might need.
-    # It sources data from the loaded datasets first, then from CLI arguments.
+def prepare_task_inputs(
+    task_def: TaskDefinition, datasets: List[Dataset], cli_args: dict
+) -> Any:
+    """Gathers data from all sources, validates, and constructs the Pydantic TaskInput model."""
     available_data = {}
-    
-    # Handle single vs. multi-dataset tasks
+
     if task_def.requires_multiple_datasets:
         available_data["organism_list"] = [d.organism for d in datasets]
-        available_data["labels"] = [getattr(d, 'labels', None) for d in datasets]
+        available_data["labels"] = (
+            [d.adata.obs[cli_args["label_key"]] for d in datasets]
+            if "label_key" in cli_args
+            else []
+        )
     else:
-        # Most tasks operate on a single dataset
         dataset = datasets[0]
         available_data["obs"] = dataset.adata.obs
         available_data["var_names"] = dataset.adata.var_names
-        # Use getattr to safely access optional attributes
-        available_data["input_labels"] = getattr(dataset, 'labels', None)
-        available_data["labels"] = getattr(dataset, 'labels', None)
-        available_data["perturbation_truth"] = getattr(dataset, 'perturbation_truth', None)
-        if "batch_key" in cli_args and cli_args["batch_key"]:
-            available_data["batch_labels"] = dataset.adata.obs[cli_args["batch_key"]]
+        available_data["perturbation_truth"] = getattr(
+            dataset, "perturbation_truth", None
+        )
 
-    # Add remaining CLI args
+        if cli_args.get("label_key"):
+            label_key = cli_args["label_key"]
+            if label_key not in dataset.adata.obs:
+                raise click.BadParameter(
+                    f"Label key '{label_key}' not found in dataset.",
+                    param_hint="--label-key",
+                )
+            available_data["input_labels"] = dataset.adata.obs[label_key]
+            available_data["labels"] = dataset.adata.obs[label_key]
+
+        if cli_args.get("batch_key"):
+            batch_key = cli_args["batch_key"]
+            if batch_key not in dataset.adata.obs:
+                raise click.BadParameter(
+                    f"Batch key '{batch_key}' not found in dataset.",
+                    param_hint="--batch-key",
+                )
+            available_data["batch_labels"] = dataset.adata.obs[batch_key]
+
     available_data.update(cli_args)
-    
-    # Filter available_data to only what the model needs
+
     model_fields = task_def.input_model.model_fields.keys()
     final_args = {k: v for k, v in available_data.items() if k in model_fields}
 
     try:
         return task_def.input_model(**final_args)
     except ValidationError as e:
-        # Provide clean, user-friendly error messages
         error_msg = f"Invalid parameters for task '{task_def.display_name}':\n"
         for error in e.errors():
-            loc = " -> ".join(map(str, error['loc']))
+            loc = " -> ".join(map(str, error["loc"]))
             error_msg += f"  - {loc}: {error['msg']}\n"
         raise click.UsageError(error_msg)
 
@@ -198,7 +278,7 @@ def write_results(results: List[Any], output_file: str | None):
     results_dict = [res.model_dump(mode="json") for res in aggregated]
 
     if output_file:
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(results_dict, f, indent=2)
         click.echo(f"Results saved to {output_file}")
     else:
