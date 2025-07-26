@@ -21,12 +21,11 @@ class TestSingleCellLabeledValidator:
     def test_validate_dataset(self, tmp_path):
         """Test validation logic for a valid dataset."""
         dummy_path = tmp_path / "dummy.h5ad"
-        dummy_path.touch()  # Create an empty file
+        dummy_path.touch()
 
         import anndata
         import numpy as np
 
-        # Create a minimal AnnData object with required keys
         import pandas as pd
 
         adata = anndata.AnnData(
@@ -40,10 +39,9 @@ class TestSingleCellLabeledValidator:
             organism=Organism.HUMAN,
             label_column_key="cell_type",
         )
-        dataset.adata = adata  # Set the adata attribute
+        dataset.adata = adata
 
         validator = self.ConcreteValidator()
 
-        # Mock validation logic
         validator._validate_dataset(dataset)
         assert True

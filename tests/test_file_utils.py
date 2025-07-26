@@ -41,10 +41,9 @@ def test_cache_manager_get_cache_path(temp_dir):
 
 def test_cache_manager_is_expired(temp_file, cache_manager):
     """Test CacheManager.is_expired correctly identifies expired files."""
-    # File should not be expired immediately after creation
+
     assert not cache_manager.is_expired(temp_file)
 
-    # Simulate expiration by modifying the file's timestamp
     expired_time = datetime.now() - timedelta(days=2)
     os.utime(temp_file, (expired_time.timestamp(), expired_time.timestamp()))
     assert cache_manager.is_expired(temp_file)
@@ -52,7 +51,7 @@ def test_cache_manager_is_expired(temp_file, cache_manager):
 
 def test_cache_manager_clean_expired_cache(temp_file, cache_manager):
     """Test CacheManager.clean_expired_cache removes expired files."""
-    # Simulate expiration
+
     expired_time = datetime.now() - timedelta(days=2)
     os.utime(temp_file, (expired_time.timestamp(), expired_time.timestamp()))
 
