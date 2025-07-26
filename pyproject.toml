@@ -40,6 +40,7 @@ dependencies = [
     "hnswlib>=0.8.0",
     "tomli>=2.2.1",
     "boto3-stubs-lite[s3]>=1.38.0",
+    "typer>=0.16.0",
 ]
 
 [project.optional-dependencies]
