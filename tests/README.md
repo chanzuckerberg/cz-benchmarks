@@ -2,6 +2,22 @@
 
 This document describes the test structure and patterns used in the CZ Benchmarks test suite.
 
+## Running Tests
+
+```bash
+# Run all tests, except integration tests. 
+uv run pytest
+
+# Run only integration tests. The integration tests require network access, are slower tests, and benefit from availability of a GPU.
+uv run pytest -m 'integration'
+
+# Run specific test file
+uv run pytest tests/metrics/test_metrics.py
+
+# Run tests with coverage
+uv run pytest --cov=czbenchmarks
+```
+
 ## Directory Structure
 
 ```
@@ -106,17 +122,4 @@ def test_feature_error_handling(fixture1):
     """Test error handling."""
     with pytest.raises(ExpectedError):
         Feature.process(invalid_input)
-```
-
-## Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test file
-pytest tests/metrics/test_metrics.py
-
-# Run tests with coverage
-pytest --cov=czbenchmarks
 ```
