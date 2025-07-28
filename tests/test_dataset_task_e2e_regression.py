@@ -31,7 +31,7 @@ captured from previous successful runs. If a test fails, the expected metrics sh
 by a computational biologist.
 
 Fixtures:
-- Embedding fixtures are downloaded from the cloud using the `fixtures/embeddings/download_and_process_embeddings.py` script.
+- Embedding fixtures are downloaded from the cloud using `aws s3 cp --recursive s3://cz-benchmarks-results-dev/regression-test-fixtures/embeddings/ tests/fixtures/embeddings/` (currently private to CZI developers)
 - Datasets are loaded using the `load_dataset` utility, which fetches real datasets hosted in the cloud.
 
 Tasks Tested:
@@ -263,18 +263,25 @@ def test_metadata_label_prediction_task_regression(dataset):
     assert len(metadata_label_prediction_baseline_results) > 0
 
     # Test specific expectations for metadata label prediction
-    metadata_label_prediction_model_metrics = [
-        r.metric_type.value for r in metadata_label_prediction_results
-    ]
-    assert "mean_fold_accuracy" in metadata_label_prediction_model_metrics
-    assert "mean_fold_f1" in metadata_label_prediction_model_metrics
-    assert "mean_fold_precision" in metadata_label_prediction_model_metrics
-    assert "mean_fold_recall" in metadata_label_prediction_model_metrics
-    assert "mean_fold_auroc" in metadata_label_prediction_model_metrics
+    metadata_label_prediction_model_metric_names = {
+        r.metric_type.value for r in metadata_label_prediction_results 
+    }
+
+    assert "mean_fold_accuracy" in metadata_label_prediction_model_metric_names
+    assert "mean_fold_f1" in metadata_label_prediction_model_metric_names
+    assert "mean_fold_precision" in metadata_label_prediction_model_metric_names
+    assert "mean_fold_recall" in metadata_label_prediction_model_metric_names
+    assert "mean_fold_auroc" in metadata_label_prediction_model_metric_names
 
     # Regression test: Compare against expected results
     # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    print(metadata_label_prediction_results)
+    metadata_label_prediction_results_filtered = [
+        r for r in metadata_label_prediction_results if r.params.get("classifier") == "MEAN(knn,lr,rf)"
+    ]
+    print(metadata_label_prediction_results_filtered)
+
     expected_metrics = [
         {"metric_type": "mean_fold_accuracy", "value": 0.8498314736043509},
         {"metric_type": "mean_fold_f1", "value": 0.6800767942482768},
@@ -284,7 +291,7 @@ def test_metadata_label_prediction_task_regression(dataset):
     ]
     # TODO: Set tolerance per metric, if needed
     assert_metrics_match_expected(
-        metadata_label_prediction_results, expected_metrics, tolerance=0.03
+        metadata_label_prediction_results_filtered, expected_metrics, tolerance=0.03
     )
 
 
