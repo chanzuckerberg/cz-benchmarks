@@ -264,7 +264,7 @@ def test_metadata_label_prediction_task_regression(dataset):
 
     # Test specific expectations for metadata label prediction
     metadata_label_prediction_model_metric_names = {
-        r.metric_type.value for r in metadata_label_prediction_results 
+        r.metric_type.value for r in metadata_label_prediction_results
     }
 
     assert "mean_fold_accuracy" in metadata_label_prediction_model_metric_names
@@ -278,7 +278,9 @@ def test_metadata_label_prediction_task_regression(dataset):
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
     print(metadata_label_prediction_results)
     metadata_label_prediction_results_filtered = [
-        r for r in metadata_label_prediction_results if r.params.get("classifier") == "MEAN(knn,lr,rf)"
+        r
+        for r in metadata_label_prediction_results
+        if r.params.get("classifier") == "MEAN(knn,lr,rf)"
     ]
     print(metadata_label_prediction_results_filtered)
 

@@ -19,36 +19,36 @@ from czbenchmarks.tasks import (
 @pytest.mark.integration
 def test_end_to_end_task_execution():
     """Integration test that runs all tasks with model and baseline embeddings.
-    
+
     This test verifies the complete workflow from loading data to generating
     results, ensuring the output JSON structure is correct. It uses real-world
-    data from the cloud and is marked as an integration test. It does not test the correctness 
+    data from the cloud and is marked as an integration test. It does not test the correctness
     of the task result values, which is handled by `tests/test_dataset_task_e2e_regression.py.
     """
     # Load dataset (requires cloud access)
     dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
-    
+
     # Create random model output as a stand-in for real model results
     model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
-    
+
     # Initialize all tasks
     clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
     embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
     prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
-    
+
     # Get raw expression data for baseline computation
     expression_data = dataset.adata.X
-    
+
     # Compute baseline embeddings for each task
     clustering_baseline = clustering_task.compute_baseline(expression_data)
     embedding_baseline = embedding_task.compute_baseline(expression_data)
     prediction_baseline = prediction_task.compute_baseline(expression_data)
-    
+
     # Verify baselines are returned
     assert clustering_baseline is not None
     assert embedding_baseline is not None
     assert prediction_baseline is not None
-    
+
     # Run clustering task with both model output and baseline
     clustering_task_input = ClusteringTaskInput(
         obs=dataset.adata.obs,
@@ -63,7 +63,7 @@ def test_end_to_end_task_execution():
         cell_representation=clustering_baseline,
         task_input=clustering_task_input,
     )
-    
+
     # Run embedding task with both model output and baseline
     embedding_task_input = EmbeddingTaskInput(
         input_labels=dataset.labels,
@@ -76,7 +76,7 @@ def test_end_to_end_task_execution():
         cell_representation=embedding_baseline,
         task_input=embedding_task_input,
     )
-    
+
     # Run prediction task with both model output and baseline
     prediction_task_input = MetadataLabelPredictionTaskInput(
         labels=dataset.labels,
@@ -89,7 +89,7 @@ def test_end_to_end_task_execution():
         cell_representation=prediction_baseline,
         task_input=prediction_task_input,
     )
-    
+
     # Combine all results into a single dictionary
     all_results = {
         "clustering": {
@@ -105,14 +105,14 @@ def test_end_to_end_task_execution():
             "baseline": [result.model_dump() for result in prediction_baseline_results],
         },
     }
-    
+
     # Validate the overall structure
     assert isinstance(all_results, dict)
     assert len(all_results) == 3
     assert "clustering" in all_results
     assert "embedding" in all_results
     assert "prediction" in all_results
-    
+
     # Validate each task has both model and baseline results
     for task_name in ["clustering", "embedding", "prediction"]:
         task_results = all_results[task_name]
@@ -121,11 +121,11 @@ def test_end_to_end_task_execution():
         assert "baseline" in task_results
         assert isinstance(task_results["model"], list)
         assert isinstance(task_results["baseline"], list)
-        
+
         # Verify results are not empty
         assert len(task_results["model"]) > 0
         assert len(task_results["baseline"]) > 0
-        
+
         # Verify each result has the expected structure
         for result_type in ["model", "baseline"]:
             for result in task_results[result_type]:
@@ -135,36 +135,42 @@ def test_end_to_end_task_execution():
                 assert "params" in result
                 assert isinstance(result["value"], (int, float))
                 assert isinstance(result["params"], dict)
-    
+
     # Verify JSON serialization works correctly
     json_output = json.dumps(all_results, indent=2, default=str)
     assert isinstance(json_output, str)
     assert len(json_output) > 0
-    
+
     # Verify we can parse the JSON back (note: enums become strings)
     parsed_results = json.loads(json_output)
     assert isinstance(parsed_results, dict)
     assert len(parsed_results) == 3
-    
+
     # Verify the parsed structure matches (enums will be strings now)
     for task_name in ["clustering", "embedding", "prediction"]:
         assert task_name in parsed_results
         assert "model" in parsed_results[task_name]
         assert "baseline" in parsed_results[task_name]
-    
+
     # Test specific task expectations
-    
+
     # Clustering should have ARI and NMI metrics
-    clustering_model_metrics = [r["metric_type"].value for r in all_results["clustering"]["model"]]
+    clustering_model_metrics = [
+        r["metric_type"].value for r in all_results["clustering"]["model"]
+    ]
     assert "adjusted_rand_index" in clustering_model_metrics
     assert "normalized_mutual_info" in clustering_model_metrics
-    
+
     # Embedding should have silhouette score
-    embedding_model_metrics = [r["metric_type"].value for r in all_results["embedding"]["model"]]
+    embedding_model_metrics = [
+        r["metric_type"].value for r in all_results["embedding"]["model"]
+    ]
     assert "silhouette_score" in embedding_model_metrics
-    
+
     # Prediction should have multiple classification metrics
-    prediction_model_metrics = [r["metric_type"].value for r in all_results["prediction"]["model"]]
+    prediction_model_metrics = [
+        r["metric_type"].value for r in all_results["prediction"]["model"]
+    ]
     assert "mean_fold_accuracy" in prediction_model_metrics
     assert "mean_fold_f1" in prediction_model_metrics
     assert "mean_fold_precision" in prediction_model_metrics
