@@ -95,3 +95,8 @@ czbenchmarks = "czbenchmarks.cli.cli:main"
 [tool.pytest.ini_options]
 markers = "integration: marks tests as integration tests (skipped by default, run with `-m integration`)"
 addopts = "-m 'not integration'"
+
+[tool.coverage.report]
+omit = [
+    "src/czbenchmarks/cli/*"
+]
