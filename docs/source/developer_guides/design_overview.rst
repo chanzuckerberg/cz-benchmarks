@@ -78,7 +78,7 @@ A typical benchmarking workflow follows these steps:
     Use ``dataset = load_dataset(...)`` to load a dataset. This gives you a ``Dataset`` object with loaded data (e.g., ``dataset.adata``) and relevant metadata (e.g., ``dataset.labels``).
 
 2. **User Generates Model Output**:  
-    Run your own AI model using the data from the ``Dataset`` object (e.g., ``dataset.adata.X``) to produce a ``CellRepresentation`` (such as a cell embedding). For example: ``embedding = my_model(dataset.adata)``. This step happens outside the ``cz-benchmarks`` package.
+    Run your own ML model using the data from the ``Dataset`` object (e.g., ``dataset.adata.X``) to produce a ``CellRepresentation`` (such as a cell embedding). For example: ``embedding = my_model(dataset.adata)``. This step happens outside the ``cz-benchmarks`` package.
 
 3. **Prepare Task Inputs**:
     Create an instance of the task-specific ``TaskInput`` class, populating it with the necessary ground-truth data from the ``Dataset`` object. For example: ``task_input = TaskInput(labels=dataset.labels)``.
