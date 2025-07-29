@@ -6,7 +6,7 @@ Welcome to **cz-benchmarks**! This guide will help you get started with installa
 
 Before you begin, ensure you have the following installed:
 
-- 🐍 **[Python 3.10+](https://www.python.org/downloads/)**:  3.10+**: Ensure you have Python 3.10 or later installed.
+- 🐍 **[Python 3.10+](https://www.python.org/downloads/)**: Ensure you have Python 3.10 or later installed.
 - 💻 **Hardware**: Intel/AMD64 architecture CPU with NVIDIA GPU, running Linux with [NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html).
 
 
