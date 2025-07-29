@@ -16,7 +16,7 @@
 
 # --- Step 1: Setup and Imports ---
 
-# Create isolated virtual environment for scVI and czbenchmarks (run once)
+# Create isolated virtual environment for scVI and cz-benchmarks (run once)
 # You can uncomment the following lines to set up the environment if needed.
 # !python3 -m venv .venv_scvi
 # !.venv_scvi/bin/python -m pip install --upgrade pip
