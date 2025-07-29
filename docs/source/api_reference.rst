@@ -24,9 +24,6 @@ Additional Utilities
 - **File Utils** (`czbenchmarks.file_utils`):  
    Provides file handling utilities, such as loading datasets from various formats. See the full documentation: :doc:`./autoapi/czbenchmarks/file_utils/index`.
 
-- **Cache** (`czbenchmarks.file_cache`):  
-   Implements caching mechanisms to speed up repeated evaluations by storing results. See the full documentation: :doc:`./autoapi/czbenchmarks/file_cache/index`.
-
 
 .. .. toctree::
 ..     :maxdepth: 1

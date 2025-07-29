@@ -66,5 +66,8 @@ Mac requires an additional dependency, `hnswlib`, which should be installed with
     ```bash
     uv sync --all-extras
     ```
+4. **`hnswlib` Package Installation Error**
+    
+    If the `hnswlib` package fails to install with an error like `fatal error: Python.h: No such file or directory`, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via `sudo apt-get install python3-dev`.
 
 > 💡 **Tip**: For more details, refer to the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
