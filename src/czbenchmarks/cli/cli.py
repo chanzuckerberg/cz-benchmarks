@@ -18,7 +18,7 @@ from .utils import get_version
 )
 def main(log_level: str):
     """
-    czbenchmarks: A command-line utility for running benchmark tasks.
+    czbenchmarks: A command-line utility for using cz-benchmarks.
     """
     logging.basicConfig(
         level=log_level.upper(),
@@ -29,7 +29,7 @@ def main(log_level: str):
 
 # Add subcommands to the main group
 main.add_command(list_cmd)
-main.add_command(run)
+# main.add_command(run)
 
 if __name__ == "__main__":
     main()
