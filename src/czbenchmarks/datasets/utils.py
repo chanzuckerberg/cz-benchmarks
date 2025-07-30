@@ -1,7 +1,7 @@
 import os
 import hydra
 from hydra.utils import instantiate
-from typing import List, Optional
+from typing import Dict, Optional
 import yaml
 from omegaconf import OmegaConf
 from .dataset import Dataset
@@ -77,7 +77,7 @@ def load_dataset(
     return dataset
 
 
-def list_available_datasets() -> List[str]:
+def list_available_datasets() -> Dict[str, Dict[str, str]]:
     """
     Returns a sorted list of all dataset names defined in the datasets.yaml Hydra configuration.
 
@@ -94,9 +94,15 @@ def list_available_datasets() -> List[str]:
     cfg = OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
 
     # Extract dataset names
-    dataset_names = list(cfg.get("datasets", {}).keys())
+    datasets = {
+        name: {
+            "organism": str(dataset_info.get("organism", "Unknown")),
+            "url": dataset_info.get("path", "Unknown"),
+        }
+        for name, dataset_info in cfg.get("datasets", {}).items()
+    }
 
     # Sort alphabetically for easier reading
-    dataset_names.sort()
+    datasets = dict(sorted(datasets.items()))
 
-    return dataset_names
+    return datasets
