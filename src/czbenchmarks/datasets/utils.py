@@ -17,7 +17,7 @@ def load_dataset(
     config_path: Optional[str] = None,
 ) -> Dataset:
     """
-    Loads, downloads (if needed), and instantiates a dataset using Hydra configuration.
+    Load, download (if needed), and instantiate a dataset using Hydra configuration.
 
     Args:
         dataset_name (str): Name of the dataset as specified in the configuration.
@@ -25,7 +25,7 @@ def load_dataset(
             only the package's default config is used.
 
     Returns:
-        BaseDataset: Instantiated dataset object with data loaded.
+        Dataset: Instantiated dataset object with data loaded.
 
     Raises:
         FileNotFoundError: If the custom config file does not exist.
@@ -33,10 +33,10 @@ def load_dataset(
 
     Notes:
         - Merges custom config with default config if provided.
-        - Downloads dataset file if remote path is specified.
+        - Downloads dataset file if a remote path is specified using `download_file_from_remote`.
         - Uses Hydra for instantiation and configuration management.
+        - The returned dataset object is an instance of the `Dataset` class or its subclass.
     """
-
     initialize_hydra()
 
     # Load default config first and make it unstructured
@@ -79,14 +79,15 @@ def load_dataset(
 
 def list_available_datasets() -> Dict[str, Dict[str, str]]:
     """
-    Returns a sorted list of all dataset names defined in the datasets.yaml Hydra configuration.
+    Return a sorted list of all dataset names defined in the `datasets.yaml` Hydra configuration.
 
     Returns:
         List[str]: Alphabetically sorted list of available dataset names.
 
     Notes:
         - Loads configuration using Hydra.
-        - Extracts dataset names from the 'datasets' section of the config.
+        - Extracts dataset names from the `datasets` section of the configuration.
+        - Sorts the dataset names alphabetically for easier readability.
     """
     initialize_hydra()
 

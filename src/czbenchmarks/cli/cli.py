@@ -1,7 +1,6 @@
 import click
 import logging
 from .cli_list import list_cmd
-from .cli_run import run
 from .utils import get_version
 
 
