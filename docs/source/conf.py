@@ -48,11 +48,8 @@ autoapi_options = [
     "imported-members",
 ]
 autoapi_dirs = ["../../src/"]
-# , '../../docker/geneformer',
-# '../../docker/scgenept',
-# '../../docker/scgpt',
-# '../../docker/scvi',
-# '../../docker/uce']
+
+
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autoapi_keep_files = True
@@ -117,8 +114,3 @@ inheritance_node_attrs = dict(
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
 html_css_files = ["custom.css"]
-
-
-# html_js_files = [
-#     "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
-# ]

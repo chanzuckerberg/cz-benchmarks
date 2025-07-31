@@ -7,9 +7,10 @@ This guide explains how to integrate your own dataset into cz-benchmarks.
 For single-cell datasets:
 - The dataset file must be an `.h5ad` file conforming to the [AnnData on-disk format](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#on-disk-format).
 - The AnnData object's `var_names` must specify the `ensembl_id` for each gene OR `var` must contain a column named `ensembl_id`.
-- The AnnData object must meet the validation requirements of the specific models that the dataset will be used to benchmark. This means that:
-    - `obs` and `var` each contain the required metadata columns, as specified by the models' `required_obs_keys` and `required_var_keys` properties, respectively.
-    - The `ensemble_id` values must be valid for the models' accepted organisms, as specified by the `available_organisms` property. 
+- The AnnData object must meet the validation requirements for the specific task it will be used with. This may include:
+    - `obs` must contain required metadata columns (e.g., `cell_type` for `SingleCellLabeledDataset`, or `condition` and `split` for `SingleCellPerturbationDataset`).
+    - The `ensemble_id` values must be valid for the specified `Organism`.
+
 
 
 ## Steps to Add Your Dataset
@@ -21,26 +22,34 @@ For single-cell datasets:
   - Metadata columns (e.g., cell type, batch) are included in `obs`.
   - Gene names are properly defined in `var`.
 
-### 2. Create a Custom Configuration File
+### 2. Update Datasets Configuration File
 
 - Update `src/czbenchmarks/conf/datasets.yaml` by adding a new dataset entry:
 
 ```yaml
 datasets:
-  ...
-
-  my_dataset:
-    _target_: czbenchmarks.datasets.SingleCellDataset
-    path: ~/path_to_your_data/my_data.h5ad
+  my_labeled_dataset:
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    path: /path/to/your/labeled_data.h5ad
     organism: ${organism:HUMAN}
+    label_column_key: "cell_type" # Column in adata.obs with labels
+
+  my_perturbation_dataset:
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
+    path: /path/to/your/perturb_data.h5ad
+    organism: ${organism:MOUSE}
+    condition_key: "condition" # Column in adata.obs for 'ctrl' vs perturbation
+    split_key: "split" # Column in adata.obs for 'train'/'test'/'val'
 ```
 
 - **Explanation:**
   - `datasets`: Defines the datasets to be loaded.
-  - `my_dataset`: A unique identifier for your dataset.
-  - `_target_`: Specifies the `Dataset` class to instantiate. Currently, `cz-benchmarks` supports `src.czbenchmarks.datasets.single_cell.SingleCellDataset` and `src.czbenchmarks.datasets.single_cell.PerturbationSingleCellDataset` Dataset types.
-  - `path`: Path to your `.h5ad` file. This may be be a local filesystem path or an S3 URL (`s3://...`).
-  - `organism`: Specify the organism, which must be a value from the `src.czbenchmarks.datasets.types.Organism` (e.g., HUMAN, MOUSE).
+  - `my_labeled_dataset`: A unique identifier for your dataset.
+  - `_target_`: Specifies the `Dataset` class to instantiate. `cz-benchmarks` supports `SingleCellLabeledDataset` (for tasks requiring ground-truth labels like clustering or classification) and `SingleCellPerturbationDataset` (for perturbation prediction tasks).
+  - `path`: Path to your `.h5ad` file. This may be a local filesystem path or an S3 URL (`s3://...`).
+  - `organism`: Specify the organism, which must be a value from the `czbenchmarks.datasets.types.Organism` enum (e.g., HUMAN, MOUSE).
+  - `label_column_key`: (For `SingleCellLabeledDataset`) The column in `.obs` containing the labels.
+  - `condition_key` / `split_key`: (For `SingleCellPerturbationDataset`) Columns in `.obs` for perturbation conditions and data splits.
 
   You may add multiple datasets to thie files, as children of `datasets`.
 
@@ -49,17 +58,18 @@ datasets:
 - Use the following Python code to load your dataset:
 
 ```python
-from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.datasets import load_dataset
 
-# Instantiate the `SingleCellDataset` object from the configuration specified in `datasets.yaml`
-dataset = load_dataset("my_dataset")
+# Instantiate the Dataset object from your custom configuration
+dataset = load_dataset(dataset_name="my_labeled_dataset")
 
-# Load the H5AD file into memory as an AnnData object, storing in the `ANNDATA` input "slot" of the dataset.
-dataset.load_data()
+# dataset.load_data() is called automatically by the load_dataset utility.
+# You can now access the loaded data via the .adata attribute
+print(dataset.adata)
 
 # Ensure the basic requirements are met by the Dataset
 dataset.validate()
-print(dataset.get_input("ANNDATA"))
+print(f"Labels: {dataset.labels.head()}")
 ```
 
 Fix any loading or validation errors, as needed.
@@ -68,5 +78,5 @@ Fix any loading or validation errors, as needed.
 
 - **Preprocessing:** If your dataset requires specialized preprocessing, consider subclassing `BaseDataset` in your project.
 - **Validation:** Ensure organism-specific validations (e.g. gene name prefixes) are met.
-- **Test with Models:** Specific models may have additional validation requirements, so you will need to invoke applicable models with your specific dataset to ensure that it is fully compliant.
+- **Test with Tasks:** Run your dataset with the intended tasks to ensure it is fully compliant with their requirements.
 
