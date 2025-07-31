@@ -1,62 +1,36 @@
-"""
-The ``czbenchmarks`` CLI. A command-line utility for running benchmark tasks.
-
-Usage:
-    ``czbenchmarks list [datasets|models|tasks]``
-    ``czbenchmarks run --models <model_name> --datasets <dataset_name> --tasks <task_name> [--output-file <output_file>] [--save-processed-datasets <output_dir>]``
-"""
-
-import argparse
+import click
 import logging
-import sys
-from czbenchmarks.cli import cli_list, cli_run
-from czbenchmarks.cli.utils import get_version
-
-log = logging.getLogger(__name__)
+from .cli_list import list_cmd
+from .utils import get_version
 
 
-def main() -> None:
-    """Entry point for the czbenchmarks CLI."""
-
-    parser = argparse.ArgumentParser(
-        description="czbenchmark: A command-line utility for running benchmark tasks."
-    )
-    parser.add_argument(
-        "--version",
-        help="Show version number and exit",
-        action="version",
-        version=f"%(prog)s {get_version()}",
-    )
-    parser.add_argument(
-        "--log-level",
-        "-ll",
-        choices=["debug", "info", "warning", "error", "critical"],
-        default="info",
-        help="Set the logging level (default is info)",
+@click.group()
+@click.version_option(version=get_version(), prog_name="czbenchmarks")
+@click.option(
+    "--log-level",
+    "-ll",
+    type=click.Choice(
+        ["debug", "info", "warning", "error", "critical"], case_sensitive=False
+    ),
+    default="info",
+    help="Set the logging level.",
+)
+def main(log_level: str):
+    """
+    czbenchmarks: A command-line utility for using cz-benchmarks.
+    """
+    logging.basicConfig(
+        level=log_level.upper(),
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        force=True,
     )
 
-    subparsers = parser.add_subparsers(dest="action", required=True)
-    run_parser = subparsers.add_parser("run", help="Run a set of tasks.")
-    list_parser = subparsers.add_parser("list", help="List datasets, models, or tasks.")
 
-    cli_run.add_arguments(run_parser)
-    cli_list.add_arguments(list_parser)
+# Add subcommands to the main group
+main.add_command(list_cmd)
 
-    # Parse arguments to dict
-    try:
-        args = parser.parse_args()
-        logging.basicConfig(level=args.log_level.upper(), stream=sys.stdout)
-    except argparse.ArgumentError as e:
-        parser.error(str(e))
-    except SystemExit:
-        raise
-
-    if args.action == "list":
-        cli_list.main(args)
-
-    elif args.action == "run":
-        cli_run.main(args)
-
+# TODO: Disabled until further notice. The run command is not yet fully implemented.
+# main.add_command(run)
 
 if __name__ == "__main__":
     main()

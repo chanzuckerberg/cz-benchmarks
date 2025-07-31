@@ -4,60 +4,99 @@ This guide explains how to create and integrate your own evaluation task into cz
 
 ## Steps to Add a New Task
 
-### 1. Create a New Task Class
+### 1. Define Task-Specific Input and Output Classes
+
+- Create Pydantic models that inherit from `TaskInput` and `TaskOutput` to define the data your task needs and produces.
+    
+
+### 2. Create a New Task Class
+
 - Extend the `Task` class to define your custom task.
-- Create a new Python file in the `czbenchmarks/tasks/` directory (or in a subdirectory if the task is modality-specific).
-
+- Create a new Python file in the `czbenchmarks/tasks/` directory.
+    
     Example:
-
+    
     ```python
-    from typing import List, Set
-    from czbenchmarks.tasks.task import Task
-    from czbenchmarks.datasets import DataType
-    from czbenchmarks.metrics.types import MetricResult
-
+    from typing import List
+    from czbenchmarks.tasks import Task, TaskInput, TaskOutput
+    from czbenchmarks.metrics.types import MetricResult, MetricType
+    from czbenchmarks.metrics import metrics_registry
+    from czbenchmarks.types import ListLike
+    from czbenchmarks.tasks.types import CellRepresentation
+    
+    # 1. Define Input and Output data structures
+    class MyTaskInput(TaskInput):
+        ground_truth_labels: ListLike
+    
+    class MyTaskOutput(TaskOutput):
+        predictions: List[float]
+    
+    # 2. Implement the Task class
     class MyTask(Task):
+        display_name = "My Example Task"
+    
         def __init__(self, my_param: int = 10, *, random_seed: int = 123):
             super().__init__(random_seed=random_seed)
             self.my_param = my_param
-
-        @property
-        def display_name(self) -> str:
-            return "My Example Task"
-
-        @property
-        def required_inputs(self) -> Set[DataType]:
-            return {DataType.METADATA}
-
-        @property
-        def required_outputs(self) -> Set[DataType]:
-            return {DataType.EMBEDDING}
-
-        def _run_task(self, data, TODO):
-            # Retrieve necessary data
-            self.embedding = data.get_output(TODO, DataType.EMBEDDING)
-            self.labels = data.get_input(DataType.METADATA)["cell_type"]
-            # Implement your task logic here
-            # e.g., calculate some predictions or transform embeddings
-
-        def _compute_metrics(self) -> List[MetricResult]:
+    
+        def _run_task(
+            self,
+            cell_representation: CellRepresentation,
+            task_input: MyTaskInput
+        ) -> MyTaskOutput:
+            # Implement your task logic here.
+            # For example, use the cell_representation to make predictions.
+            # This is a placeholder for your actual logic.
+            predictions = list(range(len(task_input.ground_truth_labels)))
+    
+            # Return the results in your output model
+            return MyTaskOutput(predictions=predictions)
+    
+        def _compute_metrics(
+            self,
+            task_input: MyTaskInput,
+            task_output: MyTaskOutput
+        ) -> List[MetricResult]:
             # Compute and return a list of MetricResult objects
-            metric_value = ...  # Replace with actual computation
-            return [MetricResult(metric_type="my_metric", value=metric_value)]
+            # using the metric registry.
+            ari_score = metrics_registry.compute(
+                MetricType.ADJUSTED_RAND_INDEX,
+                labels_true=task_input.ground_truth_labels,
+                labels_pred=task_output.predictions
+            )
+            return [
+                MetricResult(
+                    metric_type=MetricType.ADJUSTED_RAND_INDEX,
+                    value=ari_score
+                )
+            ]
+    
     ```
+    
+- Consult `czbenchmarks/tasks/task.py` for interface details.
+- Use `display_name` to provide a human-readable name for your task.
+- The `random_seed` should be used for all sources of randomness so results are reproducible.
+- Implement the `_run_task` method to define the core logic of your task. It takes a `cell_representation` (e.g., a model's embedding) and your custom `TaskInput` model. It should return an instance of your custom `TaskOutput` model.
+- Implement the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a metric that is not already supported, refer to [Adding a New Metric](./add_new_metric.md).
+    
 
-- Consult `czbenchmarks/tasks/task.py` for interface details and best practices.
-- Use `display_name` to provide a human-readable name for use when displaying your task
-- The `random_seed` should be used for all sources of randomness so results are reproducible
-- Use the `required_inputs` and `required_outputs` properties to specify the data types your task needs.
-    - `required_inputs`: Data your task consumes (e.g., `DataType.METADATA`).
-    - `required_outputs`: Data your task produces or depends on (e.g., `DataType.EMBEDDING`).
-- Use `data.get_input()` and `data.get_output()` to retrieve the necessary inputs and outputs.
-- Implement the `_run_task` method to define the core logic of your task.
-- Use the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a `Metric` that is not already supported by `cz-benchmarks`, refer to [Adding a New Metric](../how_to_guides/add_new_metric.md).
+### 3. Register the Task
 
-### 5. Register the Task
-- In the `src.czbenchmarks.tasks.utils.TASK_NAMES` array, add a new value for your task.
+- Import and add your new task classes to the `__all__` list in `czbenchmarks/tasks/__init__.py` to make them easily accessible.
+    
+    ```python
+    # In czbenchmarks/tasks/__init__.py
+    ...
+    from .my_task_file import MyTask, MyTaskInput, MyTaskOutput
+    
+    __all__ = [
+        ...
+        "MyTask",
+        "MyTaskInput",
+        "MyTaskOutput",
+    ]
+    
+    ```
 
 ## Best Practices
 - **Single Responsibility:** Ensure your task has a clear and focused purpose.
