@@ -9,7 +9,7 @@ from .perturbation import (
     PerturbationTask,
 )
 from .k562_perturbation import (
-    PerturbationTaskInput as K562PerturbationTaskInput,
+    K562PerturbationTaskInput,
     K562PerturbationOutput,
     K562PerturbationTask,
 )

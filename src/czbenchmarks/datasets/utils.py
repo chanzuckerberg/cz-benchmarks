@@ -9,7 +9,6 @@ from czbenchmarks.utils import initialize_hydra
 from czbenchmarks.file_utils import download_file_from_remote
 import logging
 # Import types to register the organism resolver
-from . import types
 
 log = logging.getLogger(__name__)
 
