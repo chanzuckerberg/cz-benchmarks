@@ -8,11 +8,19 @@ from .perturbation import (
     PerturbationOutput,
     PerturbationTask,
 )
+from .k562_perturbation import (
+    PerturbationTaskInput as K562PerturbationTaskInput,
+    K562PerturbationOutput,
+    K562PerturbationTask,
+)
 
 __all__ = [
     "CrossSpeciesIntegrationTaskInput",
     "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
+    "K562PerturbationTask",
+    "K562PerturbationTaskInput",
+    "K562PerturbationOutput",
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",

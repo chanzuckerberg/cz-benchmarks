@@ -19,6 +19,7 @@ Each metric is registered with:
 
 from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
+    accuracy_score,
     adjusted_rand_score,
     normalized_mutual_info_score,
     mean_squared_error,
@@ -144,5 +145,13 @@ metrics_registry.register(
     func=mean_fold_metric,
     required_args={"results_df"},
     default_params={"metric": "auroc", "classifier": None},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.ACCURACY,
+    func=accuracy_score,
+    required_args={"y_true", "y_pred"},
+    description="Accuracy between true and predicted values",
     tags={"label_prediction"},
 )
