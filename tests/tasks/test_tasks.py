@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+import numpy as np
 
 import anndata as ad
 from czbenchmarks.tasks import (
@@ -17,10 +18,12 @@ from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTaskInput,
     PerturbationTask,
     PerturbationTaskInput,
+    K562PerturbationTask,
+    K562PerturbationTaskInput,
 )
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.metrics.types import MetricResult
+from czbenchmarks.metrics.types import MetricResult, MetricType
 
 from tests.utils import (
     create_dummy_anndata,
@@ -325,3 +328,106 @@ def test_perturbation_task():
 
     except Exception as e:
         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
+
+
+def test_k562_perturbation_task():
+    """Test that K562PerturbationTask executes without errors."""
+    # Create dummy DE results DataFrame
+    # Use the same gene names that will be in target_genes
+    gene_names = [f"ENSG{i:05d}" for i in range(50)]
+    de_res_wilcoxon_df = pd.DataFrame(
+        {
+            "logfoldchanges": np.random.normal(0, 1, 100),
+            "target_gene": ["gene_A"] * 50 + ["gene_B"] * 50,
+            "names": gene_names * 2,  # Use same gene names for both conditions
+        }
+    )
+
+    # Create dummy prediction DataFrame - need at least 10 cells per condition
+    # Generate sample IDs for gene_A (10 condition + 10 control) and gene_B (10 condition + 10 control)
+    gene_a_condition_samples = [f"cond_{i}_gene_A" for i in range(10)]
+    gene_a_control_samples = [f"ctrl_{i}_gene_A" for i in range(10)]
+    gene_b_condition_samples = [f"cond_{i}_gene_B" for i in range(10)]
+    gene_b_control_samples = [f"ctrl_{i}_gene_B" for i in range(10)]
+
+    all_samples = (
+        gene_a_condition_samples
+        + gene_a_control_samples
+        + gene_b_condition_samples
+        + gene_b_control_samples
+    )
+
+    # Create a simpler structure - each row contains one prediction array
+    # Use tuples instead of lists to avoid hashing issues
+    pred_df_data = []
+    for sample in all_samples:
+        pred_df_data.append(
+            {
+                "sample_id": sample,
+                "pred": np.random.normal(0, 1, 50),
+                "target_genes": tuple(gene_names),  # Use tuple which is hashable
+            }
+        )
+
+    pred_df = pd.DataFrame(pred_df_data)
+
+    # Create dummy cell representation data (DataFrame with gene column and proper index)
+    # Cell indices must match sample_id values and end with _{condition}
+    # Need both control ("non-targeting") and condition cells for each condition (at least 10 each)
+    cell_representation = pd.DataFrame(
+        {
+            "gene": (
+                ["gene_A"] * 10
+                + ["non-targeting"] * 10
+                + ["gene_B"] * 10
+                + ["non-targeting"] * 10
+            )
+        },
+        index=all_samples,
+    )
+
+    # Task and argument setup
+    task = K562PerturbationTask(min_de_genes=10)
+    task_input = K562PerturbationTaskInput(
+        de_res_wilcoxon_df=de_res_wilcoxon_df,
+        pred_df=pred_df,
+    )
+
+    # Expected: 5 lists of metrics (accuracy, precision, recall, f1, spearman)
+    num_metric_types = 5
+
+    try:
+        # Test regular task execution
+        results = task.run(
+            cell_representation,
+            task_input,
+        )
+
+        # Verify results structure
+        assert isinstance(results, list)
+        assert len(results) == num_metric_types
+
+        # Each list should contain MetricResult objects
+        for metric_list in results:
+            assert isinstance(metric_list, list)
+            assert all(isinstance(r, MetricResult) for r in metric_list)
+            # Should have results for at least one condition (gene_A or gene_B)
+            assert len(metric_list) >= 1
+
+        # Verify metric types
+        all_results = [result for metric_list in results for result in metric_list]
+        assert all(isinstance(r, MetricResult) for r in all_results)
+
+        # Check that we have the expected metric types
+        metric_types = {result.metric_type for result in all_results}
+        expected_types = {
+            MetricType.ACCURACY,
+            MetricType.PRECISION,
+            MetricType.RECALL,
+            MetricType.F1,
+            MetricType.SPEARMAN_CORRELATION,
+        }
+        assert expected_types.issubset(metric_types)
+
+    except Exception as e:
+        pytest.fail(f"K562PerturbationTask failed unexpectedly: {e}")
