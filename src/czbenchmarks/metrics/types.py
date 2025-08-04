@@ -39,6 +39,10 @@ class MetricType(Enum):
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
     JACCARD = "jaccard"
     ACCURACY = "accuracy"
+    PRECISION = "precision"
+    RECALL = "recall"
+    F1 = "f1"
+    SPEARMAN_CORRELATION = "spearman_correlation"
 
 
 class MetricInfo(BaseModel):
