@@ -159,31 +159,116 @@ class K562PerturbationTask(Task):
         self,
         task_input: K562PerturbationTaskInput,
         task_output: K562PerturbationOutput,
-    ) -> List[MetricResult]:
+    ) -> List[List[MetricResult]]:
         """
-        Computes perturbation prediction quality metrics.
+        Computes perturbation prediction quality metrics for K562 cell line perturbation predictions.
 
-        For each perturbation, computes:
-        - Mean Squared Error (MSE) between predicted and true log fold changes
-        - Pearson correlation between predicted and true log fold changes
-        - Jaccard similarity between binarized predicted and true log fold changes
+        This method evaluates the quality of gene perturbation predictions by comparing predicted
+        and true log fold changes across different perturbation conditions. For each condition,
+        it computes multiple classification and correlation metrics.
+
+        For each perturbation condition, computes:
+        - **Accuracy**: Classification accuracy between binarized predicted and true log fold changes
+        - **Precision**: Precision score for binarized predictions (positive predictions that are correct)
+        - **Recall**: Recall score for binarized predictions (true positives that are detected)
+        - **F1 Score**: Harmonic mean of precision and recall for binarized predictions
+        - **Spearman Correlation**: Rank correlation between raw predicted and true log fold changes
+
+        The binarization process converts continuous log fold change values to binary classifications
+        (up-regulated vs. not up-regulated) using the `binarize_values` function.
 
         Args:
-            task_input: K562PerturbationTaskInput with inputs for the task
-            task_output: K562PerturbationOutput with task outputs from _run_task
+            task_input (K562PerturbationTaskInput): Input object containing differential expression
+                results and prediction data from the perturbation experiment.
+            task_output (K562PerturbationOutput): Output object containing aligned predicted and
+                true log fold changes for each perturbation condition.
 
         Returns:
-            List[MetricResult]: MetricResult objects containing metric values and metadata
-        """
+            List[List[MetricResult]]: A list of 5 lists, where each inner list contains MetricResult
+                objects for one metric type across all conditions:
+                - [0]: Accuracy results for all conditions
+                - [1]: Precision results for all conditions
+                - [2]: Recall results for all conditions
+                - [3]: F1 score results for all conditions
+                - [4]: Spearman correlation results for all conditions
 
+        Note:
+            Each MetricResult includes the condition name in its params for identification.
+        """
+        accuracy_metric = MetricType.ACCURACY
+        precision_metric = MetricType.PRECISION
+        recall_metric = MetricType.RECALL
+        f1_metric = MetricType.F1
+        spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION
+
+        precision_results = []
+        recall_results = []
         accuracy_results = []
+        f1_results = []
+        spearman_correlation_results = []
+
         for condition in task_output.pred_log_fc_dict.keys():
             pred_log_fc = task_output.pred_log_fc_dict[condition]
             true_log_fc = task_output.true_log_fc_dict[condition]
             true_binary, pred_binary = binarize_values(true_log_fc, pred_log_fc)
 
-            accuracy_metric = MetricType.ACCURACY
-            accuracy_values = metrics_registry.compute(
+            # Compute precision, recall, F1, and Spearman correlation for each condition
+            precision_value = metrics_registry.compute(
+                precision_metric,
+                y_true=true_binary,
+                y_pred=pred_binary,
+            )
+            precision_results.append(
+                MetricResult(
+                    metric_type=precision_metric,
+                    value=precision_value,
+                    params={"condition": condition},
+                )
+            )
+
+            recall_value = metrics_registry.compute(
+                recall_metric,
+                y_true=true_binary,
+                y_pred=pred_binary,
+            )
+            recall_results.append(
+                MetricResult(
+                    metric_type=recall_metric,
+                    value=recall_value,
+                    params={"condition": condition},
+                )
+            )
+
+            f1_value = metrics_registry.compute(
+                f1_metric,
+                y_true=true_binary,
+                y_pred=pred_binary,
+            )
+            f1_results.append(
+                MetricResult(
+                    metric_type=f1_metric,
+                    value=f1_value,
+                    params={"condition": condition},
+                )
+            )
+
+            # Compute Spearman correlation and accuracy for each condition
+            spearman_corr = metrics_registry.compute(
+                spearman_correlation_metric,
+                x=true_log_fc,
+                y=pred_log_fc,
+            )
+            # If the result has a 'correlation' attribute (e.g., scipy.stats result), use it; otherwise, use the value directly
+            spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
+            spearman_correlation_results.append(
+                MetricResult(
+                    metric_type=spearman_correlation_metric,
+                    value=spearman_corr_value,
+                    params={"condition": condition},
+                )
+            )
+
+            accuracy_value = metrics_registry.compute(
                 accuracy_metric,
                 y_true=true_binary,
                 y_pred=pred_binary,
@@ -191,9 +276,15 @@ class K562PerturbationTask(Task):
             accuracy_results.append(
                 MetricResult(
                     metric_type=accuracy_metric,
-                    value=accuracy_values,
+                    value=accuracy_value,
                     params={"condition": condition},
                 )
             )
 
-        return accuracy_results
+        return [
+            accuracy_results,
+            precision_results,
+            recall_results,
+            f1_results,
+            spearman_correlation_results,
+        ]

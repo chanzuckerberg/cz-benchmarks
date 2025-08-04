@@ -23,6 +23,10 @@ from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
     mean_squared_error,
+    precision_score,
+    recall_score,
+    f1_score,
+    spearmanr,
 )
 from scipy.stats import pearsonr
 from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
@@ -153,5 +157,37 @@ metrics_registry.register(
     func=accuracy_score,
     required_args={"y_true", "y_pred"},
     description="Accuracy between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION,
+    func=precision_score,
+    required_args={"y_true", "y_pred"},
+    description="Precision between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.RECALL,
+    func=recall_score,
+    required_args={"y_true", "y_pred"},
+    description="Recall between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.F1,
+    func=f1_score,
+    required_args={"y_true", "y_pred"},
+    description="F1 score between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.SPEARMAN_CORRELATION,
+    func=spearmanr,
+    required_args={"x", "y"},
+    description="Spearman correlation between true and predicted values",
     tags={"label_prediction"},
 )
