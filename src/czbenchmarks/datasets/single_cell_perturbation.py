@@ -88,15 +88,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         path: Path,
         organism: Organism,
         condition_key: str = "condition",
-        control_name: str = "ctrl",
-        de_gene_col: str = "gene",
-        deg_test_name: str = "wilcoxon",
-        percent_genes_to_mask: float = 0.5,
-        min_de_genes_to_mask: int = 5,
-        pval_threshold: float = 1e-4,
-        min_logfoldchange: float = 1.0,
-        min_smd: float = 0.55,
-        de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -107,223 +98,22 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             organism (Organism): Enum value indicating the organism.
             condition_key (str): Key for the column in `adata.obs` specifying conditions.
                 Defaults to "condition".
-            control_name (str): Name of the control condition. Defaults to "ctrl".
-            de_gene_col (str): Column name for the names of genes which are differentially
-                expressed in the differential expression results. Defaults to "gene".
-            deg_test_name (str): Name of the differential expression test condition.
-                Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
-            percent_genes_to_mask (float): Percentage of genes to mask.
-            min_de_genes_to_mask (int): Minimum number of differentially expressed genes
-                required to mask that condition. If not met, no genes are masked.
-            pval_threshold (float): P-value threshold for differential expression.
-            min_logfoldchange (float): Minimum log-fold change for differential expression.
-            min_smd (float): Minimum standardized mean difference for differential expression.
-            de_results_path (Optional[Path]): Path to load differential expression results from csv file.
-                If not provided, the deg data are used from adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
-        self.control_name = control_name
-        self.deg_test_name = deg_test_name
-        self.normalized_deg_test_name = deg_test_name.replace("-", "_")
-        self.de_gene_col = de_gene_col
-        self.percent_genes_to_mask = percent_genes_to_mask
-        self.min_de_genes_to_mask = min_de_genes_to_mask
-        self.pval_threshold = pval_threshold
-        self.min_logfoldchange = min_logfoldchange
-        self.min_smd = min_smd
-        self.de_results_path = de_results_path
 
-    def load_and_filter_deg_results(self):
-        """
-        Load and filter differential expression results.
-        """
-        if self.de_results_path:
-            logger.info(f"Loading de_results from {self.de_results_path}")
-            de_results = pd.read_csv(self.de_results_path)
-        else:
-            logger.info("Loading de_results from adata.uns")
-            de_results = pd.DataFrame(
-                self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
-            )
-
-        # Validate structure of deg data
-        # TODO move column names to standardized location when utility function added
-        filter_columns = ["pval_adj"]
-        if self.deg_test_name == "wilcoxon":
-            filter_columns.append("logfoldchange")
-        else:
-            filter_columns.append("standardized_mean_diff")
-
-        error_str = ""
-        warning_str = ""
-        for col in filter_columns:
-            if col not in de_results.columns:
-                error_str += f"{col} column not found in de_results and required for {self.deg_test_name} test. "
-            else:
-                if de_results[col].isna().any():
-                    warning_str += f"{col} column has missing or null values. "
-        if len(warning_str) > 0:
-            logger.warning(warning_str + "This may impact filtering of results.")
-        if len(error_str) > 0:
-            raise ValueError(error_str)
-
-        # Perform filtering
-        logger.info(f"Filtering de_results with pval_adj <= {self.pval_threshold}")
-        pval_mask = de_results["pval_adj"] <= self.pval_threshold
-        filtered_rows_pval_threshold = (~pval_mask).sum()
-        logger.info(
-            f"Removed {filtered_rows_pval_threshold} rows of {len(de_results)} total rows using pval_adj <= {self.pval_threshold}"
-        )
-
-        if self.deg_test_name == "wilcoxon":
-            filter_column = "logfoldchange"
-            filter_criteria = self.min_logfoldchange
-
-        elif self.deg_test_name == "t-test":
-            filter_column = "standardized_mean_diff"
-            filter_criteria = self.min_smd
-
-        effect_mask = de_results[filter_column].abs() >= filter_criteria
-        combined_mask = pval_mask & effect_mask
-        filtered_rows_additional = (~combined_mask).sum() - filtered_rows_pval_threshold
-        if filtered_rows_additional < 0:
-            filtered_rows_additional = 0
-        logger.info(
-            f"Removed {filtered_rows_additional} rows of {len(de_results)} total rows using {filter_column} >= {filter_criteria}"
-        )
-
-        de_results = de_results[combined_mask]
-        return de_results
-
-    def _create_adata(self) -> Tuple[ad.AnnData, dict]:
-        """
-        Create an AnnData object with perturbed and control cells.
-
-        This method creates an AnnData object with perturbed and control cells,
-        and adds target genes to the dictionary for each cell.
-        """
-
-        def _create_adata_for_condition(
-            selected_condition: str,
-            target_condition_dict: dict,
-            rows_cond: np.ndarray,
-            rows_ctrl: np.ndarray,
-            adata: ad.AnnData = self.adata,
-            condition_key: str = self.condition_key,
-            control_name: str = self.control_name,
-        ):
-            """
-            Create an AnnData object for a single condition.
-            Setup as a private function to allow for multiprocessing if needed.
-            """
-
-            adata_condition = adata[rows_cond].to_memory()
-            adata_control = adata[rows_ctrl].to_memory()
-
-            if len(adata_condition) != len(adata_control):
-                logger.warning(
-                    f"Condition and control data for {selected_condition} have different lengths."
-                )
-
-            # Concatenate condition and control data
-            adata_merged = ad.concat(
-                [adata_condition, adata_control], index_unique=None
-            ).copy()
-
-            label_cond = [selected_condition] * len(adata_condition)
-            label_ctrl = [f"{control_name}_{selected_condition}"] * len(adata_control)
-            adata_merged.obs[condition_key] = label_cond + label_ctrl
-
-            # Add condition to cell_barcode_gene column and set as index
-            adata_merged.obs_names = (
-                adata_merged.obs_names.astype(str) + "_" + selected_condition
-            )
-
-            # Add target genes to the dictionary for each cell
-            target_conditions_to_save = {}
-            for idx in adata_merged.obs.index:
-                target_conditions_to_save[idx] = target_condition_dict[
-                    selected_condition
-                ]
-
-            return adata_merged, target_conditions_to_save
-
-        target_condition_dict = sample_de_genes(
-            de_results=self.de_results,
-            percent_genes_to_mask=self.percent_genes_to_mask,
-            min_de_genes_to_mask=self.min_de_genes_to_mask,
-            condition_col=self.condition_key,
-            gene_col=self.de_gene_col,
-        )
-
-        target_conditions = list(target_condition_dict.keys())
-        total_conditions = len(target_conditions)
-        logger.info(f"Sampled {total_conditions} conditions for masking")
-
-        # Do this once before the loop
-        obs = self.adata.obs
-        obs_index = obs.index
-
-        # If not already categorical, this speeds grouping and comparisons
-        if not pd.api.types.is_categorical_dtype(obs[self.condition_key]):
-            obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
-
-        # Fast: condition -> integer row positions
-        condition_to_indices = obs.groupby(self.condition_key, observed=True).indices
-
-        # Fast: control ids -> integer row positions per condition (preserves order)
-        control_to_indices = {
-            cond: obs_index.get_indexer_for(ids)
-            for cond, ids in self.control_cells_ids.items()
-        }
-
-        all_merged_data = []
-        target_conditions_to_save = {}
-
-        with tqdm(
-            total=total_conditions, desc="Processing conditions", unit="item"
-        ) as pbar:
-            for selected_condition in target_conditions:
-                result = _create_adata_for_condition(
-                    selected_condition=selected_condition,
-                    target_condition_dict=target_condition_dict,
-                    rows_cond=condition_to_indices[selected_condition],
-                    rows_ctrl=control_to_indices[selected_condition],
-                    adata=self.adata,
-                    condition_key=self.condition_key,
-                    control_name=self.control_name,
-                )
-
-                all_merged_data.append(result[0])
-                target_conditions_to_save.update(result[1])
-                pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
-                pbar.update(1)
-
-        # Combine all adata objects
-        logger.info(
-            f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions."
-        )
-        adata_final = ad.concat(all_merged_data, index_unique=None)
-        adata_final.obs[self.condition_key] = pd.Categorical(
-            adata_final.obs[self.condition_key]
-        )
-
-        return adata_final, target_conditions_to_save
-
-    def load_data(
-        self,
-    ) -> None:
+    def load_data(self) -> None:
         """
         Load the dataset and populate perturbation truth data.
 
+        This method validates the presence of `condition_key` in
         This method validates the presence of `condition_key` in
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
         Raises:
-            ValueErrors or FileNotFoundErrors: If required conditions are not met.
+            ValueError: If `condition_key` not found in `adata.obs`.
         """
         super().load_data()
 
@@ -474,11 +264,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Condition format must be one of:
-          - ``{control_name}`` or ``{control_name}_{perturb}`` for matched control samples.
-          - ``{perturb}`` for single perturbations.
-        - Combinatorial perturbations are not currently supported.
+          - ``ctrl`` for control samples.
+          - ``{perturb}+ctrl`` for single perturbation.
+          - ``{perturb1}+{perturb2}`` for combinatorial perturbations.
 
         Raises:
+            ValueError: If invalid condition formats are found.
             ValueError: If invalid condition formats are found.
         """
         super()._validate()
@@ -503,6 +294,5 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 # Update for multiple perturbations
                 raise ValueError(
                     f"Invalid perturbation condition format: {condition}. "
-                    f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
-                    "or ``{perturb}`` for perturbations."
+                    "Must be 'ctrl', '{perturb}+ctrl', or '{perturb1}+{perturb2}'"
                 )

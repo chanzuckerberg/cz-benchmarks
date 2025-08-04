@@ -2,6 +2,7 @@ defaults:
   - _self_
 
 datasets:
+<<<<<<< HEAD
   replogle_k562_essential_perturbpredict:
     _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
@@ -10,6 +11,13 @@ datasets:
     de_gene_col: gene_id
     deg_test_name: wilcoxon
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
+=======
+  replogle_k562_essential_perturb:
+    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    organism: ${organism:HUMAN}
+    condition_key: condition
+    path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbation.h5ad
+>>>>>>> 666c2eb (Remove other perturb datasets and split key)
 
   human_spermatogenesis:
     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
