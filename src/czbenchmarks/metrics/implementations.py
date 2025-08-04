@@ -26,9 +26,8 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    spearmanr,
 )
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 
 from .types import MetricRegistry, MetricType
@@ -187,7 +186,7 @@ metrics_registry.register(
 metrics_registry.register(
     MetricType.SPEARMAN_CORRELATION,
     func=spearmanr,
-    required_args={"x", "y"},
+    required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
     tags={"label_prediction"},
 )
