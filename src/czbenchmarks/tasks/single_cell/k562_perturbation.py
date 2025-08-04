@@ -145,10 +145,8 @@ class K562PerturbationTask(Task):
                 pred_log_fc_dict[condition] = pred_log_fc
                 true_log_fc_dict[condition] = true_log_fc
 
-            except Exception as e:
-                print(f"Error processing condition {condition}: {e}")
-                raise e
-                continue
+            except Exception:
+                raise
 
         return K562PerturbationOutput(
             pred_log_fc_dict=pred_log_fc_dict,
