@@ -8,7 +8,6 @@ from .dataset import Dataset
 from czbenchmarks.utils import initialize_hydra
 from czbenchmarks.file_utils import download_file_from_remote
 import logging
-# Import types to register the organism resolver
 
 log = logging.getLogger(__name__)
 
@@ -67,13 +66,7 @@ def load_dataset(
     dataset_info = cfg.datasets[dataset_name]
 
     # Handle local caching and remote downloading
-    # Only download if it's a remote path (starts with s3://)
-    if dataset_info["path"].startswith("s3://"):
-        dataset_info["path"] = download_file_from_remote(dataset_info["path"])
-    else:
-        # For local paths, expand user path and make absolute
-        local_path = os.path.expanduser(dataset_info["path"])
-        dataset_info["path"] = os.path.abspath(local_path)
+    dataset_info["path"] = download_file_from_remote(dataset_info["path"])
 
     # Instantiate the dataset using Hydra
     dataset = instantiate(dataset_info)
