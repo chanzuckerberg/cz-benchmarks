@@ -37,7 +37,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         path: Path,
         organism: Organism,
         condition_key: str = "condition",
-        split_key: str = "split",
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -48,24 +47,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             organism (Organism): Enum value indicating the organism.
             condition_key (str): Key for the column in `adata.obs` specifying conditions.
                 Defaults to "condition".
-            split_key (str): Key for the column in `adata.obs` specifying splits.
-                Defaults to "split".
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
-        self.split_key = split_key
 
     def load_data(self) -> None:
         """
         Load the dataset and populate perturbation truth data.
 
-        This method validates the presence of `condition_key` and `split_key` in
+        This method validates the presence of `condition_key` in
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
         Raises:
-            ValueError: If `condition_key` or `split_key` is not found in `adata.obs`.
+            ValueError: If `condition_key` not found in `adata.obs`.
         """
         super().load_data()
 
@@ -119,23 +115,15 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Perform dataset-specific validation.
 
         Validates the following:
-        - Split values must be one of {"train", "test", "val"}.
         - Condition format must be one of:
           - ``ctrl`` for control samples.
-          - ``{gene}+ctrl`` for single gene perturbations.
-          - ``{gene1}+{gene2}`` for combinatorial perturbations.
+          - ``{perturb}+ctrl`` for single perturbation.
+          - ``{perturb1}+{perturb2}`` for combinatorial perturbations.
 
         Raises:
-            ValueError: If invalid split values or condition formats are found.
+            ValueError: If invalid condition formats are found.
         """
         super()._validate()
-
-        # Validate split values
-        valid_splits = {"train", "test", "val"}
-        splits = set(self.adata.obs[self.split_key])
-        invalid_splits = splits - valid_splits
-        if invalid_splits:
-            raise ValueError(f"Invalid split value(s): {invalid_splits}")
 
         # Validate condition format
         conditions = (
@@ -150,5 +138,5 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             if len(parts) != 2:
                 raise ValueError(
                     f"Invalid perturbation condition format: {condition}. "
-                    "Must be 'ctrl', '{gene}+ctrl', or '{gene1}+{gene2}'"
+                    "Must be 'ctrl', '{perturb}+ctrl', or '{perturb1}+{perturb2}'"
                 )
