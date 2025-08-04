@@ -255,8 +255,8 @@ class K562PerturbationTask(Task):
             # Compute Spearman correlation and accuracy for each condition
             spearman_corr = metrics_registry.compute(
                 spearman_correlation_metric,
-                x=true_log_fc,
-                y=pred_log_fc,
+                a=true_log_fc,
+                b=pred_log_fc,
             )
             # If the result has a 'correlation' attribute (e.g., scipy.stats result), use it; otherwise, use the value directly
             spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
