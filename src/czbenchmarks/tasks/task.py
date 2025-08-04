@@ -87,6 +87,7 @@ class Task(ABC):
             List of MetricResult objects
 
         """
+
         task_output = self._run_task(cell_representation, task_input)
         metrics = self._compute_metrics(task_input, task_output)
         return metrics
@@ -147,7 +148,6 @@ class Task(ABC):
                 raise ValueError(f"{error_message} but only one was provided")
         else:
             if not isinstance(cell_representation, CellRepresentation):
-                print(cell_representation)
                 raise ValueError(
                     "This task requires a single cell representation for input"
                 )
