@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
-    de_res_wilcoxon_df: pd.DataFrame
+    de_true_results_df: pd.DataFrame
     pred_df: pd.DataFrame
 
 
@@ -35,6 +35,7 @@ class PerturbationExpressionPredictionTask(Task):
         super().__init__(random_seed=random_seed)
         self.min_de_genes = min_de_genes
         self.control_gene = "non-targeting"
+        self.metric_column = "logfoldchanges"
 
     def _run_task(
         self,
@@ -53,8 +54,8 @@ class PerturbationExpressionPredictionTask(Task):
             cell_representation (CellRepresentation): AnnData or DataFrame containing cell-level information,
                 including gene assignments and cell indices.
             task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
-                - de_res_wilcoxon_df (pd.DataFrame): DataFrame with differential expression results,
-                  including log fold changes and gene names.
+                - de_true_results_df (pd.DataFrame): DataFrame with differential expression results,
+                  including log fold changes/standard mean deviation and gene names.
                 - pred_df (pd.DataFrame): DataFrame with model predictions, sample IDs, and target genes.
 
         Returns:
@@ -74,8 +75,8 @@ class PerturbationExpressionPredictionTask(Task):
                 genes_dict[sample] = group["target_genes"].to_numpy()
 
         for condition in cell_representation["gene"].unique():
-            condition_de_df = task_input.de_res_wilcoxon_df[
-                task_input.de_res_wilcoxon_df["target_gene"] == condition
+            condition_de_df = task_input.de_true_results_df[
+                task_input.de_true_results_df["target_gene"] == condition
             ]
             if len(condition_de_df) < self.min_de_genes:
                 continue
@@ -123,11 +124,11 @@ class PerturbationExpressionPredictionTask(Task):
                     axis=0
                 ) - control_predictions.mean(axis=0)
 
-                # Select column for true log fold change
-                col = "logfoldchanges"
                 # Align true log fold change to masked genes
                 true_log_fc = (
-                    condition_de_df.set_index("names").reindex(masked_genes)[col].values
+                    condition_de_df.set_index("names")
+                    .reindex(masked_genes)[self.metric_column]
+                    .values
                 )
 
                 # Remove NaNs
