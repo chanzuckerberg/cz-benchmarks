@@ -18,8 +18,8 @@ from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTaskInput,
     PerturbationTask,
     PerturbationTaskInput,
-    K562PerturbationTask,
-    K562PerturbationTaskInput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
 )
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
@@ -330,8 +330,8 @@ def test_perturbation_task():
         pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
 
 
-def test_k562_perturbation_task():
-    """Test that K562PerturbationTask executes without errors."""
+def test_perturbation_expression_prediction_task():
+    """Test that PerturbationExpressionPredictionTask executes without errors."""
     # Create dummy DE results DataFrame
     # Use the same gene names that will be in target_genes
     gene_names = [f"ENSG{i:05d}" for i in range(50)]
@@ -387,8 +387,8 @@ def test_k562_perturbation_task():
     )
 
     # Task and argument setup
-    task = K562PerturbationTask(min_de_genes=10)
-    task_input = K562PerturbationTaskInput(
+    task = PerturbationExpressionPredictionTask(min_de_genes=10)
+    task_input = PerturbationExpressionPredictionTaskInput(
         de_res_wilcoxon_df=de_res_wilcoxon_df,
         pred_df=pred_df,
     )
@@ -430,4 +430,4 @@ def test_k562_perturbation_task():
         assert expected_types.issubset(metric_types)
 
     except Exception as e:
-        pytest.fail(f"K562PerturbationTask failed unexpectedly: {e}")
+        pytest.fail(f"PerturbationExpressionPredictionTask failed unexpectedly: {e}")

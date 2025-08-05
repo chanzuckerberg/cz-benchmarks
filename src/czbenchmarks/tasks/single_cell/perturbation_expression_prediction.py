@@ -6,6 +6,7 @@ from ..task import Task, TaskInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
+from ..utils import binarize_values
 from ...constants import RANDOM_SEED
 
 from tqdm import tqdm
@@ -13,41 +14,33 @@ from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
 
-def binarize_values(y_true, y_pred):
-    ids = np.where(~np.isnan(y_true) & ~np.isinf(y_true))[0]
-    y_true = y_true[ids]
-    y_pred = y_pred[ids]
-    pred_binary = (y_pred > 0).astype(int)
-    true_binary = (y_true > 0).astype(int)
-    return true_binary, pred_binary
-
-
-class K562PerturbationTaskInput(TaskInput):
+class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
     de_res_wilcoxon_df: pd.DataFrame
     pred_df: pd.DataFrame
 
 
-class K562PerturbationOutput(TaskOutput):
+class PerturbationExpressionPredictionOutput(TaskOutput):
     """Output for perturbation task."""
 
     pred_log_fc_dict: Dict[str, np.ndarray]
     true_log_fc_dict: Dict[str, np.ndarray]
 
 
-class K562PerturbationTask(Task):
-    display_name = "k562_perturbation"
+class PerturbationExpressionPredictionTask(Task):
+    display_name = "perturbation_expression_prediction"
 
     def __init__(self, min_de_genes: int = 5, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.min_de_genes = min_de_genes
+        self.control_gene = "non-targeting"
 
     def _run_task(
         self,
         cell_representation: CellRepresentation,
-        task_input: K562PerturbationTaskInput,
-    ) -> K562PerturbationOutput:
+        task_input: PerturbationExpressionPredictionTaskInput,
+    ) -> PerturbationExpressionPredictionOutput:
         """
         Runs the perturbation evaluation task.
 
@@ -59,13 +52,13 @@ class K562PerturbationTask(Task):
         Args:
             cell_representation (CellRepresentation): AnnData or DataFrame containing cell-level information,
                 including gene assignments and cell indices.
-            task_input (K562PerturbationTaskInput): Input object containing:
+            task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
                 - de_res_wilcoxon_df (pd.DataFrame): DataFrame with differential expression results,
                   including log fold changes and gene names.
                 - pred_df (pd.DataFrame): DataFrame with model predictions, sample IDs, and target genes.
 
         Returns:
-            K562PerturbationOutput: Output object containing dictionaries of predicted and true log fold changes
+            PerturbationExpressionPredictionOutput: Output object containing dictionaries of predicted and true log fold changes
             for each perturbation condition.
         """
         genes_dict = {}
@@ -91,10 +84,10 @@ class K562PerturbationTask(Task):
                 cell_representation.index.str.endswith(f"_{condition}")
             ]
             condition_cells = cell_condition[
-                cell_condition["gene"] != "non-targeting"
+                cell_condition["gene"] != self.control_gene
             ].index
             control_cells = cell_condition[
-                cell_condition["gene"] == "non-targeting"
+                cell_condition["gene"] == self.control_gene
             ].index
 
             if len(control_cells) != len(condition_cells):
@@ -148,18 +141,18 @@ class K562PerturbationTask(Task):
             except Exception:
                 raise
 
-        return K562PerturbationOutput(
+        return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,
             true_log_fc_dict=true_log_fc_dict,
         )
 
     def _compute_metrics(
         self,
-        task_input: K562PerturbationTaskInput,
-        task_output: K562PerturbationOutput,
+        task_input: PerturbationExpressionPredictionTaskInput,
+        task_output: PerturbationExpressionPredictionOutput,
     ) -> List[List[MetricResult]]:
         """
-        Computes perturbation prediction quality metrics for K562 cell line perturbation predictions.
+        Computes perturbation prediction quality metrics for cell line perturbation predictions.
 
         This method evaluates the quality of gene perturbation predictions by comparing predicted
         and true log fold changes across different perturbation conditions. For each condition,
@@ -176,9 +169,9 @@ class K562PerturbationTask(Task):
         (up-regulated vs. not up-regulated) using the `binarize_values` function.
 
         Args:
-            task_input (K562PerturbationTaskInput): Input object containing differential expression
+            task_input (PerturbationExpressionPredictionTaskInput): Input object containing differential expression
                 results and prediction data from the perturbation experiment.
-            task_output (K562PerturbationOutput): Output object containing aligned predicted and
+            task_output (PerturbationExpressionPredictionOutput): Output object containing aligned predicted and
                 true log fold changes for each perturbation condition.
 
         Returns:
