@@ -4,8 +4,8 @@ import anndata as ad
 import pandas as pd
 from pathlib import Path
 from czbenchmarks.tasks.single_cell import (
-    K562PerturbationTask,
-    K562PerturbationTaskInput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
 )
 import numpy as np
 import argparse
@@ -97,8 +97,8 @@ if __name__ == "__main__":
         }
     )
 
-    task = K562PerturbationTask(min_de_genes=args.min_de_genes)
-    task_input = K562PerturbationTaskInput(
+    task = PerturbationExpressionPredictionTask(min_de_genes=args.min_de_genes)
+    task_input = PerturbationExpressionPredictionTaskInput(
         de_res_wilcoxon_df=de_res_wilcoxon_df, pred_df=pred_df
     )
     task.run(masked_h5ad_df, task_input)
