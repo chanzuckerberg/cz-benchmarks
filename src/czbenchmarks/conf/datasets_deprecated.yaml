@@ -1,37 +1,38 @@
 defaults:
   - _self_
 
+# These datasets are currently deprecated for use in perturb-seq tasks. They will be evaluated for re-addition in a future release.
 datasets:
   adamson_perturb:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/adamson_perturbation.h5ad
 
   norman_perturb:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/norman_perturbation.h5ad
 
   dixit_perturb:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/dixit_perturbation.h5ad
 
   replogle_k562_perturb:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbation.h5ad
 
   replogle_rpe1_perturb:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
     split_key: split
