@@ -17,7 +17,6 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
     de_results: pd.DataFrame
-    pred_df: pd.DataFrame
     control_cells_ids: Dict[str, np.ndarray]
 
 
