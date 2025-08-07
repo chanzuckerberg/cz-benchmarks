@@ -2,7 +2,7 @@ defaults:
   - _self_
 
 datasets:
-  replogle_k562_essential_perturb:
+  replogle_k562_essential_perturbpredict:
     _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
     organism: ${organism:HUMAN}
     condition_key: condition
