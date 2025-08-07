@@ -172,7 +172,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
             # Merge condition and control data
             adata_merged = ad.concat([adata_condition, adata_control], index_unique=None)
-            # adata_merged = adata_condition.concatenate(adata_control, index_unique=None) # FIXME MICHELLE REMOVE
             adata_merged.obs[self.condition_key] = pd.Categorical(adata_merged.obs[self.condition_key]) # FIXME MICHELLE MOVE TO AFTER MERGED?
 
             # Add new column cell_barcode_gene
