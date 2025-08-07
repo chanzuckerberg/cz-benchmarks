@@ -298,7 +298,6 @@ if __name__ == "__main__":
         json.dump(dict_numpy_to_list(notebook_true_log_fc_dict), f)
     """
     result = run_new_code(args)
-    breakpoint()
     # Similarly, save result.pred_log_fc_dict and result.true_log_fc_dict
     with open("new_pred_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(result.pred_log_fc_dict), f)
