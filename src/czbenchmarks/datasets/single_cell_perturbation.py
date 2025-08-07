@@ -14,6 +14,7 @@ from ..constants import RANDOM_SEED
 
 log = logging.getLogger(__name__)
 
+
 def sample_de_genes(
     de_results: pd.DataFrame,
     percent_genes_to_mask: float,
@@ -121,7 +122,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     ) -> Dict[str, List[str]]:
         # FIXME MICHELLE double check default parameter values
         de_results = self.de_results.copy()
-        
+
         filter = de_results["pval"] < pval_threshold
 
         if self.deg_test_name == "wilcoxon":
@@ -138,7 +139,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes=min_de_genes,
             condition_col=self.condition_key,
-            gene_col=self.de_gene_col
+            gene_col=self.de_gene_col,
         )
 
         return target_gene_dict
@@ -148,13 +149,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata = self.adata
         control_cells_ids = self.control_cells_ids
 
-        # Initialize list to store merged data
+        # Initialize structures to store merged data and get target genes
         all_merged_data = []
-
-        # Initialize a dictionary to store target genes for each cell
         target_genes_to_save = {}
-
         target_genes = target_gene_dict.keys()
+
         # FIXME MICHELLE parallelize this loop
         for i, key in enumerate(target_genes):
             # Create condition and control data and update condition information
@@ -167,35 +166,42 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
                 continue
 
-            adata_condition.obs[self.condition_key] = adata_condition.obs[self.condition_key].astype(str)
+            adata_condition.obs[self.condition_key] = adata_condition.obs[
+                self.condition_key
+            ].astype(str)
             adata_condition.obs.loc[:, self.condition_key] = key
-            
-            adata_control.obs[self.condition_key] = adata_control.obs[self.condition_key].astype(str)
-            adata_control.obs.loc[:, self.condition_key] = "_".join([self.control_name, key])
+
+            adata_control.obs[self.condition_key] = adata_control.obs[
+                self.condition_key
+            ].astype(str)
+            adata_control.obs.loc[:, self.condition_key] = "_".join(
+                [self.control_name, key]
+            )
 
             # Merge condition and control data
-            adata_merged = ad.concat([adata_condition, adata_control], index_unique=None)
-            adata_merged.obs[self.condition_key] = pd.Categorical(adata_merged.obs[self.condition_key]) # FIXME MICHELLE MOVE TO AFTER MERGED?
+            adata_merged = ad.concat(
+                [adata_condition, adata_control], index_unique=None
+            )
 
             # Add new column cell_barcode_gene
             adata_merged.obs["cell_barcode_gene"] = (
                 adata_merged.obs.index.astype(str) + "_" + [key] * len(adata_merged)
             )
+            adata_merged.obs.set_index(
+                "cell_barcode_gene", inplace=True
+            )
 
             # Add target genes to the dictionary for each cell
-            for idx in adata_merged.obs["cell_barcode_gene"]:
+            for idx in adata_merged.obs.index:
                 target_genes_to_save[idx] = target_gene_dict[key]
 
             all_merged_data.append(adata_merged)
 
         # Combine all adata objects
-        # adata_final = all_merged_data[0].concatenate(
-        #     all_merged_data[1:], index_unique=None
-        # )
         adata_final = ad.concat(all_merged_data, index_unique=None)
-
-        # Set the new index
-        adata_final.obs.set_index("cell_barcode_gene", inplace=True) # FIXME MICHELLE MOVE TO INSIDE LOOP?
+        adata_final.obs[self.condition_key] = pd.Categorical(
+            adata_final.obs[self.condition_key]
+        )
 
         return adata_final, target_genes_to_save
 
@@ -229,7 +235,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 "Options are 'wilcoxon' or 't-test'."
             )
 
-        for key in ['control_cells_ids', f'de_results_{self.deg_test_name}']:
+        for key in ["control_cells_ids", f"de_results_{self.deg_test_name}"]:
             if key not in self.adata.uns.keys():
                 raise ValueError(f"Key '{key}' not found in adata.uns")
 
@@ -238,6 +244,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
 
+        log.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
         adata_final, target_genes_to_save = self._create_adata()
 
         self.adata = adata_final
@@ -260,7 +267,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             "de_results": self.de_results,
         }
         buffer = io.StringIO()
-        
+
         for key, item in inputs_to_store.items():
             buffer = io.StringIO()
             item.to_json(buffer)
