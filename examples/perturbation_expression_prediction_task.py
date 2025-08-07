@@ -59,6 +59,13 @@ if __name__ == "__main__":
         default=20,
         help="Minimum number of DE genes for perturbation condition",
     )
+    parser.add_argument(
+        "--metric_type",
+        type=str,
+        choices=["wilcoxon", "t_test"],
+        default="wilcoxon",
+        help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
+    )
 
     # Load the input data
     args = parser.parse_args()
@@ -79,7 +86,7 @@ if __name__ == "__main__":
 
     task = PerturbationExpressionPredictionTask(min_de_genes=args.min_de_genes)
     task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=adata.uns["de_results_wilcoxon"],
+        de_results=adata.uns[f"de_results_{args.metric_type}"],
         control_cells_ids=adata.uns["control_cells_ids"],
     )
     task.run(pred_df, task_input)
