@@ -4,10 +4,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import anndata as ad
+import logging
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from ..constants import RANDOM_SEED
 
+log = logging.getLogger(__name__)
 
 def sample_de_genes(
     de_results: pd.DataFrame,
@@ -80,6 +82,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         organism: Organism,
         condition_key: str = "condition",
         control_name: str = "ctrl",
+        de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
         task_inputs_dir: Optional[Path] = None,
     ):
@@ -92,6 +95,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key (str): Key for the column in `adata.obs` specifying conditions.
                 Defaults to "condition".
             control_name (str): Name of the control condition. Defaults to "ctrl".
+            de_gene_col (str): Column name for the gene names in the differential expression results.
+                Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
@@ -100,6 +105,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.condition_key = condition_key
         self.control_name = control_name
         self.deg_test_name = deg_test_name
+        self.de_gene_col = de_gene_col
         # FIXME MICHELLE add parameters for sampling genes?
 
     def _sample_genes_to_mask(
@@ -128,8 +134,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_results=de_results,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes=min_de_genes,
-            condition_col="condition_ensembl_id", # FIXME MICHELLE self.condition_key
-            gene_col="gene", # FIXME MICHELLE self.gene_col
+            condition_col=self.condition_key,
+            gene_col=self.de_gene_col
         )
 
         return target_gene_dict
@@ -146,21 +152,28 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_genes_to_save = {}
 
         target_genes = target_gene_dict.keys()
-        for key in target_genes:
-            adata_condition = adata[adata.obs["gene"] == key] # FIXME self.condition_key
-            adata_control = adata[adata.obs.index.isin(control_cells_ids[key])]
-            adata_condition.obs[self.condition_key] = key
-            adata_control.obs[self.condition_key] = "_".join([self.control_name, key])
+        # FIXME MICHELLE parallelize this loop
+        for i, key in enumerate(target_genes):
+            # Create condition and control data and update condition information
+            adata_condition = adata[adata.obs[self.condition_key] == key].copy()
+            adata_control = adata[adata.obs.index.isin(control_cells_ids[key])].copy()
 
-            # Check if condition and control data have the same length
             if len(adata_condition) != len(adata_control):
-                print(
-                    f"Warning: Condition and control data for {key} have different lengths."
+                log.warning(
+                    f"Condition and control data for {key} have different lengths."
                 )
                 continue
 
+            adata_condition.obs[self.condition_key] = adata_condition.obs[self.condition_key].astype(str)
+            adata_condition.obs.loc[:, self.condition_key] = key
+            
+            adata_control.obs[self.condition_key] = adata_control.obs[self.condition_key].astype(str)
+            adata_control.obs.loc[:, self.condition_key] = "_".join([self.control_name, key])
+
             # Merge condition and control data
-            adata_merged = adata_condition.concatenate(adata_control, index_unique=None)
+            adata_merged = ad.concat([adata_condition, adata_control], index_unique=None)
+            # adata_merged = adata_condition.concatenate(adata_control, index_unique=None) # FIXME MICHELLE REMOVE
+            adata_merged.obs[self.condition_key] = pd.Categorical(adata_merged.obs[self.condition_key]) # FIXME MICHELLE MOVE TO AFTER MERGED?
 
             # Add new column cell_barcode_gene
             adata_merged.obs["cell_barcode_gene"] = (
@@ -174,12 +187,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             all_merged_data.append(adata_merged)
 
         # Combine all adata objects
-        adata_final = all_merged_data[0].concatenate(
-            all_merged_data[1:], index_unique=None
-        )
+        # adata_final = all_merged_data[0].concatenate(
+        #     all_merged_data[1:], index_unique=None
+        # )
+        adata_final = ad.concat(all_merged_data, index_unique=None)
 
         # Set the new index
-        adata_final.obs.set_index("cell_barcode_gene", inplace=True)
+        adata_final.obs.set_index("cell_barcode_gene", inplace=True) # FIXME MICHELLE MOVE TO INSIDE LOOP?
 
         return adata_final, target_genes_to_save
 
