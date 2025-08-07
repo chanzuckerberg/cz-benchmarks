@@ -335,9 +335,9 @@ def test_metric_registration_tags():
     }
 
     for metric in expected_metrics:
-        assert (
-            metric in accuracy_metrics
-        ), f"{metric} should be tagged as 'label_prediction'"
+        assert metric in accuracy_metrics, (
+            f"{metric} should be tagged as 'label_prediction'"
+        )
 
 
 def test_metric_required_args():
