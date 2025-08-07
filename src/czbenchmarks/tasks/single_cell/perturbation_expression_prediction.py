@@ -9,7 +9,6 @@ from ...metrics.types import MetricResult, MetricType
 from ..utils import binarize_values
 from ...constants import RANDOM_SEED
 
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +16,9 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
-    de_true_results_df: pd.DataFrame
+    de_results: pd.DataFrame
     pred_df: pd.DataFrame
+    control_cells_ids: Dict[str, np.ndarray]
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
@@ -31,11 +31,36 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 class PerturbationExpressionPredictionTask(Task):
     display_name = "perturbation_expression_prediction"
 
-    def __init__(self, min_de_genes: int = 5, *, random_seed: int = RANDOM_SEED):
+    def __init__(
+        self,
+        min_de_genes: int = 5,
+        control_gene: str = "non-targeting",
+        metric_column: str = "logfoldchange",
+        metric_type: str = "wilcoxon",
+        pval_threshold: float = 1e-4,
+        standardized_mean_diff: float = 0.5,
+        min_logfoldchange: float = 0.5,
+        *,
+        random_seed: int = RANDOM_SEED,
+    ):
+        """
+        Args:
+            min_de_genes (int): Minimum number of DE genes for a perturbation condition.
+            control_gene (str): Name of the control gene (default: "non-targeting").
+            metric_column (str): Column name for metric (default: "logfoldchange").
+            metric_type (str): Type of DE metric (default: "wilcoxon").
+            pval_threshold (float): Adjusted p-value threshold for DE gene filtering.
+            standardized_mean_diff (float): Minimum standardized mean difference for DE gene filtering.
+            random_seed (int): Random seed for reproducibility.
+        """
         super().__init__(random_seed=random_seed)
         self.min_de_genes = min_de_genes
-        self.control_gene = "non-targeting"
-        self.metric_column = "logfoldchanges"
+        self.control_gene = control_gene
+        self.metric_column = metric_column
+        self.metric_type = metric_type
+        self.pval_threshold = pval_threshold
+        self.standardized_mean_diff = standardized_mean_diff
+        self.min_logfoldchange = min_logfoldchange
 
     def _run_task(
         self,
@@ -54,93 +79,85 @@ class PerturbationExpressionPredictionTask(Task):
             cell_representation (CellRepresentation): AnnData or DataFrame containing cell-level information,
                 including gene assignments and cell indices.
             task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
-                - de_true_results_df (pd.DataFrame): DataFrame with differential expression results,
+                - de_results (pd.DataFrame): DataFrame with differential expression results,
                   including log fold changes/standard mean deviation and gene names.
-                - pred_df (pd.DataFrame): DataFrame with model predictions, sample IDs, and target genes.
+                - control_cells_ids (Dict[str, np.ndarray]): Dictionary of control cell IDs for each perturbation condition.
 
         Returns:
             PerturbationExpressionPredictionOutput: Output object containing dictionaries of predicted and true log fold changes
             for each perturbation condition.
         """
-        genes_dict = {}
-        predictions_dict = {}
+        de_results = task_input.de_results
+        gene_to_ensembl = dict(
+            zip(de_results["condition"], de_results["condition_ensembl_id"])
+        )
+
+        samples = cell_representation.sample_id
+        sample_substr = [s.split("_")[0] for s in samples]
+        gene_condition = [s.split("_")[-1] for s in samples]
+        cell_representation["condition"] = [
+            gene_to_ensembl.get(g, g) for g in gene_condition
+        ]
+        cell_representation["sample_substr"] = sample_substr
         pred_log_fc_dict = {}
         true_log_fc_dict = {}
 
-        for sample, group in tqdm(task_input.pred_df.groupby("sample_id")):
-            predictions_dict.setdefault(sample, []).append(
-                np.concatenate(group["pred"].to_numpy())
+        # Filter out and pre-process the DE results
+        de_results = de_results[de_results["pval"] < self.pval_threshold]
+
+        if self.metric_type == "wilcoxon":
+            de_results = de_results[
+                np.abs(de_results[self.metric_column]) >= self.min_logfoldchange
+            ]
+        elif self.metric_type == "t-test":
+            de_results = de_results[
+                de_results["standardized_mean_diff"].abs()
+                >= self.standardized_mean_diff
+            ]
+
+        else:
+            raise ValueError(f"Metric type {self.metric_type} not supported")
+
+        for gene, group in cell_representation.groupby("condition", sort=False):
+            condition_de_df = de_results[de_results["condition_ensembl_id"] == gene]
+            if len(condition_de_df) < 10:
+                continue
+            masked_genes = np.unique(group.target_genes[group.target_genes != "A"])
+            if len(masked_genes) == 0:
+                continue
+
+            true_log_fc = (
+                condition_de_df.set_index("gene")
+                .reindex(masked_genes)[self.metric_column]
+                .values
             )
-            if sample not in genes_dict:
-                genes_dict[sample] = group["target_genes"].to_numpy()
+            # drop any rows in `group` that aren’t in masked_genes
+            group = group[group["target_genes"].isin(masked_genes)]
+            valid = ~np.isnan(true_log_fc)
 
-        for condition in cell_representation["gene"].unique():
-            condition_de_df = task_input.de_true_results_df[
-                task_input.de_true_results_df["target_gene"] == condition
+            control_cells = set(task_input.control_cells_ids[gene])
+            control_df = group[[s in control_cells for s in group.sample_substr]]
+            condition_df = group[[s not in control_cells for s in group.sample_substr]]
+
+            control_vals = [
+                np.concatenate(
+                    sub_group.set_index("target_genes").loc[masked_genes]["pred"].values
+                )
+                for _, sub_group in control_df.groupby("sample_substr")
             ]
-            if len(condition_de_df) < self.min_de_genes:
-                continue
-
-            cell_condition = cell_representation[
-                cell_representation.index.str.endswith(f"_{condition}")
+            condition_vals = [
+                np.concatenate(
+                    sub_group.set_index("target_genes").loc[masked_genes]["pred"].values
+                )
+                for _, sub_group in condition_df.groupby("sample_substr")
             ]
-            condition_cells = cell_condition[
-                cell_condition["gene"] != self.control_gene
-            ].index
-            control_cells = cell_condition[
-                cell_condition["gene"] == self.control_gene
-            ].index
 
-            if len(control_cells) != len(condition_cells):
-                raise AssertionError(
-                    f"Number of control cells ({len(control_cells)}) is not equal to number of condition cells ({len(condition_cells)})"
-                )
-            if len(control_cells) < 10:
-                print(f"Less than 10 cells in condition {condition}. Skipping...")
-                continue
+            ctrl_mean = np.mean(control_vals, axis=0)
+            cond_mean = np.mean(condition_vals, axis=0)
+            pred_log_fc = cond_mean - ctrl_mean
 
-            try:
-                # Masked genes for this sample
-                masked_genes = genes_dict[control_cells[0]]
-                mask = masked_genes != "A"
-                masked_genes = masked_genes[mask]
-                n_masked_genes = len(masked_genes)
-                # Get predictions for control and condition cells
-                control_predictions = np.asarray(
-                    [
-                        predictions_dict[cell][-1][:n_masked_genes]
-                        for cell in control_cells
-                    ]
-                )
-                condition_predictions = np.asarray(
-                    [
-                        predictions_dict[cell][-1][:n_masked_genes]
-                        for cell in condition_cells
-                    ]
-                )
-
-                # Compute predicted log fold change
-                pred_log_fc = condition_predictions.mean(
-                    axis=0
-                ) - control_predictions.mean(axis=0)
-
-                # Align true log fold change to masked genes
-                true_log_fc = (
-                    condition_de_df.set_index("names")
-                    .reindex(masked_genes)[self.metric_column]
-                    .values
-                )
-
-                # Remove NaNs
-                valid = ~np.isnan(true_log_fc)
-                pred_log_fc = pred_log_fc[valid]
-                true_log_fc = true_log_fc[valid]
-
-                pred_log_fc_dict[condition] = pred_log_fc
-                true_log_fc_dict[condition] = true_log_fc
-
-            except Exception:
-                raise
+            pred_log_fc_dict[gene] = pred_log_fc[valid]
+            true_log_fc_dict[gene] = true_log_fc[valid]
 
         return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,

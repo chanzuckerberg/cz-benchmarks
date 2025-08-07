@@ -33,6 +33,19 @@ from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 from .types import MetricRegistry, MetricType
 
 
+def spearman_correlation(a, b):
+    """Wrapper for spearmanr that returns only the correlation coefficient."""
+    result = spearmanr(a, b)
+    # Handle both old and new scipy versions
+    if hasattr(result, "correlation"):
+        return result.correlation
+    elif hasattr(result, "statistic"):
+        return result.statistic
+    else:
+        # Fallback for very old versions that return (correlation, pvalue)
+        return result[0]
+
+
 # Create the global metric registry
 metrics_registry = MetricRegistry()
 
@@ -185,7 +198,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.SPEARMAN_CORRELATION,
-    func=spearmanr,
+    func=spearman_correlation,
     required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
     tags={"label_prediction"},
