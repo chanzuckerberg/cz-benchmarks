@@ -3,11 +3,12 @@ defaults:
 
 datasets:
   replogle_k562_essential_perturbpredict:
-    _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     organism: ${organism:HUMAN}
     condition_key: condition
-    condition_name: non-targeting
-    path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict.h5ad
+    control_name: non-targeting
+    deg_test_name: wilcoxon
+    path: s3://pdx.s8k.io/team-bio-foundation-models/scgym-files/replogle_k562_essential_perturbpredict.h5ad
 
   human_spermatogenesis:
     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
