@@ -2,17 +2,7 @@ defaults:
   - _self_
 
 datasets:
-<<<<<<< HEAD
   replogle_k562_essential_perturbpredict:
-    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
-    organism: ${organism:HUMAN}
-    condition_key: condition
-    control_name: non-targeting
-    de_gene_col: gene_id
-    deg_test_name: wilcoxon
-    path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
-=======
-  replogle_k562_essential_perturb:
     _target_: czbenchmarks.datasets.PerturbationSingleCellLabeledDataset
     organism: ${organism:HUMAN}
     condition_key: condition
