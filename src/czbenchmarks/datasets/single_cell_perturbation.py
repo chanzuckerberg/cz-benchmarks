@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import anndata as ad
-from .single_cell import SingleCellDataset
-from .types import Organism
-from ..constants import DEFAULT_SEED
+from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.types import Organism
+from ..constants import RANDOM_SEED
 
 
 def sample_de_genes(
@@ -15,7 +15,7 @@ def sample_de_genes(
     min_de_genes: int,
     condition_col: str,
     gene_col: str,
-    seed: int = DEFAULT_SEED,
+    seed: int = RANDOM_SEED,
 ) -> Dict[str, List[str]]:
     """
     Sample genes from a differential expression results dataframe.
@@ -100,38 +100,36 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.condition_key = condition_key
         self.control_name = control_name
         self.deg_test_name = deg_test_name
-        self.seed = seed
         # FIXME MICHELLE add parameters for sampling genes?
 
     def _sample_genes_to_mask(
         self,
-        de_results: pd.DataFrame,
         percent_genes_to_mask: float = 0.5,
         min_de_genes: int = 5,
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
         min_smd: float = 0.55,
     ) -> Dict[str, List[str]]:
-        # FIXME MICHELLE double check parameter values
-
-        filter = de_results["num_de_genes"] >= min_de_genes
-        filter &= de_results["pval"] < pval_threshold
+        # FIXME MICHELLE double check default parameter values
+        de_results = self.de_results.copy()
+        
+        filter = de_results["pval"] < pval_threshold
 
         if self.deg_test_name == "wilcoxon":
             filter &= de_results["logfoldchange"] > min_logfoldchange
+            # filter &= de_results["num_de_genes"] >= min_de_genes # FIXME MICHELLE check if this should only be here
         elif self.deg_test_name == "t-test":
             filter &= de_results["standardized_mean_diff"] > min_smd
 
         de_results = de_results[filter]
 
         # TODO update DE results column names so they match the dataset column names
-        target_gene_dict = random_sample_genes(
+        target_gene_dict = sample_de_genes(
             de_results=de_results,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes=min_de_genes,
-            condition_col="condition_ensembl_id",
-            gene_col="ensembl_id",
-            seed=self.seed,
+            condition_col="condition_ensembl_id", # FIXME MICHELLE self.condition_key
+            gene_col="gene", # FIXME MICHELLE self.gene_col
         )
 
         return target_gene_dict
@@ -149,10 +147,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         target_genes = target_gene_dict.keys()
         for key in target_genes:
-            adata_condition = adata[adata.obs["gene"] == key]
+            adata_condition = adata[adata.obs["gene"] == key] # FIXME self.condition_key
             adata_control = adata[adata.obs.index.isin(control_cells_ids[key])]
-            adata_condition.obs["condition"] = key
-            adata_control.obs["condition"] = "non-targeting_" + key
+            adata_condition.obs[self.condition_key] = key
+            adata_control.obs[self.condition_key] = "_".join([self.control_name, key])
 
             # Check if condition and control data have the same length
             if len(adata_condition) != len(adata_control):
@@ -205,7 +203,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         if not self.adata.obs[self.condition_key].str.contains(self.control_name).any():
             raise ValueError(
-                f"Condition key '{self.condition_key}' does not contain control condition '{self.control_name}'"
+                f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
 
         if self.deg_test_name not in ["wilcoxon", "t-test"]:
@@ -214,12 +212,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 "Options are 'wilcoxon' or 't-test'."
             )
 
+        for key in ['control_cells_ids', f'de_results_{self.deg_test_name}']:
+            if key not in self.adata.uns.keys():
+                raise ValueError(f"Key '{key}' not found in adata.uns")
+
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
         self.de_results = pd.DataFrame(
-            self.adata.uns["de_results_{self.deg_test_name}"]
+            self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
 
-        adata_final, target_genes_to_save = self.create_adata()
+        adata_final, target_genes_to_save = self._create_adata()
 
         self.adata = adata_final
         self.target_genes_to_save = target_genes_to_save
