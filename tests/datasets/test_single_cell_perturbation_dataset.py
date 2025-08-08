@@ -19,7 +19,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
+            control_name="ctrl",
         )
 
     def valid_dataset_file(self, tmp_path) -> Path:
@@ -28,7 +28,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["condition", "split"],
+            obs_columns=["condition"],
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
@@ -39,7 +39,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2+ctrl",
             "test2+ctrl",
         ]
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
+        adata.uns["control_cells_ids"] = {
+            "test1": ["cell_1", "cell_2"],
+            "test2": ["cell_1", "cell_2"],
+        }
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": ["ENSG00000000000", "ENSG00000000001", "ENSG00000000002"],
+                "pval": [0.01, 0.02, 0.03],
+                "logfoldchange": [1.0, 2.0, 3.0],
+            }
+        )
         adata.write_h5ad(file_path)
 
         return file_path
@@ -57,32 +67,15 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         return file_path
 
     @pytest.fixture
-    def perturbation_invalid_split_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset with invalid split values."""
-        file_path = tmp_path / "perturbation_invalid_split.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=6,
-            n_genes=3,
-            obs_columns=["condition", "split"],
-            organism=Organism.HUMAN,
-        )
-        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
-        adata.obs["split"] = ["BAD", "train", "test", "test", "test", "test"]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
     def perturbation_missing_condition_column_h5ad(self, tmp_path) -> Path:
         """Creates a PerturbationSingleCellDataset with invalid condition format."""
         file_path = tmp_path / "perturbation_invalid_condition.h5ad"
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["split"],
+            obs_columns=[],
             organism=Organism.HUMAN,
         )
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
         adata.write_h5ad(file_path)
 
         return file_path
@@ -94,7 +87,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["condition", "split"],
+            obs_columns=["condition"],
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
@@ -105,7 +98,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
             "test2",
         ]
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
         adata.write_h5ad(file_path)
 
         return file_path
@@ -117,7 +109,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=9,
             n_genes=3,
-            obs_columns=["condition", "split"],
+            obs_columns=["condition"],
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
@@ -131,7 +123,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "ENSG00000111111+ctrl",
             "ctrl",
         ]
-        adata.obs["split"] = ["train"] * 3 + ["test"] * 6
         adata.write_h5ad(file_path)
 
         return file_path
@@ -154,46 +145,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
         )
 
         with pytest.raises(
             ValueError, match="Condition key 'condition' not found in adata.obs"
         ):
             invalid_dataset.load_data()
-
-    def test_perturbation_dataset_load_data_missing_split_key(
-        self, perturbation_missing_split_column_h5ad
-    ):
-        """Tests that loading data fails when the split column is missing."""
-        invalid_dataset = SingleCellPerturbationDataset(
-            perturbation_missing_split_column_h5ad,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            split_key="split",
-        )
-
-        with pytest.raises(
-            ValueError, match="Split key 'split' not found in adata.obs"
-        ):
-            invalid_dataset.load_data()
-
-    def test_perturbation_dataset_validate_invalid_split(
-        self, perturbation_invalid_split_h5ad
-    ):
-        """Test that validation fails with invalid split values."""
-        dataset = SingleCellPerturbationDataset(
-            perturbation_invalid_split_h5ad,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            split_key="split",
-        )
-        dataset.load_data()
-
-        with pytest.raises(
-            ValueError, match=re.escape("Invalid split value(s): {'BAD'}")
-        ):
-            dataset.validate()
 
     def test_perturbation_dataset_validate_invalid_condition(
         self,
@@ -204,7 +161,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
         )
         dataset.load_data()
 
