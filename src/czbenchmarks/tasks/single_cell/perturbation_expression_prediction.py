@@ -32,7 +32,7 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        min_de_genes: int = 5,
+        min_de_genes: int = 10,
         control_gene: str = "non-targeting",
         metric_column: str = "logfoldchange",
         metric_type: str = "wilcoxon",
@@ -94,6 +94,7 @@ class PerturbationExpressionPredictionTask(Task):
         samples = cell_representation.sample_id
         sample_substr = [s.split("_")[0] for s in samples]
         gene_condition = [s.split("_")[-1] for s in samples]
+        cell_representation["gene_condition"] = gene_condition
         cell_representation["condition"] = [
             gene_to_ensembl.get(g, g) for g in gene_condition
         ]
@@ -117,14 +118,14 @@ class PerturbationExpressionPredictionTask(Task):
         else:
             raise ValueError(f"Metric type {self.metric_type} not supported")
 
-        for gene, group in cell_representation.groupby("condition", sort=False):
+        for g_val, group in cell_representation.groupby("gene_condition", sort=False):
+            gene = gene_to_ensembl.get(g_val, g_val)
             condition_de_df = de_results[de_results["condition_ensembl_id"] == gene]
-            if len(condition_de_df) < 10:
+            if len(condition_de_df) < self.min_de_genes:
                 continue
             masked_genes = np.unique(group.target_genes[group.target_genes != "A"])
             if len(masked_genes) == 0:
                 continue
-
             true_log_fc = (
                 condition_de_df.set_index("gene")
                 .reindex(masked_genes)[self.metric_column]
@@ -155,8 +156,8 @@ class PerturbationExpressionPredictionTask(Task):
             cond_mean = np.mean(condition_vals, axis=0)
             pred_log_fc = cond_mean - ctrl_mean
 
-            pred_log_fc_dict[gene] = pred_log_fc[valid]
-            true_log_fc_dict[gene] = true_log_fc[valid]
+            pred_log_fc_dict[g_val] = pred_log_fc[valid]
+            true_log_fc_dict[g_val] = true_log_fc[valid]
 
         return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,
@@ -288,11 +289,12 @@ class PerturbationExpressionPredictionTask(Task):
                     params={"condition": condition},
                 )
             )
+        metrics_dict = {
+            "accuracy": accuracy_results,
+            "precision": precision_results,
+            "recall": recall_results,
+            "f1": f1_results,
+            "correlation": spearman_correlation_results,
+        }
 
-        return [
-            accuracy_results,
-            precision_results,
-            recall_results,
-            f1_results,
-            spearman_correlation_results,
-        ]
+        return metrics_dict
