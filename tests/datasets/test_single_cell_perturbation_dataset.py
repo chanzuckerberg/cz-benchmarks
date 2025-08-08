@@ -34,20 +34,26 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata.obs["condition"] = [
             "ctrl",
             "ctrl",
-            "test1+ctrl",
-            "test1+ctrl",
-            "test2+ctrl",
-            "test2+ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
         ]
         adata.uns["control_cells_ids"] = {
             "test1": ["cell_1", "cell_2"],
             "test2": ["cell_1", "cell_2"],
         }
+        # Provide sufficient DE results to pass internal filtering and sampling
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [
+            f"ENSG000000000{str(i).zfill(2)}" for i in range(20)
+        ]
         adata.uns["de_results_wilcoxon"] = pd.DataFrame(
             {
-                "condition": ["ENSG00000000000", "ENSG00000000001", "ENSG00000000002"],
-                "pval": [0.01, 0.02, 0.03],
-                "logfoldchange": [1.0, 2.0, 3.0],
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
             }
         )
         adata.write_h5ad(file_path)
@@ -132,10 +138,16 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         valid_dataset.load_data()
 
-        truth = valid_dataset.perturbation_truth
-        assert "test1+ctrl" in truth
-        assert "test2+ctrl" in truth
-        assert valid_dataset.adata.shape == (2, 3)
+        # After loading, data should be created for each perturbation with matched controls
+        # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
+        assert valid_dataset.adata.shape == (8, 3)
+        # Target genes should be stored per cell (for each unique cell index)
+        assert hasattr(valid_dataset, "target_genes_to_save")
+        unique_obs_count = len(set(valid_dataset.adata.obs.index.tolist()))
+        assert len(valid_dataset.target_genes_to_save) == unique_obs_count
+        # Each cell should have 5 sampled genes (50% of 10 per condition)
+        sampled_lengths = {len(v) for v in valid_dataset.target_genes_to_save.values()}
+        assert sampled_lengths == {5}
 
     def test_perturbation_dataset_load_data_missing_condition_key(
         self, perturbation_missing_condition_column_h5ad
