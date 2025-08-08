@@ -21,17 +21,17 @@ def test_list_available_datasets():
 
     # Verify the dataset names match the expected dataset names
     expected_datasets = {
-        "adamson_perturb": {
+        "replogle_k562_essential_perturbpredict": {
             "organism": "homo_sapiens",
-            "url": "s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/adamson_perturbation.h5ad",
+            "url": "s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict.h5ad",
         },
-        "dixit_perturb": {
+        "tsv2_bladder": {
             "organism": "homo_sapiens",
-            "url": "s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/dixit_perturbation.h5ad",
+            "url": "s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Bladder_v2_curated.h5ad",
         },
     }
-    assert datasets["adamson_perturb"] == expected_datasets["adamson_perturb"]
-    assert datasets["dixit_perturb"] == expected_datasets["dixit_perturb"]
+    assert datasets["replogle_k562_essential_perturbpredict"] == expected_datasets["replogle_k562_essential_perturbpredict"]
+    assert datasets["tsv2_bladder"] == expected_datasets["tsv2_bladder"]
     # Verify all elements are strings
     assert all(isinstance(dataset, str) for dataset in datasets)
 
