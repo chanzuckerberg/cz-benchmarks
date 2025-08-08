@@ -170,24 +170,21 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
     def test_perturbation_dataset_store_task_inputs(
         self, tmp_path, valid_dataset: SingleCellPerturbationDataset
     ):
-        """Tests that the store_task_inputs method writes labels to a file."""
+        """Tests that the store_task_inputs method writes expected files."""
         valid_dataset.load_data()
 
-        valid_dataset.store_task_inputs()
-        # TODO: Assert that multiple files are created for each condition. For now, we will just check one condition
-        output_file = (
-            tmp_path
-            / "dummy_perturbation_task_inputs"
-            / "single_cell_perturbation"
-            / "perturbation_truths"
-            / "test1+ctrl.json"
+        out_dir = valid_dataset.store_task_inputs()
+        control_file = out_dir / "control_cells_ids.json"
+        target_genes_file = out_dir / "target_genes_to_save.json"
+        de_results_file = out_dir / "de_results.json"
+
+        assert control_file.exists()
+        assert target_genes_file.exists()
+        assert de_results_file.exists()
+
+        # Validate that DE results JSON is readable and has expected columns
+        de_df = pd.read_json(de_results_file)
+        assert not de_df.empty
+        assert set(["condition", "gene", "pval", "logfoldchange"]).issubset(
+            set(de_df.columns)
         )
-        assert output_file.exists()
-        truth_df = pd.read_json(output_file)
-        assert not truth_df.empty
-        assert ["cell_2", "cell_3"] == truth_df.index.tolist()
-        assert [
-            "ENSG00000000000",
-            "ENSG00000000001",
-            "ENSG00000000002",
-        ] == truth_df.columns.tolist()
