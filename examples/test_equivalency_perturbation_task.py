@@ -11,6 +11,8 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTaskInput,
 )
 import json
+from scipy.stats import spearmanr
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 
 def dict_numpy_to_list(d):
@@ -67,7 +69,13 @@ def run_notebook_code(args):
     genes_dict = {}
     pred_log_fc_dict = {}
     true_log_fc_dict = {}
-
+    metrics_dict = {
+        "accuracy": {},
+        "precision": {},
+        "recall": {},
+        "f1": {},
+        "correlation": {},
+    }
     pred = np.load(args.predictions_path)
     sample_id = np.load(args.sample_id_path)
     target_genes = np.load(args.target_genes_path)
@@ -120,8 +128,10 @@ def run_notebook_code(args):
             masked_genes = genes_dict[control_cells[0]]
             mask = masked_genes != "A"
             masked_genes = masked_genes[mask]
-            n_masked_genes = len(masked_genes)
 
+            n_masked_genes = len(masked_genes)
+            if n_masked_genes == 0:
+                continue
             # Get predictions for control and condition cells
             control_predictions = np.asarray(
                 [predictions_dict[cell][-1][:n_masked_genes] for cell in control_cells]
@@ -175,7 +185,46 @@ def run_notebook_code(args):
         except Exception as e:
             print(f"Error processing condition {condition}: {e}")
             continue
-    return pred_log_fc_dict, true_log_fc_dict
+    for condition in pred_log_fc_dict:
+        pred_log_fc_all = np.concatenate(pred_log_fc_dict[condition])
+        true_log_fc_all = np.concatenate(true_log_fc_dict[condition])
+        ids = np.where(~np.isnan(pred_log_fc_all) & ~np.isinf(pred_log_fc_all))[0]
+
+        # Binary up/down regulation
+        pred_binary = (pred_log_fc_all[ids] > 0).astype(int)
+        true_binary = (true_log_fc_all[ids] > 0).astype(int)
+
+        # Metrics
+        accuracy = accuracy_score(true_binary, pred_binary) if len(true_binary) else 0
+        precision = (
+            precision_score(true_binary, pred_binary, average="binary")
+            if len(true_binary)
+            else 0
+        )
+        recall = (
+            recall_score(true_binary, pred_binary, average="binary")
+            if len(true_binary)
+            else 0
+        )
+        f1 = (
+            f1_score(true_binary, pred_binary, average="binary")
+            if len(true_binary)
+            else 0
+        )
+        correlation = (
+            spearmanr(pred_log_fc_all[ids], true_log_fc_all[ids])[0] if len(ids) else 0
+        )
+        if np.isnan(accuracy):
+            accuracy = 0
+        if np.isnan(correlation):
+            correlation = 0
+
+        metrics_dict["accuracy"][condition] = accuracy
+        metrics_dict["precision"][condition] = precision
+        metrics_dict["recall"][condition] = recall
+        metrics_dict["f1"][condition] = f1
+        metrics_dict["correlation"][condition] = correlation
+    return pred_log_fc_dict, true_log_fc_dict, metrics_dict
 
 
 def run_new_code(args):
@@ -206,7 +255,9 @@ def run_new_code(args):
     )
 
     result = task._run_task(pred_df, task_input)
-    return result
+    # Run the metrics from the task
+    metric_results = task._compute_metrics(task_input, result)
+    return result, metric_results
 
 
 if __name__ == "__main__":
@@ -258,7 +309,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--min_de_genes",
         type=int,
-        default=20,
+        default=10,
         help="Minimum number of DE genes for perturbation condition",
     )
     parser.add_argument(
@@ -288,18 +339,50 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    """
-    notebook_pred_log_fc_dict, notebook_true_log_fc_dict = run_notebook_code(args)
 
+    notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
+        run_notebook_code(args)
+    )
 
     with open("notebook_pred_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(notebook_pred_log_fc_dict), f)
     with open("notebook_true_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(notebook_true_log_fc_dict), f)
-    """
-    result = run_new_code(args)
+    with open("metrics_dict.json", "w") as f:
+        json.dump(metrics_dict, f)
+
+    new_result, new_metrics = run_new_code(args)
+    new_metrics_dict = {}
+    for metric in new_metrics:
+        mapping = {}
+        for ent in new_metrics[metric]:
+            mapping[ent.params["condition"]] = ent.value
+        new_metrics_dict[metric] = mapping
+    with open("new_metrics_dict.json", "w") as f:
+        json.dump(new_metrics_dict, f)
     # Similarly, save result.pred_log_fc_dict and result.true_log_fc_dict
     with open("new_pred_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(result.pred_log_fc_dict), f)
+        json.dump(dict_numpy_to_list(new_result.pred_log_fc_dict), f)
     with open("new_true_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(result.true_log_fc_dict), f)
+        json.dump(dict_numpy_to_list(new_result.true_log_fc_dict), f)
+
+    assert len(notebook_pred_log_fc_dict) == len(new_result.pred_log_fc_dict)
+    assert len(notebook_true_log_fc_dict) == len(new_result.true_log_fc_dict)
+
+    for k in notebook_true_log_fc_dict:
+        assert (
+            np.sort(new_result.true_log_fc_dict[k])
+            == np.sort(notebook_true_log_fc_dict[k][0])
+        ).all()
+    for k in notebook_pred_log_fc_dict:
+        assert (
+            np.sort(new_result.pred_log_fc_dict[k])
+            == np.sort(notebook_pred_log_fc_dict[k][0])
+        ).all()
+
+    assert new_metrics_dict.keys() == metrics_dict.keys()
+    for metric in new_metrics_dict:
+        for condition in new_metrics_dict[metric]:
+            assert (
+                new_metrics_dict[metric][condition] != metrics_dict[metric][condition]
+            )

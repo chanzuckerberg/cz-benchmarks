@@ -17,6 +17,7 @@ Each metric is registered with:
 - Tags categorizing the metric.
 """
 
+import numpy as np
 from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
     accuracy_score,
@@ -38,9 +39,11 @@ def spearman_correlation(a, b):
     result = spearmanr(a, b)
     # Handle both old and new scipy versions
     if hasattr(result, "correlation"):
-        return result.correlation
+        value = result.correlation
+        return 0 if np.isnan(value) else value
     elif hasattr(result, "statistic"):
-        return result.statistic
+        value = result.statistic
+        return 0 if np.isnan(value) else value
     else:
         # Fallback for very old versions that return (correlation, pvalue)
         return result[0]
