@@ -173,7 +173,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # FIXME MICHELLE parallelize this loop
         # inputs: target_gene_dict, self.control_cells_ids, self.adata, self.condition_key, self.control_name, self.de_gene_col, self.deg_test_name
         # outputs: adata_merged, target_genes_to_save
-        target_genes = list(target_gene_dict.keys())[:4] # FIXME MICHELLE debugging
+        target_genes = list(target_gene_dict.keys())[:10] # FIXME MICHELLE debugging
         for key in target_genes:
             # Create condition and control data and update condition information
             adata_condition = adata[adata.obs[self.condition_key] == key].copy()
