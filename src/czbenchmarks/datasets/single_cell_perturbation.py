@@ -12,7 +12,7 @@ from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from ..constants import RANDOM_SEED
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def sample_de_genes(
@@ -71,14 +71,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     Attributes:
         control_cells_ids (dict): Dictionary of control cells IDs for each condition.
-        target_genes_to_save (dict): Dictionary of target genes for each cell.
         de_results (pd.DataFrame): Differential expression results.
+        target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
 
-    # FIXME MICHELLE add adata?
     control_cells_ids: dict
-    target_genes_to_save: dict
     de_results: pd.DataFrame
+    target_genes_to_save: dict
 
     def __init__(
         self,
@@ -120,6 +119,19 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         min_logfoldchange: float = 1.0,
         min_smd: float = 0.55,
     ) -> Dict[str, List[str]]:
+        """
+        Sample genes to mask from the differential expression results.
+
+        Args:
+            percent_genes_to_mask (float): Percentage of genes to mask.
+            min_de_genes (int): Minimum number of differentially expressed genes
+                required to mask that condition. If not met, no genes are masked.
+            pval_threshold (float): P-value threshold for differential expression.
+            min_logfoldchange (float): Minimum log-fold change for differential expression.
+            min_smd (float): Minimum standardized mean difference for differential expression.
+        Returns:
+            Dict[str, List[str]]: Dictionary of target genes and their sampled genes.
+        """
         # FIXME MICHELLE double check default parameter values
         de_results = self.de_results.copy()
 
@@ -133,7 +145,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         de_results = de_results[filter]
 
-        # TODO update DE results column names so they match the dataset column names
         target_gene_dict = sample_de_genes(
             de_results=de_results,
             percent_genes_to_mask=percent_genes_to_mask,
@@ -145,6 +156,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         return target_gene_dict
 
     def _create_adata(self) -> Tuple[ad.AnnData, dict]:
+        """
+        Create an AnnData object with perturbed and control cells.
+
+        This method creates an AnnData object with perturbed and control cells,
+        and adds target genes to the dictionary for each cell.
+        """
         target_gene_dict = self._sample_genes_to_mask()
         adata = self.adata
         control_cells_ids = self.control_cells_ids
@@ -152,16 +169,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Initialize structures to store merged data and get target genes
         all_merged_data = []
         target_genes_to_save = {}
-        target_genes = target_gene_dict.keys()
 
         # FIXME MICHELLE parallelize this loop
-        for i, key in enumerate(target_genes):
+        # inputs: target_gene_dict, self.control_cells_ids, self.adata, self.condition_key, self.control_name, self.de_gene_col, self.deg_test_name
+        # outputs: adata_merged, target_genes_to_save
+        target_genes = list(target_gene_dict.keys())[:4] # FIXME MICHELLE debugging
+        for key in target_genes:
             # Create condition and control data and update condition information
             adata_condition = adata[adata.obs[self.condition_key] == key].copy()
             adata_control = adata[adata.obs.index.isin(control_cells_ids[key])].copy()
 
             if len(adata_condition) != len(adata_control):
-                log.warning(
+                logger.warning(
                     f"Condition and control data for {key} have different lengths."
                 )
                 continue
@@ -244,7 +263,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
 
-        log.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
+        logger.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
         adata_final, target_genes_to_save = self._create_adata()
 
         self.adata = adata_final
@@ -260,7 +279,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Returns:
             Path: Path to the directory storing the task input files.
         """
-        # FIXME MICHELLE how to handle adata?
         inputs_to_store = {
             "control_cells_ids": self.control_cells_ids,
             "target_genes_to_save": self.target_genes_to_save,
