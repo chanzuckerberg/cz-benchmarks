@@ -7,6 +7,7 @@ datasets:
     organism: ${organism:HUMAN}
     condition_key: condition
     control_name: non-targeting
+    de_gene_col: gene_id
     deg_test_name: wilcoxon
     path: s3://pdx.s8k.io/team-bio-foundation-models/scgym-files/replogle_k562_essential_perturbpredict.h5ad
 
