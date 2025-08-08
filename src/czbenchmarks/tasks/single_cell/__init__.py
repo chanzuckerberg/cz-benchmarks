@@ -8,11 +8,19 @@ from .perturbation import (
     PerturbationOutput,
     PerturbationTask,
 )
+from .perturbation_expression_prediction import (
+    PerturbationExpressionPredictionTaskInput,
+    PerturbationExpressionPredictionOutput,
+    PerturbationExpressionPredictionTask,
+)
 
 __all__ = [
     "CrossSpeciesIntegrationTaskInput",
     "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
+    "PerturbationExpressionPredictionTask",
+    "PerturbationExpressionPredictionTaskInput",
+    "PerturbationExpressionPredictionOutput",
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
