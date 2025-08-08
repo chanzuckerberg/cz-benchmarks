@@ -61,18 +61,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         return file_path
 
     @pytest.fixture
-    def perturbation_missing_split_column_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset missing the split column."""
-        file_path = tmp_path / "perturbation_missing_split.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=6, n_genes=3, obs_columns=["condition"], organism=Organism.HUMAN
-        )
-        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
     def perturbation_missing_condition_column_h5ad(self, tmp_path) -> Path:
         """Creates a PerturbationSingleCellDataset with invalid condition format."""
         file_path = tmp_path / "perturbation_invalid_condition.h5ad"
