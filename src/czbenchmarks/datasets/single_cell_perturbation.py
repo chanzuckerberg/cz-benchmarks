@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 import logging
+from joblib import Parallel, delayed
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
@@ -160,59 +161,69 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         This method creates an AnnData object with perturbed and control cells,
         and adds target genes to the dictionary for each cell.
         """
-        target_gene_dict = self._sample_genes_to_mask()
-        adata = self.adata
-        control_cells_ids = self.control_cells_ids
 
-        # Initialize structures to store merged data and get target genes
-        all_merged_data = []
-        target_genes_to_save = {}
-
-        # FIXME MICHELLE parallelize this loop
-        # inputs: target_gene_dict, self.control_cells_ids, self.adata, self.condition_key, self.control_name, self.de_gene_col, self.deg_test_name
-        # outputs: adata_merged, target_genes_to_save
-        target_genes = list(target_gene_dict.keys())[:10] # FIXME MICHELLE debugging
-        for key in target_genes:
-            # Create condition and control data and update condition information
-            adata_condition = adata[adata.obs[self.condition_key] == key].copy()
-            adata_control = adata[adata.obs.index.isin(control_cells_ids[key])].copy()
+        def _create_adata_for_condition(selected_condition: str, 
+                                        target_gene_dict: dict, 
+                                        adata: ad.AnnData = self.adata, 
+                                        control_cells_ids: dict = self.control_cells_ids,
+                                        condition_key: str = self.condition_key,
+                                        control_name: str = self.control_name,
+                                        ):
+            adata_condition = adata[adata.obs[self.condition_key] == selected_condition].copy()
+            adata_control = adata[adata.obs.index.isin(control_cells_ids[selected_condition])].copy()
 
             if len(adata_condition) != len(adata_control):
                 logger.warning(
-                    f"Condition and control data for {key} have different lengths."
+                    f"Condition and control data for {selected_condition} have different lengths."
                 )
-                continue
 
-            adata_condition.obs[self.condition_key] = adata_condition.obs[
-                self.condition_key
+            adata_condition.obs[condition_key] = adata_condition.obs[
+                condition_key
             ].astype(str)
-            adata_condition.obs.loc[:, self.condition_key] = key
+            adata_condition.obs.loc[:, condition_key] = selected_condition
 
-            adata_control.obs[self.condition_key] = adata_control.obs[
-                self.condition_key
+            adata_control.obs[condition_key] = adata_control.obs[
+                condition_key
             ].astype(str)
-            adata_control.obs.loc[:, self.condition_key] = "_".join(
-                [self.control_name, key]
+            adata_control.obs.loc[:, condition_key] = "_".join(
+                [control_name, selected_condition]
             )
 
-            # Merge condition and control data
+            # Concatenate condition and control data
             adata_merged = ad.concat(
                 [adata_condition, adata_control], index_unique=None
             )
 
-            # Add new column cell_barcode_gene
+            # Add condition to cell_barcode_gene column and set as index
             adata_merged.obs["cell_barcode_gene"] = (
-                adata_merged.obs.index.astype(str) + "_" + [key] * len(adata_merged)
+                adata_merged.obs.index.astype(str) + "_" + [selected_condition] * len(adata_merged)
             )
             adata_merged.obs.set_index(
                 "cell_barcode_gene", inplace=True
             )
 
             # Add target genes to the dictionary for each cell
+            target_genes_to_save = {}
             for idx in adata_merged.obs.index:
-                target_genes_to_save[idx] = target_gene_dict[key]
+                target_genes_to_save[idx] = target_gene_dict[selected_condition]
 
-            all_merged_data.append(adata_merged)
+            return adata_merged, target_genes_to_save
+
+        target_gene_dict = self._sample_genes_to_mask()
+        target_genes = list(target_gene_dict.keys())[:10] # FIXME MICHELLE debugging
+        
+        # Execute in parallel
+        results = Parallel(n_jobs=-1)(
+            delayed(_create_adata_for_condition)(selected_condition, target_gene_dict)
+            for selected_condition in target_genes
+        )
+
+        # Unpack results
+        all_merged_data = []
+        target_genes_to_save = {}
+        for result in results:
+            all_merged_data.append(result[0])
+            target_genes_to_save.update(result[1])
 
         # Combine all adata objects
         adata_final = ad.concat(all_merged_data, index_unique=None)
