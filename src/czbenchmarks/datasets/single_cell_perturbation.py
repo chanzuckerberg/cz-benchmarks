@@ -10,7 +10,7 @@ import anndata as ad
 import logging
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
-from ..constants import RANDOM_SEED
+from czbenchmarks.constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 
@@ -259,6 +259,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 raise ValueError(f"Key '{key}' not found in adata.uns")
 
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
+        # Loading from h5ad file seems to convert lists to numpy arrays
+        for key in self.control_cells_ids.keys():
+            self.control_cells_ids[key] = list(self.control_cells_ids[key])
         self.de_results = pd.DataFrame(
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
@@ -284,12 +287,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             "target_genes_to_save": self.target_genes_to_save,
             "de_results": self.de_results,
         }
-        buffer = io.StringIO()
 
         for key, item in inputs_to_store.items():
-            buffer = io.StringIO()
-            item.to_json(buffer)
-            self._store_task_input(f"{key}.json", buffer.getvalue())
+            if hasattr(item, 'to_json'):
+                # For pandas DataFrames
+                buffer = io.StringIO()
+                item.to_json(buffer)
+                self._store_task_input(f"{key}.json", buffer.getvalue())
+            else:
+                # For dictionaries and other JSON-serializable objects
+                json_string = json.dumps(item)
+                self._store_task_input(f"{key}.json", json_string)
         return self.task_inputs_dir
 
     def _validate(self) -> None:
