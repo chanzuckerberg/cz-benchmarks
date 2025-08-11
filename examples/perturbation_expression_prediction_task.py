@@ -1,7 +1,8 @@
 import logging
 import sys
-import anndata as ad
 import pandas as pd
+import anndata as ad
+
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
@@ -71,7 +72,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     adata = ad.read_h5ad(args.h5ad_path, backed="r")
-
+    """
+    dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict")
+    model_output: CellRepresentation = np.random.rand(
+        dataset.adata.shape[0], dataset.adata.shape[0]
+    )
+    np.save("/tmp/random_model_output.npy", model_output)
+    """
     sample_id = np.load(args.sample_id_path)
     pred = np.load(args.predictions_path)
     target_genes = np.load(args.target_genes_path)
