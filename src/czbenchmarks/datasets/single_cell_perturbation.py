@@ -63,7 +63,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     Input data requirements:
     - H5AD file containing single cell gene expression data.
-    - Must have a column ``{condition_name}`` in `adata.obs` specifying control and perturbed conditions.
+    - Must have a column ``{condition_name}`` in `adata.obs` specifying control and
+      perturbed conditions.
     - Condition format must be one of:
 
       - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
@@ -73,7 +74,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     Attributes:
         control_cells_ids (dict): Dictionary of control cells IDs for each condition.
-        de_results (pd.DataFrame): Differential expression results calculated on ground truth data with matched controls.
+        de_results (pd.DataFrame): Differential expression results calculated on
+            ground truth data with matched controls.
         target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
 
