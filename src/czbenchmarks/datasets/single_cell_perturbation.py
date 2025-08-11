@@ -70,7 +70,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     Attributes:
         control_cells_ids (dict): Dictionary of control cells IDs for each condition.
-        de_results (pd.DataFrame): Differential expression results calculated on 
+        de_results (pd.DataFrame): Differential expression results calculated on
             ground truth data with matched controls.
         target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
@@ -98,7 +98,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key (str): Key for the column in `adata.obs` specifying conditions.
                 Defaults to "condition".
             control_name (str): Name of the control condition. Defaults to "ctrl".
-            de_gene_col (str): Column name for the names of genes which are differentially 
+            de_gene_col (str): Column name for the names of genes which are differentially
                 expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
@@ -138,7 +138,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         if self.deg_test_name == "wilcoxon":
             filter &= de_results["logfoldchange"] > min_logfoldchange
-            # filter &= de_results["num_de_genes"] >= min_de_genes # FIXME MICHELLE check if this should only be here
+            # filter &= de_results["num_de_genes"] >= min_de_genes # FIXME MICHELLE check if this filter should be used here
         elif self.deg_test_name == "t-test":
             filter &= de_results["standardized_mean_diff"] > min_smd
 
@@ -162,15 +162,20 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         and adds target genes to the dictionary for each cell.
         """
 
-        def _create_adata_for_condition(selected_condition: str, 
-                                        target_gene_dict: dict, 
-                                        adata: ad.AnnData = self.adata, 
-                                        control_cells_ids: dict = self.control_cells_ids,
-                                        condition_key: str = self.condition_key,
-                                        control_name: str = self.control_name,
-                                        ):
-            adata_condition = adata[adata.obs[self.condition_key] == selected_condition].copy()
-            adata_control = adata[adata.obs.index.isin(control_cells_ids[selected_condition])].copy()
+        def _create_adata_for_condition(
+            selected_condition: str,
+            target_gene_dict: dict,
+            adata: ad.AnnData = self.adata,
+            control_cells_ids: dict = self.control_cells_ids,
+            condition_key: str = self.condition_key,
+            control_name: str = self.control_name,
+        ):
+            adata_condition = adata[
+                adata.obs[self.condition_key] == selected_condition
+            ].copy()
+            adata_control = adata[
+                adata.obs.index.isin(control_cells_ids[selected_condition])
+            ].copy()
 
             if len(adata_condition) != len(adata_control):
                 logger.warning(
@@ -182,9 +187,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ].astype(str)
             adata_condition.obs.loc[:, condition_key] = selected_condition
 
-            adata_control.obs[condition_key] = adata_control.obs[
-                condition_key
-            ].astype(str)
+            adata_control.obs[condition_key] = adata_control.obs[condition_key].astype(
+                str
+            )
             adata_control.obs.loc[:, condition_key] = "_".join(
                 [control_name, selected_condition]
             )
@@ -196,11 +201,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
             # Add condition to cell_barcode_gene column and set as index
             adata_merged.obs["cell_barcode_gene"] = (
-                adata_merged.obs.index.astype(str) + "_" + [selected_condition] * len(adata_merged)
+                adata_merged.obs.index.astype(str)
+                + "_"
+                + [selected_condition] * len(adata_merged)
             )
-            adata_merged.obs.set_index(
-                "cell_barcode_gene", inplace=True
-            )
+            adata_merged.obs.set_index("cell_barcode_gene", inplace=True)
 
             # Add target genes to the dictionary for each cell
             target_genes_to_save = {}
@@ -210,18 +215,22 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             return adata_merged, target_genes_to_save
 
         target_gene_dict = self._sample_genes_to_mask()
-        self.target_gene_dict = target_gene_dict # FIXME MICHELLE debugging
-        target_genes = list(target_gene_dict.keys())[:4] # FIXME MICHELLE debugging
-        
+        # self.target_gene_dict = target_gene_dict # FIXME MICHELLE remove after debugging
+        target_genes = list(target_gene_dict.keys())[
+            :4
+        ]  # FIXME MICHELLE remove slice after debugging
+
         # Execute in parallel # FIXME MICHELLE debugging
         # results = Parallel(n_jobs=-1)(
         #     delayed(_create_adata_for_condition)(selected_condition, target_gene_dict)
         #     for selected_condition in target_genes
         # )
 
-        results = [] # FIXME MICHELLE debugging
+        results = []  # FIXME MICHELLE remove after debugging
         for selected_condition in target_genes:
-            results.append(_create_adata_for_condition(selected_condition, target_gene_dict))
+            results.append(
+                _create_adata_for_condition(selected_condition, target_gene_dict)
+            )
 
         # Unpack results
         all_merged_data = []
@@ -301,7 +310,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         }
 
         for key, item in inputs_to_store.items():
-            if hasattr(item, 'to_json'):
+            if hasattr(item, "to_json"):
                 # For pandas DataFrames
                 buffer = io.StringIO()
                 item.to_json(buffer)
@@ -329,7 +338,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Validate condition format
         conditions = set(self.adata.obs[self.condition_key])
-        target_conditions = set(x.split("_")[1] for x in self.target_genes_to_save.keys()) # Update for multiple perturbations
+        target_conditions = set(
+            x.split("_")[1] for x in self.target_genes_to_save.keys()
+        )  # Update for multiple perturbations
 
         for condition in conditions:
             if condition in target_conditions:
