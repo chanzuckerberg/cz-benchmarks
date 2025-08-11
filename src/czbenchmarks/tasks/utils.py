@@ -25,7 +25,7 @@ TASK_NAMES = frozenset(
 )
 
 
-def binarize_values(y_true, y_pred):
+def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):
     """Convert continuous values to binary classification.
 
     Filters out NaN and infinite values, then converts values to binary
