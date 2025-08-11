@@ -49,7 +49,6 @@ if __name__ == "__main__":
     #     task_input=perturbation_expression_prediction_task_input,
     # )
 
-
     # # Combine all results into a single dictionary
     # all_results = {
     #     "perturbation_expression prediction": {
