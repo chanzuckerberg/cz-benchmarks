@@ -39,9 +39,19 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
             "test2",
         ]
+        # Set indices so that splitting on '_' and taking token [1] yields the condition
+        adata.obs_names = [
+            "ctrl_test1_a",  # control cell 1
+            "ctrl_test2_b",  # control cell 2
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        # Provide matched control cell IDs per condition using the two control cells above
         adata.uns["control_cells_ids"] = {
-            "test1": ["cell_1", "cell_2"],
-            "test2": ["cell_1", "cell_2"],
+            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10
@@ -92,31 +102,21 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
             "test2",
         ]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
-    def perturbation_valid_conditions_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset with all valid condition formats."""
-        file_path = tmp_path / "perturbation_valid.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=9,
-            n_genes=3,
-            obs_columns=["condition"],
-            organism=Organism.HUMAN,
+        # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
+        adata.uns["control_cells_ids"] = {
+            "test1": ["cell_0", "cell_1"],
+            "test2": ["cell_0", "cell_1"],
+        }
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
         )
-        adata.obs["condition"] = [
-            "ctrl",
-            "ctrl",
-            "ENSG00000123456+ctrl",  # Single gene perturbation
-            "ENSG00000123456+ctrl",
-            "ENSG00000123456+ENSG00000789012",  # Combinatorial perturbation
-            "ENSG00000123456+ENSG00000789012",
-            "ENSG00000111111+ctrl",
-            "ENSG00000111111+ctrl",
-            "ctrl",
-        ]
         adata.write_h5ad(file_path)
 
         return file_path
@@ -163,7 +163,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             condition_key="condition",
         )
         dataset.load_data()
-
         with pytest.raises(ValueError, match=""):
             dataset.validate()
 
