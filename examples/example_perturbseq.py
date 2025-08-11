@@ -16,10 +16,10 @@ if __name__ == "__main__":
 
     dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict")
     
-    # Testing storing of outputs -- can remove after finished
+    # Testing method for storing of outputs -- can remove after finished
     task_inputs_dir = dataset.store_task_inputs()
 
-    # Testing validation -- can remove after finished
+    # Test the validation method -- can remove after finished
     dataset._validate()
 
     # NOTE this is a numpy array containing only a matrix
