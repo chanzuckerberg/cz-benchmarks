@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 import pandas as pd
 import pytest
 
@@ -55,9 +54,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10
-        de_genes = [
-            f"ENSG000000000{str(i).zfill(2)}" for i in range(20)
-        ]
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
         adata.uns["de_results_wilcoxon"] = pd.DataFrame(
             {
                 "condition": de_conditions,
