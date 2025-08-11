@@ -1,6 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
+import logging
 
 import anndata as ad
 from czbenchmarks.tasks import (
@@ -440,7 +441,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
             # Should have results for at least one condition (gene_A or gene_B)
             # Make this more flexible - if no conditions pass filtering, that's okay for a test
             if len(metric_list) == 0:
-                print("Warning: No results generated for this metric type")
+                logging.warning("No results generated for this metric type")
             else:
                 assert len(metric_list) >= 1
 
@@ -460,7 +461,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
             }
             assert expected_types.issubset(metric_types)
         else:
-            print("Warning: No results generated, skipping metric type verification")
+            logging.warning("No results generated, skipping metric type verification")
 
     except Exception as e:
         pytest.fail(
@@ -578,7 +579,7 @@ def test_perturbation_expression_prediction_task_ttest():
             # Should have results for at least one condition (gene_A or gene_B)
             # Make this more flexible - if no conditions pass filtering, that's okay for a test
             if len(metric_list) == 0:
-                print("Warning: No results generated for this metric type")
+                logging.warning("No results generated for this metric type")
             else:
                 assert len(metric_list) >= 1
 
@@ -598,7 +599,7 @@ def test_perturbation_expression_prediction_task_ttest():
             }
             assert expected_types.issubset(metric_types)
         else:
-            print("Warning: No results generated, skipping metric type verification")
+            logging.warning("No results generated, skipping metric type verification")
 
     except Exception as e:
         pytest.fail(
