@@ -8,7 +8,7 @@ For single-cell datasets:
 - The dataset file must be an `.h5ad` file conforming to the [AnnData on-disk format](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#on-disk-format).
 - The AnnData object's `var_names` must specify the `ensembl_id` for each gene OR `var` must contain a column named `ensembl_id`.
 - The AnnData object must meet the validation requirements for the specific task it will be used with. This may include:
-    - `obs` must contain required metadata columns (e.g., `cell_type` for `SingleCellLabeledDataset`, or `condition` and `split` for `SingleCellPerturbationDataset`).
+    - `obs` must contain required metadata columns (e.g., `cell_type` for `SingleCellLabeledDataset`, or `condition_key` and `control_name` for `SingleCellPerturbationDataset`).
     - The `ensemble_id` values must be valid for the specified `Organism`.
 
 
@@ -38,8 +38,10 @@ datasets:
     _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
     path: /path/to/your/perturb_data.h5ad
     organism: ${organism:MOUSE}
-    condition_key: "condition" # Column in adata.obs for 'ctrl' vs perturbation
-    split_key: "split" # Column in adata.obs for 'train'/'test'/'val'
+    condition_key: condition
+    control_name: non-targeting
+    de_gene_col: gene_id
+    deg_test_name: wilcoxon
 ```
 
 - **Explanation:**
@@ -48,8 +50,11 @@ datasets:
   - `_target_`: Specifies the `Dataset` class to instantiate. `cz-benchmarks` supports `SingleCellLabeledDataset` (for tasks requiring ground-truth labels like clustering or classification) and `SingleCellPerturbationDataset` (for perturbation prediction tasks).
   - `path`: Path to your `.h5ad` file. This may be a local filesystem path or an S3 URL (`s3://...`).
   - `organism`: Specify the organism, which must be a value from the `czbenchmarks.datasets.types.Organism` enum (e.g., HUMAN, MOUSE).
-  - `label_column_key`: (For `SingleCellLabeledDataset`) The column in `.obs` containing the labels.
-  - `condition_key` / `split_key`: (For `SingleCellPerturbationDataset`) Columns in `.obs` for perturbation conditions and data splits.
+  - `label_column_key` (For `SingleCellLabeledDataset`): The column in `.obs` containing the labels.
+  - `condition_key` (For `SingleCellPerturbationDataset`): Column name in `.obs` that contains condition information. 
+  - `control_name` (For `SingleCellPerturbationDataset`): Name of the control condition. 
+  - `de_gene_col` (For `SingleCellPerturbationDataset`): Column name in `.obs` for the names of genes which are differentially expressed in the differential expression results.
+  - `deg_test_name` (For `SingleCellPerturbationDataset`): Name of the differential expression test condition. Options are "wilcoxon" or "t-test"
 
   You may add multiple datasets to thie files, as children of `datasets`.
 
