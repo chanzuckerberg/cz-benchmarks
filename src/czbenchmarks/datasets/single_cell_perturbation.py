@@ -57,20 +57,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     This class extends `SingleCellDataset` to handle datasets with perturbation
     data. It includes functionality for validating condition formats,
-    and storing perturbation truth data.
+    and perturbation data with matched control cells.
 
     Input data requirements:
     - H5AD file containing single cell gene expression data.
     - Must have a column ``{condition_name}`` in `adata.obs` specifying control and
       perturbed conditions.
     - Condition format must be one of:
-      - ``{condition_name}`` for control samples.
-      - ``{perturb}`` or ``{perturb}+{condition_name}`` for a single perturbation.
-      - ``{perturb1}+{perturb2}`` for combinatorial perturbations.
+      - ``{condition_name}`` or ``{condition_name}_{perturb}`` for control samples.
+      - ``{perturb}`` for a single perturbation.
+    - Combinatorial perturbations are not currently supported.
 
     Attributes:
         control_cells_ids (dict): Dictionary of control cells IDs for each condition.
-        de_results (pd.DataFrame): Differential expression results.
+        de_results (pd.DataFrame): Differential expression results calculated on 
+            ground truth data with matched controls.
         target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
 
@@ -97,8 +98,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key (str): Key for the column in `adata.obs` specifying conditions.
                 Defaults to "condition".
             control_name (str): Name of the control condition. Defaults to "ctrl".
-            de_gene_col (str): Column name for the gene names in the differential expression results.
-                Defaults to "gene".
+            de_gene_col (str): Column name for the names of genes which are differentially 
+                expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
@@ -131,7 +132,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Returns:
             Dict[str, List[str]]: Dictionary of target genes and their sampled genes.
         """
-        # FIXME MICHELLE double check default parameter values
         de_results = self.de_results.copy()
 
         filter = de_results["pval"] < pval_threshold
@@ -210,13 +210,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             return adata_merged, target_genes_to_save
 
         target_gene_dict = self._sample_genes_to_mask()
-        target_genes = list(target_gene_dict.keys())[:10] # FIXME MICHELLE debugging
+        self.target_gene_dict = target_gene_dict # FIXME MICHELLE debugging
+        target_genes = list(target_gene_dict.keys())[:4] # FIXME MICHELLE debugging
         
-        # Execute in parallel
-        results = Parallel(n_jobs=-1)(
-            delayed(_create_adata_for_condition)(selected_condition, target_gene_dict)
-            for selected_condition in target_genes
-        )
+        # Execute in parallel # FIXME MICHELLE debugging
+        # results = Parallel(n_jobs=-1)(
+        #     delayed(_create_adata_for_condition)(selected_condition, target_gene_dict)
+        #     for selected_condition in target_genes
+        # )
+
+        results = [] # FIXME MICHELLE debugging
+        for selected_condition in target_genes:
+            results.append(_create_adata_for_condition(selected_condition, target_gene_dict))
 
         # Unpack results
         all_merged_data = []
@@ -313,9 +318,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Condition format must be one of:
-          - ``{condition_name}`` for control samples.
-          - ``{perturb}`` or ``{perturb}+{condition_name}`` for single perturbations.
-          - ``{perturb1}+{perturb2}`` for combinatorial perturbations.
+          - ``{control_name}`` or ``{control_name}_{perturb}`` for matched control samples.
+          - ``{perturb}`` for single perturbations.
+        - Combinatorial perturbations are not currently supported.
 
         Raises:
             ValueError: If invalid condition formats are found.
@@ -324,26 +329,22 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Validate condition format
         conditions = set(self.adata.obs[self.condition_key])
+        target_conditions = set(x.split("_")[1] for x in self.target_genes_to_save.keys()) # Update for multiple perturbations
 
         for condition in conditions:
-            if (
-                condition in self.target_genes_to_save.keys()
-            ) | condition == self.control_name:
+            if condition in target_conditions:
                 continue
+            elif condition.startswith(self.control_name):
+                control_matched_condition = condition.split("_")[1]
+                if control_matched_condition not in target_conditions:
+                    raise ValueError(
+                        f"Invalid control matched condition format: {condition}. "
+                        f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}``"
+                    )
             else:
-                value_error = ValueError(
+                # Update for multiple perturbations
+                raise ValueError(
                     f"Invalid perturbation condition format: {condition}. "
-                    f"Must be {self.control_name}, " + "'{perturb}', '{perturb}+"
-                    f"{self.control_name}" + "', or '{perturb1}+{perturb2}'"
+                    f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
+                    "or ``{perturb}`` for perturbations."
                 )
-
-                parts = condition.split("+")
-
-                if len(parts) != 2:
-                    raise value_error
-                else:
-                    for part in parts:
-                        if (part not in self.target_genes_to_save.keys()) & (
-                            part != self.control_name
-                        ):
-                            raise value_error
