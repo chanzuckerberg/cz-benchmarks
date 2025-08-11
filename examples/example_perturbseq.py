@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # NOTE this is a numpy array containing only a matrix
     model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[0]
+        dataset.adata.shape[0], dataset.adata.shape[1]
     )
     np.save("/tmp/random_model_output.npy", model_output)
 
