@@ -5,11 +5,12 @@ This guide explains how to integrate your own dataset into cz-benchmarks.
 ## Requirements
 
 For single-cell datasets:
+
 - The dataset file must be an `.h5ad` file conforming to the [AnnData on-disk format](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#on-disk-format).
 - The AnnData object's `var_names` must specify the `ensembl_id` for each gene OR `var` must contain a column named `ensembl_id`.
-- The AnnData object must meet the validation requirements for the specific task it will be used with. This may include:
-    - `obs` must contain required metadata columns (e.g., `cell_type` for `SingleCellLabeledDataset`, or `condition_key` and `control_name` for `SingleCellPerturbationDataset`).
-    - The `ensemble_id` values must be valid for the specified `Organism`.
+- The AnnData object must meet the validation requirements for the specific task it will be used with This may include:
+  - `obs` must contain required metadata columns (e.g., `cell_type` for `SingleCellLabeledDataset`, or `condition_key` and `control_name` for `SingleCellPerturbationDataset`).
+  - The `ensemble_id` values must be valid for the specified `Organism`.
 
 
 
