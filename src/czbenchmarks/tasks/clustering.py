@@ -43,6 +43,8 @@ class ClusteringTask(Task):
     """
 
     display_name = "clustering"
+    description = "Evaluate clustering performance against ground truth labels using ARI and NMI metrics."
+    input_model = ClusteringTaskInput
 
     def __init__(
         self,
@@ -50,6 +52,14 @@ class ClusteringTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.ADJUSTED_RAND_INDEX,
+            MetricType.NORMALIZED_MUTUAL_INFO,
+        ]
 
     def _run_task(
         self,

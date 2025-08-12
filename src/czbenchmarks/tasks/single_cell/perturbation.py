@@ -41,9 +41,21 @@ class PerturbationTask(Task):
     """
 
     display_name = "perturbation"
+    description = (
+        "Evaluate perturbation prediction quality using MSE and correlation metrics."
+    )
+    input_model = PerturbationTaskInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.MEAN_SQUARED_ERROR,
+            MetricType.PEARSON_CORRELATION,
+        ]
 
     def _run_task(
         self,

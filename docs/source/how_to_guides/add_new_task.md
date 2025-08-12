@@ -19,6 +19,7 @@ This guide explains how to create and integrate your own evaluation task into cz
     ```python
     from typing import List
     from czbenchmarks.tasks import Task, TaskInput, TaskOutput
+    from czbenchmarks.tasks.runner import run_task  # For programmatic execution
     from czbenchmarks.metrics.types import MetricResult, MetricType
     from czbenchmarks.metrics import metrics_registry
     from czbenchmarks.types import ListLike
@@ -98,8 +99,42 @@ This guide explains how to create and integrate your own evaluation task into cz
     
     ```
 
+## Testing Your Task
+
+Once you've implemented your task, you can test it using the programmatic API:
+
+```python
+from czbenchmarks.tasks.runner import run_task
+import numpy as np
+
+# Test your new task
+embedding = np.random.randn(100, 50)
+labels = ['TypeA'] * 50 + ['TypeB'] * 50
+
+results = run_task(
+    task_name='my_task',  # Use the normalized name
+    cell_representation=embedding,
+    task_params={
+        'ground_truth_labels': labels,
+    },
+    random_seed=42
+)
+
+print(f"Task completed with {len(results)} metrics")
+for result in results:
+    print(f"- {result['metric_type']}: {result['value']}")
+```
+
+The `run_task()` function will automatically:
+- Look up your task in the registry
+- Instantiate it with the provided random seed
+- Create the appropriate `TaskInput` from your `task_params`
+- Execute the task and compute metrics
+- Return serialized results as dictionaries
+
 ## Best Practices
 - **Single Responsibility:** Ensure your task has a clear and focused purpose.
 - **Error Handling:** Include robust error handling and logging.
 - **Code Quality:** Use type hints and follow the project's coding style.
 - **Testing:** Write unit tests to validate your task's functionality.
+- **Programmatic API:** Test your task using `run_task()` to ensure it works correctly with the standardized API.
