@@ -60,12 +60,15 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     and perturbation data with matched control cells.
 
     Input data requirements:
-    - H5AD file containing single cell gene expression data.
-    - Must have a column ``{condition_name}`` in `adata.obs` specifying control and perturbed conditions.
+
+    - H5AD file containing single-cell gene expression data.
+    - Must have a column ``condition_key`` in ``adata.obs`` specifying control and perturbed conditions.
     - Condition format must be one of:
-      - ``{condition_name}`` or ``{condition_name}_{perturb}`` for control samples.
+
+      - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
       - ``{perturb}`` for a single perturbation.
-    - Combinatorial perturbations are not currently supported.
+
+    - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
         control_cells_ids (dict): Dictionary of control cells IDs for each condition.
