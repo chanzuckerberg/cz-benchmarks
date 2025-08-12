@@ -35,9 +35,21 @@ class BatchIntegrationTask(Task):
     """
 
     display_name = "batch integration"
+    description = (
+        "Evaluate batch integration quality using various integration metrics."
+    )
+    input_model = BatchIntegrationTaskInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.ENTROPY_PER_CELL,
+            MetricType.BATCH_SILHOUETTE,
+        ]
 
     def _run_task(
         self,

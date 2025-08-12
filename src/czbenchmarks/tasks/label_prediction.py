@@ -54,7 +54,9 @@ class MetadataLabelPredictionTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "metadata label prediction"
+    display_name = "label prediction"
+    description = "Predict labels from embeddings using cross-validated classifiers and standard metrics."
+    input_model = MetadataLabelPredictionTaskInput
 
     def __init__(
         self,
@@ -62,6 +64,17 @@ class MetadataLabelPredictionTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.MEAN_FOLD_ACCURACY,
+            MetricType.MEAN_FOLD_F1_SCORE,
+            MetricType.MEAN_FOLD_PRECISION,
+            MetricType.MEAN_FOLD_RECALL,
+            MetricType.MEAN_FOLD_AUROC,
+        ]
 
     def _run_task(
         self,

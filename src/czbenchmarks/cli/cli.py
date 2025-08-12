@@ -1,6 +1,7 @@
 import click
 import logging
 from .cli_list import list_cmd
+from .cli_run import run
 from .utils import get_version
 
 
@@ -28,9 +29,7 @@ def main(log_level: str):
 
 # Add subcommands to the main group
 main.add_command(list_cmd)
-
-# TODO: Disabled until further notice. The run command is not yet fully implemented.
-# main.add_command(run)
+main.add_command(run)
 
 if __name__ == "__main__":
     main()
