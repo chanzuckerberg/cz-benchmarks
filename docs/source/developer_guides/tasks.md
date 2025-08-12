@@ -12,6 +12,8 @@ The `czbenchmarks.tasks` module defines **benchmarking tasks** that evaluate the
     It also supports multi-dataset operations (`requires_multiple_datasets`) and setting **baseline embeddings** for comparison with model outputs.
     
 - **[`TaskInput`](../autoapi/czbenchmarks/tasks/task/index)** and **[`TaskOutput`](../autoapi/czbenchmarks/tasks/task/index)** Pydantic base classes used to define structured inputs and outputs for each task, ensuring type safety and clarity. Each task defines its own subclasses of `TaskInput` and `TaskOutput`.
+
+- **[`run_task()`](../autoapi/czbenchmarks/tasks/runner/index)** The primary programmatic API endpoint for executing benchmark tasks. This function provides a simplified interface for running any registered task with standardized parameters, automatic baseline computation, and serialized results.
     
 
 ## Task Organization
@@ -43,6 +45,73 @@ Each task class implements a specific evaluation goal. All tasks are located und
     
 - [`PerturbationTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation/index): Designed for gene perturbation models. Compares predicted gene expression shifts to ground truth using metrics like mean squared error, Pearson correlation, and Jaccard similarity for DE genes.
     
+
+## Programmatic API
+
+The [`run_task()`](../autoapi/czbenchmarks/tasks/runner/index) function provides a programmatic interface for executing tasks without needing to instantiate task classes manually. This is the recommended approach for external library usage and automation.
+
+### Basic Usage
+
+```python
+from czbenchmarks.tasks.runner import run_task
+import numpy as np
+import pandas as pd
+
+# Prepare your data
+embedding = np.random.randn(100, 50)  # 100 cells, 50 dimensions
+labels = np.random.choice(['TypeA', 'TypeB', 'TypeC'], size=100)
+obs_data = pd.DataFrame({'cell_type': labels})
+
+# Run a clustering task
+results = run_task(
+    task_name='clustering',
+    cell_representation=embedding,
+    task_params={
+        'input_labels': labels,
+        'obs': obs_data,
+    },
+    random_seed=42
+)
+
+# Results are returned as a list of dictionaries
+for result in results:
+    print(f"Metric: {result['metric_type']}, Value: {result['value']}")
+```
+
+### With Baseline Computation
+
+```python
+# Run with baseline computation (uses raw expression data)
+raw_expression = np.random.poisson(lam=5, size=(100, 1000))  # Raw counts
+
+results = run_task(
+    task_name='clustering',
+    cell_representation=raw_expression,
+    run_baseline=True,
+    baseline_params={'n_pcs': 50},
+    task_params={
+        'input_labels': labels,
+        'obs': obs_data,
+    },
+    random_seed=42
+)
+```
+
+### Parameters
+
+- `task_name`: The normalized name of the task (e.g., 'clustering', 'embedding', 'batch_integration', 'label_prediction')
+- `cell_representation`: Model embedding or raw expression data (numpy array or list for multi-dataset tasks)
+- `run_baseline`: Whether to compute baseline embedding from raw data
+- `baseline_params`: Parameters for the `compute_baseline()` method
+- `task_params`: Parameters for the task's `TaskInput` model
+- `random_seed`: Random seed for reproducibility
+
+### Error Handling
+
+The function includes comprehensive error handling:
+- Invalid task names raise `ValueError`
+- Invalid task parameters raise `ValueError` with detailed messages
+- Baseline computation errors are logged and re-raised (except `NotImplementedError`)
 
 ## Extending Tasks
 
@@ -77,6 +146,7 @@ To define a new evaluation task:
     
     ```python
     from czbenchmarks.tasks import Task, TaskInput, TaskOutput
+    from czbenchmarks.tasks.runner import run_task  # For programmatic execution
     from czbenchmarks.metrics.types import MetricResult, MetricType
     from czbenchmarks.metrics import metrics_registry
     from czbenchmarks.tasks.types import CellRepresentation
@@ -118,3 +188,4 @@ To define a new evaluation task:
 - Follow the patterns and conventions established in existing tasks for consistency.
 - Use type hints to improve code readability and clarity.
 - Add logging for key steps in the task lifecycle to facilitate debugging and monitoring.
+- Test your tasks using both the direct class interface and the `run_task()` programmatic API to ensure compatibility.
