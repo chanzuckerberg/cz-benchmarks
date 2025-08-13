@@ -1,9 +1,9 @@
 import logging
 import sys
-import json
 
 from czbenchmarks.datasets import dataset
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
+
 # Add task inputs
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.types import CellRepresentation
@@ -14,8 +14,10 @@ import numpy as np
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-    dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict")
-    
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
+
     # Testing method for storing of outputs -- can remove after finished
     task_inputs_dir = dataset.store_task_inputs()
 

@@ -1,14 +1,14 @@
 import logging
 import sys
-import pandas as pd
-import anndata as ad
-
+from czbenchmarks.datasets import load_dataset
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
 import numpy as np
 import argparse
+from czbenchmarks.datasets import SingleCellPerturbationDataset
+from czbenchmarks.tasks.types import CellRepresentation
 
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
@@ -70,30 +70,18 @@ if __name__ == "__main__":
 
     # Load the input data
     args = parser.parse_args()
-
-    adata = ad.read_h5ad(args.h5ad_path, backed="r")
-    """
-    dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict")
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
     model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[0]
+        dataset.adata.shape[0], dataset.adata.shape[1]
     )
     np.save("/tmp/random_model_output.npy", model_output)
-    """
-    sample_id = np.load(args.sample_id_path)
-    pred = np.load(args.predictions_path)
-    target_genes = np.load(args.target_genes_path)
-
-    pred_df = pd.DataFrame(
-        {
-            "sample_id": sample_id,
-            "pred": list(pred),
-            "target_genes": list(target_genes),
-        }
-    )
-
     task = PerturbationExpressionPredictionTask(min_de_genes=args.min_de_genes)
+
     task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=adata.uns[f"de_results_{args.metric_type}"],
-        control_cells_ids=adata.uns["control_cells_ids"],
+        de_results=dataset.de_results,
+        dataset_adata=dataset.adata,
+        target_genes_to_save=dataset.target_genes_to_save,
     )
-    task.run(pred_df, task_input)
+    task.run(model_output, task_input)
