@@ -90,6 +90,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
+        percent_genes_to_mask: float = 0.5,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -105,6 +106,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
+            percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
@@ -112,7 +114,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.control_name = control_name
         self.deg_test_name = deg_test_name
         self.de_gene_col = de_gene_col
-        # FIXME MICHELLE add parameters for sampling genes?
+        self.percent_genes_to_mask = percent_genes_to_mask
 
     def _sample_genes_to_mask(
         self,
