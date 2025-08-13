@@ -215,23 +215,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
             return adata_merged, target_genes_to_save
 
-        target_gene_dict = self._sample_genes_to_mask()
-        # self.target_gene_dict = target_gene_dict # FIXME MICHELLE remove after debugging
+        target_gene_dict = self._sample_genes_to_mask(
+            percent_genes_to_mask=self.percent_genes_to_mask
+        )
         target_genes = list(target_gene_dict.keys())[
-            :4
-        ]  # FIXME MICHELLE remove slice after debugging
+            :10
+        ]  # FIXME MICHELLE remove after debugging
 
-        # Execute in parallel # FIXME MICHELLE debugging
-        # results = Parallel(n_jobs=-1)(
-        #     delayed(_create_adata_for_condition)(selected_condition, target_gene_dict)
-        #     for selected_condition in target_genes
-        # )
-
-        results = []  # FIXME MICHELLE remove after debugging
-        for selected_condition in target_genes:
-            results.append(
-                _create_adata_for_condition(selected_condition, target_gene_dict)
-            )
+        results = [
+            _create_adata_for_condition(selected_condition, target_gene_dict)
+            for selected_condition in target_genes
+        ]
 
         # Unpack results
         all_merged_data = []
