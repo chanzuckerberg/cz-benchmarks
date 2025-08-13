@@ -6,13 +6,12 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 from tqdm import tqdm
+from scipy.stats import spearmanr
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
-import json
-from scipy.stats import spearmanr
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 
 def dict_numpy_to_list(d):
@@ -46,7 +45,6 @@ def compute_log_fold_change(probs1, probs2, epsilon=1e-10, probs=True):
 def run_notebook_code(args):
     # Read in and filter the DE results
     de_results = pd.read_csv(args.de_results_path)
-    print("1 len de_results", len(de_results))
 
     if args.metric_type == "wilcoxon":
         de_results = de_results[
@@ -61,7 +59,6 @@ def run_notebook_code(args):
         de_results["target_gene"] = de_results["condition"]
         de_results["ensembl_id"] = de_results["gene"]
         de_results["names"] = de_results["gene"]
-    print("2 len de_results", len(de_results))
 
     # run the code that is basically in the notebooks!
     # load the data
@@ -260,6 +257,7 @@ def run_new_code(args):
     result = task._run_task(pred_df, task_input)
     # Run the metrics from the task
     metric_results = task._compute_metrics(task_input, result)
+
     return result, metric_results
 
 
@@ -346,13 +344,14 @@ if __name__ == "__main__":
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
         run_notebook_code(args)
     )
+    """
     with open("notebook_pred_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(notebook_pred_log_fc_dict), f)
     with open("notebook_true_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(notebook_true_log_fc_dict), f)
     with open("metrics_dict.json", "w") as f:
         json.dump(metrics_dict, f)
-
+    """
     new_result, new_metrics = run_new_code(args)
     new_metrics_dict = {}
     for metric in new_metrics:
@@ -360,14 +359,14 @@ if __name__ == "__main__":
         for ent in new_metrics[metric]:
             mapping[ent.params["condition"]] = ent.value
         new_metrics_dict[metric] = mapping
-    with open("new_metrics_dict.json", "w") as f:
+    """with open("new_metrics_dict.json", "w") as f:
         json.dump(new_metrics_dict, f)
     # Similarly, save result.pred_log_fc_dict and result.true_log_fc_dict
     with open("new_pred_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(new_result.pred_log_fc_dict), f)
     with open("new_true_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(new_result.true_log_fc_dict), f)
-
+    """
     assert len(notebook_pred_log_fc_dict) == len(new_result.pred_log_fc_dict)
     assert len(notebook_true_log_fc_dict) == len(new_result.true_log_fc_dict)
 
