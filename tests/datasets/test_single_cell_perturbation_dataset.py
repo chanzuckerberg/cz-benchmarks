@@ -186,3 +186,43 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert set(["condition", "gene", "pval_adj", "logfoldchange"]).issubset(
             set(de_df.columns)
         )
+
+    def test_perturbation_dataset_load_from_task_inputs(
+        self, tmp_path, valid_dataset: SingleCellPerturbationDataset
+    ):
+        """Tests that load_from_task_inputs restores dataset state saved by store_task_inputs."""
+        # Prepare and store inputs from a loaded dataset
+        valid_dataset.load_data()
+        out_dir = valid_dataset.store_task_inputs()
+
+        # Create a fresh dataset instance and load from stored inputs
+        reloaded = SingleCellPerturbationDataset(
+            path=valid_dataset.path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+        )
+        reloaded.load_from_task_inputs(out_dir)
+
+        # Verify core attributes are restored
+        assert reloaded.control_cells_ids == valid_dataset.control_cells_ids
+        assert reloaded.target_genes_to_save == valid_dataset.target_genes_to_save
+
+        # DE results structure should match
+        assert isinstance(reloaded.de_results, pd.DataFrame)
+        assert list(reloaded.de_results.columns) == list(
+            valid_dataset.de_results.columns
+        )
+        assert len(reloaded.de_results) == len(valid_dataset.de_results)
+
+        # AnnData shape and annotations should match
+        assert (
+            reloaded.control_matched_adata.shape
+            == valid_dataset.control_matched_adata.shape
+        )
+        assert reloaded.control_matched_adata.obs.equals(
+            valid_dataset.control_matched_adata.obs
+        )
+        assert reloaded.control_matched_adata.var.equals(
+            valid_dataset.control_matched_adata.var
+        )
