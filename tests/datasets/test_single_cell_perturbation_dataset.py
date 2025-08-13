@@ -59,7 +59,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             {
                 "condition": de_conditions,
                 "gene": de_genes,
-                "pval": [1e-6] * 20,
+                "pval_adj": [1e-6] * 20,
                 "logfoldchange": [2.0] * 20,
             }
         )
@@ -110,7 +110,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             {
                 "condition": de_conditions,
                 "gene": de_genes,
-                "pval": [1e-6] * 20,
+                "pval_adj": [1e-6] * 20,
                 "logfoldchange": [2.0] * 20,
             }
         )
@@ -125,10 +125,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         # After loading, data should be created for each perturbation with matched controls
         # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
-        assert valid_dataset.adata.shape == (8, 3)
+        assert valid_dataset.control_matched_adata.shape == (8, 3)
         # Target genes should be stored per cell (for each unique cell index)
         assert hasattr(valid_dataset, "target_genes_to_save")
-        unique_obs_count = len(set(valid_dataset.adata.obs.index.tolist()))
+        unique_obs_count = len(
+            set(valid_dataset.control_matched_adata.obs.index.tolist())
+        )
         assert len(valid_dataset.target_genes_to_save) == unique_obs_count
         # Each cell should have 5 sampled genes (50% of 10 per condition)
         sampled_lengths = {len(v) for v in valid_dataset.target_genes_to_save.values()}
@@ -181,6 +183,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Validate that DE results JSON is readable and has expected columns
         de_df = pd.read_json(de_results_file)
         assert not de_df.empty
-        assert set(["condition", "gene", "pval", "logfoldchange"]).issubset(
+        assert set(["condition", "gene", "pval_adj", "logfoldchange"]).issubset(
             set(de_df.columns)
         )
