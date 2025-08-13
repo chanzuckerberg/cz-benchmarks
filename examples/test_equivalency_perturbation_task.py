@@ -299,39 +299,39 @@ if __name__ == "__main__":
     parser.add_argument(
         "--new_h5ad_path",
         type=str,
-        default="/home/mgill/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict.h5ad",
+        default="datasets/replogle_k562_essential_perturbpredict.h5ad",
         help="Path to masked h5ad file",
     )
 
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
+        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results .csv file",
     )
 
     parser.add_argument(
         "--masked_h5ad_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/zero_shot_0.5_de_genes_masked.h5ad",
+        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/zero_shot_0.5_de_genes_masked.h5ad",
         help="Path to masked h5ad file",
     )
     parser.add_argument(
         "--predictions_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/predictions_merged.npy",
+        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/predictions_merged.npy",
         help="Path to predictions .npy file",
     )
     parser.add_argument(
         "--sample_id_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/sample_id_merged.npy",
+        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/sample_id_merged.npy",
         help="Path to sample_id .npy file",
     )
     parser.add_argument(
         "--target_genes_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
+        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
         help="Path to target_genes .npy file",
     )
 
