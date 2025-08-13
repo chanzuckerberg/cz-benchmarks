@@ -72,14 +72,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
-        control_cells_ids (dict): Dictionary of control cells IDs for each condition.
-        de_results (pd.DataFrame): Differential expression results calculated on ground truth data with matched controls.
+        control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
+        de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
         target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
 
+    control_matched_adata: ad.AnnData
     control_cells_ids: dict
     de_results: pd.DataFrame
     target_genes_to_save: dict
+    # FIXME MICHELLE verify target_gene naming for future chemical perturbation datasets
 
     def __init__(
         self,
@@ -141,7 +143,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         filter = de_results["pval_adj"] < pval_threshold
 
         if self.deg_test_name == "wilcoxon":
-            filter &= de_results["logfoldchange"].abs() >= min_logfoldchange # FIXME MICHELLE verify abs as usage inconsistent
+            filter &= (
+                de_results["logfoldchange"].abs() >= min_logfoldchange
+            )  # FIXME MICHELLE verify .abs() as usage is inconsistent
         elif self.deg_test_name == "t-test":
             filter &= de_results["standardized_mean_diff"].abs() >= min_smd
 
@@ -226,7 +230,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
         target_genes = list(target_gene_dict.keys())[
             :10
-        ]  # FIXME MICHELLE remove after debugging
+        ]  # FIXME MICHELLE remove slice after debugging
 
         results = [
             _create_adata_for_condition(selected_condition, target_gene_dict)
@@ -293,7 +297,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
         adata_final, target_genes_to_save = self._create_adata()
 
-        self.adata = adata_final
+        self.control_matched_adata = adata_final
         self.target_genes_to_save = target_genes_to_save
 
     def store_task_inputs(self) -> Path:
@@ -310,6 +314,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             "control_cells_ids": self.control_cells_ids,
             "target_genes_to_save": self.target_genes_to_save,
             "de_results": self.de_results,
+            "control_matched_adata/obs": self.control_matched_adata.obs,
+            "control_matched_adata/var": self.control_matched_adata.var,
+            "control_matched_adata/X": self.control_matched_adata.X,
         }
 
         for key, item in inputs_to_store.items():
@@ -318,10 +325,24 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 buffer = io.StringIO()
                 item.to_json(buffer)
                 self._store_task_input(f"{key}.json", buffer.getvalue())
+
+            elif isinstance(item, np.ndarray):
+                output_dir = self.task_inputs_dir / Path(key).parent
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_file = self.task_inputs_dir / (key + ".npy")
+                np.save(output_file, item)
+
+            elif isinstance(item, sparse.csr_matrix):
+                output_dir = self.task_inputs_dir / Path(key).parent
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_file = self.task_inputs_dir / (key + ".npz")
+                sparse.save_npz(output_file, item)
+
             else:
                 # For dictionaries and other JSON-serializable objects
                 json_string = json.dumps(item)
                 self._store_task_input(f"{key}.json", json_string)
+
         return self.task_inputs_dir
 
     def _validate(self) -> None:
@@ -341,7 +362,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         super()._validate()
 
         # Validate condition format
-        conditions = set(self.adata.obs[self.condition_key])
+        conditions = set(self.control_matched_adata.obs[self.condition_key])
         target_conditions = set(
             x.split("_")[1] for x in self.target_genes_to_save.keys()
         )  # Update for multiple perturbations
