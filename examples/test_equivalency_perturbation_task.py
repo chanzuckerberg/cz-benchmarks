@@ -266,6 +266,13 @@ if __name__ == "__main__":
         description="Run K562 Perturbation Task with custom file paths and filtering parameters."
     )
     parser.add_argument(
+        "--metric_type",
+        type=str,
+        choices=["wilcoxon", "t_test"],
+        default="wilcoxon",
+        help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
+    )
+    parser.add_argument(
         "--min_logfoldchanges",
         type=float,
         default=1.0,
@@ -278,34 +285,10 @@ if __name__ == "__main__":
         help="Adjusted p-value threshold for DE gene filtering",
     )
     parser.add_argument(
-        "--new_h5ad_path",
-        type=str,
-        default="new_data/replogle_k562_essential_perturbpredict.h5ad",
-        help="Path to masked h5ad file",
-    )
-    parser.add_argument(
-        "--masked_h5ad_path",
-        type=str,
-        default="k562_data/zero_shot_0.5_de_genes_masked.h5ad",
-        help="Path to masked h5ad file",
-    )
-    parser.add_argument(
-        "--predictions_path",
-        type=str,
-        default="k562_data/predictions_merged.npy",
-        help="Path to predictions .npy file",
-    )
-    parser.add_argument(
-        "--sample_id_path",
-        type=str,
-        default="k562_data/sample_id_merged.npy",
-        help="Path to sample_id .npy file",
-    )
-    parser.add_argument(
-        "--target_genes_path",
-        type=str,
-        default="k562_data/target_genes_merged.npy",
-        help="Path to target_genes .npy file",
+        "--min_standard_mean_deviation",
+        type=float,
+        default=0.5,
+        help="Minimum standard mean deviation for DE gene filtering",
     )
     parser.add_argument(
         "--min_de_genes",
@@ -314,32 +297,52 @@ if __name__ == "__main__":
         help="Minimum number of DE genes for perturbation condition",
     )
     parser.add_argument(
+        "--new_h5ad_path",
+        type=str,
+        default="/home/mgill/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict.h5ad",
+        help="Path to masked h5ad file",
+    )
+
+    parser.add_argument(
         "--de_results_path",
         type=str,
-        default="k562_data/wilcoxon_de_results.csv",
+        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results .csv file",
     )
+
     parser.add_argument(
-        "--t_test_de_results_path",
+        "--masked_h5ad_path",
         type=str,
-        default="k562_data/t_test_de_results.csv",
-        help="Path to t_test de_results .csv file",
+        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/zero_shot_0.5_de_genes_masked.h5ad",
+        help="Path to masked h5ad file",
     )
     parser.add_argument(
-        "--metric_type",
+        "--predictions_path",
         type=str,
-        choices=["wilcoxon", "t_test"],
-        default="wilcoxon",
-        help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/predictions_merged.npy",
+        help="Path to predictions .npy file",
     )
     parser.add_argument(
-        "--min_standard_mean_deviation",
-        type=float,
-        default=0.5,
-        help="Minimum standard mean deviation for DE gene filtering",
+        "--sample_id_path",
+        type=str,
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/sample_id_merged.npy",
+        help="Path to sample_id .npy file",
+    )
+    parser.add_argument(
+        "--target_genes_path",
+        type=str,
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
+        help="Path to target_genes .npy file",
     )
 
     args = parser.parse_args()
+
+    # Format the paths with the metric type
+    args.masked_h5ad_path = args.masked_h5ad_path.format(metric_type=args.metric_type)
+    args.predictions_path = args.predictions_path.format(metric_type=args.metric_type)
+    args.sample_id_path = args.sample_id_path.format(metric_type=args.metric_type)
+    args.target_genes_path = args.target_genes_path.format(metric_type=args.metric_type)
+    args.de_results_path = args.de_results_path.format(metric_type=args.metric_type)
 
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
         run_notebook_code(args)
