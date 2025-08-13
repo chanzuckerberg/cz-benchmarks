@@ -1,7 +1,6 @@
 import pytest
 import pandas as pd
 import numpy as np
-import logging
 
 import anndata as ad
 from czbenchmarks.tasks import (
@@ -332,28 +331,41 @@ def test_perturbation_task():
 
 
 def test_perturbation_expression_prediction_task_wilcoxon():
-    """Test that PerturbationExpressionPredictionTask executes without errors with Wilcoxon metric."""
-    # Create dummy DE results DataFrame for Wilcoxon test
-    # Use the same gene names that will be in target_genes
-    gene_names = [f"ENSG{i:05d}" for i in range(50)]
-    de_res_wilcoxon_df = pd.DataFrame(
-        {
-            "logfoldchange": np.random.normal(
-                0, 2, 100
-            ),  # Use logfoldchange (without 's')
-            "target_gene": ["gene_A"] * 50 + ["gene_B"] * 50,
-            "names": gene_names * 2,  # Use same gene names for both conditions
-            "pval": np.random.uniform(
-                0, 0.05, 100
-            ),  # P-values that will definitely pass the 0.1 threshold
-            "condition": ["gene_A"] * 50 + ["gene_B"] * 50,  # Add condition column
-            "condition_ensembl_id": ["ENSG_A"] * 50
-            + ["ENSG_B"] * 50,  # Add ensembl ID column
-        }
+    """Test Wilcoxon path computes correct vectors and metrics."""
+    # Deterministic gene set and per-condition true/predicted effects
+    gene_names = ["G0", "G1", "G2", "G3"]
+    true_lfc_gene_A = np.array([1.0, 0.5, -0.5, -1.0])
+    true_lfc_gene_B = np.array([2.0, 1.0, -1.0, -2.0])
+
+    # Build DE results matching the designed true effects for both conditions
+    de_res_wilcoxon_df = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "logfoldchange": true_lfc_gene_A,
+                    "target_gene": ["gene_A"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "condition": ["gene_A"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "logfoldchange": true_lfc_gene_B,
+                    "target_gene": ["gene_B"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "condition": ["gene_B"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
+                }
+            ),
+        ],
+        ignore_index=True,
     )
 
-    # Build minimal AnnData with required condition structure and per-cell target genes
-    n_per_group = 10
+    # Build AnnData with 4 groups: condition/control for A and B
+    n_per_group = 4
     conditions = (
         ["gene_A"] * n_per_group
         + ["ctrl_gene_A"] * n_per_group
@@ -361,27 +373,31 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         + ["ctrl_gene_B"] * n_per_group
     )
     obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
-    X = np.random.normal(0, 1, (len(conditions), len(gene_names)))
+
+    X = np.zeros((len(conditions), len(gene_names)), dtype=float)
+    # Set group means so that pred_log_fc equals the designed true_lfc
+    X[0:n_per_group, :] = true_lfc_gene_A  # gene_A group
+    X[n_per_group : 2 * n_per_group, :] = 0.0  # ctrl_gene_A group
+    X[2 * n_per_group : 3 * n_per_group, :] = true_lfc_gene_B  # gene_B group
+    X[3 * n_per_group : 4 * n_per_group, :] = 0.0  # ctrl_gene_B group
+
     adata = ad.AnnData(
         X=X,
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
         var=pd.DataFrame(index=gene_names),
     )
-    # Map every cell to the same set of masked genes (as dataset builder does)
     target_genes_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
-    # Cell representation is the numeric matrix aligned to adata
     cell_representation = X
 
     # Ensure de_results has the expected gene identifier column
     de_res_wilcoxon_df["gene_id"] = de_res_wilcoxon_df["names"]
 
-    # Task and argument setup with Wilcoxon metric type and correct control prefix
     task = PerturbationExpressionPredictionTask(
-        min_de_genes=1,  # Very low threshold
+        min_de_genes=1,
         metric_type="wilcoxon",
         metric_column="logfoldchange",
-        min_logfoldchange=0.01,  # Very low threshold
-        pval_threshold=0.1,  # Very permissive threshold
+        min_logfoldchange=0.01,
+        pval_threshold=0.1,
         control_gene="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
@@ -390,51 +406,45 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         target_genes_to_save=target_genes_to_save,
     )
 
-    # Expected: 5 lists of metrics (accuracy, precision, recall, f1, spearman)
-    num_metric_types = 5
+    # First, check that true/pred vectors produced by _run_task match expectations
+    task_output = task._run_task(cell_representation, task_input)
+    assert set(task_output.pred_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert set(task_output.true_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert np.allclose(task_output.pred_log_fc_dict["gene_A"], true_lfc_gene_A)
+    assert np.allclose(task_output.pred_log_fc_dict["gene_B"], true_lfc_gene_B)
+    assert np.allclose(task_output.true_log_fc_dict["gene_A"], true_lfc_gene_A)
+    assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_lfc_gene_B)
 
+    # Then, run the full task and validate metrics are perfect
+    num_metric_types = 5  # accuracy, precision, recall, f1, spearman
     try:
-        # Test regular task execution
-        results = task.run(
-            cell_representation,
-            task_input,
-        )
+        results = task.run(cell_representation, task_input)
 
-        # Verify results structure
         assert isinstance(results, dict)
         assert len(results) == num_metric_types
 
-        # Each list should contain MetricResult objects
-        for metric_list in results.values():
+        # Each metric list should contain perfect scores for both conditions
+        for name, metric_list in results.items():
             assert isinstance(metric_list, list)
             assert all(isinstance(r, MetricResult) for r in metric_list)
-            # Should have results for at least one condition (gene_A or gene_B)
-            # Make this more flexible - if no conditions pass filtering, that's okay for a test
-            if len(metric_list) == 0:
-                logging.warning("No results generated for this metric type")
-            else:
-                assert len(metric_list) >= 1
+            # Expect results for both conditions
+            assert len(metric_list) == 2
+            for r in metric_list:
+                assert np.isclose(r.value, 1.0)
 
-        # Verify metric types
+        # Verify metric types present
         all_results = [
             result for metric_list in results.values() for result in metric_list
         ]
-        assert all(isinstance(r, MetricResult) for r in all_results)
-
-        # Check that we have the expected metric types (only if we have results)
-        if len(all_results) > 0:
-            metric_types = {result.metric_type for result in all_results}
-            expected_types = {
-                MetricType.ACCURACY,
-                MetricType.PRECISION,
-                MetricType.RECALL,
-                MetricType.F1,
-                MetricType.SPEARMAN_CORRELATION,
-            }
-            assert expected_types.issubset(metric_types)
-        else:
-            logging.warning("No results generated, skipping metric type verification")
-
+        metric_types = {result.metric_type for result in all_results}
+        expected_types = {
+            MetricType.ACCURACY,
+            MetricType.PRECISION,
+            MetricType.RECALL,
+            MetricType.F1,
+            MetricType.SPEARMAN_CORRELATION,
+        }
+        assert expected_types.issubset(metric_types)
     except Exception as e:
         pytest.fail(
             f"PerturbationExpressionPredictionTask (Wilcoxon) failed unexpectedly: {e}"
@@ -442,28 +452,41 @@ def test_perturbation_expression_prediction_task_wilcoxon():
 
 
 def test_perturbation_expression_prediction_task_ttest():
-    """Test that PerturbationExpressionPredictionTask executes without errors with t-test metric."""
-    # Create dummy DE results DataFrame for t-test
-    # Use the same gene names that will be in target_genes
-    gene_names = [f"ENSG{i:05d}" for i in range(50)]
-    de_res_ttest_df = pd.DataFrame(
-        {
-            "standardized_mean_diff": np.random.normal(
-                0, 2, 100
-            ),  # Larger values to pass threshold
-            "target_gene": ["gene_A"] * 50 + ["gene_B"] * 50,
-            "names": gene_names * 2,  # Use same gene names for both conditions
-            "pval": np.random.uniform(
-                0, 0.05, 100
-            ),  # P-values that will definitely pass the 0.1 threshold
-            "condition": ["gene_A"] * 50 + ["gene_B"] * 50,  # Add condition column
-            "condition_ensembl_id": ["ENSG_A"] * 50
-            + ["ENSG_B"] * 50,  # Add ensembl ID column
-        }
+    """Test t-test path computes correct vectors and metrics."""
+    # Deterministic gene set and per-condition true/predicted effects
+    gene_names = ["G0", "G1", "G2", "G3"]
+    true_smd_gene_A = np.array([0.2, 0.5, -0.5, -0.2])
+    true_smd_gene_B = np.array([1.0, 0.7, -0.7, -1.0])
+
+    # Build DE results matching the designed true effects for both conditions
+    de_res_ttest_df = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "standardized_mean_diff": true_smd_gene_A,
+                    "target_gene": ["gene_A"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "condition": ["gene_A"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "standardized_mean_diff": true_smd_gene_B,
+                    "target_gene": ["gene_B"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "condition": ["gene_B"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
+                }
+            ),
+        ],
+        ignore_index=True,
     )
 
-    # Build minimal AnnData with required condition structure and per-cell target genes
-    n_per_group = 10
+    # Build AnnData with 4 groups: condition/control for A and B
+    n_per_group = 4
     conditions = (
         ["gene_A"] * n_per_group
         + ["ctrl_gene_A"] * n_per_group
@@ -471,7 +494,14 @@ def test_perturbation_expression_prediction_task_ttest():
         + ["ctrl_gene_B"] * n_per_group
     )
     obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
-    X = np.random.normal(0, 1, (len(conditions), len(gene_names)))
+
+    X = np.zeros((len(conditions), len(gene_names)), dtype=float)
+    # Set group means so that pred_log_fc equals the designed "true" standardized_mean_diff
+    X[0:n_per_group, :] = true_smd_gene_A  # gene_A group
+    X[n_per_group : 2 * n_per_group, :] = 0.0  # ctrl_gene_A group
+    X[2 * n_per_group : 3 * n_per_group, :] = true_smd_gene_B  # gene_B group
+    X[3 * n_per_group : 4 * n_per_group, :] = 0.0  # ctrl_gene_B group
+
     adata = ad.AnnData(
         X=X,
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
@@ -483,13 +513,12 @@ def test_perturbation_expression_prediction_task_ttest():
     # Ensure de_results has the expected gene identifier column
     de_res_ttest_df["gene_id"] = de_res_ttest_df["names"]
 
-    # Task and argument setup with t-test metric type and correct control prefix
     task = PerturbationExpressionPredictionTask(
-        min_de_genes=1,  # Very low threshold
+        min_de_genes=1,
         metric_type="t-test",
         metric_column="standardized_mean_diff",
-        standardized_mean_diff=0.01,  # Very low threshold
-        pval_threshold=0.1,  # Very permissive threshold
+        standardized_mean_diff=0.01,
+        pval_threshold=0.1,
         control_gene="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
@@ -498,59 +527,44 @@ def test_perturbation_expression_prediction_task_ttest():
         target_genes_to_save=target_genes_to_save,
     )
 
-    # Expected: 5 lists of metrics (accuracy, precision, recall, f1, spearman)
-    num_metric_types = 5
+    # First, check that true/pred vectors produced by _run_task match expectations
+    task_output = task._run_task(cell_representation, task_input)
+    assert set(task_output.pred_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert set(task_output.true_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert np.allclose(task_output.pred_log_fc_dict["gene_A"], true_smd_gene_A)
+    assert np.allclose(task_output.pred_log_fc_dict["gene_B"], true_smd_gene_B)
+    assert np.allclose(task_output.true_log_fc_dict["gene_A"], true_smd_gene_A)
+    assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_smd_gene_B)
 
+    # Then, run the full task and validate metrics are perfect
+    num_metric_types = 5  # accuracy, precision, recall, f1, spearman
     try:
-        # Test regular task execution
-        results = task.run(
-            cell_representation,
-            task_input,
-        )
+        results = task.run(cell_representation, task_input)
 
-        # Verify results structure
         assert isinstance(results, dict)
         assert len(results) == num_metric_types
 
-        # Each list should contain MetricResult objects
-        for metric_list in results.values():
+        # Each metric list should contain perfect scores for both conditions
+        for name, metric_list in results.items():
             assert isinstance(metric_list, list)
             assert all(isinstance(r, MetricResult) for r in metric_list)
-            # Should have results for at least one condition (gene_A or gene_B)
-            # Make this more flexible - if no conditions pass filtering, that's okay for a test
-            if len(metric_list) == 0:
-                logging.warning("No results generated for this metric type")
-            else:
-                assert len(metric_list) >= 1
+            assert len(metric_list) == 2
+            for r in metric_list:
+                assert np.isclose(r.value, 1.0)
 
-        # Verify metric types
         all_results = [
             result for metric_list in results.values() for result in metric_list
         ]
-        assert all(isinstance(r, MetricResult) for r in all_results)
-
-        # Check that we have the expected metric types (only if we have results)
-        if len(all_results) > 0:
-            metric_types = {result.metric_type for result in all_results}
-            expected_types = {
-                MetricType.ACCURACY,
-                MetricType.PRECISION,
-                MetricType.RECALL,
-                MetricType.F1,
-                MetricType.SPEARMAN_CORRELATION,
-            }
-            assert expected_types.issubset(metric_types)
-        else:
-            logging.warning("No results generated, skipping metric type verification")
-
+        metric_types = {result.metric_type for result in all_results}
+        expected_types = {
+            MetricType.ACCURACY,
+            MetricType.PRECISION,
+            MetricType.RECALL,
+            MetricType.F1,
+            MetricType.SPEARMAN_CORRELATION,
+        }
+        assert expected_types.issubset(metric_types)
     except Exception as e:
         pytest.fail(
             f"PerturbationExpressionPredictionTask (t-test) failed unexpectedly: {e}"
         )
-
-
-# Legacy test name for backward compatibility
-def test_perturbation_expression_prediction_task():
-    """Test that PerturbationExpressionPredictionTask executes without errors."""
-    # This now calls the Wilcoxon test to maintain backward compatibility
-    test_perturbation_expression_prediction_task_wilcoxon()
