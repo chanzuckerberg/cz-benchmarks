@@ -8,7 +8,6 @@ import scipy.sparse as sparse
 import pandas as pd
 import anndata as ad
 import logging
-from joblib import Parallel, delayed
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED

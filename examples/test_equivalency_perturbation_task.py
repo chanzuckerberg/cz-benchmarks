@@ -46,6 +46,8 @@ def compute_log_fold_change(probs1, probs2, epsilon=1e-10, probs=True):
 def run_notebook_code(args):
     # Read in and filter the DE results
     de_results = pd.read_csv(args.de_results_path)
+    print("1 len de_results", len(de_results))
+
     if args.metric_type == "wilcoxon":
         de_results = de_results[
             np.abs(de_results["logfoldchanges"]) >= args.min_logfoldchanges
@@ -59,6 +61,7 @@ def run_notebook_code(args):
         de_results["target_gene"] = de_results["condition"]
         de_results["ensembl_id"] = de_results["gene"]
         de_results["names"] = de_results["gene"]
+    print("2 len de_results", len(de_results))
 
     # run the code that is basically in the notebooks!
     # load the data
@@ -343,7 +346,6 @@ if __name__ == "__main__":
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
         run_notebook_code(args)
     )
-
     with open("notebook_pred_log_fc_dict.json", "w") as f:
         json.dump(dict_numpy_to_list(notebook_pred_log_fc_dict), f)
     with open("notebook_true_log_fc_dict.json", "w") as f:

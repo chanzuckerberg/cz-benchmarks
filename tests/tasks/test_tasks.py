@@ -352,72 +352,42 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         }
     )
 
-    # Create dummy prediction DataFrame - need at least 10 cells per condition
-    # Generate sample IDs for gene_A (10 condition + 10 control) and gene_B (10 condition + 10 control)
-    gene_a_condition_samples = [f"cond_{i}_gene_A" for i in range(10)]
-    gene_a_control_samples = [f"ctrl_{i}_gene_A" for i in range(10)]
-    gene_b_condition_samples = [f"cond_{i}_gene_B" for i in range(10)]
-    gene_b_control_samples = [f"ctrl_{i}_gene_B" for i in range(10)]
-
-    all_samples = (
-        gene_a_condition_samples
-        + gene_a_control_samples
-        + gene_b_condition_samples
-        + gene_b_control_samples
+    # Build minimal AnnData with required condition structure and per-cell target genes
+    n_per_group = 10
+    conditions = (
+        ["gene_A"] * n_per_group
+        + ["ctrl_gene_A"] * n_per_group
+        + ["gene_B"] * n_per_group
+        + ["ctrl_gene_B"] * n_per_group
     )
-
-    # Create a simpler structure - each row contains one prediction array
-    # Use tuples instead of lists to avoid hashing issues
-    pred_df_data = []
-    for sample in all_samples:
-        pred_df_data.append(
-            {
-                "sample_id": sample,
-                "pred": np.random.normal(0, 1, 50),
-                "target_genes": tuple(gene_names),  # Use tuple which is hashable
-            }
-        )
-
-    pred_df = pd.DataFrame(pred_df_data)
-
-    # Create dummy cell representation data (DataFrame with gene column and proper index)
-    # Cell indices must match sample_id values and end with _{condition}
-    # Need both control ("non-targeting") and condition cells for each condition (at least 10 each)
-    cell_representation = pd.DataFrame(
-        {
-            "gene": (
-                ["gene_A"] * 10
-                + ["non-targeting"] * 10
-                + ["gene_B"] * 10
-                + ["non-targeting"] * 10
-            ),
-            "sample_id": all_samples,  # Add sample_id column that implementation expects
-        },
-        index=all_samples,
+    obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
+    X = np.random.normal(0, 1, (len(conditions), len(gene_names)))
+    adata = ad.AnnData(
+        X=X,
+        obs=pd.DataFrame({"condition": conditions}, index=obs_names),
+        var=pd.DataFrame(index=gene_names),
     )
+    # Map every cell to the same set of masked genes (as dataset builder does)
+    target_genes_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    # Cell representation is the numeric matrix aligned to adata
+    cell_representation = X
 
-    # Create control cells ids dictionary that implementation expects
-    control_cells_ids = {
-        "ENSG_A": np.array(
-            [f"ctrl_{i}" for i in range(10)]
-        ),  # Control cell substrings for gene_A
-        "ENSG_B": np.array(
-            [f"ctrl_{i}" for i in range(10)]
-        ),  # Control cell substrings for gene_B
-    }
+    # Ensure de_results has the expected gene identifier column
+    de_res_wilcoxon_df["gene_id"] = de_res_wilcoxon_df["names"]
 
-    # Task and argument setup with Wilcoxon metric type
+    # Task and argument setup with Wilcoxon metric type and correct control prefix
     task = PerturbationExpressionPredictionTask(
         min_de_genes=1,  # Very low threshold
         metric_type="wilcoxon",
         metric_column="logfoldchange",
         min_logfoldchange=0.01,  # Very low threshold
         pval_threshold=0.1,  # Very permissive threshold
+        control_gene="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_wilcoxon_df,
-        pred_df=pred_df,
-        control_cells_ids=control_cells_ids,
+        dataset_adata=adata,
+        target_genes_to_save=target_genes_to_save,
     )
 
     # Expected: 5 lists of metrics (accuracy, precision, recall, f1, spearman)
@@ -431,11 +401,11 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         )
 
         # Verify results structure
-        assert isinstance(results, list)
+        assert isinstance(results, dict)
         assert len(results) == num_metric_types
 
         # Each list should contain MetricResult objects
-        for metric_list in results:
+        for metric_list in results.values():
             assert isinstance(metric_list, list)
             assert all(isinstance(r, MetricResult) for r in metric_list)
             # Should have results for at least one condition (gene_A or gene_B)
@@ -446,7 +416,9 @@ def test_perturbation_expression_prediction_task_wilcoxon():
                 assert len(metric_list) >= 1
 
         # Verify metric types
-        all_results = [result for metric_list in results for result in metric_list]
+        all_results = [
+            result for metric_list in results.values() for result in metric_list
+        ]
         assert all(isinstance(r, MetricResult) for r in all_results)
 
         # Check that we have the expected metric types (only if we have results)
@@ -490,72 +462,40 @@ def test_perturbation_expression_prediction_task_ttest():
         }
     )
 
-    # Create dummy prediction DataFrame - need at least 10 cells per condition
-    # Generate sample IDs for gene_A (10 condition + 10 control) and gene_B (10 condition + 10 control)
-    gene_a_condition_samples = [f"cond_{i}_gene_A" for i in range(10)]
-    gene_a_control_samples = [f"ctrl_{i}_gene_A" for i in range(10)]
-    gene_b_condition_samples = [f"cond_{i}_gene_B" for i in range(10)]
-    gene_b_control_samples = [f"ctrl_{i}_gene_B" for i in range(10)]
-
-    all_samples = (
-        gene_a_condition_samples
-        + gene_a_control_samples
-        + gene_b_condition_samples
-        + gene_b_control_samples
+    # Build minimal AnnData with required condition structure and per-cell target genes
+    n_per_group = 10
+    conditions = (
+        ["gene_A"] * n_per_group
+        + ["ctrl_gene_A"] * n_per_group
+        + ["gene_B"] * n_per_group
+        + ["ctrl_gene_B"] * n_per_group
     )
-
-    # Create a simpler structure - each row contains one prediction array
-    # Use tuples instead of lists to avoid hashing issues
-    pred_df_data = []
-    for sample in all_samples:
-        pred_df_data.append(
-            {
-                "sample_id": sample,
-                "pred": np.random.normal(0, 1, 50),
-                "target_genes": tuple(gene_names),  # Use tuple which is hashable
-            }
-        )
-
-    pred_df = pd.DataFrame(pred_df_data)
-
-    # Create dummy cell representation data (DataFrame with gene column and proper index)
-    # Cell indices must match sample_id values and end with _{condition}
-    # Need both control ("non-targeting") and condition cells for each condition (at least 10 each)
-    cell_representation = pd.DataFrame(
-        {
-            "gene": (
-                ["gene_A"] * 10
-                + ["non-targeting"] * 10
-                + ["gene_B"] * 10
-                + ["non-targeting"] * 10
-            ),
-            "sample_id": all_samples,  # Add sample_id column that implementation expects
-        },
-        index=all_samples,
+    obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
+    X = np.random.normal(0, 1, (len(conditions), len(gene_names)))
+    adata = ad.AnnData(
+        X=X,
+        obs=pd.DataFrame({"condition": conditions}, index=obs_names),
+        var=pd.DataFrame(index=gene_names),
     )
+    target_genes_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    cell_representation = X
 
-    # Create control cells ids dictionary that implementation expects
-    control_cells_ids = {
-        "ENSG_A": np.array(
-            [f"ctrl_{i}" for i in range(10)]
-        ),  # Control cell substrings for gene_A
-        "ENSG_B": np.array(
-            [f"ctrl_{i}" for i in range(10)]
-        ),  # Control cell substrings for gene_B
-    }
+    # Ensure de_results has the expected gene identifier column
+    de_res_ttest_df["gene_id"] = de_res_ttest_df["names"]
 
-    # Task and argument setup with t-test metric type
+    # Task and argument setup with t-test metric type and correct control prefix
     task = PerturbationExpressionPredictionTask(
         min_de_genes=1,  # Very low threshold
         metric_type="t-test",
         metric_column="standardized_mean_diff",
         standardized_mean_diff=0.01,  # Very low threshold
         pval_threshold=0.1,  # Very permissive threshold
+        control_gene="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=de_res_ttest_df,  # Note: parameter name stays the same even for t-test data
-        pred_df=pred_df,
-        control_cells_ids=control_cells_ids,
+        de_results=de_res_ttest_df,
+        dataset_adata=adata,
+        target_genes_to_save=target_genes_to_save,
     )
 
     # Expected: 5 lists of metrics (accuracy, precision, recall, f1, spearman)
@@ -569,11 +509,11 @@ def test_perturbation_expression_prediction_task_ttest():
         )
 
         # Verify results structure
-        assert isinstance(results, list)
+        assert isinstance(results, dict)
         assert len(results) == num_metric_types
 
         # Each list should contain MetricResult objects
-        for metric_list in results:
+        for metric_list in results.values():
             assert isinstance(metric_list, list)
             assert all(isinstance(r, MetricResult) for r in metric_list)
             # Should have results for at least one condition (gene_A or gene_B)
@@ -584,7 +524,9 @@ def test_perturbation_expression_prediction_task_ttest():
                 assert len(metric_list) >= 1
 
         # Verify metric types
-        all_results = [result for metric_list in results for result in metric_list]
+        all_results = [
+            result for metric_list in results.values() for result in metric_list
+        ]
         assert all(isinstance(r, MetricResult) for r in all_results)
 
         # Check that we have the expected metric types (only if we have results)
