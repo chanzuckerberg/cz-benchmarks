@@ -171,6 +171,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key: str = self.condition_key,
             control_name: str = self.control_name,
         ):
+            """
+            Create an AnnData object for a single condition.
+            Setup as a private function to allow for multiprocessing if needed.
+            """
             adata_condition = adata[
                 adata.obs[self.condition_key] == selected_condition
             ].copy()
@@ -276,7 +280,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 raise ValueError(f"Key '{key}' not found in adata.uns")
 
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
-        # Loading from h5ad file seems to convert lists to numpy arrays
+        # Loading from h5ad file converts lists to numpy arrays
         for key in self.control_cells_ids.keys():
             self.control_cells_ids[key] = list(self.control_cells_ids[key])
         self.de_results = pd.DataFrame(
