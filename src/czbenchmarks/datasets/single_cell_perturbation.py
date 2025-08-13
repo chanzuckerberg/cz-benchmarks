@@ -136,13 +136,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         de_results = self.de_results.copy()
 
-        filter = de_results["pval"] < pval_threshold
+        filter = de_results["pval_adj"] < pval_threshold
 
         if self.deg_test_name == "wilcoxon":
-            filter &= de_results["logfoldchange"] > min_logfoldchange
-            # filter &= de_results["num_de_genes"] >= min_de_genes # FIXME MICHELLE check if this filter should be used here
+            filter &= de_results["logfoldchange"].abs() >= min_logfoldchange # FIXME MICHELLE verify abs as usage inconsistent
         elif self.deg_test_name == "t-test":
-            filter &= de_results["standardized_mean_diff"] > min_smd
+            filter &= de_results["standardized_mean_diff"].abs() >= min_smd
 
         de_results = de_results[filter]
 
