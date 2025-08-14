@@ -113,7 +113,6 @@ class PerturbationExpressionPredictionTask(Task):
             condition_de_df = de_results[de_results["condition"] == condition]
             if len(condition_de_df) < self.min_de_genes:
                 continue
-            breakpoint()
             masked_genes = np.array(
                 task_input.target_genes_to_save[
                     task_input.masked_adata_obs.index[
