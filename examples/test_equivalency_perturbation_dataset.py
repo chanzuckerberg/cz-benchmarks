@@ -107,16 +107,18 @@ def sample_genes(
 
 def run_notebook_code(args):
     # These are the same numbers as in single_cell_perturbation.py
-    min_logfoldchanges = 1.0
-    pval_threshold = 1e-4
-    min_de_genes = 5
 
     adata = sc.read_h5ad(args.h5ad_data_path)
     df = pd.read_csv(args.de_results_path)
-    df = df[np.abs(df["logfoldchanges"]) >= min_logfoldchanges]
-    df = df[df["pvals_adj"] < pval_threshold]
+    if args.metric == "wilcoxon":
+        df = df[np.abs(df["logfoldchanges"]) >= args.min_logfoldchanges]
+    elif args.metric == "t-test":
+        df = df[np.abs(df["standardized_mean_diff"]) >= args.min_smd]
+    else:
+        raise ValueError(f"Metric {args.metric} not supported")
+    df = df[df["pvals_adj"] < args.pval_threshold]
     target_gene_dict = sample_genes(
-        df, args.percent_genes_to_mask, min_de_genes, "target_gene", "ensembl_id"
+        df, args.percent_genes_to_mask, args.min_de_genes, "target_gene", "ensembl_id"
     )
 
     with open(args.control_cells_ids_path, "r") as f:
@@ -136,6 +138,10 @@ def run_new_code(
             "replogle_k562_essential_perturbpredict": {
                 "percent_genes_to_mask": percent_genes_to_mask,
                 "deg_test_name": metric,
+                "min_smd": args.min_smd,
+                "min_logfoldchange": args.min_logfoldchange,
+                "pval_threshold": args.pval_threshold,
+                "min_de_genes": args.min_de_genes,
             }
         }
     }
@@ -164,6 +170,13 @@ if __name__ == "__main__":
         default="new_data/K562_essential_raw_singlecell_01.h5ad",
         help="Path to masked h5ad file",
     )
+    parser.add_argument(
+        "--min_smd",
+        type=float,
+        default=0.55,
+        help="Minimum standardized mean difference for DE gene filtering",
+    )
+
     parser.add_argument(
         "--de_results_path",
         type=str,
