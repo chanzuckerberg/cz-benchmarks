@@ -116,6 +116,23 @@ def run_notebook_code(args):
             df, args.percent_genes_to_mask, args.min_de_genes, "condition", "gene"
         )
 
+        df = df[np.abs(df["logfoldchanges"]) >= args.min_logfoldchange]
+        df = df[df["pvals_adj"] < args.pval_threshold]
+        target_gene_dict = sample_genes(
+            df,
+            args.percent_genes_to_mask,
+            args.min_de_genes,
+            "target_gene",
+            "ensembl_id",
+        )
+
+    elif args.metric == "t_test":
+        df = df[np.abs(df["smd"]) >= args.min_smd]
+        df = df[df["pval_adj"] < args.pval_threshold]
+        target_gene_dict = sample_genes(
+            df, args.percent_genes_to_mask, args.min_de_genes, "condition", "gene"
+        )
+
     else:
         raise ValueError(f"Metric {args.metric} not supported")
 
@@ -124,25 +141,9 @@ def run_notebook_code(args):
     adata_final, target_genes_to_save = create_adata(
         adata, target_gene_dict, nontargeting_cells, condition_col="condition"
     )
-    # Build gene map from notebook var
     gene_map = {}
-    for idx, row in adata.var.iterrows():
-        gene_map[idx] = row["gene_name"]
-
-    # Save notebook-side artifacts to a new directory
-    nb_output_dir = Path(
-        f"notebook_task_inputs_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    )
-    nb_output_dir.mkdir(parents=True, exist_ok=True)
-    # 1) Save AnnData
-    adata_final.write_h5ad(str(nb_output_dir / "notebook_adata_masked.h5ad"))
-    # 2) Save target genes mapping
-    with (nb_output_dir / "notebook_target_genes_to_save.json").open("w") as f:
-        json.dump({k: list(v) for k, v in target_genes_to_save.items()}, f)
-    # 3) Save gene_map
-    with (nb_output_dir / "gene_map.json").open("w") as f:
-        json.dump({str(k): v for k, v in gene_map.items()}, f)
-    print(f"Notebook outputs written to: {nb_output_dir.resolve()}")
+    for index, ent in adata.obs.iterrows():
+        gene_map[ent.gene_id] = ent.gene
 
     return adata_final, target_genes_to_save, gene_map
 
@@ -228,8 +229,6 @@ if __name__ == "__main__":
         help="Path to control_cells_ids .json file",
     )
     args = parser.parse_args()
-
-
     # Normalize metric aliases (accepts t_test or t-test, but preserve t_test for dataset)
     metric_normalized = args.metric.strip().lower().replace("-", "_")
     if metric_normalized in {"t_test", "ttest"}:
@@ -240,8 +239,6 @@ if __name__ == "__main__":
         raise ValueError(
             f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
         )
-
-    args.de_results_path = args.de_results_path.format(metric_type=args.metric)
     notebook_adata_masked, notebook_target_genes_to_save, gene_map = run_notebook_code(
         args
     )
@@ -251,6 +248,25 @@ if __name__ == "__main__":
     
     # Compare DE results CSV to dataset.de_results with column name mapping
     df_csv = pd.read_csv(args.de_results_path)
+    if args.metric == "wilcoxon":
+        col_map = {
+            "names": "gene_id",
+            "target_gene": "condition_name",
+            "scores": "score",
+            "logfoldchanges": "logfoldchange",
+            "pvals": "pval",
+            "pvals_adj": "pval_adj",
+        }
+    elif args.metric == "t_test":
+        col_map = {
+            "gene": "gene_id",
+            "condition": "condition_name",
+            "score": "score",
+            "logfoldchange": "logfoldchange",
+            "pval": "pval",
+            "pval_adj": "pval_adj",
+            "smd": "standardized_mean_diff",
+        }
     if args.metric == "wilcoxon":
         col_map = {
             "names": "gene_id",
@@ -282,9 +298,13 @@ if __name__ == "__main__":
     dataset_target_genes = {}
     for k in new_dataset.target_genes_to_save.keys():
         s = k.split("_")
-        dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
-            new_dataset.target_genes_to_save[k]
-        )
+        try:
+            dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
+                new_dataset.target_genes_to_save[k]
+            )
+        except KeyError:
+            print(f"KeyError: {k}")
+            breakpoint()
 
     missing_keys = [
         k for k in dataset_target_genes.keys() if k not in notebook_target_genes_to_save
