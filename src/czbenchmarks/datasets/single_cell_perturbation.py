@@ -82,7 +82,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     control_cells_ids: dict
     de_results: pd.DataFrame
     target_genes_to_save: dict
-    # FIXME MICHELLE verify target_gene naming for future chemical perturbation datasets
+    # FIXME MICHELLE verify variable naming for future inclusion of chemical perturbation datasets
 
     def __init__(
         self,
@@ -94,6 +94,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
         min_de_genes: int = 5,
+        pval_threshold: float = 1e-4,
+        min_logfoldchange: float = 1.0,
+        min_smd: float = 0.55,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -112,6 +115,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
             min_de_genes (int): Minimum number of differentially expressed genes
                 required to mask that condition. If not met, no genes are masked.
+            pval_threshold (float): P-value threshold for differential expression.
+            min_logfoldchange (float): Minimum log-fold change for differential expression.
+            min_smd (float): Minimum standardized mean difference for differential expression.
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
@@ -120,6 +126,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.deg_test_name = deg_test_name
         self.de_gene_col = de_gene_col
         self.percent_genes_to_mask = percent_genes_to_mask
+        self.min_de_genes = min_de_genes
+        self.pval_threshold = pval_threshold
+        self.min_logfoldchange = min_logfoldchange
+        self.min_smd = min_smd
 
     def _sample_genes_to_mask(
         self,
@@ -232,6 +242,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_gene_dict = self._sample_genes_to_mask(
             percent_genes_to_mask=self.percent_genes_to_mask,
             min_de_genes=self.min_de_genes,
+            pval_threshold=self.pval_threshold,
+            min_logfoldchange=self.min_logfoldchange,
+            min_smd=self.min_smd,
         )
         target_genes = list(target_gene_dict.keys())
         total_conditions = len(target_genes)
