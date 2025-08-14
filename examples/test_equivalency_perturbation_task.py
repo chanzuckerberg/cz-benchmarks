@@ -12,6 +12,8 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+import json
+import os
 
 
 def dict_numpy_to_list(d):
@@ -42,7 +44,18 @@ def compute_log_fold_change(probs1, probs2, epsilon=1e-10, probs=True):
     return log_fc
 
 
-def run_notebook_code(args):
+def run_notebook_code(args, model_output):
+    # Read in the files that were saved in another file
+
+    # Load notebook outputs from the specified directory
+    nb_dir = args.notebook_task_inputs_path
+    masked_adata = ad.read_h5ad(str(nb_dir / "notebook_adata_masked.h5ad"))
+    with (nb_dir / "notebook_target_genes_to_save.json").open("r") as f:
+        target_genes_to_save = json.load(f)
+    with (nb_dir / "gene_map.json").open("r") as f:
+        gene_map = json.load(f)
+
+    
     # Read in and filter the DE results
     de_results = pd.read_csv(args.de_results_path)
 
@@ -60,9 +73,6 @@ def run_notebook_code(args):
         de_results["ensembl_id"] = de_results["gene"]
         de_results["names"] = de_results["gene"]
 
-    # run the code that is basically in the notebooks!
-    # load the data
-    masked_adata = ad.read_h5ad(args.masked_h5ad_path)
 
     # The original code is per model name. But here, we just have one model.
     predictions_dict = {}
@@ -227,33 +237,14 @@ def run_notebook_code(args):
     return pred_log_fc_dict, true_log_fc_dict, metrics_dict
 
 
-def run_new_code(args):
-    task = PerturbationExpressionPredictionTask(
-        min_de_genes=args.min_de_genes,
-        min_logfoldchange=args.min_logfoldchanges,
-        metric_type=args.metric_type,
-        standardized_mean_diff=args.min_standard_mean_deviation,
-    )
-
-    adata = ad.read_h5ad(args.new_h5ad_path, backed="r")
+def run_new_code(dataset, args, model_output):
     task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=adata.uns[f"de_results_{args.metric_type}"],
-        control_cells_ids=adata.uns["control_cells_ids"],
+        de_results=dataset.de_results,
+        var_index=dataset.adata.var.index,
+        masked_adata_obs=dataset.control_matched_adata.obs,
+        target_genes_to_save=dataset.target_genes_to_save,
     )
-
-    # Load prediction data
-    sample_id = np.load(args.sample_id_path)
-    pred = np.load(args.predictions_path)
-    target_genes = np.load(args.target_genes_path)
-
-    pred_df = pd.DataFrame(
-        {
-            "sample_id": sample_id,
-            "pred": list(pred),
-            "target_genes": list(target_genes),
-        }
-    )
-
+    task.run(model_output, task_input)    
     result = task._run_task(pred_df, task_input)
     # Run the metrics from the task
     metric_results = task._compute_metrics(task_input, result)
@@ -297,7 +288,7 @@ if __name__ == "__main__":
         help="Minimum number of DE genes for perturbation condition",
     )
     parser.add_argument(
-        "--new_h5ad_path",
+        "--new_dataset_path",
         type=str,
         default="datasets/replogle_k562_essential_perturbpredict.h5ad",
         help="Path to masked h5ad file",
@@ -334,42 +325,37 @@ if __name__ == "__main__":
         default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
         help="Path to target_genes .npy file",
     )
+    parser.add_argument("--notebook_task_inputs_path", type=str, default="notebook_task_inputs_20250814_144000")
 
     args = parser.parse_args()
 
     # Format the paths with the metric type
+    """
     args.masked_h5ad_path = args.masked_h5ad_path.format(metric_type=args.metric_type)
     args.predictions_path = args.predictions_path.format(metric_type=args.metric_type)
     args.sample_id_path = args.sample_id_path.format(metric_type=args.metric_type)
     args.target_genes_path = args.target_genes_path.format(metric_type=args.metric_type)
     args.de_results_path = args.de_results_path.format(metric_type=args.metric_type)
+    """
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
+    model_output: CellRepresentation = np.random.rand(
+        dataset.adata.shape[0], dataset.adata.shape[1]
+    )
+
+    new_result, new_metrics = run_new_code(dataset, args, model_output)
 
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
-        run_notebook_code(args)
+        run_notebook_code(args, model_output)
     )
-    """
-    with open("notebook_pred_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(notebook_pred_log_fc_dict), f)
-    with open("notebook_true_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(notebook_true_log_fc_dict), f)
-    with open("metrics_dict.json", "w") as f:
-        json.dump(metrics_dict, f)
-    """
-    new_result, new_metrics = run_new_code(args)
+
     new_metrics_dict = {}
     for metric in new_metrics:
         mapping = {}
         for ent in new_metrics[metric]:
             mapping[ent.params["condition"]] = ent.value
         new_metrics_dict[metric] = mapping
-    """with open("new_metrics_dict.json", "w") as f:
-        json.dump(new_metrics_dict, f)
-    # Similarly, save result.pred_log_fc_dict and result.true_log_fc_dict
-    with open("new_pred_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(new_result.pred_log_fc_dict), f)
-    with open("new_true_log_fc_dict.json", "w") as f:
-        json.dump(dict_numpy_to_list(new_result.true_log_fc_dict), f)
-    """
     assert len(notebook_pred_log_fc_dict) == len(new_result.pred_log_fc_dict)
     assert len(notebook_true_log_fc_dict) == len(new_result.true_log_fc_dict)
 

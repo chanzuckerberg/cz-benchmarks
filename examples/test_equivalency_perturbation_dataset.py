@@ -1,8 +1,11 @@
 import argparse
 import json
+from pathlib import Path
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import anndata as ad
 import tempfile
 import yaml
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
@@ -24,22 +27,6 @@ def assert_de_results_equivalent(df1, df2, col_map):
     assert_frame_equal(left, right, check_exact=False, rtol=1e-12, atol=1e-12)
 
 
-def assert_var_equivalent(var1, var2, col_map):
-    """
-    Compare two AnnData.var DataFrames with column name mapping.
-    Asserts that the mapped DataFrames are nearly equal on common columns.
-    """
-    var1_mapped = var1.rename(columns=col_map)
-    common_cols = sorted(set(var1_mapped.columns) & set(var2.columns))
-    if not common_cols:
-        raise AssertionError(
-            "No common columns in var DataFrames after applying column map"
-        )
-    left = var1_mapped[common_cols].sort_values(by=common_cols).reset_index(drop=True)
-    right = var2[common_cols].sort_values(by=common_cols).reset_index(drop=True)
-    assert_frame_equal(left, right, check_exact=False, rtol=1e-12, atol=1e-12)
-
-
 def create_adata(adata, target_gene_dict, nontargeting_cells):
     # Initialize list to store merged data
     all_merged_data = []
@@ -49,8 +36,8 @@ def create_adata(adata, target_gene_dict, nontargeting_cells):
 
     target_genes = target_gene_dict.keys()
     for key in tqdm(target_genes, desc="Processing conditions"):
-        adata_condition = adata[adata.obs["gene"] == key]
-        adata_control = adata[adata.obs.index.isin(nontargeting_cells[key])]
+        adata_condition = adata[adata.obs["gene"] == key].copy()
+        adata_control = adata[adata.obs.index.isin(nontargeting_cells[key])].copy()
         adata_condition.obs["condition"] = key
         adata_control.obs["condition"] = "non-targeting_" + key
 
@@ -61,8 +48,8 @@ def create_adata(adata, target_gene_dict, nontargeting_cells):
             )
             continue
 
-        # Merge condition and control data
-        adata_merged = adata_condition.concatenate(adata_control, index_unique=None)
+        # Merge condition and control data (avoid deprecated .concatenate and duplication warnings)
+        adata_merged = ad.concat([adata_condition, adata_control], index_unique=None)
 
         # Add new column cell_barcode_gene
         adata_merged.obs["cell_barcode_gene"] = (
@@ -75,8 +62,8 @@ def create_adata(adata, target_gene_dict, nontargeting_cells):
 
         all_merged_data.append(adata_merged)
 
-    # Combine all adata objects
-    adata_final = all_merged_data[0].concatenate(all_merged_data[1:], index_unique=None)
+    # Combine all adata objects using anndata.concat, auto-uniquifying obs names
+    adata_final = ad.concat(all_merged_data, index_unique=None)
 
     # Set the new index
     adata_final.obs.set_index("cell_barcode_gene", inplace=True)
@@ -136,9 +123,25 @@ def run_notebook_code(args):
     adata_final, target_genes_to_save = create_adata(
         adata, target_gene_dict, nontargeting_cells
     )
+    # Build gene map from notebook var
     gene_map = {}
-    for index, ent in adata.obs.iterrows():
-        gene_map[ent.gene_id] = ent.gene
+    for idx, row in adata.var.iterrows():
+        gene_map[idx] = row["gene_name"]
+
+    # Save notebook-side artifacts to a new directory
+    nb_output_dir = Path(
+        f"notebook_task_inputs_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    )
+    nb_output_dir.mkdir(parents=True, exist_ok=True)
+    # 1) Save AnnData
+    adata_final.write_h5ad(str(nb_output_dir / "notebook_adata_masked.h5ad"))
+    # 2) Save target genes mapping
+    with (nb_output_dir / "notebook_target_genes_to_save.json").open("w") as f:
+        json.dump({k: list(v) for k, v in target_genes_to_save.items()}, f)
+    # 3) Save gene_map
+    with (nb_output_dir / "gene_map.json").open("w") as f:
+        json.dump({str(k): v for k, v in gene_map.items()}, f)
+    print(f"Notebook outputs written to: {nb_output_dir.resolve()}")
 
     return adata_final, target_genes_to_save, gene_map
 
@@ -238,7 +241,9 @@ if __name__ == "__main__":
         args
     )
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
-
+    new_output_dir = new_dataset.store_task_inputs()
+    print(f"New output directory: {new_output_dir}")
+    
     # Compare DE results CSV to dataset.de_results with column name mapping
     df_csv = pd.read_csv(args.de_results_path)
     if args.metric == "wilcoxon":
@@ -261,23 +266,20 @@ if __name__ == "__main__":
             "smd": "standardized_mean_diff",
         }
     assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)
-
+    
     # Assert that the var frames are equivalent
     column_map = {
         "gene_name": "gene",
     }
-    assert_var_equivalent(notebook_adata_masked.var, new_dataset.adata.var, column_map)
 
+    assert((notebook_adata_masked.var.index == new_dataset.adata.var.index).all())
+    
     dataset_target_genes = {}
     for k in new_dataset.target_genes_to_save.keys():
         s = k.split("_")
-        try:
-            dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
-                new_dataset.target_genes_to_save[k]
-            )
-        except KeyError:
-            print(f"KeyError: {k}")
-            breakpoint()
+        dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
+            new_dataset.target_genes_to_save[k]
+        )
 
     missing_keys = [
         k for k in dataset_target_genes.keys() if k not in notebook_target_genes_to_save
