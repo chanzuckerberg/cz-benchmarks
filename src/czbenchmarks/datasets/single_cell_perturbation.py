@@ -229,7 +229,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             return adata_merged, target_genes_to_save
 
         target_gene_dict = self._sample_genes_to_mask(
-            percent_genes_to_mask=self.percent_genes_to_mask
+            percent_genes_to_mask=self.percent_genes_to_mask,
+            min_de_genes=self.min_de_genes,
         )
         target_genes = list(target_gene_dict.keys())
         total_conditions = len(target_genes)
