@@ -247,6 +247,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
         # FIXME MICHELLE filter de_results and control_cells_ids for only sampled conditions
         target_genes = list(target_gene_dict.keys())
+        target_genes = target_genes[:4]
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
