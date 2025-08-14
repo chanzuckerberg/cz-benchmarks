@@ -93,6 +93,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
+        min_de_genes: int = 5,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -109,6 +110,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
+            min_de_genes (int): Minimum number of differentially expressed genes
+                required to mask that condition. If not met, no genes are masked.
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
@@ -231,7 +234,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
         target_genes = list(target_gene_dict.keys())
         total_conditions = len(target_genes)
-        logger.info(f"Sampled {len(total_conditions)} conditions for masking")
+        logger.info(f"Sampled {total_conditions} conditions for masking")
 
         all_merged_data = []
         target_genes_to_save = {}
