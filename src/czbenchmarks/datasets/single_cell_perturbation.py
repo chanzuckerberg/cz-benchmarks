@@ -11,6 +11,7 @@ import logging
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if self.deg_test_name == "wilcoxon":
             filter &= (
                 de_results["logfoldchange"].abs() >= min_logfoldchange
-            )  # FIXME MICHELLE verify .abs() as usage is inconsistent
+            )
         elif self.deg_test_name == "t-test":
             filter &= de_results["standardized_mean_diff"].abs() >= min_smd
 
@@ -228,23 +229,27 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_gene_dict = self._sample_genes_to_mask(
             percent_genes_to_mask=self.percent_genes_to_mask
         )
-        target_genes = list(target_gene_dict.keys())[
-            :10
-        ]  # FIXME MICHELLE remove slice after debugging
+        target_genes = list(target_gene_dict.keys())
+        total_conditions = len(target_genes)
+        logger.info(f"Sampled {len(total_conditions)} conditions for masking")
 
-        results = [
-            _create_adata_for_condition(selected_condition, target_gene_dict)
-            for selected_condition in target_genes
-        ]
-
-        # Unpack results
         all_merged_data = []
         target_genes_to_save = {}
-        for result in results:
-            all_merged_data.append(result[0])
-            target_genes_to_save.update(result[1])
+
+        with tqdm(
+            total=total_conditions,
+            desc="Processing conditions",
+            unit="item"
+        ) as pbar:
+            for selected_condition in target_genes:
+                result = _create_adata_for_condition(selected_condition, target_gene_dict)
+                all_merged_data.append(result[0])
+                target_genes_to_save.update(result[1])
+                pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
+                pbar.update(1)
 
         # Combine all adata objects
+        logger.info(f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions.")
         adata_final = ad.concat(all_merged_data, index_unique=None)
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
