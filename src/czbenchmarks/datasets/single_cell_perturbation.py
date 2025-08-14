@@ -246,6 +246,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             min_logfoldchange=self.min_logfoldchange,
             min_smd=self.min_smd,
         )
+        # FIXME MICHELLE filter de_results and control_cells_ids for only sampled conditions
         target_genes = list(target_gene_dict.keys())
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
