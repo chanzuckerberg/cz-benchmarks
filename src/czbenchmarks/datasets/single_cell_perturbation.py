@@ -287,7 +287,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ValueError: If `condition_key` not found in `adata.obs`.
         """
         super().load_data()
-
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
                 f"Condition key '{self.condition_key}' not found in adata.obs"

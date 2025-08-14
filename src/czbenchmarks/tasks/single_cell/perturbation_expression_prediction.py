@@ -8,7 +8,6 @@ from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ..utils import binarize_values
 from ...constants import RANDOM_SEED
-from anndata import AnnData
 from scipy import sparse as sp_sparse
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,8 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
     de_results: pd.DataFrame
-    dataset_adata: AnnData
+    masked_adata_obs: pd.DataFrame
+    var_index: pd.Index
     target_genes_to_save: Dict[str, List[str]]
 
 
@@ -105,7 +105,7 @@ class PerturbationExpressionPredictionTask(Task):
             ]
 
         control_prefix = self.control_gene
-        condition_series = task_input.dataset_adata.obs["condition"].astype(str)
+        condition_series = task_input.masked_adata_obs["condition"].astype(str)
         condition_list = np.unique(
             condition_series[~condition_series.str.startswith(control_prefix)]
         )
@@ -113,10 +113,11 @@ class PerturbationExpressionPredictionTask(Task):
             condition_de_df = de_results[de_results["condition"] == condition]
             if len(condition_de_df) < self.min_de_genes:
                 continue
+            breakpoint()
             masked_genes = np.array(
                 task_input.target_genes_to_save[
-                    task_input.dataset_adata.obs.index[
-                        task_input.dataset_adata.obs["condition"] == condition
+                    task_input.masked_adata_obs.index[
+                        task_input.masked_adata_obs["condition"] == condition
                     ][0]
                 ]
             )
@@ -130,13 +131,13 @@ class PerturbationExpressionPredictionTask(Task):
             valid = ~np.isnan(true_log_fc)
             masked_genes = masked_genes[valid]
             true_log_fc = true_log_fc[valid]
-            col_indices = task_input.dataset_adata.var.index.get_indexer(masked_genes)
+            col_indices = task_input.var_index.get_indexer(masked_genes)
             condition_idx = np.where(
-                task_input.dataset_adata.obs["condition"] == condition
+                task_input.masked_adata_obs["condition"] == condition
             )[0]
 
             control_idx = np.where(
-                task_input.dataset_adata.obs["condition"]
+                task_input.masked_adata_obs["condition"]
                 == f"{control_prefix}_{condition}"
             )[0]
 
