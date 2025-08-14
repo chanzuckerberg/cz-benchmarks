@@ -112,6 +112,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t_test". Defaults to "wilcoxon".
+                Options are "wilcoxon" or "t_test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
             min_de_genes (int): Minimum number of differentially expressed genes
                 required to mask that condition. If not met, no genes are masked.
@@ -159,8 +160,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if self.deg_test_name == "wilcoxon":
             filter &= (
                 de_results["logfoldchange"].abs() >= min_logfoldchange
-            )
-        elif self.deg_test_name == "t-test":
+            )  # FIXME MICHELLE verify .abs() as usage is inconsistent
+        elif self.deg_test_name == "t_test":
             filter &= de_results["standardized_mean_diff"].abs() >= min_smd
 
         de_results = de_results[filter]
@@ -300,8 +301,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
 
         if self.deg_test_name not in ["wilcoxon", "t_test"]:
+        if self.deg_test_name not in ["wilcoxon", "t_test"]:
             raise ValueError(
                 f"Differential expression test name '{self.deg_test_name}' not supported. "
+                "Options are 'wilcoxon' or 't_test'."
                 "Options are 'wilcoxon' or 't_test'."
             )
 
