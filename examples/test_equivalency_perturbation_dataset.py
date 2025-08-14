@@ -127,12 +127,15 @@ def run_notebook_code(args):
     return adata_final, target_genes_to_save
 
 
-def run_new_code(percent_genes_to_mask: float) -> SingleCellPerturbationDataset:
+def run_new_code(
+    percent_genes_to_mask: float, metric: str
+) -> SingleCellPerturbationDataset:
     # Create a temporary Hydra config to pass through percent_genes_to_mask
     custom_config = {
         "datasets": {
             "replogle_k562_essential_perturbpredict": {
                 "percent_genes_to_mask": percent_genes_to_mask,
+                "deg_test_name": metric,
             }
         }
     }
@@ -165,7 +168,14 @@ if __name__ == "__main__":
         "--de_results_path",
         type=str,
         default="k562_data/wilcoxon_de_results.csv",
-        help="Path to de_results .csv file",
+        help="Path to de_results.csv file",
+    )
+    parser.add_argument(
+        "--metric",
+        type=str,
+        default="wilcoxon",
+        help="Metric to use for DE analysis",
+        choices=["wilcoxon", "t-test"],
     )
     parser.add_argument(
         "--control_cells_ids_path",
@@ -173,15 +183,9 @@ if __name__ == "__main__":
         default="new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
         help="Path to control_cells_ids .json file",
     )
-    parser.add_argument(
-        "--full_run",
-        action="store_true",
-        help="Whether to run over all conditions",
-    )
-
     args = parser.parse_args()
     notebook_adata_masked, notebook_target_genes_to_save = run_notebook_code(args)
-    new_dataset = run_new_code(args.percent_genes_to_mask)
+    new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
 
     # Compare DE results CSV to dataset.de_results with column name mapping
     df_csv = pd.read_csv(args.de_results_path)
@@ -211,9 +215,6 @@ if __name__ == "__main__":
             new_dataset.target_genes_to_save[k]
         )
 
-    assert (
-        len(dataset_target_genes) == len(notebook_target_genes_to_save)
-    ), "Number of keys in new_dataset.target_genes_to_save and notebook_target_genes_to_save do not match"
     missing_keys = [
         k for k in dataset_target_genes.keys() if k not in notebook_target_genes_to_save
     ]

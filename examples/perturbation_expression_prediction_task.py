@@ -81,7 +81,8 @@ if __name__ == "__main__":
 
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=dataset.de_results,
-        dataset_adata=dataset.adata,
+        var_index=dataset.adata.var.index,
+        masked_adata_obs=dataset.control_matched_adata.obs,
         target_genes_to_save=dataset.target_genes_to_save,
     )
     task.run(model_output, task_input)
