@@ -44,7 +44,7 @@ Its core components include:
     The registry provides a centralized way to compute metrics (`ADJUSTED_RAND_INDEX`, `MEAN_SQUARED_ERROR`, etc.). All tasks use this registry to produce a standardized list of `MetricResult` objects.    
 
 - **Configuration Management**:  
-    Uses Hydra and OmegaConf to dynamically compose configurations for datasets.
+    Uses Hydra to dynamically compose configurations for datasets.
 
 
 Class Diagrams

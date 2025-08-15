@@ -94,14 +94,6 @@ These errors occur when calling `task.run()` and are often related to mismatches
 
     - **Solution**: This task is specifically for evaluating cross-species alignment and requires inputs from at least two different organisms.
 
-  - **Task**: `PerturbationTask`
-
-  - **Error**: `ValueError: Perturbation {gene_pert} is not available...`
-
-    - **Cause**: The gene perturbation you are trying to evaluate is not present in the ground truth data stored in `dataset.perturbation_truth`.
-
-    - **Solution**: Ensure the perturbations you are predicting have corresponding ground truth data in the test split of your dataset.
-
 
 ## Environment and Dependency Issues
 
