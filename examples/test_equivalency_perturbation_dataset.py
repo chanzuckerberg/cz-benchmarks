@@ -8,6 +8,7 @@ import scanpy as sc
 import anndata as ad
 import tempfile
 import yaml
+import os
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.utils import load_dataset
@@ -27,7 +28,7 @@ def assert_de_results_equivalent(df1, df2, col_map):
     assert_frame_equal(left, right, check_exact=False, rtol=1e-12, atol=1e-12)
 
 
-def create_adata(adata, target_gene_dict, nontargeting_cells):
+def create_adata(adata, target_gene_dict, nontargeting_cells, condition_col):
     # Initialize list to store merged data
     all_merged_data = []
 
@@ -36,7 +37,7 @@ def create_adata(adata, target_gene_dict, nontargeting_cells):
 
     target_genes = target_gene_dict.keys()
     for key in tqdm(target_genes, desc="Processing conditions"):
-        adata_condition = adata[adata.obs["gene"] == key].copy()
+        adata_condition = adata[adata.obs[condition_col] == key].copy()
         adata_control = adata[adata.obs.index.isin(nontargeting_cells[key])].copy()
         adata_condition.obs["condition"] = key
         adata_control.obs["condition"] = "non-targeting_" + key
@@ -121,7 +122,7 @@ def run_notebook_code(args):
     with open(args.control_cells_ids_path, "r") as f:
         nontargeting_cells = json.load(f)
     adata_final, target_genes_to_save = create_adata(
-        adata, target_gene_dict, nontargeting_cells
+        adata, target_gene_dict, nontargeting_cells, condition_col="condition"
     )
     # Build gene map from notebook var
     gene_map = {}
@@ -180,13 +181,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default="new_data/K562_essential_raw_singlecell_01.h5ad",
+        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
         help="Path to masked h5ad file",
     )
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="k562_data/wilcoxon_de_results.csv",
+        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results.csv file",
     )
 
@@ -223,10 +224,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
+        default="replogle2022/K562/zero_shot_benchmark/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
         help="Path to control_cells_ids .json file",
     )
     args = parser.parse_args()
+
+
     # Normalize metric aliases (accepts t_test or t-test, but preserve t_test for dataset)
     metric_normalized = args.metric.strip().lower().replace("-", "_")
     if metric_normalized in {"t_test", "ttest"}:
@@ -237,6 +240,8 @@ if __name__ == "__main__":
         raise ValueError(
             f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
         )
+
+    args.de_results_path = args.de_results_path.format(metric_type=args.metric)
     notebook_adata_masked, notebook_target_genes_to_save, gene_map = run_notebook_code(
         args
     )
