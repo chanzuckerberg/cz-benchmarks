@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 import pandas as pd
 import pytest
 
@@ -19,7 +18,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
+            control_name="ctrl",
         )
 
     def valid_dataset_file(self, tmp_path) -> Path:
@@ -28,46 +27,42 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["condition", "split"],
+            obs_columns=["condition"],
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
             "ctrl",
             "ctrl",
-            "test1+ctrl",
-            "test1+ctrl",
-            "test2+ctrl",
-            "test2+ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
         ]
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
-    def perturbation_missing_split_column_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset missing the split column."""
-        file_path = tmp_path / "perturbation_missing_split.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=6, n_genes=3, obs_columns=["condition"], organism=Organism.HUMAN
+        # Set indices so that splitting on '_' and taking token [1] yields the condition
+        adata.obs_names = [
+            "ctrl_test1_a",  # control cell 1
+            "ctrl_test2_b",  # control cell 2
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        # Provide matched control cell IDs per condition using the two control cells above
+        adata.uns["control_cells_ids"] = {
+            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+        }
+        # Provide sufficient DE results to pass internal filtering and sampling
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
         )
-        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
-    def perturbation_invalid_split_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset with invalid split values."""
-        file_path = tmp_path / "perturbation_invalid_split.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=6,
-            n_genes=3,
-            obs_columns=["condition", "split"],
-            organism=Organism.HUMAN,
-        )
-        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
-        adata.obs["split"] = ["BAD", "train", "test", "test", "test", "test"]
         adata.write_h5ad(file_path)
 
         return file_path
@@ -79,10 +74,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["split"],
+            obs_columns=[],
             organism=Organism.HUMAN,
         )
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
         adata.write_h5ad(file_path)
 
         return file_path
@@ -94,7 +88,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         adata = create_dummy_anndata(
             n_cells=6,
             n_genes=3,
-            obs_columns=["condition", "split"],
+            obs_columns=["condition"],
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
@@ -105,33 +99,21 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
             "test2",
         ]
-        adata.obs["split"] = ["train", "train", "test", "test", "test", "test"]
-        adata.write_h5ad(file_path)
-
-        return file_path
-
-    @pytest.fixture
-    def perturbation_valid_conditions_h5ad(self, tmp_path) -> Path:
-        """Creates a PerturbationSingleCellDataset with all valid condition formats."""
-        file_path = tmp_path / "perturbation_valid.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=9,
-            n_genes=3,
-            obs_columns=["condition", "split"],
-            organism=Organism.HUMAN,
+        # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
+        adata.uns["control_cells_ids"] = {
+            "test1": ["cell_0", "cell_1"],
+            "test2": ["cell_0", "cell_1"],
+        }
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
         )
-        adata.obs["condition"] = [
-            "ctrl",
-            "ctrl",
-            "ENSG00000123456+ctrl",  # Single gene perturbation
-            "ENSG00000123456+ctrl",
-            "ENSG00000123456+ENSG00000789012",  # Combinatorial perturbation
-            "ENSG00000123456+ENSG00000789012",
-            "ENSG00000111111+ctrl",
-            "ENSG00000111111+ctrl",
-            "ctrl",
-        ]
-        adata.obs["split"] = ["train"] * 3 + ["test"] * 6
         adata.write_h5ad(file_path)
 
         return file_path
@@ -141,10 +123,18 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         valid_dataset.load_data()
 
-        truth = valid_dataset.perturbation_truth
-        assert "test1+ctrl" in truth
-        assert "test2+ctrl" in truth
-        assert valid_dataset.adata.shape == (2, 3)
+        # After loading, data should be created for each perturbation with matched controls
+        # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
+        assert valid_dataset.control_matched_adata.shape == (8, 3)
+        # Target genes should be stored per cell (for each unique cell index)
+        assert hasattr(valid_dataset, "target_genes_to_save")
+        unique_obs_count = len(
+            set(valid_dataset.control_matched_adata.obs.index.tolist())
+        )
+        assert len(valid_dataset.target_genes_to_save) == unique_obs_count
+        # Each cell should have 5 sampled genes (50% of 10 per condition)
+        sampled_lengths = {len(v) for v in valid_dataset.target_genes_to_save.values()}
+        assert sampled_lengths == {5}
 
     def test_perturbation_dataset_load_data_missing_condition_key(
         self, perturbation_missing_condition_column_h5ad
@@ -154,46 +144,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
         )
 
         with pytest.raises(
             ValueError, match="Condition key 'condition' not found in adata.obs"
         ):
             invalid_dataset.load_data()
-
-    def test_perturbation_dataset_load_data_missing_split_key(
-        self, perturbation_missing_split_column_h5ad
-    ):
-        """Tests that loading data fails when the split column is missing."""
-        invalid_dataset = SingleCellPerturbationDataset(
-            perturbation_missing_split_column_h5ad,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            split_key="split",
-        )
-
-        with pytest.raises(
-            ValueError, match="Split key 'split' not found in adata.obs"
-        ):
-            invalid_dataset.load_data()
-
-    def test_perturbation_dataset_validate_invalid_split(
-        self, perturbation_invalid_split_h5ad
-    ):
-        """Test that validation fails with invalid split values."""
-        dataset = SingleCellPerturbationDataset(
-            perturbation_invalid_split_h5ad,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            split_key="split",
-        )
-        dataset.load_data()
-
-        with pytest.raises(
-            ValueError, match=re.escape("Invalid split value(s): {'BAD'}")
-        ):
-            dataset.validate()
 
     def test_perturbation_dataset_validate_invalid_condition(
         self,
@@ -204,34 +160,29 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            split_key="split",
         )
         dataset.load_data()
-
         with pytest.raises(ValueError, match=""):
             dataset.validate()
 
     def test_perturbation_dataset_store_task_inputs(
         self, tmp_path, valid_dataset: SingleCellPerturbationDataset
     ):
-        """Tests that the store_task_inputs method writes labels to a file."""
+        """Tests that the store_task_inputs method writes expected files."""
         valid_dataset.load_data()
 
-        valid_dataset.store_task_inputs()
-        # TODO: Assert that multiple files are created for each condition. For now, we will just check one condition
-        output_file = (
-            tmp_path
-            / "dummy_perturbation_task_inputs"
-            / "single_cell_perturbation"
-            / "perturbation_truths"
-            / "test1+ctrl.json"
+        out_dir = valid_dataset.store_task_inputs()
+        control_file = out_dir / "control_cells_ids.json"
+        target_genes_file = out_dir / "target_genes_to_save.json"
+        de_results_file = out_dir / "de_results.json"
+
+        assert control_file.exists()
+        assert target_genes_file.exists()
+        assert de_results_file.exists()
+
+        # Validate that DE results JSON is readable and has expected columns
+        de_df = pd.read_json(de_results_file)
+        assert not de_df.empty
+        assert set(["condition", "gene", "pval_adj", "logfoldchange"]).issubset(
+            set(de_df.columns)
         )
-        assert output_file.exists()
-        truth_df = pd.read_json(output_file)
-        assert not truth_df.empty
-        assert ["cell_2", "cell_3"] == truth_df.index.tolist()
-        assert [
-            "ENSG00000000000",
-            "ENSG00000000001",
-            "ENSG00000000002",
-        ] == truth_df.columns.tolist()
