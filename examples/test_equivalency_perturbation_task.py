@@ -14,6 +14,12 @@ from czbenchmarks.tasks.single_cell import (
 )
 import json
 import os
+from pathlib import Path
+from czbenchmarks.datasets import (
+    SingleCellPerturbationDataset,
+    load_dataset,
+)
+from czbenchmarks.tasks.types import CellRepresentation
 
 
 def dict_numpy_to_list(d):
@@ -238,13 +244,15 @@ def run_notebook_code(args, model_output):
 
 
 def run_new_code(dataset, args, model_output):
+    task = PerturbationExpressionPredictionTask()
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=dataset.de_results,
         var_index=dataset.adata.var.index,
         masked_adata_obs=dataset.control_matched_adata.obs,
         target_genes_to_save=dataset.target_genes_to_save,
     )
-    task.run(model_output, task_input)    
+    # Fix the undefined pred_df variable - we need to create it from model_output
+    pred_df = pd.DataFrame(model_output, index=dataset.adata.obs.index, columns=dataset.adata.var.index)
     result = task._run_task(pred_df, task_input)
     # Run the metrics from the task
     metric_results = task._compute_metrics(task_input, result)
@@ -325,7 +333,7 @@ if __name__ == "__main__":
         default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
         help="Path to target_genes .npy file",
     )
-    parser.add_argument("--notebook_task_inputs_path", type=str, default="notebook_task_inputs_20250814_144000")
+    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250814_144000"))
 
     args = parser.parse_args()
 
@@ -361,14 +369,14 @@ if __name__ == "__main__":
 
     for k in notebook_true_log_fc_dict:
         assert (
-            np.sort(new_result.true_log_fc_dict[k])
-            == np.sort(notebook_true_log_fc_dict[k][0])
-        ).all()
+            np.array_equal(np.sort(new_result.true_log_fc_dict[k]), 
+                          np.sort(notebook_true_log_fc_dict[k][0]))
+        )
     for k in notebook_pred_log_fc_dict:
         assert (
-            np.sort(new_result.pred_log_fc_dict[k])
-            == np.sort(notebook_pred_log_fc_dict[k][0])
-        ).all()
+            np.array_equal(np.sort(new_result.pred_log_fc_dict[k]), 
+                          np.sort(notebook_pred_log_fc_dict[k][0]))
+        )
 
     assert new_metrics_dict.keys() == metrics_dict.keys()
     for metric in new_metrics_dict:
