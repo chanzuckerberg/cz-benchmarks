@@ -96,7 +96,7 @@ def sample_genes(
 def run_notebook_code(args):
     # These are the same numbers as in single_cell_perturbation.py
 
-    adata = sc.read_h5ad(args.h5ad_data_path)
+    adata = ad.read_h5ad(args.h5ad_data_path, backed="r")
     df = pd.read_csv(args.de_results_path)
     if args.metric == "wilcoxon":
         df = df[np.abs(df["logfoldchanges"]) >= args.min_logfoldchange]
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
+        default="/home/pbinder/cz-benchmarks/k562_data/wilcoxon_de_results.csv",
         help="Path to de_results.csv file",
     )
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="replogle2022/K562/zero_shot_benchmark/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
+        default="/home/pbinder/cz-benchmarks/new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
         help="Path to control_cells_ids .json file",
     )
     args = parser.parse_args()
