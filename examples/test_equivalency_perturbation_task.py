@@ -12,12 +12,13 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+from collections import defaultdict
+
 import json
-import os
 from pathlib import Path
+from czbenchmarks.datasets.single_cell_perturbation import Organism
 from czbenchmarks.datasets import (
     SingleCellPerturbationDataset,
-    load_dataset,
 )
 from czbenchmarks.tasks.types import CellRepresentation
 
@@ -50,12 +51,13 @@ def compute_log_fold_change(probs1, probs2, epsilon=1e-10, probs=True):
     return log_fc
 
 
-def run_notebook_code(args, model_output):
+def run_notebook_code(args):
     # Read in the files that were saved in another file
 
     # Load notebook outputs from the specified directory
     nb_dir = args.notebook_task_inputs_path
-    masked_adata = ad.read_h5ad(str(nb_dir / "notebook_adata_masked.h5ad"))
+    masked_notebook_adata = ad.read_h5ad(nb_dir / "notebook_adata_masked.h5ad")
+
     with (nb_dir / "notebook_target_genes_to_save.json").open("r") as f:
         target_genes_to_save = json.load(f)
     with (nb_dir / "gene_map.json").open("r") as f:
@@ -243,21 +245,69 @@ def run_notebook_code(args, model_output):
     return pred_log_fc_dict, true_log_fc_dict, metrics_dict
 
 
-def run_new_code(dataset, args, model_output):
+def run_new_code(model_output, args):
+    dataset = SingleCellPerturbationDataset(
+        path=args.new_saved_dir,          
+        organism=Organism.HUMAN  )
+    dataset.load_from_task_inputs(args.new_saved_dir)
+
     task = PerturbationExpressionPredictionTask()
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=dataset.de_results,
-        var_index=dataset.adata.var.index,
+        var_index=dataset.control_matched_adata.var.index,
         masked_adata_obs=dataset.control_matched_adata.obs,
         target_genes_to_save=dataset.target_genes_to_save,
     )
-    # Fix the undefined pred_df variable - we need to create it from model_output
-    pred_df = pd.DataFrame(model_output, index=dataset.adata.obs.index, columns=dataset.adata.var.index)
-    result = task._run_task(pred_df, task_input)
+    result = task.run(model_output, task_input)
     # Run the metrics from the task
     metric_results = task._compute_metrics(task_input, result)
 
     return result, metric_results
+def calculate_inds(positions, values):
+    pos_map = defaultdict(list)
+    for i, v in enumerate(positions):
+        pos_map[v].append(i)
+    
+    # Lookups
+    positions_per_id = {sid: np.array(pos_map.get(sid, ()), dtype=int) for sid in positions}
+    flat_positions = np.concatenate([positions_per_id[sid] for sid in values])
+    return flat_positions
+
+def generate_model_predictions(masked_notebook_adata, target_genes_path, sample_id_path, predictions_path):
+    """
+    Generate a model_output matrix for the given masked_notebook_adata using the provided
+    target_genes, sample_id, and predictions files.
+
+    Returns:
+        model_output: np.ndarray of shape (n_cells, n_genes)
+    """
+    target_genes = np.load(target_genes_path)
+    sample_id = np.load(sample_id_path)
+    pred = np.load(predictions_path)
+    df = pd.DataFrame(
+        {
+            "samples": [s.split("_")[0] for s in sample_id],
+            "pred": list(pred),
+            "target_genes": list(target_genes),
+        }
+    )
+    df = df[df.target_genes != "A"]
+    model_output: CellRepresentation = np.random.rand(
+        masked_notebook_adata.shape[0], masked_notebook_adata.shape[1]
+    )
+    obs_index = masked_notebook_adata.obs.index
+
+    row_index = [i.split("_")[0] for i in obs_index]
+    col_index = list(masked_notebook_adata.var.index)
+
+    x_positions = calculate_inds(row_index, df.samples)
+    y_positions = calculate_inds(col_index, df.target_genes)
+
+    df["x"] = x_positions
+    df["y"] = y_positions
+    for index, row in df.iterrows():
+        model_output[row.x, row.y] = row.pred
+    return model_output
 
 
 if __name__ == "__main__":
@@ -296,68 +346,49 @@ if __name__ == "__main__":
         help="Minimum number of DE genes for perturbation condition",
     )
     parser.add_argument(
-        "--new_dataset_path",
-        type=str,
-        default="datasets/replogle_k562_essential_perturbpredict.h5ad",
-        help="Path to masked h5ad file",
-    )
-
-    parser.add_argument(
         "--de_results_path",
         type=str,
-        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
+        default="/home/pbinder/cz-benchmarks/k562_data/wilcoxon_de_results.csv",
         help="Path to de_results .csv file",
     )
 
     parser.add_argument(
-        "--masked_h5ad_path",
-        type=str,
-        default="replogle2022/K562/zero_shot_benchmark/{metric_type}/zero_shot_0.5_de_genes_masked.h5ad",
-        help="Path to masked h5ad file",
-    )
-    parser.add_argument(
         "--predictions_path",
         type=str,
-        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/predictions_merged.npy",
+        default="/home/pbinder/cz-benchmarks/k562_data/predictions_merged.npy",
         help="Path to predictions .npy file",
     )
     parser.add_argument(
         "--sample_id_path",
         type=str,
-        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/sample_id_merged.npy",
+        default="/home/pbinder/cz-benchmarks/k562_data/sample_id_merged.npy",
         help="Path to sample_id .npy file",
     )
     parser.add_argument(
         "--target_genes_path",
         type=str,
-        default="replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
+        default="/home/pbinder/cz-benchmarks/k562_data/target_genes_merged.npy",
         help="Path to target_genes .npy file",
     )
-    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250814_144000"))
+    parser.add_argument(
+        "--initial_data_set_path",
+        type=str,
+        default="/home/pbinder/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
+        help="Path to target_genes .npy file",
+    )
+
+    parser.add_argument("--new_saved_dir", type=str,
+     default="/home/pbinder/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
+    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250815_120737"))
 
     args = parser.parse_args()
 
-    # Format the paths with the metric type
-    """
-    args.masked_h5ad_path = args.masked_h5ad_path.format(metric_type=args.metric_type)
-    args.predictions_path = args.predictions_path.format(metric_type=args.metric_type)
-    args.sample_id_path = args.sample_id_path.format(metric_type=args.metric_type)
-    args.target_genes_path = args.target_genes_path.format(metric_type=args.metric_type)
-    args.de_results_path = args.de_results_path.format(metric_type=args.metric_type)
-    """
-    dataset: SingleCellPerturbationDataset = load_dataset(
-        "replogle_k562_essential_perturbpredict"
-    )
-    model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[1]
-    )
-
-    new_result, new_metrics = run_new_code(dataset, args, model_output)
-
+    initial_datast = ad.read_h5ad(args.initial_data_set_path, backed = "r")
+    model_output = generate_model_predictions(initial_datast, args.target_genes_path, args.sample_id_path, args.predictions_path)
+    new_result, new_metrics = run_new_code(model_output, args)
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
-        run_notebook_code(args, model_output)
+        run_notebook_code(args)
     )
-
     new_metrics_dict = {}
     for metric in new_metrics:
         mapping = {}

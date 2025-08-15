@@ -8,7 +8,6 @@ import scipy.sparse as sparse
 import pandas as pd
 import anndata as ad
 import logging
-from joblib import Parallel, delayed
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
@@ -202,7 +201,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             adata_control = adata[
                 adata.obs.index.isin(control_cells_ids[selected_condition])
             ].copy()
-
             if len(adata_condition) != len(adata_control):
                 logger.warning(
                     f"Condition and control data for {selected_condition} have different lengths."
@@ -249,13 +247,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
         # FIXME MICHELLE filter de_results and control_cells_ids for only sampled conditions
         target_genes = list(target_gene_dict.keys())
-        target_genes = target_genes[:4]
+        target_genes = target_genes
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
         all_merged_data = []
         target_genes_to_save = {}
-
         with tqdm(
             total=total_conditions,
             desc="Processing conditions",
