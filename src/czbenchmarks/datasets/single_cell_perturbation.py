@@ -301,10 +301,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
 
         if self.deg_test_name not in ["wilcoxon", "t_test"]:
-        if self.deg_test_name not in ["wilcoxon", "t_test"]:
             raise ValueError(
                 f"Differential expression test name '{self.deg_test_name}' not supported. "
-                "Options are 'wilcoxon' or 't_test'."
                 "Options are 'wilcoxon' or 't_test'."
             )
 
