@@ -4,7 +4,6 @@ from pathlib import Path
 from datetime import datetime
 import numpy as np
 import pandas as pd
-import scanpy as sc
 import anndata as ad
 import tempfile
 import yaml
@@ -28,7 +27,7 @@ def assert_de_results_equivalent(df1, df2, col_map):
     assert_frame_equal(left, right, check_exact=False, rtol=1e-12, atol=1e-12)
 
 
-def create_adata(adata, target_gene_dict, nontargeting_cells, condition_col):
+def create_adata(adata, target_gene_dict, nontargeting_cells):
     # Initialize list to store merged data
     all_merged_data = []
 
@@ -37,7 +36,7 @@ def create_adata(adata, target_gene_dict, nontargeting_cells, condition_col):
 
     target_genes = target_gene_dict.keys()
     for key in tqdm(target_genes, desc="Processing conditions"):
-        adata_condition = adata[adata.obs[condition_col] == key].copy()
+        adata_condition = adata[adata.obs["gene"] == key].copy()
         adata_control = adata[adata.obs.index.isin(nontargeting_cells[key])].copy()
         adata_condition.obs["condition"] = key
         adata_control.obs["condition"] = "non-targeting_" + key
@@ -96,26 +95,9 @@ def sample_genes(
 def run_notebook_code(args):
     # These are the same numbers as in single_cell_perturbation.py
 
-    adata = ad.read_h5ad(args.h5ad_data_path, backed="r")
+    adata = ad.read_h5ad(args.h5ad_data_path)
     df = pd.read_csv(args.de_results_path)
     if args.metric == "wilcoxon":
-        df = df[np.abs(df["logfoldchanges"]) >= args.min_logfoldchange]
-        df = df[df["pvals_adj"] < args.pval_threshold]
-        target_gene_dict = sample_genes(
-            df,
-            args.percent_genes_to_mask,
-            args.min_de_genes,
-            "target_gene",
-            "ensembl_id",
-        )
-
-    elif args.metric == "t_test":
-        df = df[np.abs(df["smd"]) >= args.min_smd]
-        df = df[df["pval_adj"] < args.pval_threshold]
-        target_gene_dict = sample_genes(
-            df, args.percent_genes_to_mask, args.min_de_genes, "condition", "gene"
-        )
-
         df = df[np.abs(df["logfoldchanges"]) >= args.min_logfoldchange]
         df = df[df["pvals_adj"] < args.pval_threshold]
         target_gene_dict = sample_genes(
@@ -139,12 +121,12 @@ def run_notebook_code(args):
     with open(args.control_cells_ids_path, "r") as f:
         nontargeting_cells = json.load(f)
     adata_final, target_genes_to_save = create_adata(
-        adata, target_gene_dict, nontargeting_cells, condition_col="condition"
+        adata, target_gene_dict, nontargeting_cells
     )
     gene_map = {}
     for index, ent in adata.obs.iterrows():
         gene_map[ent.gene_id] = ent.gene
-
+    
     return adata_final, target_genes_to_save, gene_map
 
 
@@ -182,7 +164,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
+        default="/home/pbinder/cz-benchmarks/new_data/K562_essential_raw_singlecell_01.h5ad",
         help="Path to masked h5ad file",
     )
     parser.add_argument(
@@ -239,34 +221,17 @@ if __name__ == "__main__":
         raise ValueError(
             f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
         )
+
     notebook_adata_masked, notebook_target_genes_to_save, gene_map = run_notebook_code(
         args
     )
+
+
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
     new_output_dir = new_dataset.store_task_inputs()
-    print(f"New output directory: {new_output_dir}")
-    
+
     # Compare DE results CSV to dataset.de_results with column name mapping
     df_csv = pd.read_csv(args.de_results_path)
-    if args.metric == "wilcoxon":
-        col_map = {
-            "names": "gene_id",
-            "target_gene": "condition_name",
-            "scores": "score",
-            "logfoldchanges": "logfoldchange",
-            "pvals": "pval",
-            "pvals_adj": "pval_adj",
-        }
-    elif args.metric == "t_test":
-        col_map = {
-            "gene": "gene_id",
-            "condition": "condition_name",
-            "score": "score",
-            "logfoldchange": "logfoldchange",
-            "pval": "pval",
-            "pval_adj": "pval_adj",
-            "smd": "standardized_mean_diff",
-        }
     if args.metric == "wilcoxon":
         col_map = {
             "names": "gene_id",
@@ -348,3 +313,15 @@ if __name__ == "__main__":
 
         assert new_condition_list == list(nb_condition)
         assert new_control_list == list(nb_control)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    nb_dir = Path(f"notebook_task_inputs_{timestamp}")
+    # Save the notebook_adata_masked, notebook_target_genes_to_save, and gene_map to disk
+    
+    os.makedirs(nb_dir, exist_ok=True)
+    notebook_adata_masked.write(nb_dir / "notebook_adata_masked.h5ad")
+    with (nb_dir / "notebook_target_genes_to_save.json").open("w") as f:
+        json.dump(notebook_target_genes_to_save, f)
+    with (nb_dir / "gene_map.json").open("w") as f:
+        json.dump(gene_map, f)
+    print(f"Notebook task inputs saved to: {nb_dir}")
+    print(f"New output directory: {new_output_dir}")
