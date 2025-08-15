@@ -92,9 +92,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
-        min_de_genes: int = 5,
-        pval_threshold: float = 1e-4,
-        min_logfoldchange: float = 1.0,
+        min_de_genes: int = 5, # FIXME MICHELLE: Jasleen suggested 1
+        pval_threshold: float = 1e-2, # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
+        min_logfoldchange: float = 1.0, # FIXME MICHELLE: should this be changed to >= 0?
         min_smd: float = 0.55,
         task_inputs_dir: Optional[Path] = None,
     ):
@@ -129,50 +129,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
         self.min_smd = min_smd
-
-    def _sample_genes_to_mask(
-        self,
-        percent_genes_to_mask: float = 0.5,
-        min_de_genes: int = 5,
-        pval_threshold: float = 1e-4,
-        min_logfoldchange: float = 1.0,
-        min_smd: float = 0.55,
-    ) -> Dict[str, List[str]]:
-        """
-        Sample genes to mask from the differential expression results.
-
-        Args:
-            percent_genes_to_mask (float): Percentage of genes to mask.
-            min_de_genes (int): Minimum number of differentially expressed genes
-                required to mask that condition. If not met, no genes are masked.
-            pval_threshold (float): P-value threshold for differential expression.
-            min_logfoldchange (float): Minimum log-fold change for differential expression.
-            min_smd (float): Minimum standardized mean difference for differential expression.
-        Returns:
-            Dict[str, List[str]]: Dictionary of target genes and their sampled genes.
-        """
-        de_results = self.de_results.copy()
-
-        filter = de_results["pval_adj"] < pval_threshold
-
-        if self.deg_test_name == "wilcoxon":
-            filter &= (
-                de_results["logfoldchange"].abs() >= min_logfoldchange
-            )
-        elif self.deg_test_name == "t-test":
-            filter &= de_results["standardized_mean_diff"].abs() >= min_smd
-
-        de_results = de_results[filter]
-
-        target_gene_dict = sample_de_genes(
-            de_results=de_results,
-            percent_genes_to_mask=percent_genes_to_mask,
-            min_de_genes=min_de_genes,
-            condition_col=self.condition_key,
-            gene_col=self.de_gene_col,
-        )
-
-        return target_gene_dict
 
     def _create_adata(self) -> Tuple[ad.AnnData, dict]:
         """
@@ -238,14 +194,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
             return adata_merged, target_genes_to_save
 
-        target_gene_dict = self._sample_genes_to_mask(
+        target_gene_dict = sample_de_genes(
+            de_results=self.de_results,
             percent_genes_to_mask=self.percent_genes_to_mask,
             min_de_genes=self.min_de_genes,
-            pval_threshold=self.pval_threshold,
-            min_logfoldchange=self.min_logfoldchange,
-            min_smd=self.min_smd,
+            condition_col=self.condition_key,
+            gene_col=self.de_gene_col,
         )
-        # FIXME MICHELLE filter de_results and control_cells_ids for only sampled conditions
+
         target_genes = list(target_gene_dict.keys())
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
@@ -308,12 +264,26 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 raise ValueError(f"Key '{key}' not found in adata.uns")
 
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
+
         # Loading from h5ad file converts lists to numpy arrays
         for key in self.control_cells_ids.keys():
             self.control_cells_ids[key] = list(self.control_cells_ids[key])
-        self.de_results = pd.DataFrame(
+
+        # FIXME MICHELLE: add option to load de_results from file, 
+        # add logging for filtering of de_results, move to separate method
+        de_results = pd.DataFrame(
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
+        filter = de_results["pval_adj"] <= self.pval_threshold
+
+        if self.deg_test_name == "wilcoxon":
+            filter &= (
+                de_results["logfoldchange"].abs() >= self.min_logfoldchange
+            )
+        elif self.deg_test_name == "t-test":
+            filter &= de_results["standardized_mean_diff"].abs() >= self.min_smd
+
+        self.de_results = de_results[filter]
 
         logger.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
         adata_final, target_genes_to_save = self._create_adata()
