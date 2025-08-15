@@ -17,16 +17,36 @@ Each metric is registered with:
 - Tags categorizing the metric.
 """
 
+import numpy as np
 from scib_metrics import silhouette_batch, silhouette_label
 from sklearn.metrics import (
+    accuracy_score,
     adjusted_rand_score,
     normalized_mutual_info_score,
     mean_squared_error,
+    precision_score,
+    recall_score,
+    f1_score,
 )
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 
 from .types import MetricRegistry, MetricType
+
+
+def spearman_correlation(a, b):
+    """Wrapper for spearmanr that returns only the correlation coefficient."""
+    result = spearmanr(a, b)
+    # Handle both old and new scipy versions
+    if hasattr(result, "correlation"):
+        value = result.correlation
+        return 0 if np.isnan(value) else value
+    elif hasattr(result, "statistic"):
+        value = result.statistic
+        return 0 if np.isnan(value) else value
+    else:
+        # Fallback for very old versions that return (correlation, pvalue)
+        return result[0]
 
 
 # Create the global metric registry
@@ -144,5 +164,45 @@ metrics_registry.register(
     func=mean_fold_metric,
     required_args={"results_df"},
     default_params={"metric": "auroc", "classifier": None},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.ACCURACY,
+    func=accuracy_score,
+    required_args={"y_true", "y_pred"},
+    description="Accuracy between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION,
+    func=precision_score,
+    required_args={"y_true", "y_pred"},
+    description="Precision between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.RECALL,
+    func=recall_score,
+    required_args={"y_true", "y_pred"},
+    description="Recall between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.F1,
+    func=f1_score,
+    required_args={"y_true", "y_pred"},
+    description="F1 score between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.SPEARMAN_CORRELATION,
+    func=spearman_correlation,
+    required_args={"a", "b"},
+    description="Spearman correlation between true and predicted values",
     tags={"label_prediction"},
 )

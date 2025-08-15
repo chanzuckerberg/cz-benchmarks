@@ -30,7 +30,10 @@ def test_list_available_datasets():
             "url": "s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Bladder_v2_curated.h5ad",
         },
     }
-    assert datasets["replogle_k562_essential_perturbpredict"] == expected_datasets["replogle_k562_essential_perturbpredict"]
+    assert (
+        datasets["replogle_k562_essential_perturbpredict"]
+        == expected_datasets["replogle_k562_essential_perturbpredict"]
+    )
     assert datasets["tsv2_bladder"] == expected_datasets["tsv2_bladder"]
     # Verify all elements are strings
     assert all(isinstance(dataset, str) for dataset in datasets)

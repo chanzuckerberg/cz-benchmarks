@@ -61,9 +61,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     and perturbation data with matched control cells.
 
     Input data requirements:
-
-    - H5AD file containing single-cell gene expression data.
-    - Must have a column ``condition_key`` in ``adata.obs`` specifying control and perturbed conditions.
+    - H5AD file containing single cell gene expression data.
+    - Must have a column ``{condition_name}`` in `adata.obs` specifying control and perturbed conditions.
     - Condition format must be one of:
 
       - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
@@ -72,8 +71,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
-        control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
-        de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
+        control_cells_ids (dict): Dictionary of control cells IDs for each condition.
+        de_results (pd.DataFrame): Differential expression results calculated on ground truth data with matched controls.
         target_genes_to_save (dict): Dictionary of target genes for each cell.
     """
 
@@ -110,7 +109,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are differentially
                 expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
-                Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
+                Options are "wilcoxon" or "t_test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
             min_de_genes (int): Minimum number of differentially expressed genes
                 required to mask that condition. If not met, no genes are masked.
@@ -203,6 +202,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         target_genes = list(target_gene_dict.keys())
+        target_genes = target_genes[:4]
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
@@ -242,7 +242,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ValueError: If `condition_key` not found in `adata.obs`.
         """
         super().load_data()
-
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
                 f"Condition key '{self.condition_key}' not found in adata.obs"
@@ -253,10 +252,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
 
-        if self.deg_test_name not in ["wilcoxon", "t-test"]:
+        if self.deg_test_name not in ["wilcoxon", "t_test"]:
             raise ValueError(
                 f"Differential expression test name '{self.deg_test_name}' not supported. "
-                "Options are 'wilcoxon' or 't-test'."
+                "Options are 'wilcoxon' or 't_test'."
             )
 
         for key in ["control_cells_ids", f"de_results_{self.deg_test_name}"]:
@@ -311,9 +310,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         for key, item in inputs_to_store.items():
             if hasattr(item, "to_json"):
-                # For pandas DataFrames
+                # For pandas DataFrames. Preserve index for obs/var by using orient="split".
                 buffer = io.StringIO()
-                item.to_json(buffer)
+                if key in {"control_matched_adata/obs", "control_matched_adata/var"}:
+                    item.to_json(buffer, orient="split")
+                else:
+                    item.to_json(buffer)
                 self._store_task_input(f"{key}.json", buffer.getvalue())
 
             elif isinstance(item, np.ndarray):
@@ -334,6 +336,57 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 self._store_task_input(f"{key}.json", json_string)
 
         return self.task_inputs_dir
+
+    def load_from_task_inputs(self, task_inputs_dir: Optional[Path] = None) -> None:
+        """
+        Load dataset state from files saved by `store_task_inputs`.
+
+        After calling this method, the instance will have the same key
+        attributes populated as after `load_data()`:
+        `control_cells_ids`, `de_results`, `control_matched_adata`, and
+        `target_genes_to_save`.
+
+        Args:
+            task_inputs_dir: Directory containing task inputs. Defaults to
+                `self.task_inputs_dir`.
+        """
+        inputs_dir = Path(task_inputs_dir) if task_inputs_dir else self.task_inputs_dir
+
+        # Control/target dictionaries
+        control_cells_ids_path = inputs_dir / "control_cells_ids.json"
+        target_genes_path = inputs_dir / "target_genes_to_save.json"
+        de_results_path = inputs_dir / "de_results.json"
+
+        with control_cells_ids_path.open("r") as f:
+            self.control_cells_ids = json.load(f)
+        with target_genes_path.open("r") as f:
+            self.target_genes_to_save = json.load(f)
+
+        # DE results (preserve original columns)
+        self.de_results = pd.read_json(de_results_path)
+
+        # Rebuild AnnData
+        adata_dir = inputs_dir / "control_matched_adata"
+        obs = pd.read_json(adata_dir / "obs.json", orient="split")
+        var = pd.read_json(adata_dir / "var.json", orient="split")
+        x_npz = adata_dir / "X.npz"
+        x_npy = adata_dir / "X.npy"
+        if x_npz.exists():
+            X = sparse.load_npz(x_npz)
+        elif x_npy.exists():
+            X = np.load(x_npy)
+        else:
+            raise FileNotFoundError(
+                f"Missing expression matrix: {x_npz} or {x_npy} not found"
+            )
+
+        adata_final = ad.AnnData(X=X, obs=obs, var=var)
+        # Match `load_data` behavior
+        adata_final.obs[self.condition_key] = pd.Categorical(
+            adata_final.obs[self.condition_key]
+        )
+
+        self.control_matched_adata = adata_final
 
     def _validate(self) -> None:
         """
