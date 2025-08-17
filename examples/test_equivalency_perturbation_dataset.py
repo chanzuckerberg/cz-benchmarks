@@ -296,7 +296,18 @@ if __name__ == "__main__":
             "pval_adj": "pval_adj",
             "smd": "standardized_mean_diff",
         }
-    # assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)
+
+    filter = df_csv["pvals_adj"] <= args.pval_threshold
+    if metric_normalized == "wilcoxon":
+        filter &= (
+            df_csv["logfoldchanges"].abs() >= args.min_logfoldchange
+        )
+    elif metric_normalized == "t_test":
+        filter &= df_csv["standardized_mean_diff"].abs() >= args.min_smd
+
+    df_csv = df_csv[filter]
+
+    assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)
     logger.info("DE results matched")
 
     # Assert that the var frames are equivalent
