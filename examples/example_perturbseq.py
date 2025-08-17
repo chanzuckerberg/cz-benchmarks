@@ -7,26 +7,44 @@ from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbatio
 # Add task inputs
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.types import CellRepresentation
+import argparse
 
 import numpy as np
-
+import timeit
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--optimized", action="store_true")
+    parser.add_argument("--num_conditions", type=int, default=None)
+    args = parser.parse_args()
 
-    dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict")
-    
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    print('Loading dataset')
+    dataset: SingleCellPerturbationDataset = load_dataset("replogle_k562_essential_perturbpredict", OPTIMIZED=args.optimized, num_conditions=args.num_conditions)
+
+    # for use_multiprocessing in [False, True]:
+    #     for limit_conditions in [500, 1500, None]:
+    #         print(f"Loading dataset with limit_conditions={limit_conditions}")
+    #         results = timeit.timeit(lambda: dataset.load_data(use_multiprocessing=False, limit_conditions=limit_conditions), number=1)
+    #         status_message = f"{limit_conditions} {dataset.adata.shape} {len(dataset.target_genes_to_save)} {results}"
+    #         print(status_message)
+    #         with open("results.txt", "a") as f:
+    #             f.write(f"{status_message}\n")
+
     # Testing method for storing of outputs -- can remove after finished
-    task_inputs_dir = dataset.store_task_inputs()
+    # print('Storing task inputs')
+    # task_inputs_dir = dataset.store_task_inputs()
+    # print('Writing control matched adata')
+    # dataset.control_matched_adata.write_h5ad(task_inputs_dir / "control_matched_adata.h5ad")
 
     # Test the validation method -- can remove after finished
-    dataset._validate()
+    # dataset._validate()
 
-    # NOTE this is a numpy array containing only a matrix
-    model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[1]
-    )
-    np.save("/tmp/random_model_output.npy", model_output)
+    # # NOTE this is a numpy array containing only a matrix
+    # model_output: CellRepresentation = np.random.rand(
+    #     dataset.adata.shape[0], dataset.adata.shape[1]
+    # )
+    # np.save("/tmp/random_model_output.npy", model_output)
 
     # Initialize task
     # Add task initialization here

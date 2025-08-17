@@ -11,6 +11,11 @@ from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
 from tqdm import tqdm
+from time import time
+from anndata import ImplicitModificationWarning
+import warnings
+
+# warnings.filterwarnings("ignore", category=ImplicitModificationWarning) # FIXME MICHELLE: for testing, remove
 
 logger = logging.getLogger(__name__)
 
@@ -91,8 +96,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
-        percent_genes_to_mask: float = 0.5,
-        min_de_genes: int = 5, # FIXME MICHELLE: Jasleen suggested 1
+        percent_genes_to_mask: float = 1.0,
+        min_de_genes: int = 1, # FIXME MICHELLE: Maria had 5,Jasleen suggested 1
         pval_threshold: float = 1e-2, # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
         min_logfoldchange: float = 1.0, # FIXME MICHELLE: should this be changed to >= 0?
         min_smd: float = 0.55,
@@ -141,58 +146,94 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         def _create_adata_for_condition(
             selected_condition: str,
             target_gene_dict: dict,
+            rows_cond: np.ndarray,
+            rows_ctrl: np.ndarray,
+            OPTIMIZED: bool,
             adata: ad.AnnData = self.adata,
             control_cells_ids: dict = self.control_cells_ids,
-            condition_key: str = self.condition_key,
-            control_name: str = self.control_name,
+            condition_key: str = "condition",
+            control_name: str = "ctrl",
         ):
             """
             Create an AnnData object for a single condition.
             Setup as a private function to allow for multiprocessing if needed.
             """
-            adata_condition = adata[
-                adata.obs[self.condition_key] == selected_condition
-            ].copy()
-            adata_control = adata[
-                adata.obs.index.isin(control_cells_ids[selected_condition])
-            ].copy()
+
+            start_time = time()
+            if not OPTIMIZED:
+                adata_condition = adata[
+                    adata.obs[self.condition_key] == selected_condition
+                ].copy()
+                adata_control = adata[
+                    adata.obs.index.isin(control_cells_ids[selected_condition])
+                ].copy()
+            else:
+                adata_condition = adata[rows_cond]
+                adata_control = adata[rows_ctrl]
+            index_time = time() - start_time
 
             if len(adata_condition) != len(adata_control):
                 logger.warning(
                     f"Condition and control data for {selected_condition} have different lengths."
                 )
 
-            adata_condition.obs[condition_key] = adata_condition.obs[
-                condition_key
-            ].astype(str)
-            adata_condition.obs.loc[:, condition_key] = selected_condition
+            if not OPTIMIZED:
+                adata_condition.obs[condition_key] = adata_condition.obs[
+                    condition_key
+                ].astype(str)
+                adata_condition.obs.loc[:, condition_key] = selected_condition
 
-            adata_control.obs[condition_key] = adata_control.obs[condition_key].astype(
-                str
-            )
-            adata_control.obs.loc[:, condition_key] = "_".join(
-                [control_name, selected_condition]
-            )
+                adata_control.obs[condition_key] = adata_control.obs[condition_key].astype(
+                    str
+                )
+                adata_control.obs.loc[:, condition_key] = "_".join(
+                    [control_name, selected_condition]
+                )
+            else:
+                pass
+                # label_cond = selected_condition
+                # label_ctrl = f"{control_name}_{selected_condition}"
+
+                # for a, label in ((adata_condition, label_cond), (adata_control, label_ctrl)):
+                #     # if pd.api.types.is_categorical_dtype(a.obs[condition_key]):
+                #     #     if label not in a.obs[condition_key].cat.categories:
+                #     #         a.obs[condition_key] = a.obs[condition_key].cat.add_categories([label])
+                #     a.obs[condition_key] = label
 
             # Concatenate condition and control data
-            adata_merged = ad.concat(
-                [adata_condition, adata_control], index_unique=None
-            )
+            start_time = time()
+            if not OPTIMIZED:
+                adata_merged = ad.concat(
+                    [adata_condition, adata_control], index_unique=None
+                ).copy()
+            else:
+                adata_merged = ad.concat(
+                    [adata_condition, adata_control], index_unique=None
+                ).copy()
+            small_concat_time = time() - start_time
+
+            if OPTIMIZED:
+                label_cond = [selected_condition] * len(adata_condition)
+                label_ctrl = [f"{control_name}_{selected_condition}"] * len(adata_control)
+                adata_merged.obs[condition_key] = label_cond + label_ctrl
 
             # Add condition to cell_barcode_gene column and set as index
-            adata_merged.obs["cell_barcode_gene"] = (
-                adata_merged.obs.index.astype(str)
-                + "_"
-                + [selected_condition] * len(adata_merged)
-            )
-            adata_merged.obs.set_index("cell_barcode_gene", inplace=True)
+            if not OPTIMIZED:
+                adata_merged.obs["cell_barcode_gene"] = (
+                    adata_merged.obs.index.astype(str)
+                    + "_"
+                    + [selected_condition] * len(adata_merged)
+                )
+                adata_merged.obs.set_index("cell_barcode_gene", inplace=True)
+            else:
+                adata_merged.obs_names = adata_merged.obs_names.astype(str) + "_" + selected_condition
 
             # Add target genes to the dictionary for each cell
             target_genes_to_save = {}
             for idx in adata_merged.obs.index:
                 target_genes_to_save[idx] = target_gene_dict[selected_condition]
 
-            return adata_merged, target_genes_to_save
+            return adata_merged, target_genes_to_save, small_concat_time, index_time
 
         target_gene_dict = sample_de_genes(
             de_results=self.de_results,
@@ -203,11 +244,35 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         target_genes = list(target_gene_dict.keys())
+        if self.num_conditions is not None: # FIXME MICHELLE: for testing, remove
+            if self.num_conditions < len(target_genes):
+                target_genes = target_genes[:self.num_conditions]
+            else:
+                logger.warning(f"num_conditions {self.num_conditions} is greater than the number of conditions in the dataset {len(target_genes)}. Using all conditions.")
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
+        # Do this once before the loop
+        obs = self.adata.obs
+        obs_index = obs.index
+
+        # If not already categorical, this speeds grouping and comparisons
+        if not pd.api.types.is_categorical_dtype(obs[self.condition_key]):
+            obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
+
+        # Fast: condition -> integer row positions
+        condition_to_indices = obs.groupby(self.condition_key, observed=True).indices
+
+        # Fast: control ids -> integer row positions per condition (preserves order)
+        control_to_indices = {
+            cond: obs_index.get_indexer_for(ids)
+            for cond, ids in self.control_cells_ids.items()
+        }
+
         all_merged_data = []
         target_genes_to_save = {}
+        small_concat_time = 0.0
+        index_time = 0.0
 
         with tqdm(
             total=total_conditions,
@@ -215,22 +280,32 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             unit="item"
         ) as pbar:
             for selected_condition in target_genes:
-                result = _create_adata_for_condition(selected_condition, target_gene_dict)
+                result = _create_adata_for_condition(selected_condition=selected_condition, 
+                                                    target_gene_dict=target_gene_dict, 
+                                                    rows_cond=condition_to_indices[selected_condition], 
+                                                    rows_ctrl=control_to_indices[selected_condition],
+                                                    OPTIMIZED=self.OPTIMIZED)
                 all_merged_data.append(result[0])
                 target_genes_to_save.update(result[1])
+                small_concat_time += result[2]
+                index_time += result[3]
                 pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
                 pbar.update(1)
 
         # Combine all adata objects
+        logger.info(f"Index time: {index_time:.2f} seconds")
+        logger.info(f"Concat time: {small_concat_time:.2f} seconds")
         logger.info(f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions.")
+        start_time = time()
         adata_final = ad.concat(all_merged_data, index_unique=None)
+        logger.info(f"Large concat time: {time() - start_time:.2f} seconds")
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
         )
 
         return adata_final, target_genes_to_save
 
-    def load_data(self) -> None:
+    def load_data(self, OPTIMIZED: bool, num_conditions: Optional[int] = None) -> None: # FIXME MICHELLE: for testing, remove
         """
         Load the dataset and populate perturbation truth data.
 
@@ -241,6 +316,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Raises:
             ValueError: If `condition_key` not found in `adata.obs`.
         """
+        logger.info(f"Loading dataset with OPTIMIZED={OPTIMIZED} and num_conditions={num_conditions}")
+        self.OPTIMIZED = OPTIMIZED
+        self.num_conditions = num_conditions
         super().load_data()
 
         if self.condition_key not in self.adata.obs.columns:
@@ -274,6 +352,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         de_results = pd.DataFrame(
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
+
+        # FIXME check column names for de_results
+
         filter = de_results["pval_adj"] <= self.pval_threshold
 
         if self.deg_test_name == "wilcoxon":
@@ -286,7 +367,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.de_results = de_results[filter]
 
         logger.info(f"Creating adata for {len(self.control_cells_ids)} conditions")
+        start_time = time()
         adata_final, target_genes_to_save = self._create_adata()
+        logger.info(f"Time to create control-matched adata: {time() - start_time:.2f} seconds")
 
         self.control_matched_adata = adata_final
         self.target_genes_to_save = target_genes_to_save

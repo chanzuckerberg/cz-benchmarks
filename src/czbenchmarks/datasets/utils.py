@@ -14,6 +14,8 @@ log = logging.getLogger(__name__)
 
 def load_dataset(
     dataset_name: str,
+    num_conditions: int,
+    OPTIMIZED: bool,
     config_path: Optional[str] = None,
 ) -> Dataset:
     """
@@ -72,7 +74,7 @@ def load_dataset(
     dataset = instantiate(dataset_info)
 
     # Load the dataset into memory
-    dataset.load_data()
+    dataset.load_data(num_conditions=num_conditions, OPTIMIZED=OPTIMIZED)
 
     return dataset
 
