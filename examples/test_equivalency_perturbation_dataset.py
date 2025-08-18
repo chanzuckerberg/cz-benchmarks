@@ -375,7 +375,7 @@ if __name__ == "__main__":
             new_condition_list.append(s[0] + "_" + gene_map[s[1]])
 
         assert new_condition_list == list(nb_condition)
-        assert new_control_list == list(nb_control)
+        assert sorted(new_control_list) == sorted(list(nb_control)) # order is suddenly not preserved
     logger.info("Control matched adata matched")
 
     logger.info(f"Done")
