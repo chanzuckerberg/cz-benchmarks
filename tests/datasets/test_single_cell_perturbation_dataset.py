@@ -201,3 +201,49 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert set(["condition", "gene", "pval_adj", "logfoldchange"]).issubset(
             set(de_df.columns)
         )
+
+    def test_perturbation_dataset_load_de_results_from_csv(self, tmp_path):
+        """Tests loading DE results from an external CSV via de_results_path."""
+        # Create the base AnnData file using existing helper to ensure obs/uns layout
+        h5ad_path = self.valid_dataset_file(tmp_path)
+
+        # Create a minimal DE results CSV with required columns for wilcoxon
+        # Include two conditions that match the AnnData: test1 and test2
+        csv_path = tmp_path / "de_results.csv"
+        de_df = pd.DataFrame(
+            {
+                "condition": ["test1", "test2"],
+                "gene": ["GENE_A", "GENE_B"],
+                "pval_adj": [1e-6, 1e-6],
+                "logfoldchange": [2.0, 2.0],
+            }
+        )
+        de_df.to_csv(csv_path, index=False)
+
+        # Construct dataset pointing to the CSV and with permissive thresholds
+        dataset = SingleCellPerturbationDataset(
+            path=h5ad_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            deg_test_name="wilcoxon",
+            percent_genes_to_mask=1.0,
+            min_de_genes=1,
+            pval_threshold=5e-2,
+            min_logfoldchange=0.0,
+            de_results_path=csv_path,
+        )
+
+        dataset.load_data()
+
+        # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
+        assert dataset.control_matched_adata.shape == (8, 3)
+
+        # Target genes should be stored per cell (for each unique cell index)
+        assert hasattr(dataset, "target_genes_to_save")
+        unique_obs_count = len(set(dataset.control_matched_adata.obs.index.tolist()))
+        assert len(dataset.target_genes_to_save) == unique_obs_count
+
+        # With 1 gene per condition and percent=1.0, each cell should have 1 sampled gene
+        sampled_lengths = {len(v) for v in dataset.target_genes_to_save.values()}
+        assert sampled_lengths == {1}
