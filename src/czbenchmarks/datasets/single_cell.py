@@ -44,7 +44,7 @@ class SingleCellDataset(Dataset):
         """
         super().__init__(dataset_type_name, path, organism, task_inputs_dir)
 
-    def load_data(self, backed: Literal['r', 'r+'] | bool | None = None) -> None:
+    def load_data(self, backed: Literal['r', 'r+'] | bool | None = None) -> None:  # FIXME MICHELLE: for testing, will remove if not used
         """
         Load the dataset from the path.
 
@@ -60,9 +60,9 @@ class SingleCellDataset(Dataset):
         Populates:
             adata (ad.AnnData): Loaded AnnData object containing gene expression data.
         """
-        load_mode = "backed" if backed in {True, 'r', 'r+'} else "memory"
-        logger.info(f"Loading dataset from {self.path} in {load_mode} mode.")
-        self.adata = ad.read_h5ad(self.path, backed=backed)
+        load_mode = "backed" if backed in {True, 'r', 'r+'} else "memory"  # FIXME MICHELLE: for testing, will remove if not used
+        logger.info(f"Loading dataset from {self.path} in {load_mode} mode.")  # FIXME MICHELLE: for testing, will remove if not used
+        self.adata = ad.read_h5ad(self.path, backed=backed)  # FIXME MICHELLE: for testing, will remove if not used
 
     def _validate(self) -> None:
         """

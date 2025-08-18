@@ -14,9 +14,7 @@ log = logging.getLogger(__name__)
 
 def load_dataset(
     dataset_name: str,
-    num_conditions: Optional[int] = None, # FIXME MICHELLE for testing
-    OPTIMIZED: Optional[bool] = True,  # FIXME MICHELLE for testing
-    backed: Literal['r', 'r+'] | bool | None = None,
+    backed: Literal['r', 'r+'] | bool | None = None,  # FIXME MICHELLE: for testing, will remove if not used
     config_path: Optional[str] = None,
 ) -> Dataset:
     """
@@ -77,7 +75,7 @@ def load_dataset(
     dataset = instantiate(dataset_info)
 
     # Load the dataset into memory
-    dataset.load_data(backed=backed, num_conditions=num_conditions, OPTIMIZED=OPTIMIZED) # FIXME MICHELLE for testing
+    dataset.load_data(backed=backed)  # FIXME MICHELLE: for testing, will remove if not used
 
     return dataset
 
