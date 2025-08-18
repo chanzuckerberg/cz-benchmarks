@@ -113,7 +113,7 @@ def run_notebook_code(args):
             "ensembl_id",
         )
 
-    elif args.metric == "t_test":
+    elif args.metric == "t-test":
         df = df[np.abs(df["smd"]) >= args.min_smd]
         df = df[df["pval_adj"] < args.pval_threshold]
         target_gene_dict = sample_genes(
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric",
         type=str,
-        default="wilcoxon", # wilcoxon or t-test
+        default="t-test", # wilcoxon or t-test, do not use t_test
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -221,14 +221,15 @@ if __name__ == "__main__":
         help="Run notebook code",
     )
     args = parser.parse_args()
-    # Normalize metric aliases (accepts t_test or t-test, but preserve t_test for dataset)
+    # metric is either wilcoxon or t-test
+    if args.metric not in {"wilcoxon", "t-test"}:
+        raise ValueError(
+            f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't-test'."
+        )
+    # metric_normalized is either wilcoxon or t_test
     metric_normalized = args.metric.strip().lower().replace("-", "_")
     if metric_normalized in {"t-test", "ttest"}:
         metric_normalized = "t_test"
-    if metric_normalized not in {"wilcoxon", "t_test"}:
-        raise ValueError(
-            f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
-        )
 
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
     
