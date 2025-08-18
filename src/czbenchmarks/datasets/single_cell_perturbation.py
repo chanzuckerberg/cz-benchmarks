@@ -96,7 +96,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         condition_key: str = "condition",
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
-        deg_test_name: str = "t-test", # FIXME MICHELLE: for testing
+        deg_test_name: str = "wilcoxon", # FIXME MICHELLE: for testing
         percent_genes_to_mask: float = 0.5, # FIXME MICHELLE: for testing
         min_de_genes: int = 5, # FIXME MICHELLE: Maria had 5, Jasleen suggested 1
         pval_threshold: float = 1e-4, # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
