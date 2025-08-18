@@ -19,6 +19,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
+            deg_test_name="wilcoxon",
+            percent_genes_to_mask=0.5,
+            min_de_genes=5,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
         )
 
     def valid_dataset_file(self, tmp_path) -> Path:
@@ -144,6 +149,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
+            deg_test_name="wilcoxon",
+            percent_genes_to_mask=0.5,
+            min_de_genes=5,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
         )
 
         with pytest.raises(
@@ -160,6 +170,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
+            deg_test_name="wilcoxon",
+            percent_genes_to_mask=0.5,
+            min_de_genes=5,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
         )
         dataset.load_data()
         with pytest.raises(ValueError, match=""):
