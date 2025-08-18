@@ -287,7 +287,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         return adata_final, target_genes_to_save
 
-    def load_data(self) -> None:
+    def load_data(self, 
+                  backed: Literal['r', 'r+'] | bool | None = None, 
+                  ) -> None: # FIXME MICHELLE: for testing, remove
         """
         Load the dataset and populate perturbation truth data.
 
@@ -295,10 +297,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
+        Args:
+            backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset
+                into memory or use backed mode.
+                Memory: False or None. Default is None.
+                Backed: True, 'r' for read-only, 'r+' for read-write
+
         Raises:
             ValueError: If `condition_key` not found in `adata.obs`.
         """
-        super().load_data()
+        super().load_data(backed=backed)
 
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(

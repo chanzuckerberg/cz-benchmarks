@@ -1,7 +1,7 @@
 import os
 import hydra
 from hydra.utils import instantiate
-from typing import Dict, Optional
+from typing import Dict, Optional, Literal
 import yaml
 from omegaconf import OmegaConf
 from .dataset import Dataset
@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 def load_dataset(
     dataset_name: str,
+    backed: Literal['r', 'r+'] | bool | None = None,
     config_path: Optional[str] = None,
 ) -> Dataset:
     """
@@ -21,6 +22,8 @@ def load_dataset(
 
     Args:
         dataset_name (str): Name of the dataset as specified in the configuration.
+        backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset into memory 
+            (this is the default, None) or use backed mode.
         config_path (Optional[str]): Optional path to a custom config YAML file. If not provided,
             only the package's default config is used.
 
@@ -72,7 +75,7 @@ def load_dataset(
     dataset = instantiate(dataset_info)
 
     # Load the dataset into memory
-    dataset.load_data()
+    dataset.load_data(backed=backed, num_conditions=num_conditions, OPTIMIZED=OPTIMIZED) # FIXME MICHELLE for testing
 
     return dataset
 
