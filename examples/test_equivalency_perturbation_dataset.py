@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric",
         type=str,
-        default="wilcoxon",
+        default="wilcoxon", # wilcoxon or t-test
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -222,15 +222,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     # Normalize metric aliases (accepts t_test or t-test, but preserve t_test for dataset)
-    metric_normalized = args.metric.strip().lower()
+    metric_normalized = args.metric.strip().lower().replace("-", "_")
     if metric_normalized in {"t-test", "ttest"}:
-        args.metric = "t_test"
+        metric_normalized = "t_test"
     if metric_normalized not in {"wilcoxon", "t_test"}:
         raise ValueError(
             f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
         )
 
-    args.de_results_path = args.de_results_path.format(metric_type=args.metric)
+    args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     nb_dir = Path(f"notebook_task_inputs")
@@ -286,7 +286,7 @@ if __name__ == "__main__":
             "pvals": "pval",
             "pvals_adj": "pval_adj",
         }
-    elif args.metric == "t_test":
+    elif args.metric == "t-test":
         col_map = {
             "gene": "gene_id",
             "condition": "condition_name",
@@ -297,10 +297,11 @@ if __name__ == "__main__":
             "smd": "standardized_mean_diff",
         }
 
-    filter = df_csv["pvals_adj"] <= args.pval_threshold
+    df_csv = df_csv.rename(columns=col_map)
+    filter = df_csv["pval_adj"] <= args.pval_threshold
     if metric_normalized == "wilcoxon":
         filter &= (
-            df_csv["logfoldchanges"].abs() >= args.min_logfoldchange
+            df_csv["logfoldchange"].abs() >= args.min_logfoldchange
         )
     elif metric_normalized == "t_test":
         filter &= df_csv["standardized_mean_diff"].abs() >= args.min_smd
