@@ -234,7 +234,7 @@ if __name__ == "__main__":
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nb_dir = Path(f"notebook_task_inputs")
+    nb_dir = Path("notebook_task_inputs")
 
     #### NOTEBOOK CODE ####
     if args.run_notebook_code:
@@ -259,7 +259,7 @@ if __name__ == "__main__":
             args
         )
         
-        logger.info(f"Saving notebook code to disk")
+        logger.info("Saving notebook code to disk")
         notebook_adata_masked.write(nb_dir / "notebook_adata_masked.h5ad")
         with (nb_dir / "notebook_target_genes_to_save.json").open("w") as f:
             json.dump(notebook_target_genes_to_save, f)
@@ -276,7 +276,7 @@ if __name__ == "__main__":
 
     #### COMPARE OUTPUTS ####
     # Compare DE results CSV to dataset.de_results with column name mapping
-    logger.info(f"Comparing DE results CSV to dataset.de_results with column name mapping")
+    logger.info("Comparing DE results CSV to dataset.de_results with column name mapping")
     df_csv = pd.read_csv(args.de_results_path)
     if args.metric == "wilcoxon":
         col_map = {
@@ -313,7 +313,7 @@ if __name__ == "__main__":
     logger.info("DE results matched")
 
     # Assert that the var frames are equivalent
-    logger.info(f"Asserting that the var frames are equivalent")
+    logger.info("Asserting that the var frames are equivalent")
     column_map = {
         "gene_name": "gene",
     }
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     logger.info("Var frames matched")
 
     # Compare target genes
-    logger.info(f"Comparing target genes")
+    logger.info("Comparing target genes")
     dataset_target_genes = {}
     for k in new_dataset.target_genes_to_save.keys():
         s = k.split("_")
@@ -346,7 +346,7 @@ if __name__ == "__main__":
     logger.info("Target genes matched")
 
     # Compare control matched adata
-    logger.info(f"Comparing control matched adata")
+    logger.info("Comparing control matched adata")
     control_prefix = "non-targeting"
     # we want to make sure that the conditions and cell_bar_code_gene are the same
     new_obs = new_dataset.control_matched_adata.obs
@@ -380,4 +380,4 @@ if __name__ == "__main__":
         assert sorted(new_control_list) == sorted(list(nb_control)) # order is suddenly not preserved
     logger.info("Control matched adata matched")
 
-    logger.info(f"Done")
+    logger.info("Done")

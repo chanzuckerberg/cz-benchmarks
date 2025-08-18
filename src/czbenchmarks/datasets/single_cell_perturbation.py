@@ -146,7 +146,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             logger.info(f"Loading de_results from {self.de_results_path}")
             de_results = pd.read_csv(self.de_results_path)
         else:
-            logger.info(f"Loading de_results from adata.uns")
+            logger.info("Loading de_results from adata.uns")
             de_results = pd.DataFrame(
                 self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
             )
@@ -367,7 +367,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
 
         if "control_cells_ids" not in self.adata.uns.keys():
-            raise ValueError(f"Key 'control_cells_ids' not found in adata.uns")
+            raise ValueError("Key 'control_cells_ids' not found in adata.uns")
 
         # Load control_cells_ids from adata.uns
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
