@@ -121,7 +121,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             pval_threshold (float): P-value threshold for differential expression.
             min_logfoldchange (float): Minimum log-fold change for differential expression.
             min_smd (float): Minimum standardized mean difference for differential expression.
-            de_results_path (Optional[Path]): Path to load differential expression results from file.
+            de_results_path (Optional[Path]): Path to load differential expression results from csv file.
                 If not provided, the deg data are used from adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
         """
@@ -353,7 +353,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 "Options are 'wilcoxon' or 't-test'."
             )
 
-        if self.de_results_path and not self.de_results_path.exists():
+        if self.de_results_path and not Path(self.de_results_path).exists():
             raise FileNotFoundError(
                 f"Differential expression results path '{self.de_results_path}' not found"
             )
