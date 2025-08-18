@@ -13,10 +13,7 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
 from tqdm import tqdm
 from time import time
-from anndata import ImplicitModificationWarning
-import warnings
 
-# warnings.filterwarnings("ignore", category=ImplicitModificationWarning) # FIXME MICHELLE: for testing, remove
 
 logger = logging.getLogger(__name__)
 
@@ -156,14 +153,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Validate structure of deg data
         # TODO move column names to standardized location when utility function added
-        filter_columns = ['pval_adj']
-        if self.deg_test_name == 'wilcoxon':
-            filter_columns.append('logfoldchange')
+        filter_columns = ["pval_adj"]
+        if self.deg_test_name == "wilcoxon":
+            filter_columns.append("logfoldchange")
         else:
-            filter_columns.append('standardized_mean_diff')
-        
-        error_str = ''
-        warning_str = ''
+            filter_columns.append("standardized_mean_diff")
+
+        error_str = ""
+        warning_str = ""
         for col in filter_columns:
             if col not in de_results.columns:
                 error_str += f"{col} column not found in de_results and required for {self.deg_test_name} test. "
@@ -243,7 +240,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             adata_merged.obs[condition_key] = label_cond + label_ctrl
 
             # Add condition to cell_barcode_gene column and set as index
-            adata_merged.obs_names = adata_merged.obs_names.astype(str) + "_" + selected_condition
+            adata_merged.obs_names = (
+                adata_merged.obs_names.astype(str) + "_" + selected_condition
+            )
 
             # Add target genes to the dictionary for each cell
             target_genes_to_save = {}
@@ -285,18 +284,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_genes_to_save = {}
 
         with tqdm(
-            total=total_conditions,
-            desc="Processing conditions",
-            unit="item"
+            total=total_conditions, desc="Processing conditions", unit="item"
         ) as pbar:
             for selected_condition in target_genes:
-                result = _create_adata_for_condition(selected_condition=selected_condition, 
-                                                     target_gene_dict=target_gene_dict, 
-                                                     rows_cond=condition_to_indices[selected_condition], 
-                                                     rows_ctrl=control_to_indices[selected_condition],
-                                                     adata=self.adata,
-                                                     condition_key=self.condition_key,
-                                                     control_name=self.control_name)
+                result = _create_adata_for_condition(
+                    selected_condition=selected_condition,
+                    target_gene_dict=target_gene_dict,
+                    rows_cond=condition_to_indices[selected_condition],
+                    rows_ctrl=control_to_indices[selected_condition],
+                    adata=self.adata,
+                    condition_key=self.condition_key,
+                    control_name=self.control_name,
+                )
 
                 all_merged_data.append(result[0])
                 target_genes_to_save.update(result[1])
@@ -304,7 +303,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 pbar.update(1)
 
         # Combine all adata objects
-        logger.info(f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions.")
+        logger.info(
+            f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions."
+        )
         adata_final = ad.concat(all_merged_data, index_unique=None)
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
@@ -312,9 +313,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         return adata_final, target_genes_to_save
 
-    def load_data(self, 
-                  backed: Literal['r', 'r+'] | bool | None = None, # FIXME MICHELLE: for testing, will remove if not used
-                  ) -> None:
+    def load_data(
+        self,
+        backed: Literal["r", "r+"]
+        | bool
+        | None = None,  # FIXME MICHELLE: for testing, will remove if not used
+    ) -> None:
         """
         Load the dataset and populate perturbation truth data.
 
@@ -350,10 +354,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
 
         if self.de_results_path and not self.de_results_path.exists():
-            raise FileNotFoundError(f"Differential expression results path '{self.de_results_path}' not found")
+            raise FileNotFoundError(
+                f"Differential expression results path '{self.de_results_path}' not found"
+            )
         else:
-            if f"de_results_{self.normalized_deg_test_name}" not in self.adata.uns.keys():
-                raise ValueError(f"Key 'de_results_{self.normalized_deg_test_name}' not found in adata.uns")
+            if (
+                f"de_results_{self.normalized_deg_test_name}"
+                not in self.adata.uns.keys()
+            ):
+                raise ValueError(
+                    f"Key 'de_results_{self.normalized_deg_test_name}' not found in adata.uns"
+                )
 
         if "control_cells_ids" not in self.adata.uns.keys():
             raise ValueError(f"Key 'control_cells_ids' not found in adata.uns")
@@ -366,7 +377,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             self.control_cells_ids[key] = list(self.control_cells_ids[key])
 
         # Load and filter differential expression results
-        logger.info(f"Loading and filtering differential expression results using {self.deg_test_name} test")
+        logger.info(
+            f"Loading and filtering differential expression results using {self.deg_test_name} test"
+        )
         self.de_results = self.load_and_filter_deg_results()
         logger.info(f"Using {len(self.de_results)} differential expression values")
 
@@ -376,23 +389,39 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         unique_conditions_de_results = set(self.de_results[self.condition_key])
 
         if not unique_conditions_de_results.issubset(unique_conditions_adata):
-            raise ValueError(f"de_results[{self.condition_key}] contains conditions not in adata.obs[{self.condition_key}]. This will cause errors in the creation of the control-matched adata.")
+            raise ValueError(
+                f"de_results[{self.condition_key}] contains conditions not in adata.obs[{self.condition_key}]. This will cause errors in the creation of the control-matched adata."
+            )
 
-        if not unique_conditions_de_results.issubset(unique_conditions_control_cells_ids):
-            raise ValueError(f"Conditions in de_results[{self.condition_key}] are not a subset of control_cells_ids keys. This will cause errors in the creation of the control-matched adata.")
+        if not unique_conditions_de_results.issubset(
+            unique_conditions_control_cells_ids
+        ):
+            raise ValueError(
+                f"Conditions in de_results[{self.condition_key}] are not a subset of control_cells_ids keys. This will cause errors in the creation of the control-matched adata."
+            )
 
         if unique_conditions_control_cells_ids != unique_conditions_adata:
             msg = f"Conditions in control_cells_ids and adata.obs[{self.condition_key}] are not identical"
             if unique_conditions_control_cells_ids.issubset(unique_conditions_adata):
-                logger.warning(msg + f", but control_cells_ids keys are a subset of adata.obs[{self.condition_key}]. This should allow for creation of control-matched data but will ignore some of the data")
+                logger.warning(
+                    msg
+                    + f", but control_cells_ids keys are a subset of adata.obs[{self.condition_key}]. This should allow for creation of control-matched data but will ignore some of the data"
+                )
             else:
                 # TODO verify this is OK as long as all de_results conditions are in control cells ids (checked below)
-                logger.warning(msg + f", and control_cells_ids keys contain conditions not in adata.obs[{self.condition_key}]. This may cause errors in the creation of control-matched adata.")
+                logger.warning(
+                    msg
+                    + f", and control_cells_ids keys contain conditions not in adata.obs[{self.condition_key}]. This may cause errors in the creation of control-matched adata."
+                )
 
-        logger.info(f"Creating control-matched adata for {len(self.control_cells_ids)} conditions")
+        logger.info(
+            f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
+        )
         start_time = time()
         adata_final, target_genes_to_save = self._create_adata()
-        logger.info(f"Control-matched adata prepared in {time() - start_time:.2f} seconds")
+        logger.info(
+            f"Control-matched adata prepared in {time() - start_time:.2f} seconds"
+        )
 
         self.control_matched_adata = adata_final
         self.target_genes_to_save = target_genes_to_save
