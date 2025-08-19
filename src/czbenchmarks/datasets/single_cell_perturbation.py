@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def sample_de_genes(
     de_results: pd.DataFrame,
     percent_genes_to_mask: float,
-    min_de_genes: int,
+    min_de_genes_to_mask: int,
     condition_col: str,
     gene_col: str,
     seed: int = RANDOM_SEED,
@@ -30,8 +30,8 @@ def sample_de_genes(
     Args:
         de_results (pd.DataFrame): Differential expression results dataframe.
         percent_genes_to_mask (float): Percentage of genes to mask.
-        min_de_genes (int): Minimum number of differentially expressed genes
-            required to mask that condition. If not met, no genes are masked.
+        min_de_genes_to_mask (int): Minimum number of masked differentially 
+            expressed genes. If not met, no genes are masked.
         condition_col (str): Column name for the condition.
         gene_col (str): Column name for the gene names.
         seed (int): Random seed.
@@ -44,7 +44,7 @@ def sample_de_genes(
     for target in target_conditions:
         gene_names = de_results[de_results[condition_col] == target][gene_col].values
         n_genes_to_sample = int(len(gene_names) * percent_genes_to_mask)
-        if n_genes_to_sample >= min_de_genes:
+        if n_genes_to_sample >= min_de_genes_to_mask:
             sampled_genes = np.random.choice(
                 gene_names, size=n_genes_to_sample, replace=False
             ).tolist()
@@ -92,13 +92,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
-        min_de_genes: int = 5,
+        min_de_genes_to_mask: int = 5,
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
-        # percent_genes_to_mask: float = 1.0,
-        # min_de_genes: int = 1,
-        # pval_threshold: float = 1e-2,
-        # min_logfoldchange: float = 0.1,
         min_smd: float = 0.55,
         de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
@@ -117,7 +113,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask.
-            min_de_genes (int): Minimum number of differentially expressed genes
+            min_de_genes_to_mask (int): Minimum number of differentially expressed genes
                 required to mask that condition. If not met, no genes are masked.
             pval_threshold (float): P-value threshold for differential expression.
             min_logfoldchange (float): Minimum log-fold change for differential expression.
@@ -133,7 +129,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.normalized_deg_test_name = deg_test_name.replace("-", "_")
         self.de_gene_col = de_gene_col
         self.percent_genes_to_mask = percent_genes_to_mask
-        self.min_de_genes = min_de_genes
+        self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
         self.min_smd = min_smd
@@ -257,7 +253,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_condition_dict = sample_de_genes(
             de_results=self.de_results,
             percent_genes_to_mask=self.percent_genes_to_mask,
-            min_de_genes=self.min_de_genes,
+            min_de_genes_to_mask=self.min_de_genes_to_mask,
             condition_col=self.condition_key,
             gene_col=self.de_gene_col,
         )
