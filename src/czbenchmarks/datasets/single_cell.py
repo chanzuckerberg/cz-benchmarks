@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 import anndata as ad
 import numpy as np
 import pandas as pd
@@ -44,18 +44,25 @@ class SingleCellDataset(Dataset):
         """
         super().__init__(dataset_type_name, path, organism, task_inputs_dir)
 
-    def load_data(self) -> None:
+    def load_data(self, backed: Literal["r", "r+"] | bool | None = None) -> None:
         """
         Load the dataset from the path.
 
         This method reads the dataset file in H5AD format and loads it into the
         `adata` attribute as an AnnData object.
 
+        Args:
+            backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset
+                into memory or use backed mode.
+                Memory: False or None. Default is None.
+                Backed: True, 'r' for read-only, 'r+' for read-write
+
         Populates:
             adata (ad.AnnData): Loaded AnnData object containing gene expression data.
         """
-        logger.info(f"Loading dataset from {self.path}")
-        self.adata = ad.read_h5ad(self.path)
+        load_mode = "backed" if backed in {True, "r", "r+"} else "memory"
+        logger.info(f"Loading dataset from {self.path} in {load_mode} mode.")
+        self.adata = ad.read_h5ad(self.path, backed=backed)
 
     def _validate(self) -> None:
         """

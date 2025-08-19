@@ -43,7 +43,9 @@ class SingleCellDatasetTests(DatasetTests):
             invalid_dataset.validate()
 
     @pytest.mark.skip(
-        "Skipping test for raw counts validation as it is cannot be enforced until all datasets are verified to have integer raw counts and validation warning is converted to an error."
+        "Skipping test for raw counts validation as it is cannot be enforced until "
+        "all datasets are verified to have integer raw counts and validation warning "
+        "is converted to an error."
     )
     def test_single_cell_dataset_validate_bad_raw_counts(self, valid_dataset):
         """Tests that dataset validation fails when raw counts are not valid."""
