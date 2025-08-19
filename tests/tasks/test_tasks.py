@@ -281,22 +281,48 @@ def test_perturbation_task():
     gene_pert = perturbation_data["gene_pert"]
     pert_pred = perturbation_data["pert_pred"]
     pert_truth = perturbation_data["pert_truth"]
-    cell_representation = perturbation_data["adata"].X
+    # Convert sparse matrix to dense array to avoid matrix object issues
+    cell_representation = perturbation_data["adata"].X.toarray()
     var_names = perturbation_data["adata"].var_names
     obs_names = perturbation_data["adata"].obs_names
 
     # Task and argument setup
     task = PerturbationExpressionPredictionTask()
+    
+    # Create DE results DataFrame matching expected structure
+    de_results = pd.DataFrame({
+        'condition': [gene_pert] * len(var_names),
+        'gene_id': var_names,
+        'logfoldchange': np.random.randn(len(var_names)),
+        'pval_adj': np.random.uniform(0, 0.01, len(var_names))
+    })
+    
+    # Create masked_adata_obs DataFrame and fix condition naming
+    adata = perturbation_data["adata"]
+    masked_adata_obs = adata.obs.copy()
+    
+    # Fix condition naming to match task expectations
+    # Task expects control cells to be named: {control_prefix}_{condition}
+    control_condition_name = f"non-targeting_{gene_pert}"
+    masked_adata_obs.loc[masked_adata_obs["condition"] == "ctrl", "condition"] = control_condition_name
+    
+    # Create target_conditions_to_save dict - map cell IDs to lists of genes to mask
+    target_conditions_to_save = {}
+    for cell_id in adata.obs_names:
+        # Sample some genes to mask for each cell
+        n_genes_to_mask = min(10, len(var_names) // 2)  
+        target_conditions_to_save[cell_id] = list(np.random.choice(var_names, n_genes_to_mask, replace=False))
+    
     task_input = PerturbationExpressionPredictionTaskInput(
-        var_names=var_names,
-        gene_pert=gene_pert,
-        perturbation_pred=pert_pred,
-        perturbation_truth=pert_truth,
+        de_results=de_results,
+        masked_adata_obs=masked_adata_obs,
+        var_index=var_names,
+        target_conditions_to_save=target_conditions_to_save,
     )
 
-    # Eight metrics: MSE and R2 for all/top20/top100 genes, Jaccard
-    # top20/100
-    num_metrics = 8
+    # Five metrics per condition: accuracy, precision, recall, f1, correlation 
+    # We have one perturbed condition, so 5 metrics total
+    num_metrics = 5
 
     try:
         # Test regular task execution
@@ -314,12 +340,10 @@ def test_perturbation_task():
         for baseline_type in ["mean", "median"]:
             baseline_embedding = task.compute_baseline(
                 cell_representation=cell_representation,
-                var_names=var_names,
-                obs_names=obs_names,
                 baseline_type=baseline_type,
             )
-            task_input.perturbation_pred = baseline_embedding
-            baseline_results = task.run(cell_representation, task_input)
+            # Create a new task input with the baseline embedding
+            baseline_results = task.run(baseline_embedding, task_input)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
             assert len(baseline_results) == num_metrics
@@ -344,6 +368,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
                     "target_gene": ["gene_A"] * len(gene_names),
                     "names": gene_names,
                     "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
                     "condition": ["gene_A"] * len(gene_names),
                     "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
                 }
@@ -354,6 +379,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
                     "target_gene": ["gene_B"] * len(gene_names),
                     "names": gene_names,
                     "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
                     "condition": ["gene_B"] * len(gene_names),
                     "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
                 }
@@ -384,24 +410,20 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
         var=pd.DataFrame(index=gene_names),
     )
-    target_genes_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
     cell_representation = X
 
     # Ensure de_results has the expected gene identifier column
     de_res_wilcoxon_df["gene_id"] = de_res_wilcoxon_df["names"]
 
     task = PerturbationExpressionPredictionTask(
-        min_de_genes=1,
-        metric_type="wilcoxon",
-        metric_column="logfoldchange",
-        min_logfoldchange=0.01,
-        pval_threshold=0.1,
-        control_gene="ctrl",
+        control_prefix="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_wilcoxon_df,
-        dataset_adata=adata,
-        target_genes_to_save=target_genes_to_save,
+        masked_adata_obs=adata.obs,
+        var_index=adata.var_names,
+        target_conditions_to_save=target_conditions_to_save,
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -462,9 +484,11 @@ def test_perturbation_expression_prediction_task_ttest():
             pd.DataFrame(
                 {
                     "standardized_mean_diff": true_smd_gene_A,
+                    "logfoldchange": true_smd_gene_A,  # Add logfoldchange column for compatibility
                     "target_gene": ["gene_A"] * len(gene_names),
                     "names": gene_names,
                     "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
                     "condition": ["gene_A"] * len(gene_names),
                     "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
                 }
@@ -472,9 +496,11 @@ def test_perturbation_expression_prediction_task_ttest():
             pd.DataFrame(
                 {
                     "standardized_mean_diff": true_smd_gene_B,
+                    "logfoldchange": true_smd_gene_B,  # Add logfoldchange column for compatibility
                     "target_gene": ["gene_B"] * len(gene_names),
                     "names": gene_names,
                     "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
                     "condition": ["gene_B"] * len(gene_names),
                     "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
                 }
@@ -505,24 +531,20 @@ def test_perturbation_expression_prediction_task_ttest():
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
         var=pd.DataFrame(index=gene_names),
     )
-    target_genes_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
     cell_representation = X
 
     # Ensure de_results has the expected gene identifier column
     de_res_ttest_df["gene_id"] = de_res_ttest_df["names"]
 
     task = PerturbationExpressionPredictionTask(
-        min_de_genes=1,
-        metric_type="t-test",
-        metric_column="standardized_mean_diff",
-        standardized_mean_diff=0.01,
-        pval_threshold=0.1,
-        control_gene="ctrl",
+        control_prefix="ctrl",
     )
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_ttest_df,
-        dataset_adata=adata,
-        target_genes_to_save=target_genes_to_save,
+        masked_adata_obs=adata.obs,
+        var_index=adata.var_names,
+        target_conditions_to_save=target_conditions_to_save,
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
