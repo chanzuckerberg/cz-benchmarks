@@ -77,12 +77,13 @@ if __name__ == "__main__":
         dataset.adata.shape[0], dataset.adata.shape[1]
     )
     np.save("/tmp/random_model_output.npy", model_output)
-    task = PerturbationExpressionPredictionTask(min_de_genes=args.min_de_genes)
+    task = PerturbationExpressionPredictionTask()
 
+    task = PerturbationExpressionPredictionTask()
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=dataset.de_results,
-        var_index=dataset.adata.var.index,
+        var_index=dataset.control_matched_adata.var.index,
         masked_adata_obs=dataset.control_matched_adata.obs,
-        target_genes_to_save=dataset.target_genes_to_save,
+        target_conditions_to_save=dataset.target_conditions_to_save,
     )
     task.run(model_output, task_input)

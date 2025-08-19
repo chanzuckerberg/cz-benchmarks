@@ -19,7 +19,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     de_results: pd.DataFrame
     masked_adata_obs: pd.DataFrame
     var_index: pd.Index
-    target_genes_to_save: Dict[str, List[str]]
+    target_conditions_to_save: Dict[str, List[str]]
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
@@ -34,29 +34,16 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        min_de_genes: int = 5,
         control_prefix: str = "non-targeting",
-        metric_type: str = "wilcoxon",
-        pval_threshold: float = 1e-4,
-        standardized_mean_diff: float = 0.5,
-        min_logfoldchange: float = 1.0,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         """
         Args:
-            min_de_genes (int): Minimum number of DE genes for a perturbation condition.
-            metric_type (str): Type of DE metric (default: "wilcoxon").
-            pval_threshold (float): Adjusted p-value threshold for DE gene filtering.
-            standardized_mean_diff (float): Minimum standardized mean difference for DE gene filtering.
+            control_prefix (str): Prefix for control conditions.
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
-        self.min_de_genes = min_de_genes
-        self.metric_type = metric_type
-        self.pval_threshold = pval_threshold
-        self.standardized_mean_diff = standardized_mean_diff
-        self.min_logfoldchange = min_logfoldchange
         self.metric_column = "logfoldchange"
         self.control_prefix = control_prefix
 
@@ -87,19 +74,7 @@ class PerturbationExpressionPredictionTask(Task):
 
         pred_log_fc_dict = {}
         true_log_fc_dict = {}
-        de_results = task_input.de_results[
-            task_input.de_results["pval_adj"] < self.pval_threshold
-        ]
-
-        if self.metric_type == "wilcoxon":
-            de_results = de_results[
-                np.abs(de_results[self.metric_column]) >= self.min_logfoldchange
-            ]
-        elif self.metric_type == "t-test":
-            de_results = de_results[
-                de_results["standardized_mean_diff"].abs()
-                >= self.standardized_mean_diff
-            ]
+        de_results = task_input.de_results
 
         condition_series = task_input.masked_adata_obs["condition"].astype(str)
         condition_list = np.unique(
@@ -108,11 +83,9 @@ class PerturbationExpressionPredictionTask(Task):
         
         for condition in condition_list:
             condition_de_df = de_results[de_results["condition"] == condition]
-            if len(condition_de_df) < self.min_de_genes:
-                print(f"Skipping condition because it has less than {self.min_de_genes} DE genes. Has {len(condition_de_df)}.")
-                continue
+
             masked_genes = np.array(
-                task_input.target_genes_to_save[
+                task_input.target_conditions_to_save[
                     task_input.masked_adata_obs.index[
                         task_input.masked_adata_obs["condition"] == condition
                     ][0]
