@@ -219,50 +219,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             Setup as a private function to allow for multiprocessing if needed.
             """
 
-            adata_condition = adata[rows_cond]
-            adata_control = adata[rows_ctrl]
+            adata_condition = adata[rows_cond].to_memory()
+            adata_control = adata[rows_ctrl].to_memory()
 
             if len(adata_condition) != len(adata_control):
                 logger.warning(
                     f"Condition and control data for {selected_condition} have different lengths."
                 )
 
-            adata_condition.obs[condition_key] = adata_condition.obs[
-                condition_key
-            ].astype(str)
-            adata_condition.obs.loc[:, condition_key] = selected_condition
-
-            adata_control.obs[condition_key] = adata_control.obs[condition_key].astype(
-                str
-            )
-            adata_control.obs.loc[:, condition_key] = "_".join(
-                [control_name, selected_condition]
-            )
-
-            # Concatenate condition and control data
-            adata_merged = ad.concat(
-                [adata_condition, adata_control], index_unique=None
-            )
-
-            # Add condition to cell_barcode_gene column and set as index
-            adata_merged.obs["cell_barcode_gene"] = (
-                adata_merged.obs.index.astype(str)
-                + "_"
-                + [selected_condition] * len(adata_merged)
-            )
-            adata_merged.obs.set_index("cell_barcode_gene", inplace=True)
-
-            # Add target genes to the dictionary for each cell
-            target_genes_to_save = {}
-            for idx in adata_merged.obs.index:
-                target_genes_to_save[idx] = target_gene_dict[selected_condition]
-
-            return adata_merged, target_genes_to_save
-
-        target_gene_dict = sample_de_genes(
-            de_results=self.de_results,
-            percent_genes_to_mask=self.percent_genes_to_mask,
-            min_de_genes=self.min_de_genes,
             # Concatenate condition and control data
             adata_merged = ad.concat(
                 [adata_condition, adata_control], index_unique=None
