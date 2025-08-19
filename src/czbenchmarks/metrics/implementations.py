@@ -37,16 +37,8 @@ from .types import MetricRegistry, MetricType
 def spearman_correlation(a, b):
     """Wrapper for spearmanr that returns only the correlation coefficient."""
     result = spearmanr(a, b)
-    # Handle both old and new scipy versions
-    if hasattr(result, "correlation"):
-        value = result.correlation
-        return 0 if np.isnan(value) else value
-    elif hasattr(result, "statistic"):
-        value = result.statistic
-        return 0 if np.isnan(value) else value
-    else:
-        # Fallback for very old versions that return (correlation, pvalue)
-        return result[0]
+    value = result.statistic
+    return 0 if np.isnan(value) else value
 
 
 # Create the global metric registry
