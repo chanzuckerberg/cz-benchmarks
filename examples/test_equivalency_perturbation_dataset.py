@@ -5,6 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import anndata as ad
+import shutil
 import tempfile
 import yaml
 import os
@@ -13,6 +14,10 @@ from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.utils import load_dataset
 from tqdm import tqdm
 from pandas.testing import assert_frame_equal
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def assert_de_results_equivalent(df1, df2, col_map):
@@ -73,7 +78,7 @@ def create_adata(adata, target_gene_dict, nontargeting_cells):
 def sample_genes(
     df,
     percent_genes_to_mask,
-    min_de_genes,
+    min_de_genes_to_mask,
     condition_col,
     gene_col,
     seed: int = RANDOM_SEED,
@@ -84,7 +89,7 @@ def sample_genes(
     for target in tqdm(target_genes):
         gene_names = df[df[condition_col] == target][gene_col].values
         n_genes_to_sample = int(len(gene_names) * percent_genes_to_mask)
-        if n_genes_to_sample >= min_de_genes:
+        if n_genes_to_sample >= min_de_genes_to_mask:
             sampled_genes = np.random.choice(
                 gene_names, size=n_genes_to_sample, replace=False
             ).tolist()
@@ -103,16 +108,20 @@ def run_notebook_code(args):
         target_gene_dict = sample_genes(
             df,
             args.percent_genes_to_mask,
-            args.min_de_genes,
+            args.min_de_genes_to_mask,
             "target_gene",
             "ensembl_id",
         )
 
-    elif args.metric == "t_test":
+    elif args.metric == "t-test":
         df = df[np.abs(df["smd"]) >= args.min_smd]
         df = df[df["pval_adj"] < args.pval_threshold]
         target_gene_dict = sample_genes(
-            df, args.percent_genes_to_mask, args.min_de_genes, "condition", "gene"
+            df,
+            args.percent_genes_to_mask,
+            args.min_de_genes_to_mask,
+            "condition",
+            "gene",
         )
 
     else:
@@ -126,7 +135,7 @@ def run_notebook_code(args):
     gene_map = {}
     for index, ent in adata.obs.iterrows():
         gene_map[ent.gene_id] = ent.gene
-    
+
     return adata_final, target_genes_to_save, gene_map
 
 
@@ -164,20 +173,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/new_data/K562_essential_raw_singlecell_01.h5ad",
+        default="/data2/czbenchmarks/replogle2022/K562/K562_essential_raw_singlecell_01.h5ad",
         help="Path to masked h5ad file",
     )
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/k562_data/wilcoxon_de_results.csv",
+        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results.csv file",
     )
 
     parser.add_argument(
         "--metric",
         type=str,
-        default="wilcoxon",
+        default="wilcoxon",  # wilcoxon or t-test, do not use t_test
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -193,7 +202,7 @@ if __name__ == "__main__":
         help="Adjusted p-value threshold for DE filtering",
     )
     parser.add_argument(
-        "--min_de_genes",
+        "--min_de_genes_to_mask",
         type=int,
         default=5,
         help="Minimum number of DE genes required to mask a condition",
@@ -207,30 +216,77 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
+        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
         help="Path to control_cells_ids .json file",
     )
+    parser.add_argument(
+        "--run_notebook_code",
+        action="store_true",
+        help="Run notebook code",
+    )
     args = parser.parse_args()
-    # Normalize metric aliases (accepts t_test or t-test, but preserve t_test for dataset)
-    metric_normalized = args.metric.strip().lower().replace("-", "_")
-    if metric_normalized in {"t_test", "ttest"}:
-        args.metric = "t_test"
-    elif metric_normalized == "wilcoxon":
-        args.metric = "wilcoxon"
-    else:
+    # metric is either wilcoxon or t-test
+    if args.metric not in {"wilcoxon", "t-test"}:
         raise ValueError(
-            f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't_test'."
+            f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't-test'."
+        )
+    # metric_normalized is either wilcoxon or t_test
+    metric_normalized = args.metric.strip().lower().replace("-", "_")
+    if metric_normalized in {"t-test", "ttest"}:
+        metric_normalized = "t_test"
+
+    args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    nb_dir = Path("notebook_task_inputs")
+
+    #### NOTEBOOK CODE ####
+    if args.run_notebook_code:
+        if Path(nb_dir).exists():
+            logger.info(
+                f"Directory {nb_dir} already exists, copying to {nb_dir}_{timestamp}"
+            )
+            shutil.copytree(nb_dir, f"{nb_dir}_{timestamp}")
+        else:
+            logger.info(f"Directory {nb_dir} does not exist, creating it")
+            os.makedirs(nb_dir)
+
+    # This could be combined with previous if statement
+    if (
+        not args.run_notebook_code
+        and Path(nb_dir / "notebook_adata_masked.h5ad").exists()
+    ):
+        logger.info(f"Loading notebook code from disk {nb_dir}")
+        notebook_adata_masked = ad.read_h5ad(nb_dir / "notebook_adata_masked.h5ad")
+        with open(nb_dir / "notebook_target_genes_to_save.json", "r") as f:
+            notebook_target_genes_to_save = json.load(f)
+        with open(nb_dir / "gene_map.json", "r") as f:
+            gene_map = json.load(f)
+    else:
+        logger.info(f"Running notebook code with args: {args}")
+        notebook_adata_masked, notebook_target_genes_to_save, gene_map = (
+            run_notebook_code(args)
         )
 
-    notebook_adata_masked, notebook_target_genes_to_save, gene_map = run_notebook_code(
-        args
-    )
+        logger.info("Saving notebook code to disk")
+        notebook_adata_masked.write(nb_dir / "notebook_adata_masked.h5ad")
+        with (nb_dir / "notebook_target_genes_to_save.json").open("w") as f:
+            json.dump(notebook_target_genes_to_save, f)
+        with (nb_dir / "gene_map.json").open("w") as f:
+            json.dump(gene_map, f)
+        print(f"Notebook task inputs saved to: {nb_dir}")
 
-
+    #### NEW CODE ####
+    logger.info(f"Running new code with args: {args}")
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
     new_output_dir = new_dataset.store_task_inputs()
+    logger.info(f"New code output saved to: {new_output_dir}")
 
+    #### COMPARE OUTPUTS ####
     # Compare DE results CSV to dataset.de_results with column name mapping
+    logger.info(
+        "Comparing DE results CSV to dataset.de_results with column name mapping"
+    )
     df_csv = pd.read_csv(args.de_results_path)
     if args.metric == "wilcoxon":
         col_map = {
@@ -241,7 +297,7 @@ if __name__ == "__main__":
             "pvals": "pval",
             "pvals_adj": "pval_adj",
         }
-    elif args.metric == "t_test":
+    elif args.metric == "t-test":
         col_map = {
             "gene": "gene_id",
             "condition": "condition_name",
@@ -251,21 +307,35 @@ if __name__ == "__main__":
             "pval_adj": "pval_adj",
             "smd": "standardized_mean_diff",
         }
+
+    df_csv = df_csv.rename(columns=col_map)
+    filter = df_csv["pval_adj"] <= args.pval_threshold
+    if metric_normalized == "wilcoxon":
+        filter &= df_csv["logfoldchange"].abs() >= args.min_logfoldchange
+    elif metric_normalized == "t_test":
+        filter &= df_csv["standardized_mean_diff"].abs() >= args.min_smd
+
+    df_csv = df_csv[filter]
+
     assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)
-    
+    logger.info("DE results matched")
+
     # Assert that the var frames are equivalent
+    logger.info("Asserting that the var frames are equivalent")
     column_map = {
         "gene_name": "gene",
     }
+    assert (notebook_adata_masked.var.index == new_dataset.adata.var.index).all()
+    logger.info("Var frames matched")
 
-    assert((notebook_adata_masked.var.index == new_dataset.adata.var.index).all())
-    
+    # Compare target genes
+    logger.info("Comparing target genes")
     dataset_target_genes = {}
-    for k in new_dataset.target_genes_to_save.keys():
+    for k in new_dataset.target_conditions_to_save.keys():
         s = k.split("_")
         try:
             dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
-                new_dataset.target_genes_to_save[k]
+                new_dataset.target_conditions_to_save[k]
             )
         except KeyError:
             print(f"KeyError: {k}")
@@ -274,14 +344,17 @@ if __name__ == "__main__":
     missing_keys = [
         k for k in dataset_target_genes.keys() if k not in notebook_target_genes_to_save
     ]
-    assert (
-        not missing_keys
-    ), f"Missing keys in notebook_target_genes_to_save: {missing_keys[:10]}"
+    assert not missing_keys, (
+        f"Missing keys in notebook_target_genes_to_save: {missing_keys[:10]}"
+    )
     for k, v in dataset_target_genes.items():
         v_lib = list(v)
         v_nb = list(notebook_target_genes_to_save[k])
         assert set(v_lib) == set(v_nb), f"Mismatched genes for key {k}"
+    logger.info("Target genes matched")
 
+    # Compare control matched adata
+    logger.info("Comparing control matched adata")
     control_prefix = "non-targeting"
     # we want to make sure that the conditions and cell_bar_code_gene are the same
     new_obs = new_dataset.control_matched_adata.obs
@@ -312,19 +385,9 @@ if __name__ == "__main__":
             new_condition_list.append(s[0] + "_" + gene_map[s[1]])
 
         assert new_condition_list == list(nb_condition)
-        assert new_control_list == list(nb_control)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nb_dir = Path(f"notebook_task_inputs_{timestamp}")
-    # Save the notebook_adata_masked, notebook_target_genes_to_save, and gene_map to disk
-    
-    os.makedirs(nb_dir, exist_ok=True)
-    notebook_adata_masked.write(nb_dir / "notebook_adata_masked.h5ad")
-    with (nb_dir / "notebook_target_genes_to_save.json").open("w") as f:
-        json.dump(notebook_target_genes_to_save, f)
-    with (nb_dir / "gene_map.json").open("w") as f:
-        json.dump(gene_map, f)
-    print(f"Notebook task inputs saved to: {nb_dir}")
-    print(f"New output directory: {new_output_dir}")
-    with (nb_dir / "gene_map.json").open("w") as f:
-        json.dump(gene_map, f)
-    print(f"Gene map saved to: {nb_dir / 'gene_map.json'}")
+        assert sorted(new_control_list) == sorted(
+            list(nb_control)
+        )  # order is suddenly not preserved
+    logger.info("Control matched adata matched")
+
+    logger.info("Done")
