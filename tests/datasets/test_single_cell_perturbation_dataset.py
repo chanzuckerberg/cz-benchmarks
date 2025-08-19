@@ -21,7 +21,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             control_name="ctrl",
             deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
-            min_de_genes=5,
+            min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
@@ -143,14 +143,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
-    @pytest.mark.parametrize("min_de_genes", [1, 5])
+    @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
     def test_perturbation_dataset_load_data(
         self,
         tmp_path,
         deg_test_name,
         percent_genes_to_mask,
-        min_de_genes,
+        min_de_genes_to_mask,
         pval_threshold,
     ):
         """Tests the loading of perturbation dataset data across parameter combinations."""
@@ -162,7 +162,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             control_name="ctrl",
             deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
-            min_de_genes=min_de_genes,
+            min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
             min_logfoldchange=1.0,
         )
@@ -192,7 +192,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             condition_key="condition",
             deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
-            min_de_genes=5,
+            min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
@@ -213,7 +213,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             condition_key="condition",
             deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
-            min_de_genes=5,
+            min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
@@ -235,7 +235,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             control_name="ctrl",
             deg_test_name=deg_test_name,
             percent_genes_to_mask=0.5,
-            min_de_genes=5,
+            min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
@@ -262,14 +262,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
-    @pytest.mark.parametrize("min_de_genes", [1, 5])
+    @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
     def test_perturbation_dataset_load_de_results_from_csv(
         self,
         tmp_path,
         deg_test_name,
         percent_genes_to_mask,
-        min_de_genes,
+        min_de_genes_to_mask,
         pval_threshold,
     ):
         """Tests loading DE results from an external CSV via de_results_path."""
@@ -300,7 +300,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             control_name="ctrl",
             deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
-            min_de_genes=min_de_genes,
+            min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
             min_logfoldchange=0.0,
             de_results_path=csv_path,
