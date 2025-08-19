@@ -92,11 +92,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         condition_key: str = "condition",
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
-        deg_test_name: str = "wilcoxon",  # FIXME MICHELLE: for testing
-        percent_genes_to_mask: float = 0.5,  # FIXME MICHELLE: for testing
-        min_de_genes: int = 5,  # FIXME MICHELLE: Maria had 5, Jasleen suggested 1
-        pval_threshold: float = 1e-4,  # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
-        min_logfoldchange: float = 1.0,  # FIXME MICHELLE: Maria has 1.0, Jasleen asked if this should be 0?
+        deg_test_name: str = "wilcoxon",
+        percent_genes_to_mask: float = 0.5,
+        min_de_genes: int = 5,
+        pval_threshold: float = 1e-4,
+        min_logfoldchange: float = 1.0,
         min_smd: float = 0.55,
         de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
@@ -114,7 +114,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 expressed in the differential expression results. Defaults to "gene".
             deg_test_name (str): Name of the differential expression test condition.
                 Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
-            percent_genes_to_mask (float): Percentage of genes to mask. Defaults to 0.5.
+            percent_genes_to_mask (float): Percentage of genes to mask.
             min_de_genes (int): Minimum number of differentially expressed genes
                 required to mask that condition. If not met, no genes are masked.
             pval_threshold (float): P-value threshold for differential expression.
@@ -316,9 +316,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def load_data(
         self,
-        backed: Literal["r", "r+"]
-        | bool
-        | None = None,  # FIXME MICHELLE: for testing, will remove if not used
     ) -> None:
         """
         Load the dataset and populate perturbation truth data.
@@ -327,16 +324,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
-        Args:
-            backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset
-                into memory or use backed mode.
-                Memory: False or None. Default is None.
-                Backed: True, 'r' for read-only, 'r+' for read-write
-
         Raises:
-            ValueError: If `condition_key` not found in `adata.obs`.
+            ValueErrors or FileNotFoundErrors: If required conditions are not met.
         """
-        super().load_data(backed=backed)
+        super().load_data()
 
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
@@ -398,21 +389,30 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             unique_conditions_control_cells_ids
         ):
             raise ValueError(
-                f"Conditions in de_results[{self.condition_key}] are not a subset of control_cells_ids keys. This will cause errors in the creation of the control-matched adata."
+                f"Conditions in de_results[{self.condition_key}] are not a subset "
+                f"of control_cells_ids keys. This will cause errors in the "
+                f"creation of the control-matched adata."
             )
 
         if unique_conditions_control_cells_ids != unique_conditions_adata:
-            msg = f"Conditions in control_cells_ids and adata.obs[{self.condition_key}] are not identical"
+            msg = (
+                f"Conditions in control_cells_ids and adata.obs[{self.condition_key}] "
+                f"are not identical"
+            )
             if unique_conditions_control_cells_ids.issubset(unique_conditions_adata):
                 logger.warning(
                     msg
-                    + f", but control_cells_ids keys are a subset of adata.obs[{self.condition_key}]. This should allow for creation of control-matched data but will ignore some of the data"
+                    + f", but control_cells_ids keys are a subset of "
+                    f"adata.obs[{self.condition_key}]. This should allow for "
+                    f"creation of control-matched data but will ignore some of "
+                    f"the data"
                 )
             else:
-                # TODO verify this is OK as long as all de_results conditions are in control cells ids (checked below)
                 logger.warning(
                     msg
-                    + f", and control_cells_ids keys contain conditions not in adata.obs[{self.condition_key}]. This may cause errors in the creation of control-matched adata."
+                    + f", and control_cells_ids keys contain conditions not in "
+                    f"adata.obs[{self.condition_key}]. This may cause errors in "
+                    f"the creation of control-matched adata."
                 )
 
         logger.info(
