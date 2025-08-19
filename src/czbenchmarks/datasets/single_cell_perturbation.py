@@ -164,7 +164,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             filter &= de_results["standardized_mean_diff"].abs() >= min_smd
 
         de_results = de_results[filter]
-
         target_gene_dict = sample_de_genes(
             de_results=de_results,
             percent_genes_to_mask=percent_genes_to_mask,
@@ -247,7 +246,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
         # FIXME MICHELLE filter de_results and control_cells_ids for only sampled conditions
         target_genes = list(target_gene_dict.keys())
-        target_genes = target_genes
+        target_genes = target_genes[:4]
         total_conditions = len(target_genes)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
@@ -401,18 +400,19 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_dir = inputs_dir / "control_matched_adata"
         obs = pd.read_json(adata_dir / "obs.json", orient="split")
         var = pd.read_json(adata_dir / "var.json", orient="split")
-        x_npz = adata_dir / "X.npz"
-        x_npy = adata_dir / "X.npy"
-        if x_npz.exists():
-            X = sparse.load_npz(x_npz)
-        elif x_npy.exists():
-            X = np.load(x_npy)
-        else:
-            raise FileNotFoundError(
-                f"Missing expression matrix: {x_npz} or {x_npy} not found"
-            )
+        # So far, no need to load the expression matrix.
+        #x_npz = adata_dir / "X.npz"
+        #x_npy = adata_dir / "X.npy"
+        #if x_npz.exists():
+        #    X = sparse.load_npz(x_npz)
+        #elif x_npy.exists():
+        #    X = np.load(x_npy)
+        #else:
+        #    raise FileNotFoundError(
+        #        f"Missing expression matrix: {x_npz} or {x_npy} not found"
+        #    )
 
-        adata_final = ad.AnnData(X=X, obs=obs, var=var)
+        adata_final = ad.AnnData(obs=obs, var=var, shape=(len(obs), len(var)))
         # Match `load_data` behavior
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]

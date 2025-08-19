@@ -325,3 +325,6 @@ if __name__ == "__main__":
         json.dump(gene_map, f)
     print(f"Notebook task inputs saved to: {nb_dir}")
     print(f"New output directory: {new_output_dir}")
+    with (nb_dir / "gene_map.json").open("w") as f:
+        json.dump(gene_map, f)
+    print(f"Gene map saved to: {nb_dir / 'gene_map.json'}")
