@@ -141,7 +141,7 @@ def run_notebook_code(args):
 
         try:
             # Masked genes for this sample
-            masked_genes = genes_dict[control_cells[0]]
+            masked_genes = np.asarray(genes_dict[control_cells[0]])
             mask = masked_genes != "A"
             masked_genes = masked_genes[mask]
 
