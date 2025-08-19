@@ -432,6 +432,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Returns:
             Path: Path to the directory storing the task input files.
         """
+        # TODO: Might be better as a single adata, pending future design on how 
+        # Task instantiation is performed by benchmarking pipelines
         inputs_to_store = {
             "control_cells_ids": self.control_cells_ids,
             "target_conditions_to_save": self.target_conditions_to_save,
