@@ -423,7 +423,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         Store auxiliary data files.
 
-        This method saves the IDs of the control cells and the target conditions dictionary 
+        This method saves the IDs of the control cells and the target conditions dictionary
             to JSON files.
 
         Returns:
