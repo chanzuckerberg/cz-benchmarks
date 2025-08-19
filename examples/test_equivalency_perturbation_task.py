@@ -58,8 +58,6 @@ def run_notebook_code(args):
     # Load notebook outputs from the specified directory
     nb_dir = args.notebook_task_inputs_path
     masked_notebook_adata = ad.read_h5ad(nb_dir / "notebook_adata_masked.h5ad", backed = "r")
-    with (nb_dir / "gene_map.json").open("r") as f:
-        gene_map = json.load(f)
 
     print("Notebook files loaded. Reading and filtering DE results...")
     # Read in and filter the DE results
@@ -82,7 +80,7 @@ def run_notebook_code(args):
     print("DE results filtered. Loading predictions and grouping by sample...")
     # The original code is per model name. But here, we just have one model.
     predictions_dict = {}
-    genes_dict = {}
+    genes_dict = json.load(open(args.notebook_task_inputs_path / "notebook_target_genes_to_save.json"))
     pred_log_fc_dict = {}
     true_log_fc_dict = {}
     metrics_dict = {
@@ -105,8 +103,6 @@ def run_notebook_code(args):
         predictions_dict.setdefault(sample, []).append(
             np.concatenate(group["pred"].to_numpy())
         )
-        if sample not in genes_dict:
-            genes_dict[sample] = group["target_genes"].to_numpy()
 
     print("Finished grouping predictions. Iterating over all conditions...")
     # Iterate over all conditions
@@ -393,7 +389,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--new_saved_dir", type=str,
      default="/home/pbinder/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
-    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250815_120737"))
+    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250818_181635"))
 
     args = parser.parse_args()
     print("Loading initial dataset...")
@@ -425,8 +421,6 @@ if __name__ == "__main__":
     with (args.notebook_task_inputs_path / "gene_map.json").open("r") as f:
         notebook_gene_map = json.load(f)
     
-    breakpoint()
-
     for k in new_result.true_log_fc_dict:
         assert notebook_gene_map[k] in notebook_true_log_fc_dict, f"Key {k} missing in notebook_true_log_fc_dict"
 
