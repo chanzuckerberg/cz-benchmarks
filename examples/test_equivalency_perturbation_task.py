@@ -2,6 +2,7 @@
 # what is outputted in Maria's intial notebook.
 
 import argparse
+import os
 import numpy as np
 import pandas as pd
 import anndata as ad
@@ -383,13 +384,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--initial_data_set_path",
         type=str,
-        default="/home/pbinder/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
+        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
         help="Path to target_genes .npy file",
     )
 
     parser.add_argument("--new_saved_dir", type=str,
-     default="/home/pbinder/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
-    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250818_181635"))
+        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
+    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250815_120737"))
 
     args = parser.parse_args()
     print("Loading initial dataset...")
