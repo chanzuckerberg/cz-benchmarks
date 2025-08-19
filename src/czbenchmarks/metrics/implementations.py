@@ -29,7 +29,7 @@ from sklearn.metrics import (
     f1_score,
 )
 from scipy.stats import pearsonr, spearmanr
-from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
+from .utils import compute_entropy_per_cell, mean_fold_metric
 
 from .types import MetricRegistry, MetricType
 
@@ -118,13 +118,6 @@ metrics_registry.register(
     tags={"perturbation"},
 )
 
-metrics_registry.register(
-    MetricType.JACCARD,
-    func=jaccard_score,
-    required_args={"y_true", "y_pred"},
-    description="Jaccard similarity between true and predicted values",
-    tags={"perturbation"},
-)
 
 # Register cross-validation classification metrics
 metrics_registry.register(
@@ -132,7 +125,7 @@ metrics_registry.register(
     func=mean_fold_metric,
     required_args={"results_df"},
     default_params={"metric": "accuracy", "classifier": None},
-    tags={"label_prediction"},
+    tags={"label_prediction",},
 )
 
 metrics_registry.register(
@@ -172,7 +165,7 @@ metrics_registry.register(
     func=accuracy_score,
     required_args={"y_true", "y_pred"},
     description="Accuracy between true and predicted values",
-    tags={"label_prediction"},
+    tags={"label_prediction", "perturbation"},
 )
 
 metrics_registry.register(
@@ -180,7 +173,7 @@ metrics_registry.register(
     func=precision_score,
     required_args={"y_true", "y_pred"},
     description="Precision between true and predicted values",
-    tags={"label_prediction"},
+    tags={"label_prediction", "perturbation"},
 )
 
 metrics_registry.register(
@@ -188,7 +181,7 @@ metrics_registry.register(
     func=recall_score,
     required_args={"y_true", "y_pred"},
     description="Recall between true and predicted values",
-    tags={"label_prediction"},
+    tags={"label_prediction", "perturbation"},
 )
 
 metrics_registry.register(
@@ -196,7 +189,7 @@ metrics_registry.register(
     func=f1_score,
     required_args={"y_true", "y_pred"},
     description="F1 score between true and predicted values",
-    tags={"label_prediction"},
+    tags={"label_prediction", "perturbation"},
 )
 
 metrics_registry.register(
@@ -204,5 +197,5 @@ metrics_registry.register(
     func=spearman_correlation,
     required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
-    tags={"label_prediction"},
+    tags={"label_prediction", "perturbation"},
 )

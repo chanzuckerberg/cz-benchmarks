@@ -324,27 +324,41 @@ def test_perturbation_task():
     # We have one perturbed condition, so 5 metrics total
     num_metrics = 5
 
-    # Test regular task execution
-    results = task.run(
-        cell_representation,
-        task_input,
-    )
-    # Verify results structure
-    assert isinstance(results, dict)
-    assert all(isinstance(s, MetricResult) for r in results.values() for s in r)
-    assert len(results) == num_metrics
-
-    # Test baseline with both mean and median
-    for baseline_type in ["mean", "median"]:
-        baseline_embedding = task.compute_baseline(
-            cell_representation=cell_representation,
-            baseline_type=baseline_type,
+    try:
+        # Test regular task execution
+        results = task.run(
+            cell_representation,
+            task_input,
         )
-        # Create a new task input with the baseline embedding
-        baseline_results = task.run(baseline_embedding, task_input)
-        assert isinstance(baseline_results, dict)
-        assert all(isinstance(s, MetricResult) for r in results.values() for s in r)
-        assert len(baseline_results) == num_metrics
+
+        # Verify results structure - the method returns a dict, not a list
+        assert isinstance(results, dict)
+        
+        # Flatten the dictionary into a list for further checking
+        all_results = []
+        for metric_list in results.values():
+            all_results.extend(metric_list)
+        
+        assert all(isinstance(r, MetricResult) for r in all_results)
+        assert len(all_results) == num_metrics
+
+        # Test baseline with both mean and median
+        for baseline_type in ["mean", "median"]:
+            baseline_embedding = task.compute_baseline(
+                cell_representation=cell_representation,
+                baseline_type=baseline_type,
+            )
+            # Create a new task input with the baseline embedding
+            baseline_results = task.run(baseline_embedding, task_input)
+            assert isinstance(baseline_results, dict)
+            
+            # Flatten baseline results
+            baseline_all_results = []
+            for metric_list in baseline_results.values():
+                baseline_all_results.extend(metric_list)
+            
+            assert all(isinstance(r, MetricResult) for r in baseline_all_results)
+            assert len(baseline_all_results) == num_metrics
 
 
 
@@ -584,3 +598,63 @@ def test_perturbation_expression_prediction_task_ttest():
         pytest.fail(
             f"PerturbationExpressionPredictionTask (t-test) failed unexpectedly: {e}"
         )
+
+
+def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path):
+    """Test that the task can load inputs from stored task files."""
+    from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
+    from czbenchmarks.datasets.types import Organism
+    from tests.utils import create_dummy_anndata
+    
+    # Create a dummy dataset and store its task inputs
+    file_path = tmp_path / "dummy_perturbation.h5ad"
+    adata = create_dummy_anndata(
+        n_cells=6,
+        n_genes=3,
+        obs_columns=["condition"],
+        organism=Organism.HUMAN,
+    )
+    adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
+    adata.obs_names = [
+        "ctrl_test1_a", "ctrl_test2_b", "cond_test1_a",
+        "cond_test1_b", "cond_test2_a", "cond_test2_b"
+    ]
+    # Provide matched control cell IDs and DE results
+    adata.uns["control_cells_ids"] = {
+        "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+        "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+    }
+    de_conditions = ["test1"] * 10 + ["test2"] * 10
+    de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+    adata.uns["de_results_wilcoxon"] = pd.DataFrame({
+        "condition": de_conditions,
+        "gene": de_genes,
+        "pval_adj": [1e-6] * 20,
+        "logfoldchange": [2.0] * 20,
+    })
+    adata.write_h5ad(file_path)
+    
+    # Create dataset and store task inputs
+    dataset = SingleCellPerturbationDataset(
+        path=file_path,
+        organism=Organism.HUMAN,
+        condition_key="condition",
+        control_name="ctrl",
+    )
+    dataset.load_data()
+    stored_dir = dataset.store_task_inputs()
+    
+    # Test loading task inputs using the static method
+    task_input = PerturbationExpressionPredictionTask.load_from_task_inputs(stored_dir)
+    
+    # Verify the loaded task input has the expected structure
+    assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
+    assert isinstance(task_input.de_results, pd.DataFrame)
+    assert isinstance(task_input.masked_adata_obs, pd.DataFrame)
+    assert len(task_input.target_conditions_to_save) > 0
+    assert all(isinstance(v, list) for v in task_input.target_conditions_to_save.values())
+    
+    # Verify data integrity
+    assert task_input.de_results.shape[0] > 0
+    assert task_input.masked_adata_obs.shape[0] > 0
+    assert len(task_input.var_index) > 0
