@@ -1,7 +1,6 @@
 from typing import Dict, Optional, List, Tuple
 import io
 from pathlib import Path
-from typing import Literal
 import json
 import numpy as np
 import scipy.sparse as sparse
@@ -12,7 +11,6 @@ from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
 from tqdm import tqdm
-from time import time
 
 
 logger = logging.getLogger(__name__)
