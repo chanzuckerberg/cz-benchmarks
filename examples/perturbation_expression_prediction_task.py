@@ -5,79 +5,57 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+import pandas as pd
 import numpy as np
-import argparse
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.tasks.types import CellRepresentation
+def print_metrics_summary(metrics_dict):
+    """Print a nice summary table of all metrics."""
+    
+    # Extract all conditions from any metric type
+    conditions = [result.params["condition"] for result in metrics_dict["accuracy"]]
+    
+    # Create a summary dictionary
+    summary_data = []
+    for condition in conditions:
+        row = {"condition": condition}
+        
+        # Extract values for each metric type
+        for metric_name, results in metrics_dict.items():
+            # Find the result for this condition
+            condition_result = next(r for r in results if r.params["condition"] == condition)
+            row[metric_name] = f"{condition_result.value:.4f}"
+        
+        summary_data.append(row)
+    
+    # Create and print DataFrame
+    df = pd.DataFrame(summary_data)
+    print("\n=== Perturbation Expression Prediction Results ===")
+    print(df.to_string(index=False))
+    
+    # Print overall statistics
+    print(f"\nSummary Statistics across {len(conditions)} conditions:")
+    for metric_name, results in metrics_dict.items():
+        values = [r.value for r in results]
+        print(f"{metric_name.title()}: mean={np.mean(values):.4f}, std={np.std(values):.4f}")
 
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
     Assumes wilcoxon DE results and a masked h5ad file."""
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-    parser = argparse.ArgumentParser(
-        description="Run K562 Perturbation Task with custom file paths and filtering parameters."
-    )
-    parser.add_argument(
-        "--min_logfoldchanges",
-        type=float,
-        default=1.0,
-        help="Minimum absolute log fold change for DE gene filtering",
-    )
-    parser.add_argument(
-        "--pval_threshold",
-        type=float,
-        default=1e-4,
-        help="Adjusted p-value threshold for DE gene filtering",
-    )
-    parser.add_argument(
-        "--h5ad_path",
-        type=str,
-        default="new_data/replogle_k562_essential_perturbpredict.h5ad",
-        help="Path to masked h5ad file",
-    )
-    parser.add_argument(
-        "--predictions_path",
-        type=str,
-        default="k562_data/predictions_merged.npy",
-        help="Path to predictions .npy file",
-    )
-    parser.add_argument(
-        "--sample_id_path",
-        type=str,
-        default="k562_data/sample_id_merged.npy",
-        help="Path to sample_id .npy file",
-    )
-    parser.add_argument(
-        "--target_genes_path",
-        type=str,
-        default="k562_data/target_genes_merged.npy",
-        help="Path to target_genes .npy file",
-    )
-    parser.add_argument(
-        "--min_de_genes",
-        type=int,
-        default=20,
-        help="Minimum number of DE genes for perturbation condition",
-    )
-    parser.add_argument(
-        "--metric_type",
-        type=str,
-        choices=["wilcoxon", "t_test"],
-        default="wilcoxon",
-        help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
-    )
-
     # Load the input data
-    args = parser.parse_args()
     dataset: SingleCellPerturbationDataset = load_dataset(
         "replogle_k562_essential_perturbpredict"
     )
+    #Optional: Save and load dataset
+
+    #dataset.store_task_inputs()
+    #Generate random model output
     model_output: CellRepresentation = np.random.rand(
         dataset.adata.shape[0], dataset.adata.shape[1]
     )
     np.save("/tmp/random_model_output.npy", model_output)
-    task = PerturbationExpressionPredictionTask()
 
     task = PerturbationExpressionPredictionTask()
     task_input = PerturbationExpressionPredictionTaskInput(
@@ -86,4 +64,5 @@ if __name__ == "__main__":
         masked_adata_obs=dataset.control_matched_adata.obs,
         target_conditions_to_save=dataset.target_conditions_to_save,
     )
-    task.run(model_output, task_input)
+    metrics_dict = task.run(model_output, task_input)
+    print_metrics_summary(metrics_dict)

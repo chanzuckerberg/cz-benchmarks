@@ -16,8 +16,6 @@ from czbenchmarks.tasks import (
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
-    PerturbationTask,
-    PerturbationTaskInput,
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
@@ -271,7 +269,7 @@ def test_cross_species_task(embedding_matrix, obs):
 
 
 def test_perturbation_task():
-    """Test that PerturbationTask executes without errors."""
+    """Test that PerturbationExpressionPredictionTask executes without errors."""
     # Create dummy perturbation data
     perturbation_data: dict = create_dummy_perturbation_anndata(
         n_cells=500,
@@ -288,8 +286,8 @@ def test_perturbation_task():
     obs_names = perturbation_data["adata"].obs_names
 
     # Task and argument setup
-    task = PerturbationTask()
-    task_input = PerturbationTaskInput(
+    task = PerturbationExpressionPredictionTask()
+    task_input = PerturbationExpressionPredictionTaskInput(
         var_names=var_names,
         gene_pert=gene_pert,
         perturbation_pred=pert_pred,
@@ -327,7 +325,7 @@ def test_perturbation_task():
             assert len(baseline_results) == num_metrics
 
     except Exception as e:
-        pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
+        pytest.fail(f"PerturbationExpressionPredictionTask failed unexpectedly: {e}")
 
 
 def test_perturbation_expression_prediction_task_wilcoxon():
