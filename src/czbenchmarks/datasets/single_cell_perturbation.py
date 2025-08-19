@@ -30,7 +30,7 @@ def sample_de_genes(
     Args:
         de_results (pd.DataFrame): Differential expression results dataframe.
         percent_genes_to_mask (float): Percentage of genes to mask.
-        min_de_genes_to_mask (int): Minimum number of masked differentially 
+        min_de_genes_to_mask (int): Minimum number of masked differentially
             expressed genes. If not met, no genes are masked.
         condition_col (str): Column name for the condition.
         gene_col (str): Column name for the gene names.
