@@ -41,17 +41,17 @@ def sample_de_genes(
         Dict[str, List[str]]: Dictionary of target genes and their sampled genes.
     """
     np.random.seed(seed)
-    target_genes = de_results[condition_col].unique()
-    target_gene_dict = {}
-    for target in target_genes:
+    target_conditions = de_results[condition_col].unique()
+    target_condition_dict = {}
+    for target in target_conditions:
         gene_names = de_results[de_results[condition_col] == target][gene_col].values
         n_genes_to_sample = int(len(gene_names) * percent_genes_to_mask)
         if n_genes_to_sample >= min_de_genes:
             sampled_genes = np.random.choice(
                 gene_names, size=n_genes_to_sample, replace=False
             ).tolist()
-            target_gene_dict[target] = sampled_genes
-    return target_gene_dict
+            target_condition_dict[target] = sampled_genes
+    return target_condition_dict
 
 
 class SingleCellPerturbationDataset(SingleCellDataset):
@@ -77,14 +77,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_genes_to_save (dict): Dictionary of target genes for each cell.
+        target_conditions_to_save (dict): Dictionary of target conditions for each cell.
     """
 
     control_matched_adata: ad.AnnData
     control_cells_ids: dict
     de_results: pd.DataFrame
-    target_genes_to_save: dict
-    # FIXME MICHELLE verify variable naming for future inclusion of chemical perturbation datasets
+    target_conditions_to_save: dict
 
     def __init__(
         self,
@@ -210,7 +209,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         def _create_adata_for_condition(
             selected_condition: str,
-            target_gene_dict: dict,
+            target_condition_dict: dict,
             rows_cond: np.ndarray,
             rows_ctrl: np.ndarray,
             adata: ad.AnnData = self.adata,
@@ -245,13 +244,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
 
             # Add target genes to the dictionary for each cell
-            target_genes_to_save = {}
+            target_conditions_to_save = {}
             for idx in adata_merged.obs.index:
-                target_genes_to_save[idx] = target_gene_dict[selected_condition]
+                target_conditions_to_save[idx] = target_condition_dict[selected_condition]
 
-            return adata_merged, target_genes_to_save
+            return adata_merged, target_conditions_to_save
 
-        target_gene_dict = sample_de_genes(
+        target_condition_dict = sample_de_genes(
             de_results=self.de_results,
             percent_genes_to_mask=self.percent_genes_to_mask,
             min_de_genes=self.min_de_genes,
@@ -259,8 +258,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             gene_col=self.de_gene_col,
         )
 
-        target_genes = list(target_gene_dict.keys())
-        total_conditions = len(target_genes)
+        target_conditions = list(target_condition_dict.keys())
+        total_conditions = len(target_conditions)
         logger.info(f"Sampled {total_conditions} conditions for masking")
 
         # Do this once before the loop
@@ -281,15 +280,15 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         }
 
         all_merged_data = []
-        target_genes_to_save = {}
+        target_conditions_to_save = {}
 
         with tqdm(
             total=total_conditions, desc="Processing conditions", unit="item"
         ) as pbar:
-            for selected_condition in target_genes:
+            for selected_condition in target_conditions:
                 result = _create_adata_for_condition(
                     selected_condition=selected_condition,
-                    target_gene_dict=target_gene_dict,
+                    target_condition_dict=target_condition_dict,
                     rows_cond=condition_to_indices[selected_condition],
                     rows_ctrl=control_to_indices[selected_condition],
                     adata=self.adata,
@@ -298,7 +297,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
 
                 all_merged_data.append(result[0])
-                target_genes_to_save.update(result[1])
+                target_conditions_to_save.update(result[1])
                 pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
                 pbar.update(1)
 
@@ -311,7 +310,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             adata_final.obs[self.condition_key]
         )
 
-        return adata_final, target_genes_to_save
+        return adata_final, target_conditions_to_save
 
     def load_data(
         self,
@@ -417,27 +416,23 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(
             f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
         )
-        start_time = time()
-        adata_final, target_genes_to_save = self._create_adata()
-        logger.info(
-            f"Control-matched adata prepared in {time() - start_time:.2f} seconds"
-        )
+        adata_final, target_conditions_to_save = self._create_adata()
 
         self.control_matched_adata = adata_final
-        self.target_genes_to_save = target_genes_to_save
+        self.target_conditions_to_save = target_conditions_to_save
 
     def store_task_inputs(self) -> Path:
         """
         Store auxiliary data files.
 
-        This method saves the IDs of the control cells and the target genes dictonary to JSON files.
+        This method saves the IDs of the control cells and the target genes dictionary to JSON files.
 
         Returns:
             Path: Path to the directory storing the task input files.
         """
         inputs_to_store = {
             "control_cells_ids": self.control_cells_ids,
-            "target_genes_to_save": self.target_genes_to_save,
+            "target_conditions_to_save": self.target_conditions_to_save,
             "de_results": self.de_results,
             "control_matched_adata/obs": self.control_matched_adata.obs,
             "control_matched_adata/var": self.control_matched_adata.var,
@@ -491,7 +486,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Validate condition format
         conditions = set(self.control_matched_adata.obs[self.condition_key])
         target_conditions = set(
-            x.split("_")[1] for x in self.target_genes_to_save.keys()
+            x.split("_")[1] for x in self.target_conditions_to_save.keys()
         )  # Update for multiple perturbations
 
         for condition in conditions:

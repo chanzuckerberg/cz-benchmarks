@@ -173,12 +173,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
         assert dataset.control_matched_adata.shape == (8, 3)
         # Target genes should be stored per cell (for each unique cell index)
-        assert hasattr(dataset, "target_genes_to_save")
+        assert hasattr(dataset, "target_conditions_to_save")
         unique_obs_count = len(set(dataset.control_matched_adata.obs.index.tolist()))
-        assert len(dataset.target_genes_to_save) == unique_obs_count
+        assert len(dataset.target_conditions_to_save) == unique_obs_count
         # With 10 DE genes per condition in fixtures
         expected_sampled = int(10 * percent_genes_to_mask)
-        sampled_lengths = {len(v) for v in dataset.target_genes_to_save.values()}
+        sampled_lengths = {len(v) for v in dataset.target_conditions_to_save.values()}
         assert sampled_lengths == {expected_sampled}
 
     def test_perturbation_dataset_load_data_missing_condition_key(
@@ -243,11 +243,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         out_dir = dataset.store_task_inputs()
         control_file = out_dir / "control_cells_ids.json"
-        target_genes_file = out_dir / "target_genes_to_save.json"
+        target_conditions_file = out_dir / "target_conditions_to_save.json"
         de_results_file = out_dir / "de_results.json"
 
         assert control_file.exists()
-        assert target_genes_file.exists()
+        assert target_conditions_file.exists()
         assert de_results_file.exists()
 
         # Validate that DE results JSON is readable and has expected columns
@@ -312,11 +312,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert dataset.control_matched_adata.shape == (8, 3)
 
         # Target genes should be stored per cell (for each unique cell index)
-        assert hasattr(dataset, "target_genes_to_save")
+        assert hasattr(dataset, "target_conditions_to_save")
         unique_obs_count = len(set(dataset.control_matched_adata.obs.index.tolist()))
-        assert len(dataset.target_genes_to_save) == unique_obs_count
+        assert len(dataset.target_conditions_to_save) == unique_obs_count
 
         # With 10 genes per condition and percent as parameter
         expected_sampled = int(10 * percent_genes_to_mask)
-        sampled_lengths = {len(v) for v in dataset.target_genes_to_save.values()}
+        sampled_lengths = {len(v) for v in dataset.target_conditions_to_save.values()}
         assert sampled_lengths == {expected_sampled}

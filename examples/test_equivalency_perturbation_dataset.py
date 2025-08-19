@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric",
         type=str,
-        default="t-test", # wilcoxon or t-test, do not use t_test
+        default="wilcoxon", # wilcoxon or t-test, do not use t_test
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -323,11 +323,11 @@ if __name__ == "__main__":
     # Compare target genes
     logger.info("Comparing target genes")
     dataset_target_genes = {}
-    for k in new_dataset.target_genes_to_save.keys():
+    for k in new_dataset.target_conditions_to_save.keys():
         s = k.split("_")
         try:
             dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
-                new_dataset.target_genes_to_save[k]
+                new_dataset.target_conditions_to_save[k]
             )
         except KeyError:
             print(f"KeyError: {k}")
