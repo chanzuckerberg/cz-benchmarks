@@ -95,6 +95,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         min_de_genes: int = 5,
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
+        # percent_genes_to_mask: float = 1.0,
+        # min_de_genes: int = 1,
+        # pval_threshold: float = 1e-2,
+        # min_logfoldchange: float = 0.1,
         min_smd: float = 0.55,
         de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
@@ -399,16 +403,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
             if unique_conditions_control_cells_ids.issubset(unique_conditions_adata):
                 logger.warning(
-                    msg
-                    + f", but control_cells_ids keys are a subset of "
+                    msg + f", but control_cells_ids keys are a subset of "
                     f"adata.obs[{self.condition_key}]. This should allow for "
                     f"creation of control-matched data but will ignore some of "
                     f"the data"
                 )
             else:
                 logger.warning(
-                    msg
-                    + f", and control_cells_ids keys contain conditions not in "
+                    msg + f", and control_cells_ids keys contain conditions not in "
                     f"adata.obs[{self.condition_key}]. This may cause errors in "
                     f"the creation of control-matched adata."
                 )
@@ -430,7 +432,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Returns:
             Path: Path to the directory storing the task input files.
         """
-        # TODO: Might be better as a single adata, pending future design on how 
+        # TODO: Might be better as a single adata, pending future design on how
         # Task instantiation is performed by benchmarking pipelines
         inputs_to_store = {
             "control_cells_ids": self.control_cells_ids,
