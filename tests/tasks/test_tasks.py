@@ -324,32 +324,28 @@ def test_perturbation_task():
     # We have one perturbed condition, so 5 metrics total
     num_metrics = 5
 
-    try:
-        # Test regular task execution
-        results = task.run(
-            cell_representation,
-            task_input,
+    # Test regular task execution
+    results = task.run(
+        cell_representation,
+        task_input,
+    )
+    # Verify results structure
+    assert isinstance(results, dict)
+    assert all(isinstance(s, MetricResult) for r in results.values() for s in r)
+    assert len(results) == num_metrics
+
+    # Test baseline with both mean and median
+    for baseline_type in ["mean", "median"]:
+        baseline_embedding = task.compute_baseline(
+            cell_representation=cell_representation,
+            baseline_type=baseline_type,
         )
+        # Create a new task input with the baseline embedding
+        baseline_results = task.run(baseline_embedding, task_input)
+        assert isinstance(baseline_results, dict)
+        assert all(isinstance(s, MetricResult) for r in results.values() for s in r)
+        assert len(baseline_results) == num_metrics
 
-        # Verify results structure
-        assert isinstance(results, list)
-        assert all(isinstance(r, MetricResult) for r in results)
-        assert len(results) == num_metrics
-
-        # Test baseline with both mean and median
-        for baseline_type in ["mean", "median"]:
-            baseline_embedding = task.compute_baseline(
-                cell_representation=cell_representation,
-                baseline_type=baseline_type,
-            )
-            # Create a new task input with the baseline embedding
-            baseline_results = task.run(baseline_embedding, task_input)
-            assert isinstance(baseline_results, list)
-            assert all(isinstance(r, MetricResult) for r in baseline_results)
-            assert len(baseline_results) == num_metrics
-
-    except Exception as e:
-        pytest.fail(f"PerturbationExpressionPredictionTask failed unexpectedly: {e}")
 
 
 def test_perturbation_expression_prediction_task_wilcoxon():
