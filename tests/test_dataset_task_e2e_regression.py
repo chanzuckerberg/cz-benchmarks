@@ -430,10 +430,10 @@ def test_cross_species_integration_task_regression(
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="Perturbation task has not yet been validated as being effective"
+    reason="Perturbation expression prediction task needs sample output for test implementation"
 )
-def test_perturbation_task_integration():
-    """Integration test for perturbation task (skipped - task not yet validated)."""
-    # This test is skipped because the perturbation task has not yet been
-    # validated as being effective for benchmarking purposes
+def test_perturbation_expression_prediction_task_integration():
+    """Integration test for perturbation expression prediction task."""
+    # This test is skipped because the perturbation task does not yet
+    # have sample output for test implementation
     pass
