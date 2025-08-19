@@ -92,11 +92,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         condition_key: str = "condition",
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
-        deg_test_name: str = "wilcoxon", # FIXME MICHELLE: for testing
-        percent_genes_to_mask: float = 0.5, # FIXME MICHELLE: for testing
-        min_de_genes: int = 5, # FIXME MICHELLE: Maria had 5, Jasleen suggested 1
-        pval_threshold: float = 1e-4, # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
-        min_logfoldchange: float = 1.0, # FIXME MICHELLE: Maria has 1.0, Jasleen asked if this should be 0?
+        deg_test_name: str = "wilcoxon",  # FIXME MICHELLE: for testing
+        percent_genes_to_mask: float = 0.5,  # FIXME MICHELLE: for testing
+        min_de_genes: int = 5,  # FIXME MICHELLE: Maria had 5, Jasleen suggested 1
+        pval_threshold: float = 1e-4,  # FIXME MICHELLE: Maria had 1e-4, Jasleen suggested 1e-2 or 5e-2
+        min_logfoldchange: float = 1.0,  # FIXME MICHELLE: Maria has 1.0, Jasleen asked if this should be 0?
         min_smd: float = 0.55,
         de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
@@ -246,7 +246,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             # Add target genes to the dictionary for each cell
             target_conditions_to_save = {}
             for idx in adata_merged.obs.index:
-                target_conditions_to_save[idx] = target_condition_dict[selected_condition]
+                target_conditions_to_save[idx] = target_condition_dict[
+                    selected_condition
+                ]
 
             return adata_merged, target_conditions_to_save
 

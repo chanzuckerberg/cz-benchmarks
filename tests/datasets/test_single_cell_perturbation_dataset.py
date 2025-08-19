@@ -141,7 +141,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         return file_path
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"]) 
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
@@ -221,7 +221,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         with pytest.raises(ValueError, match=""):
             dataset.validate()
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"]) 
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     def test_perturbation_dataset_store_task_inputs(
         self,
         tmp_path,
@@ -260,7 +260,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         else:
             assert "standardized_mean_diff" in de_df.columns
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"]) 
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
