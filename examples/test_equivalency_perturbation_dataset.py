@@ -238,7 +238,7 @@ if __name__ == "__main__":
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nb_dir = Path("notebook_task_inputs")
+    nb_dir = Path(f"notebook_task_inputs_{metric_normalized}")
 
     #### NOTEBOOK CODE ####
     if args.run_notebook_code:

@@ -292,7 +292,7 @@ def generate_model_predictions(masked_notebook_adata, target_genes_path, sample_
     print("Generating model predictions matrix...")
     target_genes = np.load(target_genes_path)
     sample_id = np.load(sample_id_path)
-    pred = np.load(predictions_path)
+    pred = np.load(predictions_path).squeeze()
     df = pd.DataFrame(
         {
             "samples": [s.split("_")[0] for s in sample_id],
@@ -312,10 +312,11 @@ def generate_model_predictions(masked_notebook_adata, target_genes_path, sample_
     x_positions = calculate_inds(row_index, df.samples)
     y_positions = calculate_inds(col_index, df.target_genes)
 
-    df["x"] = x_positions
-    df["y"] = y_positions
-    for index, row in df.iterrows():
-        model_output[row.x, row.y] = row.pred
+    # df["x"] = x_positions
+    # df["y"] = y_positions
+    # for index, row in df.iterrows():
+    #     model_output[row.x, row.y] = row.pred
+    model_output[x_positions, y_positions] = df.pred.values # numpy fancy indexing will be faster
     print("Model predictions matrix generated.")
     return model_output
 
@@ -359,26 +360,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/k562_data/wilcoxon_de_results.csv",
+        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results .csv file",
     )
 
     parser.add_argument(
         "--predictions_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/k562_data/predictions_merged.npy",
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/predictions_merged.npy",
         help="Path to predictions .npy file",
     )
     parser.add_argument(
         "--sample_id_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/k562_data/sample_id_merged.npy",
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/sample_id_merged.npy",
         help="Path to sample_id .npy file",
     )
     parser.add_argument(
         "--target_genes_path",
         type=str,
-        default="/home/pbinder/cz-benchmarks/k562_data/target_genes_merged.npy",
+        default="/data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_0.5_de_genes_masked/target_genes_merged.npy",
         help="Path to target_genes .npy file",
     )
     parser.add_argument(
@@ -390,9 +391,17 @@ if __name__ == "__main__":
 
     parser.add_argument("--new_saved_dir", type=str,
         default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
-    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250815_120737"))
+    
+    parser.add_argument("--notebook_task_inputs_path", type=str, default="notebook_task_inputs_{metric_type}")
 
     args = parser.parse_args()
+
+    args.de_results_path = args.de_results_path.format(metric_type=args.metric_type)
+    args.predictions_path = args.predictions_path.format(metric_type=args.metric_type)
+    args.sample_id_path = args.sample_id_path.format(metric_type=args.metric_type)
+    args.target_genes_path = args.target_genes_path.format(metric_type=args.metric_type)
+    args.notebook_task_inputs_path = Path(args.notebook_task_inputs_path.format(metric_type=args.metric_type))
+
     print("Loading initial dataset...")
     initial_datast = ad.read_h5ad(args.initial_data_set_path, backed = "r")
 
