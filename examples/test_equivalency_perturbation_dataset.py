@@ -173,13 +173,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/K562_essential_raw_singlecell_01.h5ad",
+        default="new_data/K562_essential_raw_singlecell_01.h5ad", #/data2/czbenchmarks/replogle2022/K562
         help="Path to masked h5ad file",
     )
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
+        default="k562_data/{metric_type}_de_results.csv", #"/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results.csv file",
     )
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",
+        default="new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json", #/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/
         help="Path to control_cells_ids .json file",
     )
     parser.add_argument(
@@ -238,7 +238,10 @@ if __name__ == "__main__":
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     nb_dir = Path("notebook_task_inputs")
+    if not nb_dir.exists():
+        nb_dir.mkdir(parents=True, exist_ok=True)
 
     #### NOTEBOOK CODE ####
     if args.run_notebook_code:

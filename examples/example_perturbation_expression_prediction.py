@@ -10,7 +10,6 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     load_perturbation_task_input_from_saved_files,
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
-import pandas as pd
 import numpy as np
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.tasks.types import CellRepresentation

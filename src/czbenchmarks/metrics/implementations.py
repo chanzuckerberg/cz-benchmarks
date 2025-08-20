@@ -28,7 +28,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
 )
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import spearmanr
 from .utils import compute_entropy_per_cell, mean_fold_metric
 
 from .types import MetricRegistry, MetricType
@@ -101,15 +101,6 @@ metrics_registry.register(
     description="Mean squared error between true and predicted values",
     tags={"perturbation"},
 )
-
-metrics_registry.register(
-    MetricType.PEARSON_CORRELATION,
-    func=pearsonr,
-    required_args={"x", "y"},
-    description="Pearson correlation between true and predicted values",
-    tags={"perturbation"},
-)
-
 
 # Register cross-validation classification metrics
 metrics_registry.register(

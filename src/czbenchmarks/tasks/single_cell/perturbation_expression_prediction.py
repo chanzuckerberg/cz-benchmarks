@@ -10,8 +10,6 @@ from ..utils import binarize_values
 from ...constants import RANDOM_SEED
 from scipy import sparse as sp_sparse
 import json
-import anndata as ad
-from scipy import sparse
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -24,6 +22,45 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     masked_adata_obs: pd.DataFrame
     var_index: pd.Index
     target_conditions_to_save: Dict[str, List[str]]
+
+
+def load_perturbation_task_input_from_saved_files(task_inputs_dir: Path) -> PerturbationExpressionPredictionTaskInput:
+    """
+    Load task input from files saved by dataset's `store_task_inputs`.
+
+    This creates a PerturbationExpressionPredictionTaskInput from stored files,
+    allowing the task to be instantiated without going through the full dataset
+    loading process.
+
+    Args:
+        task_inputs_dir: Directory containing task inputs.
+
+    Returns:
+        PerturbationExpressionPredictionTaskInput: Task input ready for use.
+    """
+    
+    inputs_dir = Path(task_inputs_dir)
+
+    # Load DE results
+    de_results_path = inputs_dir / "de_results.json"
+    de_results = pd.read_json(de_results_path)
+
+    # Load target conditions to save
+    target_genes_path = inputs_dir / "target_conditions_to_save.json"
+    with target_genes_path.open("r") as f:
+        target_conditions_to_save = json.load(f)
+
+    # Rebuild AnnData obs and var
+    adata_dir = inputs_dir / "control_matched_adata"
+    obs = pd.read_json(adata_dir / "obs.json", orient="split")
+    var = pd.read_json(adata_dir / "var.json", orient="split")
+
+    return PerturbationExpressionPredictionTaskInput(
+        de_results=de_results,
+        masked_adata_obs=obs,
+        var_index=var.index,
+        target_conditions_to_save=target_conditions_to_save,
+    )
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
@@ -297,41 +334,4 @@ class PerturbationExpressionPredictionTask(Task):
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
 
-    @staticmethod
-    def load_from_task_inputs(task_inputs_dir: Path) -> 'PerturbationExpressionPredictionTaskInput':
-        """
-        Load task input from files saved by dataset's `store_task_inputs`.
 
-        This creates a PerturbationExpressionPredictionTaskInput from stored files,
-        allowing the task to be instantiated without going through the full dataset
-        loading process.
-
-        Args:
-            task_inputs_dir: Directory containing task inputs.
-
-        Returns:
-            PerturbationExpressionPredictionTaskInput: Task input ready for use.
-        """
-        
-        inputs_dir = Path(task_inputs_dir)
-
-        # Load DE results
-        de_results_path = inputs_dir / "de_results.json"
-        de_results = pd.read_json(de_results_path)
-
-        # Load target conditions to save
-        target_genes_path = inputs_dir / "target_conditions_to_save.json"
-        with target_genes_path.open("r") as f:
-            target_conditions_to_save = json.load(f)
-
-        # Rebuild AnnData obs and var
-        adata_dir = inputs_dir / "control_matched_adata"
-        obs = pd.read_json(adata_dir / "obs.json", orient="split")
-        var = pd.read_json(adata_dir / "var.json", orient="split")
-
-        return PerturbationExpressionPredictionTaskInput(
-            de_results=de_results,
-            masked_adata_obs=obs,
-            var_index=var.index,
-            target_conditions_to_save=target_conditions_to_save,
-        )
