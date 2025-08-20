@@ -108,7 +108,9 @@ metrics_registry.register(
     func=mean_fold_metric,
     required_args={"results_df"},
     default_params={"metric": "accuracy", "classifier": None},
-    tags={"label_prediction",},
+    tags={
+        "label_prediction",
+    },
 )
 
 metrics_registry.register(

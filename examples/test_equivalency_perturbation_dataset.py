@@ -173,13 +173,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default="new_data/K562_essential_raw_singlecell_01.h5ad", #/data2/czbenchmarks/replogle2022/K562
+        default="data2/czbenchmarks/replogle2022/K562/K562_essential_raw_singlecell_01.h5ad", #
         help="Path to masked h5ad file",
     )
     parser.add_argument(
         "--de_results_path",
         type=str,
-        default="k562_data/{metric_type}_de_results.csv", #"/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
+        default="data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/{metric_type}/de_results.csv",
         help="Path to de_results.csv file",
     )
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="new_data/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json", #/data2/czbenchmarks/replogle2022/K562/zero_shot_benchmark/
+        default="data2/czbenchmarks/replogle2022/K562/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json", #
         help="Path to control_cells_ids .json file",
     )
     parser.add_argument(
@@ -238,11 +238,8 @@ if __name__ == "__main__":
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nb_dir = Path(f"notebook_task_inputs_{metric_normalized}")
+    nb_dir = Path(f"notebook_task_inputs_{metric_normalized}_{args.percent_genes_to_mask}")
     
-    if not nb_dir.exists():
-        nb_dir.mkdir(parents=True, exist_ok=True)
-
     #### NOTEBOOK CODE ####
     if args.run_notebook_code:
         if Path(nb_dir).exists():
@@ -270,7 +267,8 @@ if __name__ == "__main__":
         notebook_adata_masked, notebook_target_genes_to_save, gene_map = (
             run_notebook_code(args)
         )
-
+        if not nb_dir.exists():
+            nb_dir.mkdir(parents=True, exist_ok=True)
         logger.info("Saving notebook code to disk")
         notebook_adata_masked.write(nb_dir / "notebook_adata_masked.h5ad")
         with (nb_dir / "notebook_target_genes_to_save.json").open("w") as f:
@@ -283,6 +281,14 @@ if __name__ == "__main__":
     logger.info(f"Running new code with args: {args}")
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
     new_output_dir = new_dataset.store_task_inputs()
+    # Move the new_output_dir to include metric type and percent genes to mask
+    new_output_dir_named = Path(f"{new_output_dir}_{metric_normalized}_{args.percent_genes_to_mask}")
+    if new_output_dir != new_output_dir_named:
+        if new_output_dir_named.exists():
+            logger.info(f"Target directory {new_output_dir_named} already exists, removing it before move.")
+            shutil.rmtree(new_output_dir_named)
+        shutil.move(str(new_output_dir), str(new_output_dir_named))
+        new_output_dir = new_output_dir_named
     logger.info(f"New code output saved to: {new_output_dir}")
 
     #### COMPARE OUTPUTS ####

@@ -24,35 +24,40 @@ TASK_NAMES = frozenset(
     }.union(MULTI_DATASET_TASK_NAMES)
 )
 
+
 def print_metrics_summary(metrics_dict):
     """Print a nice summary table of all metrics."""
-    
+
     # Extract all conditions from any metric type
     conditions = [result.params["condition"] for result in metrics_dict["accuracy"]]
-    
+
     # Create a summary dictionary
     summary_data = []
     for condition in conditions:
         row = {"condition": condition}
-        
+
         # Extract values for each metric type
         for metric_name, results in metrics_dict.items():
             # Find the result for this condition
-            condition_result = next(r for r in results if r.params["condition"] == condition)
+            condition_result = next(
+                r for r in results if r.params["condition"] == condition
+            )
             row[metric_name] = f"{condition_result.value:.4f}"
-        
+
         summary_data.append(row)
-    
+
     # Create and print DataFrame
     df = pd.DataFrame(summary_data)
     print("\n=== Perturbation Expression Prediction Results ===")
     print(df.to_string(index=False))
-    
+
     # Print overall statistics
     print(f"\nSummary Statistics across {len(conditions)} conditions:")
     for metric_name, results in metrics_dict.items():
         values = [r.value for r in results]
-        print(f"{metric_name.title()}: mean={np.mean(values):.4f}, std={np.std(values):.4f}")
+        print(
+            f"{metric_name.title()}: mean={np.mean(values):.4f}, std={np.std(values):.4f}"
+        )
 
 
 def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):
