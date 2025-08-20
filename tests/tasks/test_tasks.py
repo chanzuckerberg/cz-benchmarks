@@ -359,7 +359,8 @@ def test_perturbation_task():
             
             assert all(isinstance(r, MetricResult) for r in baseline_all_results)
             assert len(baseline_all_results) == num_metrics
-
+    except Exception as e:
+        pytest.fail(f"Test failed with exception: {e}")
 
 
 def test_perturbation_expression_prediction_task_wilcoxon():
@@ -447,38 +448,33 @@ def test_perturbation_expression_prediction_task_wilcoxon():
 
     # Then, run the full task and validate metrics are perfect
     num_metric_types = 5  # accuracy, precision, recall, f1, spearman
-    try:
-        results = task.run(cell_representation, task_input)
+    results = task.run(cell_representation, task_input)
 
-        assert isinstance(results, dict)
-        assert len(results) == num_metric_types
+    assert isinstance(results, dict)
+    assert len(results) == num_metric_types
 
-        # Each metric list should contain perfect scores for both conditions
-        for name, metric_list in results.items():
-            assert isinstance(metric_list, list)
-            assert all(isinstance(r, MetricResult) for r in metric_list)
-            # Expect results for both conditions
-            assert len(metric_list) == 2
-            for r in metric_list:
-                assert np.isclose(r.value, 1.0)
+    # Each metric list should contain perfect scores for both conditions
+    for name, metric_list in results.items():
+        assert isinstance(metric_list, list)
+        assert all(isinstance(r, MetricResult) for r in metric_list)
+        # Expect results for both conditions
+        assert len(metric_list) == 2
+        for r in metric_list:
+            assert np.isclose(r.value, 1.0)
 
-        # Verify metric types present
-        all_results = [
-            result for metric_list in results.values() for result in metric_list
-        ]
-        metric_types = {result.metric_type for result in all_results}
-        expected_types = {
-            MetricType.ACCURACY,
-            MetricType.PRECISION,
-            MetricType.RECALL,
-            MetricType.F1,
-            MetricType.SPEARMAN_CORRELATION,
-        }
-        assert expected_types.issubset(metric_types)
-    except Exception as e:
-        pytest.fail(
-            f"PerturbationExpressionPredictionTask (Wilcoxon) failed unexpectedly: {e}"
-        )
+    # Verify metric types present
+    all_results = [
+        result for metric_list in results.values() for result in metric_list
+    ]
+    metric_types = {result.metric_type for result in all_results}
+    expected_types = {
+        MetricType.ACCURACY,
+        MetricType.PRECISION,
+        MetricType.RECALL,
+        MetricType.F1,
+        MetricType.SPEARMAN_CORRELATION,
+    }
+    assert expected_types.issubset(metric_types)
 
 
 def test_perturbation_expression_prediction_task_ttest():
@@ -644,8 +640,11 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     dataset.load_data()
     stored_dir = dataset.store_task_inputs()
     
-    # Test loading task inputs using the static method
-    task_input = PerturbationExpressionPredictionTask.load_from_task_inputs(stored_dir)
+    # Test loading task inputs using the standalone function
+    from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+        load_perturbation_task_input_from_saved_files,
+    )
+    task_input = load_perturbation_task_input_from_saved_files(stored_dir)
     
     # Verify the loaded task input has the expected structure
     assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
