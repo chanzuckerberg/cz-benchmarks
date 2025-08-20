@@ -41,6 +41,21 @@ def spearman_correlation(a, b):
     return 0 if np.isnan(value) else value
 
 
+def precision_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for precision_score with zero_division=0 to suppress warnings."""
+    return precision_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
+def recall_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for recall_score with zero_division=0 to suppress warnings."""
+    return recall_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
+def f1_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for f1_score with zero_division=0 to suppress warnings."""
+    return f1_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
 # Create the global metric registry
 metrics_registry = MetricRegistry()
 
@@ -155,7 +170,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.PRECISION,
-    func=precision_score,
+    func=precision_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="Precision between true and predicted values",
     tags={"label_prediction", "perturbation"},
@@ -163,7 +178,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.RECALL,
-    func=recall_score,
+    func=recall_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="Recall between true and predicted values",
     tags={"label_prediction", "perturbation"},
@@ -171,7 +186,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.F1,
-    func=f1_score,
+    func=f1_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="F1 score between true and predicted values",
     tags={"label_prediction", "perturbation"},
