@@ -196,17 +196,17 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
         # Metrics
         accuracy = accuracy_score(true_binary, pred_binary) if len(true_binary) else 0
         precision = (
-            precision_score(true_binary, pred_binary, average="binary")
+            precision_score(true_binary, pred_binary, average="binary", zero_division=0)
             if len(true_binary)
             else 0
         )
         recall = (
-            recall_score(true_binary, pred_binary, average="binary")
+            recall_score(true_binary, pred_binary, average="binary", zero_division=0)
             if len(true_binary)
             else 0
         )
         f1 = (
-            f1_score(true_binary, pred_binary, average="binary")
+            f1_score(true_binary, pred_binary, average="binary", zero_division=0)
             if len(true_binary)
             else 0
         )
