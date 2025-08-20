@@ -1,5 +1,5 @@
 from czbenchmarks.datasets import utils
-from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.datasets.utils import load_dataset, run_multicondition_dge_analysis
 from unittest.mock import patch
 import pytest
 import numpy as np
@@ -99,7 +99,7 @@ class TestRunMulticonditionDGEAnalysis:
     def test_basic_returns_df_and_merged_adata(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
-        results, merged = utils.run_multicondition_dge_analysis(
+        results, merged = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -129,7 +129,7 @@ class TestRunMulticonditionDGEAnalysis:
         adata_obj, control_cells_ids = make_adata
 
         # Set very strict filtering so cells are removed, triggering early None return
-        results, merged = utils.run_multicondition_dge_analysis(
+        results, merged = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -145,7 +145,7 @@ class TestRunMulticonditionDGEAnalysis:
     def test_deg_test_name_affects_scores(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
-        res_w, _ = utils.run_multicondition_dge_analysis(
+        res_w, _ = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -158,7 +158,7 @@ class TestRunMulticonditionDGEAnalysis:
             return_merged_adata=False,
         )
 
-        res_t, _ = utils.run_multicondition_dge_analysis(
+        res_t, _ = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -201,7 +201,7 @@ class TestRunMulticonditionDGEAnalysis:
     ):
         adata_obj, control_cells_ids = make_adata
 
-        res, merged = utils.run_multicondition_dge_analysis(
+        res, merged = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
