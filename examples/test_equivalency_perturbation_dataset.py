@@ -235,7 +235,7 @@ if __name__ == "__main__":
     if metric_normalized in {"t-test", "ttest"}:
         metric_normalized = "t_test"
 
-    args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
+    args.de_results_path = args.de_results_path.format(metric_type=args.metric)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     nb_dir = Path(f"notebook_task_inputs_{args.metric}_{args.percent_genes_to_mask}")

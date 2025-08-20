@@ -231,7 +231,7 @@ def run_new_code(model_output, args):
     print("Loading dataset from task inputs...")
     task_input = load_perturbation_task_input_from_saved_files(args.new_saved_dir)
     print("Done loading dataset from task inputs.")
-    task = PerturbationExpressionPredictionTask()
+    task = PerturbationExpressionPredictionTask(metric=args.metric_type)
     print("Running task.run()...")
     result = task._run_task(model_output, task_input)
     print("Running task._compute_metrics()...")
@@ -400,9 +400,7 @@ if __name__ == "__main__":
     # Make sure all keys in new are in notebook, and compare notebook to new
     with (args.notebook_task_inputs_path / "gene_map.json").open("r") as f:
         notebook_gene_map = json.load(f)
-
     for k in new_result.true_log_fc_dict:
-        print(k, notebook_gene_map[k])
         assert notebook_gene_map[k] in notebook_true_log_fc_dict, (
             f"Key {k} missing in notebook_true_log_fc_dict"
         )
