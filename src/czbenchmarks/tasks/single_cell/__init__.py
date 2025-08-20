@@ -8,6 +8,11 @@ from .perturbation import (
     PerturbationOutput,
     PerturbationTask,
 )
+from .cross_species_label_prediction import (
+    CrossSpeciesLabelPredictionTaskInput,
+    CrossSpeciesLabelPredictionOutput,
+    CrossSpeciesLabelPredictionTask,
+)
 
 __all__ = [
     "CrossSpeciesIntegrationTaskInput",
@@ -16,4 +21,7 @@ __all__ = [
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
+    "CrossSpeciesLabelPredictionTaskInput",
+    "CrossSpeciesLabelPredictionOutput",
+    "CrossSpeciesLabelPredictionTask",
 ]

@@ -35,6 +35,13 @@ class MetricType(Enum):
     MEAN_FOLD_RECALL = "mean_fold_recall"
     MEAN_FOLD_AUROC = "mean_fold_auroc"
 
+    # Classification metrics
+    ACCURACY = "accuracy"
+    F1_SCORE = "f1"
+    PRECISION = "precision"
+    RECALL = "recall"
+    AUROC = "auroc"
+
     MEAN_SQUARED_ERROR = "mean_squared_error"
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
     JACCARD = "jaccard"

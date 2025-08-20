@@ -18,6 +18,11 @@ from .integration import (
     BatchIntegrationOutput,
     BatchIntegrationTask,
 )
+from .single_cell.cross_species_label_prediction import (
+    CrossSpeciesLabelPredictionTaskInput,
+    CrossSpeciesLabelPredictionOutput,
+    CrossSpeciesLabelPredictionTask,
+)
 
 __all__ = [
     "ClusteringTaskInput",
@@ -32,4 +37,7 @@ __all__ = [
     "BatchIntegrationTaskInput",
     "BatchIntegrationOutput",
     "BatchIntegrationTask",
+    "CrossSpeciesLabelPredictionTaskInput",
+    "CrossSpeciesLabelPredictionOutput",
+    "CrossSpeciesLabelPredictionTask",
 ]
