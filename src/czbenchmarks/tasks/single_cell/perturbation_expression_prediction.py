@@ -57,7 +57,10 @@ def load_perturbation_task_input_from_saved_files(
     adata_dir = inputs_dir / "control_matched_adata"
     obs = pd.read_json(adata_dir / "obs.json", orient="split")
     var = pd.read_json(adata_dir / "var.json", orient="split")
-    row_index = obs.index
+    row_index = pd.Index(
+        np.load(inputs_dir / "original_adata/obs/index.npy", allow_pickle=True)
+    )
+
     return PerturbationExpressionPredictionTaskInput(
         de_results=de_results,
         masked_adata_obs=obs,
@@ -137,6 +140,11 @@ class PerturbationExpressionPredictionTask(Task):
                     ][0]
                 ]
             )
+            # Filter masked_genes to only those present in var.index
+            masked_genes = np.array(
+                [g for g in masked_genes if g in task_input.var_index]
+            )
+
             if len(masked_genes) == 0:
                 print("Skipping condition because it has no masked genes.")
                 continue
@@ -153,7 +161,6 @@ class PerturbationExpressionPredictionTask(Task):
                 task_input.masked_adata_obs["condition"] == condition
             ].index
             condition_col_ids = condition_adata.to_series().str.split("_").str[0]
-
             condition_idx = np.where(row_index.isin(condition_col_ids))[0]
             control_adata = task_input.masked_adata_obs[
                 task_input.masked_adata_obs["condition"]
@@ -169,7 +176,6 @@ class PerturbationExpressionPredictionTask(Task):
             pred_log_fc = cond_mean - ctrl_mean
             pred_log_fc_dict[condition] = pred_log_fc
             true_log_fc_dict[condition] = true_log_fc
-
         return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,
             true_log_fc_dict=true_log_fc_dict,
