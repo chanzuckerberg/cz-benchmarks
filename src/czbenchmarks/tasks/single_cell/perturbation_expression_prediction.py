@@ -91,7 +91,7 @@ class PerturbationExpressionPredictionTask(Task):
         super().__init__(random_seed=random_seed)
         self.metric_column = "logfoldchange"
         self.control_prefix = control_prefix
-
+        
     def _run_task(
         self,
         cell_representation: CellRepresentation,
@@ -125,6 +125,7 @@ class PerturbationExpressionPredictionTask(Task):
         condition_list = np.unique(
             condition_series[~condition_series.str.startswith(self.control_prefix)]
         )
+        row_index = task_input.row_index.str.split("_").str[0]
 
         for condition in condition_list:
             condition_de_df = de_results[de_results["condition"] == condition]
@@ -153,18 +154,16 @@ class PerturbationExpressionPredictionTask(Task):
 
             
             condition_idx = np.where(
-                task_input.row_index.isin(condition_col_ids)
+                row_index.isin(condition_col_ids)
             )[0]
-
             control_adata = task_input.masked_adata_obs[task_input.masked_adata_obs["condition"] == f"{self.control_prefix}_{condition}"].index
             control_col_ids = control_adata.to_series().str.split("_").str[0]
 
             control_idx = np.where(
-                task_input.row_index.isin(control_col_ids)
+                row_index.isin(control_col_ids)
             )[0]
             condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
             control_vals = cell_representation[np.ix_(control_idx, col_indices)]
-
             ctrl_mean = np.mean(control_vals, axis=0)
             cond_mean = np.mean(condition_vals, axis=0)
             pred_log_fc = cond_mean - ctrl_mean
