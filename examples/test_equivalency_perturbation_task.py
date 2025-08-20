@@ -11,19 +11,13 @@ from scipy.stats import spearmanr
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
-    PerturbationExpressionPredictionTaskInput,
 )
-from collections import defaultdict
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     load_perturbation_task_input_from_saved_files,
 )
 
 import json
 from pathlib import Path
-from czbenchmarks.datasets.single_cell_perturbation import Organism
-from czbenchmarks.datasets import (
-    SingleCellPerturbationDataset,
-)
 from czbenchmarks.tasks.types import CellRepresentation
 
 
@@ -44,24 +38,15 @@ def dict_numpy_to_list(d):
     return {k: convert_value(v) for k, v in d.items()}
 
 
-def compute_log_fold_change(probs1, probs2, epsilon=1e-10, probs=True):
-    # Add epsilon to avoid division by zero or log of zero
-    if probs:
-        probs1 = np.clip(probs1, epsilon, 1.0)
-        probs2 = np.clip(probs2, epsilon, 1.0)
-
-    # Compute log fold change
-    log_fc = np.log2(probs1 / probs2)
-    return log_fc
-
-
 def run_notebook_code(args, sample_ids, target_genes, predictions):
     print("Loading notebook files...")
     # Read in the files that were saved in another file
 
     # Load notebook outputs from the specified directory
     nb_dir = args.notebook_task_inputs_path
-    masked_notebook_adata = ad.read_h5ad(nb_dir / "notebook_adata_masked.h5ad", backed = "r")
+    masked_notebook_adata = ad.read_h5ad(
+        nb_dir / "notebook_adata_masked.h5ad", backed="r"
+    )
 
     print("Notebook files loaded. Reading and filtering DE results...")
     # Read in and filter the DE results
@@ -72,7 +57,7 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
             np.abs(de_results["logfoldchanges"]) >= args.min_logfoldchanges
         ]
         de_results = de_results[de_results["pvals_adj"] < args.pval_threshold]
-    elif args.metric_type == "t_test":
+    elif args.metric_type == "t-test":
         de_results = de_results[de_results["pval_adj"] < args.pval_threshold]
         de_results = de_results[
             de_results["smd"].abs() >= args.min_standard_mean_deviation
@@ -94,25 +79,29 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
         "correlation": {},
     }
     df = pd.DataFrame(
-        {"sample_id": sample_ids, "pred": list(predictions), "target_genes": list(target_genes)}
+        {
+            "sample_id": sample_ids,
+            "pred": list(predictions),
+            "target_genes": list(target_genes),
+        }
     )
 
     # Group predictions by sample
     print("Grouping predictions by sample_id...")
     genes_dict = {}
     for sample, group in tqdm(df.groupby("sample_id")):
-        predictions_dict.setdefault(sample, []).append(
-            group["pred"].to_numpy()
-        )
+        predictions_dict.setdefault(sample, []).append(group["pred"].to_numpy())
         if sample not in genes_dict:
-            genes_dict[sample] = group['target_genes'].to_numpy()
+            genes_dict[sample] = group["target_genes"].to_numpy()
 
     print("Finished grouping predictions. Iterating over all conditions...")
     # Iterate over all conditions
     for condition in masked_notebook_adata.obs["gene"].unique():
-        print(f"Processing condition: {condition}")
         # Select appropriate DE results. For model predicting log1p counts/binary class probabilities we use wilcoxon test results and logFC.
         # For model predicting z-scale expression we use t-test results and SMD.
+
+        if condition == "non-targeting":
+            continue
         condition_de_df = de_results[de_results["target_gene"] == condition]
         if len(condition_de_df) < args.min_de_genes:
             print(f"Not enough DE genes for condition {condition}. Skipping...")
@@ -174,19 +163,11 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
             # num_de_genes_dict.setdefault(condition, [])
 
             # Compute predicted log fold change
-            if args.metric_type == "t_test":
-                probs = False  # The model is a regression model
-                pred_log_fc = compute_log_fold_change(
-                    condition_predictions.mean(axis=0),
-                    control_predictions.mean(axis=0),
-                    probs=probs,
-                )
-            else:
-                pred_log_fc = condition_predictions.mean(
-                    axis=0
-                ) - control_predictions.mean(axis=0)
+            pred_log_fc = condition_predictions.mean(axis=0) - control_predictions.mean(
+                axis=0
+            )
             # Select column for true log fold change
-            col = "smd" if args.metric_type == "t_test" else "logfoldchanges"
+            col = "smd" if args.metric_type == "t-test" else "logfoldchanges"
             # Align true log fold change to masked genes
             true_log_fc = (
                 condition_de_df.set_index("names").reindex(masked_genes)[col].values
@@ -199,11 +180,9 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
 
             pred_log_fc_dict[condition].append(pred_log_fc)
             true_log_fc_dict[condition].append(true_log_fc)
-            print(f"Processed condition {condition}: {len(pred_log_fc)} valid genes.")
         except Exception as e:
             print(f"Error processing condition {condition}: {e}")
             continue
-        break
     print("Finished processing all conditions. Calculating metrics...")
     for condition in pred_log_fc_dict:
         pred_log_fc_all = np.concatenate(pred_log_fc_dict[condition])
@@ -249,7 +228,6 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
 
 
 def run_new_code(model_output, args):
-
     print("Loading dataset from task inputs...")
     task_input = load_perturbation_task_input_from_saved_files(args.new_saved_dir)
     print("Done loading dataset from task inputs.")
@@ -263,6 +241,7 @@ def run_new_code(model_output, args):
     print("New code run complete.")
     return result, metric_results
 
+
 def generate_model_predictions(masked_notebook_adata, args):
     """
     Generate a model_output matrix for the given masked_notebook_adata using the provided
@@ -271,7 +250,9 @@ def generate_model_predictions(masked_notebook_adata, args):
     Returns:
         model_output: np.ndarray of shape (n_cells, n_genes)
     """
-    with (args.notebook_task_inputs_path / "notebook_target_genes_to_save.json").open("r") as f:
+    with (args.notebook_task_inputs_path / "notebook_target_genes_to_save.json").open(
+        "r"
+    ) as f:
         target_genes_to_save = json.load(f)
     print("Generating model predictions matrix...")
     model_output: CellRepresentation = np.random.rand(
@@ -314,7 +295,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric_type",
         type=str,
-        choices=["wilcoxon", "t_test"],
+        choices=["wilcoxon", "t-test"],
         default="wilcoxon",
         help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
     )
@@ -356,53 +337,54 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--predictions_path",
-        type=str,
-        default="data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_{mask_portion}_de_genes_masked/predictions_merged.npy",
-        help="Path to predictions .npy file",
-    )
-    parser.add_argument(
-        "--sample_id_path",
-        type=str,
-        default="data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_{mask_portion}_de_genes_masked/sample_id_merged.npy",
-        help="Path to sample_id .npy file",
-    )
-    parser.add_argument(
-        "--target_genes_path",
-        type=str,
-        default="data2/czbenchmarks/replogle2022/K562/sample_model_output/{metric_type}/target_genes_{mask_portion}_de_genes_masked/target_genes_merged.npy",
-        help="Path to target_genes .npy file",
-    )
-    parser.add_argument(
         "--initial_data_set_path",
         type=str,
         default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
         help="Path to target_genes .npy file",
     )
 
-    parser.add_argument("--new_saved_dir", type=str,
-        default=os.environ['HOME'] + "/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation_{metric_type}_{percent_genes_to_mask}")
-    
-    parser.add_argument("--notebook_task_inputs_path", type=str, default="notebook_task_inputs_{metric_type}_{percent_genes_to_mask}")
+    parser.add_argument(
+        "--new_saved_dir",
+        type=str,
+        default=os.environ["HOME"]
+        + "/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation_{metric_type}_{percent_genes_to_mask}",
+    )
+
+    parser.add_argument(
+        "--notebook_task_inputs_path",
+        type=str,
+        default="notebook_task_inputs_{metric_type}_{percent_genes_to_mask}",
+    )
 
     args = parser.parse_args()
-    mask_portion = str(args.percent_genes_to_mask) if args.percent_genes_to_mask == 0.5 else "all"
+    mask_portion = (
+        str(args.percent_genes_to_mask) if args.percent_genes_to_mask == 0.5 else "all"
+    )
     args.de_results_path = args.de_results_path.format(metric_type=args.metric_type)
-    args.predictions_path = args.predictions_path.format(metric_type=args.metric_type, mask_portion=mask_portion)
-    args.sample_id_path = args.sample_id_path.format(metric_type=args.metric_type, mask_portion=mask_portion)
-    args.target_genes_path = args.target_genes_path.format(metric_type=args.metric_type, mask_portion=mask_portion)
-    args.notebook_task_inputs_path = Path(args.notebook_task_inputs_path.format(metric_type=args.metric_type, percent_genes_to_mask=args.percent_genes_to_mask))
-    args.new_saved_dir = Path(args.new_saved_dir.format(metric_type=args.metric_type, percent_genes_to_mask=args.percent_genes_to_mask))
+    args.notebook_task_inputs_path = Path(
+        args.notebook_task_inputs_path.format(
+            metric_type=args.metric_type,
+            percent_genes_to_mask=args.percent_genes_to_mask,
+        )
+    )
+    args.new_saved_dir = Path(
+        args.new_saved_dir.format(
+            metric_type=args.metric_type,
+            percent_genes_to_mask=args.percent_genes_to_mask,
+        )
+    )
 
     print("Loading initial dataset...")
-    initial_datast = ad.read_h5ad(args.initial_data_set_path, backed = "r")
+    initial_datast = ad.read_h5ad(args.initial_data_set_path, backed="r")
 
     print("Generating model_output...")
-    model_output, sample_ids, target_genes, predictions = generate_model_predictions(initial_datast, args)
+    model_output, sample_ids, target_genes, predictions = generate_model_predictions(
+        initial_datast, args
+    )
     print("Running new code for new_result and new_metrics...")
     new_result, new_metrics = run_new_code(model_output, args)
     print("Running notebook code for comparison...")
-    
+
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
         run_notebook_code(args, sample_ids, target_genes, predictions)
     )
@@ -414,30 +396,35 @@ if __name__ == "__main__":
         for ent in new_metrics[metric]:
             mapping[ent.params["condition"]] = ent.value
         new_metrics_dict[metric] = mapping
-    
+
     # Make sure all keys in new are in notebook, and compare notebook to new
     with (args.notebook_task_inputs_path / "gene_map.json").open("r") as f:
         notebook_gene_map = json.load(f)
-    print("KEYS", new_result.true_log_fc_dict.keys())
+
     for k in new_result.true_log_fc_dict:
-        assert notebook_gene_map[k] in notebook_true_log_fc_dict, f"Key {k} missing in notebook_true_log_fc_dict"
-        
-        assert (
-            np.allclose(np.sort(notebook_true_log_fc_dict[notebook_gene_map[k]][0]), 
-                          np.sort(new_result.true_log_fc_dict[k]))
+        print(k, notebook_gene_map[k])
+        assert notebook_gene_map[k] in notebook_true_log_fc_dict, (
+            f"Key {k} missing in notebook_true_log_fc_dict"
+        )
+        assert np.allclose(
+            np.sort(notebook_true_log_fc_dict[notebook_gene_map[k]][0]),
+            np.sort(new_result.true_log_fc_dict[k]),
         )
     for k in new_result.pred_log_fc_dict:
-        assert notebook_gene_map[k] in notebook_pred_log_fc_dict, f"Key {k} missing in notebook_pred_log_fc_dict"
-        assert (
-            np.allclose(np.sort(notebook_pred_log_fc_dict[notebook_gene_map[k]][0]), 
-                          np.sort(new_result.pred_log_fc_dict[k]))
+        assert notebook_gene_map[k] in notebook_pred_log_fc_dict, (
+            f"Key {k} missing in notebook_pred_log_fc_dict"
+        )
+        assert np.allclose(
+            np.sort(notebook_pred_log_fc_dict[notebook_gene_map[k]][0]),
+            np.sort(new_result.pred_log_fc_dict[k]),
         )
 
     print("Checking equivalency of metrics keys...")
     assert new_metrics_dict.keys() == metrics_dict.keys()
     for metric in new_metrics_dict:
         for condition in new_metrics_dict[metric]:
-            assert np.isclose (
-                new_metrics_dict[metric][condition] == metrics_dict[metric][notebook_gene_map[condition]]
+            assert np.isclose(
+                new_metrics_dict[metric][condition],
+                metrics_dict[metric][notebook_gene_map[condition]],
             )
     print("All checks passed. Test complete.")

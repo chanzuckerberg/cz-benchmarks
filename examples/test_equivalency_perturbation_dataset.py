@@ -173,7 +173,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--h5ad_data_path",
         type=str,
-        default="data2/czbenchmarks/replogle2022/K562/K562_essential_raw_singlecell_01.h5ad", #
+        default="data2/czbenchmarks/replogle2022/K562/K562_essential_raw_singlecell_01.h5ad",  #
         help="Path to masked h5ad file",
     )
     parser.add_argument(
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--control_cells_ids_path",
         type=str,
-        default="data2/czbenchmarks/replogle2022/K562/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json", #
+        default="data2/czbenchmarks/replogle2022/K562/ReplogleEssentialsCr4_GEM_libsizeMatched_NonTargetingCellIdsPerTarget.json",  #
         help="Path to control_cells_ids .json file",
     )
     parser.add_argument(
@@ -238,8 +238,8 @@ if __name__ == "__main__":
     args.de_results_path = args.de_results_path.format(metric_type=metric_normalized)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nb_dir = Path(f"notebook_task_inputs_{metric_normalized}_{args.percent_genes_to_mask}")
-    
+    nb_dir = Path(f"notebook_task_inputs_{args.metric}_{args.percent_genes_to_mask}")
+
     #### NOTEBOOK CODE ####
     if args.run_notebook_code:
         if Path(nb_dir).exists():
@@ -282,10 +282,14 @@ if __name__ == "__main__":
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
     new_output_dir = new_dataset.store_task_inputs()
     # Move the new_output_dir to include metric type and percent genes to mask
-    new_output_dir_named = Path(f"{new_output_dir}_{metric_normalized}_{args.percent_genes_to_mask}")
+    new_output_dir_named = Path(
+        f"{new_output_dir}_{args.metric}_{args.percent_genes_to_mask}"
+    )
     if new_output_dir != new_output_dir_named:
         if new_output_dir_named.exists():
-            logger.info(f"Target directory {new_output_dir_named} already exists, removing it before move.")
+            logger.info(
+                f"Target directory {new_output_dir_named} already exists, removing it before move."
+            )
             shutil.rmtree(new_output_dir_named)
         shutil.move(str(new_output_dir), str(new_output_dir_named))
         new_output_dir = new_output_dir_named

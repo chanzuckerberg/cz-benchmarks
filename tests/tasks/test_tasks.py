@@ -414,7 +414,9 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     # Create base cell names without underscores (so str.split("_").str[0] works correctly)
     base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
     # Create extended obs names like real dataset: base_name + "_" + condition
-    obs_names = [f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)]
+    obs_names = [
+        f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)
+    ]
 
     X = np.zeros((len(conditions), len(gene_names)), dtype=float)
     # Set group means so that pred_log_fc equals the designed true_lfc
@@ -532,7 +534,9 @@ def test_perturbation_expression_prediction_task_ttest():
     # Create base cell names without underscores (so str.split("_").str[0] works correctly)
     base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
     # Create extended obs names like real dataset: base_name + "_" + condition
-    obs_names = [f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)]
+    obs_names = [
+        f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)
+    ]
 
     X = np.zeros((len(conditions), len(gene_names)), dtype=float)
     # Set group means so that pred_log_fc equals the designed "true" standardized_mean_diff
