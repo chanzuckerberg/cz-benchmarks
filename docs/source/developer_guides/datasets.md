@@ -107,7 +107,7 @@ labels_series = dataset.labels
 # For a SingleCellPerturbationDataset
 dataset.load_data()
 control_cells_ids = dataset.control_cells_ids
-target_genes_to_save = dataset.target_genes_to_save
+target_conditions_to_save = dataset.target_conditions_to_save
 de_results = dataset.de_results
 control_matched_adata = dataset.control_matched_adata
 ```
