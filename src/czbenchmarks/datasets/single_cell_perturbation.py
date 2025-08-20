@@ -105,22 +105,31 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Args:
             path (Path): Path to the dataset file.
             organism (Organism): Enum value indicating the organism.
-            condition_key (str): Key for the column in `adata.obs` specifying conditions.
-                Defaults to "condition".
-            control_name (str): Name of the control condition. Defaults to "ctrl".
-            de_gene_col (str): Column name for the names of genes which are differentially
-                expressed in the differential expression results. Defaults to "gene".
-            deg_test_name (str): Name of the differential expression test condition.
-                Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
-            percent_genes_to_mask (float): Percentage of genes to mask.
-            min_de_genes_to_mask (int): Minimum number of differentially expressed genes
-                required to mask that condition. If not met, no genes are masked.
-            pval_threshold (float): P-value threshold for differential expression.
-            min_logfoldchange (float): Minimum log-fold change for differential expression.
-            min_smd (float): Minimum standardized mean difference for differential expression.
-            de_results_path (Optional[Path]): Path to load differential expression results from csv file.
-                If not provided, the deg data are used from adata.uns['de_results_{deg_test_name}'].
-            task_inputs_dir (Optional[Path]): Directory for storing task-specific inputs.
+            condition_key (str): Key for the column in `adata.obs` specifying 
+                conditions. Defaults to "condition".
+            control_name (str): Name of the control condition. Defaults to 
+                "ctrl".
+            de_gene_col (str): Column name for the names of genes which are 
+                differentially expressed in the differential expression results. 
+                Defaults to "gene".
+            deg_test_name (str): Name of the differential expression test
+                condition. Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
+            percent_genes_to_mask (float): Percentage of genes to mask. 
+                Default is 0.5.
+            min_de_genes_to_mask (int): Minimum number of differentially 
+                expressed genes required to mask that condition. If not met, no genes 
+                are masked. Default is 5.
+            pval_threshold (float): P-value threshold for differential expression. 
+                Default is 1e-4.
+            min_logfoldchange (float): Minimum log-fold change for differential 
+                expression. Default is 1.0.
+            min_smd (float): Minimum standardized mean difference for differential 
+                expression. Default is 0.55.
+            de_results_path (Optional[Path]): Path to load differential expression 
+                results from csv file. If not provided, the deg data are used from 
+                adata.uns['de_results_{deg_test_name}'].
+            task_inputs_dir (Optional[Path]): Directory for storing task-specific 
+                inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
