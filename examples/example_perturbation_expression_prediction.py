@@ -17,25 +17,25 @@ from czbenchmarks.tasks.types import CellRepresentation
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
     Assumes wilcoxon DE results and a masked h5ad file."""
-        
+
     # Parse command line arguments
     parser = argparse.ArgumentParser(
         description="Run perturbation expression prediction task"
     )
     parser.add_argument(
-        "--save-inputs", 
+        "--save-inputs",
         action="store_true",
-        help="Save dataset task inputs to disk and load them back (demonstrates save/load functionality)"
+        help="Save dataset task inputs to disk and load them back (demonstrates save/load functionality)",
     )
     args = parser.parse_args()
-    
+
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
     # Load the input data
     dataset: SingleCellPerturbationDataset = load_dataset(
         "replogle_k562_essential_perturbpredict"
     )
-    
+
     # Choose approach based on flag
     if args.save_inputs:
         print("Using save/load approach...")
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             masked_adata_obs=dataset.control_matched_adata.obs,
             target_conditions_to_save=dataset.target_conditions_to_save,
         )
-    
+
     # Generate random model output
     model_output: CellRepresentation = np.random.rand(
         dataset.adata.shape[0], dataset.adata.shape[1]
@@ -63,5 +63,3 @@ if __name__ == "__main__":
     task = PerturbationExpressionPredictionTask()
     metrics_dict = task.run(model_output, task_input)
     print_metrics_summary(metrics_dict)
-
-

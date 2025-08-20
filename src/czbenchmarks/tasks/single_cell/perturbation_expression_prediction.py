@@ -24,7 +24,9 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     target_conditions_to_save: Dict[str, List[str]]
 
 
-def load_perturbation_task_input_from_saved_files(task_inputs_dir: Path) -> PerturbationExpressionPredictionTaskInput:
+def load_perturbation_task_input_from_saved_files(
+    task_inputs_dir: Path,
+) -> PerturbationExpressionPredictionTaskInput:
     """
     Load task input from files saved by dataset's `store_task_inputs`.
 
@@ -38,7 +40,7 @@ def load_perturbation_task_input_from_saved_files(task_inputs_dir: Path) -> Pert
     Returns:
         PerturbationExpressionPredictionTaskInput: Task input ready for use.
     """
-    
+
     inputs_dir = Path(task_inputs_dir)
 
     # Load DE results
@@ -121,7 +123,7 @@ class PerturbationExpressionPredictionTask(Task):
         condition_list = np.unique(
             condition_series[~condition_series.str.startswith(self.control_prefix)]
         )
-        
+
         for condition in condition_list:
             condition_de_df = de_results[de_results["condition"] == condition]
 
@@ -333,5 +335,3 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
-
-

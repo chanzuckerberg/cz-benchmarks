@@ -58,7 +58,9 @@ def run_notebook_code(args):
 
     # Load notebook outputs from the specified directory
     nb_dir = args.notebook_task_inputs_path
-    masked_notebook_adata = ad.read_h5ad(nb_dir / "notebook_adata_masked.h5ad", backed = "r")
+    masked_notebook_adata = ad.read_h5ad(
+        nb_dir / "notebook_adata_masked.h5ad", backed="r"
+    )
 
     print("Notebook files loaded. Reading and filtering DE results...")
     # Read in and filter the DE results
@@ -81,7 +83,9 @@ def run_notebook_code(args):
     print("DE results filtered. Loading predictions and grouping by sample...")
     # The original code is per model name. But here, we just have one model.
     predictions_dict = {}
-    genes_dict = json.load(open(args.notebook_task_inputs_path / "notebook_target_genes_to_save.json"))
+    genes_dict = json.load(
+        open(args.notebook_task_inputs_path / "notebook_target_genes_to_save.json")
+    )
     pred_log_fc_dict = {}
     true_log_fc_dict = {}
     metrics_dict = {
@@ -250,8 +254,8 @@ def run_notebook_code(args):
 def run_new_code(model_output, args):
     print("Loading new dataset and running new code...")
     dataset = SingleCellPerturbationDataset(
-        path=args.new_saved_dir,          
-        organism=Organism.HUMAN  )
+        path=args.new_saved_dir, organism=Organism.HUMAN
+    )
     print("Loading dataset from task inputs...")
     dataset.load_from_task_inputs(args.new_saved_dir)
     print("Done loading dataset from task inputs.")
@@ -271,17 +275,23 @@ def run_new_code(model_output, args):
     print("New code run complete.")
     return result, metric_results
 
+
 def calculate_inds(positions, values):
     pos_map = defaultdict(list)
     for i, v in enumerate(positions):
         pos_map[v].append(i)
-    
+
     # Lookups
-    positions_per_id = {sid: np.array(pos_map.get(sid, ()), dtype=int) for sid in positions}
+    positions_per_id = {
+        sid: np.array(pos_map.get(sid, ()), dtype=int) for sid in positions
+    }
     flat_positions = np.concatenate([positions_per_id[sid] for sid in values])
     return flat_positions
 
-def generate_model_predictions(masked_notebook_adata, target_genes_path, sample_id_path, predictions_path):
+
+def generate_model_predictions(
+    masked_notebook_adata, target_genes_path, sample_id_path, predictions_path
+):
     """
     Generate a model_output matrix for the given masked_notebook_adata using the provided
     target_genes, sample_id, and predictions files.
@@ -388,18 +398,30 @@ if __name__ == "__main__":
         help="Path to target_genes .npy file",
     )
 
-    parser.add_argument("--new_saved_dir", type=str,
-        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation")
-    parser.add_argument("--notebook_task_inputs_path", type=Path, default=Path("notebook_task_inputs_20250815_120737"))
+    parser.add_argument(
+        "--new_saved_dir",
+        type=str,
+        default=f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation",
+    )
+    parser.add_argument(
+        "--notebook_task_inputs_path",
+        type=Path,
+        default=Path("notebook_task_inputs_20250815_120737"),
+    )
 
     args = parser.parse_args()
     print("Loading initial dataset...")
-    initial_datast = ad.read_h5ad(args.initial_data_set_path, backed = "r")
+    initial_datast = ad.read_h5ad(args.initial_data_set_path, backed="r")
 
     print("Generating model_output...")
-    model_output = generate_model_predictions(initial_datast, args.target_genes_path, args.sample_id_path, args.predictions_path)
+    model_output = generate_model_predictions(
+        initial_datast,
+        args.target_genes_path,
+        args.sample_id_path,
+        args.predictions_path,
+    )
     print("Running notebook code for comparison...")
-    
+
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
         run_notebook_code(args)
     )
@@ -413,27 +435,31 @@ if __name__ == "__main__":
         for ent in new_metrics[metric]:
             mapping[ent.params["condition"]] = ent.value
         new_metrics_dict[metric] = mapping
-    
-    #print("Checking equivalency of pred_log_fc_dict and true_log_fc_dict...")
-    #assert len(notebook_pred_log_fc_dict) == len(new_result.pred_log_fc_dict)
-    #assert len(notebook_true_log_fc_dict) == len(new_result.true_log_fc_dict)
+
+    # print("Checking equivalency of pred_log_fc_dict and true_log_fc_dict...")
+    # assert len(notebook_pred_log_fc_dict) == len(new_result.pred_log_fc_dict)
+    # assert len(notebook_true_log_fc_dict) == len(new_result.true_log_fc_dict)
 
     # Make sure all keys in new are in notebook, and compare notebook to new
     with (args.notebook_task_inputs_path / "gene_map.json").open("r") as f:
         notebook_gene_map = json.load(f)
-    
-    for k in new_result.true_log_fc_dict:
-        assert notebook_gene_map[k] in notebook_true_log_fc_dict, f"Key {k} missing in notebook_true_log_fc_dict"
 
+    for k in new_result.true_log_fc_dict:
         assert (
-            np.array_equal(np.sort(notebook_true_log_fc_dict[notebook_gene_map[k]][0]), 
-                          np.sort(new_result.true_log_fc_dict[k]))
+            notebook_gene_map[k] in notebook_true_log_fc_dict
+        ), f"Key {k} missing in notebook_true_log_fc_dict"
+
+        assert np.array_equal(
+            np.sort(notebook_true_log_fc_dict[notebook_gene_map[k]][0]),
+            np.sort(new_result.true_log_fc_dict[k]),
         )
     for k in new_result.pred_log_fc_dict:
-        assert notebook_gene_map[k] in notebook_pred_log_fc_dict, f"Key {k} missing in notebook_pred_log_fc_dict"
         assert (
-            np.array_equal(np.sort(notebook_pred_log_fc_dict[notebook_gene_map[k]][0]), 
-                          np.sort(new_result.pred_log_fc_dict[k]))
+            notebook_gene_map[k] in notebook_pred_log_fc_dict
+        ), f"Key {k} missing in notebook_pred_log_fc_dict"
+        assert np.array_equal(
+            np.sort(notebook_pred_log_fc_dict[notebook_gene_map[k]][0]),
+            np.sort(new_result.pred_log_fc_dict[k]),
         )
 
     print("Checking equivalency of metrics keys...")
@@ -441,6 +467,7 @@ if __name__ == "__main__":
     for metric in new_metrics_dict:
         for condition in new_metrics_dict[metric]:
             assert (
-                new_metrics_dict[metric][condition] != metrics_dict[metric][notebook_gene_map[condition]]
+                new_metrics_dict[metric][condition]
+                != metrics_dict[metric][notebook_gene_map[condition]]
             )
     print("All checks passed. Test complete.")

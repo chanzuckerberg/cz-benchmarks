@@ -279,40 +279,43 @@ def test_perturbation_task():
         split_column="split",
     )
     gene_pert = perturbation_data["gene_pert"]
-    pert_pred = perturbation_data["pert_pred"]
-    pert_truth = perturbation_data["pert_truth"]
     # Convert sparse matrix to dense array to avoid matrix object issues
     cell_representation = perturbation_data["adata"].X.toarray()
     var_names = perturbation_data["adata"].var_names
-    obs_names = perturbation_data["adata"].obs_names
 
     # Task and argument setup
     task = PerturbationExpressionPredictionTask()
-    
+
     # Create DE results DataFrame matching expected structure
-    de_results = pd.DataFrame({
-        'condition': [gene_pert] * len(var_names),
-        'gene_id': var_names,
-        'logfoldchange': np.random.randn(len(var_names)),
-        'pval_adj': np.random.uniform(0, 0.01, len(var_names))
-    })
-    
+    de_results = pd.DataFrame(
+        {
+            "condition": [gene_pert] * len(var_names),
+            "gene_id": var_names,
+            "logfoldchange": np.random.randn(len(var_names)),
+            "pval_adj": np.random.uniform(0, 0.01, len(var_names)),
+        }
+    )
+
     # Create masked_adata_obs DataFrame and fix condition naming
     adata = perturbation_data["adata"]
     masked_adata_obs = adata.obs.copy()
-    
+
     # Fix condition naming to match task expectations
     # Task expects control cells to be named: {control_prefix}_{condition}
     control_condition_name = f"non-targeting_{gene_pert}"
-    masked_adata_obs.loc[masked_adata_obs["condition"] == "ctrl", "condition"] = control_condition_name
-    
+    masked_adata_obs.loc[masked_adata_obs["condition"] == "ctrl", "condition"] = (
+        control_condition_name
+    )
+
     # Create target_conditions_to_save dict - map cell IDs to lists of genes to mask
     target_conditions_to_save = {}
     for cell_id in adata.obs_names:
         # Sample some genes to mask for each cell
-        n_genes_to_mask = min(10, len(var_names) // 2)  
-        target_conditions_to_save[cell_id] = list(np.random.choice(var_names, n_genes_to_mask, replace=False))
-    
+        n_genes_to_mask = min(10, len(var_names) // 2)
+        target_conditions_to_save[cell_id] = list(
+            np.random.choice(var_names, n_genes_to_mask, replace=False)
+        )
+
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_results,
         masked_adata_obs=masked_adata_obs,
@@ -320,7 +323,7 @@ def test_perturbation_task():
         target_conditions_to_save=target_conditions_to_save,
     )
 
-    # Five metrics per condition: accuracy, precision, recall, f1, correlation 
+    # Five metrics per condition: accuracy, precision, recall, f1, correlation
     # We have one perturbed condition, so 5 metrics total
     num_metrics = 5
 
@@ -333,12 +336,12 @@ def test_perturbation_task():
 
         # Verify results structure - the method returns a dict, not a list
         assert isinstance(results, dict)
-        
+
         # Flatten the dictionary into a list for further checking
         all_results = []
         for metric_list in results.values():
             all_results.extend(metric_list)
-        
+
         assert all(isinstance(r, MetricResult) for r in all_results)
         assert len(all_results) == num_metrics
 
@@ -351,12 +354,12 @@ def test_perturbation_task():
             # Create a new task input with the baseline embedding
             baseline_results = task.run(baseline_embedding, task_input)
             assert isinstance(baseline_results, dict)
-            
+
             # Flatten baseline results
             baseline_all_results = []
             for metric_list in baseline_results.values():
                 baseline_all_results.extend(metric_list)
-            
+
             assert all(isinstance(r, MetricResult) for r in baseline_all_results)
             assert len(baseline_all_results) == num_metrics
     except Exception as e:
@@ -463,9 +466,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
             assert np.isclose(r.value, 1.0)
 
     # Verify metric types present
-    all_results = [
-        result for metric_list in results.values() for result in metric_list
-    ]
+    all_results = [result for metric_list in results.values() for result in metric_list]
     metric_types = {result.metric_type for result in all_results}
     expected_types = {
         MetricType.ACCURACY,
@@ -598,10 +599,12 @@ def test_perturbation_expression_prediction_task_ttest():
 
 def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path):
     """Test that the task can load inputs from stored task files."""
-    from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
+    from czbenchmarks.datasets.single_cell_perturbation import (
+        SingleCellPerturbationDataset,
+    )
     from czbenchmarks.datasets.types import Organism
     from tests.utils import create_dummy_anndata
-    
+
     # Create a dummy dataset and store its task inputs
     file_path = tmp_path / "dummy_perturbation.h5ad"
     adata = create_dummy_anndata(
@@ -612,8 +615,12 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     )
     adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
     adata.obs_names = [
-        "ctrl_test1_a", "ctrl_test2_b", "cond_test1_a",
-        "cond_test1_b", "cond_test2_a", "cond_test2_b"
+        "ctrl_test1_a",
+        "ctrl_test2_b",
+        "cond_test1_a",
+        "cond_test1_b",
+        "cond_test2_a",
+        "cond_test2_b",
     ]
     # Provide matched control cell IDs and DE results
     adata.uns["control_cells_ids"] = {
@@ -622,14 +629,16 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     }
     de_conditions = ["test1"] * 10 + ["test2"] * 10
     de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
-    adata.uns["de_results_wilcoxon"] = pd.DataFrame({
-        "condition": de_conditions,
-        "gene": de_genes,
-        "pval_adj": [1e-6] * 20,
-        "logfoldchange": [2.0] * 20,
-    })
+    adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+        {
+            "condition": de_conditions,
+            "gene": de_genes,
+            "pval_adj": [1e-6] * 20,
+            "logfoldchange": [2.0] * 20,
+        }
+    )
     adata.write_h5ad(file_path)
-    
+
     # Create dataset and store task inputs
     dataset = SingleCellPerturbationDataset(
         path=file_path,
@@ -639,20 +648,23 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     )
     dataset.load_data()
     stored_dir = dataset.store_task_inputs()
-    
+
     # Test loading task inputs using the standalone function
     from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
         load_perturbation_task_input_from_saved_files,
     )
+
     task_input = load_perturbation_task_input_from_saved_files(stored_dir)
-    
+
     # Verify the loaded task input has the expected structure
     assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
     assert isinstance(task_input.de_results, pd.DataFrame)
     assert isinstance(task_input.masked_adata_obs, pd.DataFrame)
     assert len(task_input.target_conditions_to_save) > 0
-    assert all(isinstance(v, list) for v in task_input.target_conditions_to_save.values())
-    
+    assert all(
+        isinstance(v, list) for v in task_input.target_conditions_to_save.values()
+    )
+
     # Verify data integrity
     assert task_input.de_results.shape[0] > 0
     assert task_input.masked_adata_obs.shape[0] > 0
