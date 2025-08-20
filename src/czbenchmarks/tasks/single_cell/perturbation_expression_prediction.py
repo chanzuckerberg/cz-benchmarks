@@ -91,7 +91,7 @@ class PerturbationExpressionPredictionTask(Task):
         super().__init__(random_seed=random_seed)
         self.metric_column = "logfoldchange"
         self.control_prefix = control_prefix
-        
+
     def _run_task(
         self,
         cell_representation: CellRepresentation,
@@ -149,19 +149,19 @@ class PerturbationExpressionPredictionTask(Task):
             masked_genes = masked_genes[valid]
             true_log_fc = true_log_fc[valid]
             col_indices = task_input.var_index.get_indexer(masked_genes)
-            condition_adata = task_input.masked_adata_obs[task_input.masked_adata_obs["condition"] == condition].index
+            condition_adata = task_input.masked_adata_obs[
+                task_input.masked_adata_obs["condition"] == condition
+            ].index
             condition_col_ids = condition_adata.to_series().str.split("_").str[0]
 
-            
-            condition_idx = np.where(
-                row_index.isin(condition_col_ids)
-            )[0]
-            control_adata = task_input.masked_adata_obs[task_input.masked_adata_obs["condition"] == f"{self.control_prefix}_{condition}"].index
+            condition_idx = np.where(row_index.isin(condition_col_ids))[0]
+            control_adata = task_input.masked_adata_obs[
+                task_input.masked_adata_obs["condition"]
+                == f"{self.control_prefix}_{condition}"
+            ].index
             control_col_ids = control_adata.to_series().str.split("_").str[0]
 
-            control_idx = np.where(
-                row_index.isin(control_col_ids)
-            )[0]
+            control_idx = np.where(row_index.isin(control_col_ids))[0]
             condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
             control_vals = cell_representation[np.ix_(control_idx, col_indices)]
             ctrl_mean = np.mean(control_vals, axis=0)
