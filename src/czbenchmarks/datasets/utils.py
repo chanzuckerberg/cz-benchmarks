@@ -157,7 +157,7 @@ def run_multicondition_dge_analysis(
         )
 
     if return_merged_adata:
-        log.warning("return_merged_adata is True, which can consume a lot of memory.")
+        log.warning("return_merged_adata is True, which can consume a large amount of memory.")
 
     obs = adata.obs
     obs_index = obs.index
