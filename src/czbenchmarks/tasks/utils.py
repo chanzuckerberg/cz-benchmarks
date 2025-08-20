@@ -8,6 +8,7 @@ from anndata import AnnData
 
 from ..constants import RANDOM_SEED
 from ..tasks.types import CellRepresentation
+from ..types import ListLike
 from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
@@ -313,3 +314,65 @@ def run_standard_scrna_workflow(
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]
+
+
+def aggregate_cells_to_samples(
+    embeddings: CellRepresentation,
+    labels: ListLike,
+    sample_ids: ListLike,
+    aggregation_method: Literal["mean", "median"] = "mean",
+) -> tuple[np.ndarray, pd.Series, pd.Series]:
+    """Aggregate cell-level embeddings to sample level.
+
+    This function groups cells by sample ID and aggregates their embeddings
+    using the specified method. It also ensures that each sample has a
+    consistent label (taking the first occurrence for each sample).
+
+    Args:
+        embeddings: Cell-level embeddings of shape (n_cells, d)
+        labels: Cell-level labels, length n_cells
+        sample_ids: Sample/donor identifiers for grouping cells, length n_cells
+        aggregation_method: Method to aggregate embeddings ("mean" or "median")
+
+    Returns:
+        Tuple containing:
+            - sample_embeddings: Aggregated embeddings (n_samples, d)
+            - sample_labels: Labels for each sample (length n_samples)
+            - sample_ids_out: Sample identifiers (length n_samples)
+
+    Raises:
+        ValueError: If inputs have mismatched lengths
+    """
+    embeddings = np.asarray(embeddings)
+    labels = pd.Series(labels)
+    sample_ids = pd.Series(sample_ids)
+
+    if len(embeddings) != len(labels) or len(labels) != len(sample_ids):
+        raise ValueError(
+            f"Mismatched lengths: embeddings={len(embeddings)}, "
+            f"labels={len(labels)}, sample_ids={len(sample_ids)}"
+        )
+
+    # Create DataFrame with embeddings and metadata
+    emb_df = pd.DataFrame(embeddings)
+    emb_df["sample_id"] = sample_ids
+    emb_df["label"] = labels
+
+    # Group by sample and aggregate embeddings (excluding non-numeric columns)
+    numeric_cols = emb_df.select_dtypes(include=[np.number]).columns
+    sample_emb_df = (
+        emb_df[numeric_cols.tolist() + ["sample_id"]]
+        .groupby("sample_id")
+        .agg(aggregation_method)
+    )
+    sample_embeddings = sample_emb_df.values
+
+    # Get unique labels per sample (take first occurrence)
+    sample_labels_df = emb_df[["sample_id", "label"]].groupby("sample_id").first()
+    sample_labels_df = sample_labels_df.reindex(sample_emb_df.index)
+
+    return (
+        sample_embeddings,
+        sample_labels_df["label"],
+        pd.Series(sample_emb_df.index.values, name="sample_id"),
+    )
