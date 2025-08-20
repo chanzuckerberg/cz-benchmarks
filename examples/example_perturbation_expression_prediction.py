@@ -71,6 +71,7 @@ if __name__ == "__main__":
             var_index=dataset.control_matched_adata.var.index,
             masked_adata_obs=dataset.control_matched_adata.obs,
             target_conditions_to_save=dataset.target_conditions_to_save,
+            row_index=dataset.adata.obs.index,
         )
 
     # Generate random model output

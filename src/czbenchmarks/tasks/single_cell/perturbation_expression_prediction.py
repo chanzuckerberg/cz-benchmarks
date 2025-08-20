@@ -22,6 +22,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     masked_adata_obs: pd.DataFrame
     var_index: pd.Index
     target_conditions_to_save: Dict[str, List[str]]
+    row_index: pd.Index
 
 
 def load_perturbation_task_input_from_saved_files(
@@ -56,12 +57,13 @@ def load_perturbation_task_input_from_saved_files(
     adata_dir = inputs_dir / "control_matched_adata"
     obs = pd.read_json(adata_dir / "obs.json", orient="split")
     var = pd.read_json(adata_dir / "var.json", orient="split")
-
+    row_index = obs.index
     return PerturbationExpressionPredictionTaskInput(
         de_results=de_results,
         masked_adata_obs=obs,
         var_index=var.index,
         target_conditions_to_save=target_conditions_to_save,
+        row_index=row_index,
     )
 
 
@@ -146,15 +148,20 @@ class PerturbationExpressionPredictionTask(Task):
             masked_genes = masked_genes[valid]
             true_log_fc = true_log_fc[valid]
             col_indices = task_input.var_index.get_indexer(masked_genes)
+            condition_adata = task_input.masked_adata_obs[task_input.masked_adata_obs["condition"] == condition].index
+            condition_col_ids = condition_adata.to_series().str.split("_").str[0]
+
+            
             condition_idx = np.where(
-                task_input.masked_adata_obs["condition"] == condition
+                task_input.row_index.isin(condition_col_ids)
             )[0]
+
+            control_adata = task_input.masked_adata_obs[task_input.masked_adata_obs["condition"] == f"{self.control_prefix}_{condition}"].index
+            control_col_ids = control_adata.to_series().str.split("_").str[0]
 
             control_idx = np.where(
-                task_input.masked_adata_obs["condition"]
-                == f"{self.control_prefix}_{condition}"
+                task_input.row_index.isin(control_col_ids)
             )[0]
-
             condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
             control_vals = cell_representation[np.ix_(control_idx, col_indices)]
 

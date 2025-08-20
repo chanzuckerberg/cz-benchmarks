@@ -321,6 +321,7 @@ def test_perturbation_task():
         masked_adata_obs=masked_adata_obs,
         var_index=var_names,
         target_conditions_to_save=target_conditions_to_save,
+        row_index=adata.obs.index,
     )
 
     # Five metrics per condition: accuracy, precision, recall, f1, correlation
@@ -410,7 +411,10 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         + ["gene_B"] * n_per_group
         + ["ctrl_gene_B"] * n_per_group
     )
-    obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
+    # Create base cell names without underscores (so str.split("_").str[0] works correctly)
+    base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
+    # Create extended obs names like real dataset: base_name + "_" + condition
+    obs_names = [f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)]
 
     X = np.zeros((len(conditions), len(gene_names)), dtype=float)
     # Set group means so that pred_log_fc equals the designed true_lfc
@@ -438,6 +442,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         masked_adata_obs=adata.obs,
         var_index=adata.var_names,
         target_conditions_to_save=target_conditions_to_save,
+        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -524,7 +529,10 @@ def test_perturbation_expression_prediction_task_ttest():
         + ["gene_B"] * n_per_group
         + ["ctrl_gene_B"] * n_per_group
     )
-    obs_names = [f"cell_{i}_{cond}" for i, cond in enumerate(conditions)]
+    # Create base cell names without underscores (so str.split("_").str[0] works correctly)
+    base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
+    # Create extended obs names like real dataset: base_name + "_" + condition
+    obs_names = [f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)]
 
     X = np.zeros((len(conditions), len(gene_names)), dtype=float)
     # Set group means so that pred_log_fc equals the designed "true" standardized_mean_diff
@@ -552,6 +560,7 @@ def test_perturbation_expression_prediction_task_ttest():
         masked_adata_obs=adata.obs,
         var_index=adata.var_names,
         target_conditions_to_save=target_conditions_to_save,
+        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
