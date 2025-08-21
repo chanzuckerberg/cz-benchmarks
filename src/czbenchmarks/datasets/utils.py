@@ -120,8 +120,8 @@ def run_multicondition_dge_analysis(
     control_cells_ids: Dict[str, List[str]],
     deg_test_name: Literal["wilcoxon", "t-test"] = "wilcoxon",
     filter_min_cells: int = 10,
-    filter_min_genes: int = 1000,  # FIXME MICHELLE: ask Jasleen about default
-    min_pert_cells: int = 50,  # FIXME MICHELLE: ask Jasleen about default
+    filter_min_genes: int = 1000,
+    min_pert_cells: int = 50,
     remove_avg_zeros: bool = False,
     store_dge_metadata: bool = False,
     return_merged_adata: bool = False,
