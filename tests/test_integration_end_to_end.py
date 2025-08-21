@@ -25,7 +25,7 @@ from czbenchmarks.tasks.single_cell import (
 
 
 @pytest.mark.integration
-def test_end_to_end_task_execution():
+def test_end_to_end_task_execution_predictive_tasks():
     """Integration test that runs all tasks with model and baseline embeddings.
 
     This test verifies the complete workflow from loading data to generating
