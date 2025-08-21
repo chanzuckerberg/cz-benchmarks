@@ -296,5 +296,3 @@ def run_multicondition_dge_analysis(
         )
         results["dge_params"] = dge_params  # NB: this is not tidy
     return results, adata_merged
-
-
