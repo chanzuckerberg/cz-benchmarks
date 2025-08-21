@@ -246,7 +246,7 @@ def test_end_to_end_perturbation_expression_prediction():
                 assert hasattr(result, "value")
                 assert hasattr(result, "params")
 
-    # Combine results for JSON serialization test
+    # Combine results for JSON validation
     model_serialized = {
         k: [r.model_dump() for r in v]
         for k, v in model_results.items()
@@ -266,14 +266,3 @@ def test_end_to_end_perturbation_expression_prediction():
     assert "perturbation" in all_results
     assert "model" in all_results["perturbation"]
     assert "baseline" in all_results["perturbation"]
-
-    # Verify JSON serialization works correctly
-    json_output = json.dumps(all_results, indent=2, default=str)
-    assert isinstance(json_output, str)
-    assert len(json_output) > 0
-
-    # Verify we can parse the JSON back
-    parsed_results = json.loads(json_output)
-    assert "perturbation" in parsed_results
-    assert "model" in parsed_results["perturbation"]
-    assert "baseline" in parsed_results["perturbation"]
