@@ -1,8 +1,50 @@
+from ast import Or
+import sys
 from czbenchmarks.datasets import utils
 
 import pytest
+import types
+from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.utils import load_dataset
 from unittest.mock import patch
+from czbenchmarks.datasets.utils import load_local_dataset
+
+def test_load_local_dataset(tmp_path, monkeypatch):
+    """Test load_local_dataset instantiates and loads a dataset from a local file."""
+
+    # Create a dummy file to represent the dataset
+    dummy_file = tmp_path / "dummy.h5ad"
+    dummy_file.write_text("dummy content")
+
+    # Create a dummy dataset class
+    class DummyDataset:
+        def __init__(self, path, organism, **kwargs):
+            self.path = path
+            self.organism = organism
+            self.kwargs = kwargs
+            self.loaded = False
+
+        def load_data(self):
+            self.loaded = True
+
+    # Dynamically create a dummy module and add DummyDataset to it
+    dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
+    dummy_module.DummyDataset = DummyDataset
+    sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
+
+    # Now call load_local_dataset with the dummy class
+    dataset = load_local_dataset(
+        dataset_class="czbenchmarks.datasets.dummy.DummyDataset",
+        organism=Organism.HUMAN,
+        path=str(dummy_file),
+        foo="bar"
+    )
+
+    assert isinstance(dataset, DummyDataset)
+    assert dataset.loaded is True
+    assert dataset.path == str(dummy_file)
+    assert dataset.organism == Organism.HUMAN
+    assert dataset.kwargs["foo"] == "bar"
 
 
 def test_list_available_datasets():
