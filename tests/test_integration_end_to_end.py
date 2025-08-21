@@ -23,7 +23,6 @@ from czbenchmarks.tasks.single_cell import (
 )
 
 
-
 @pytest.mark.integration
 def test_end_to_end_task_execution_predictive_tasks():
     """Integration test that runs all tasks with model and baseline embeddings.
@@ -220,9 +219,7 @@ def test_end_to_end_perturbation_expression_prediction():
     model_results = task.run(model_output, task_input)
 
     # Compute and run baseline
-    baseline_embedding = task.compute_baseline(
-        dataset.adata.X, baseline_type="median"
-    )
+    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
     baseline_results = task.run(baseline_embedding, task_input)
 
     # Validate results structure
@@ -248,12 +245,10 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Combine results for JSON validation
     model_serialized = {
-        k: [r.model_dump() for r in v]
-        for k, v in model_results.items()
+        k: [r.model_dump() for r in v] for k, v in model_results.items()
     }
     baseline_serialized = {
-        k: [r.model_dump() for r in v]
-        for k, v in baseline_results.items()
+        k: [r.model_dump() for r in v] for k, v in baseline_results.items()
     }
     all_results = {
         "perturbation": {
