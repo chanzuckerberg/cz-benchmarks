@@ -335,16 +335,10 @@ def test_perturbation_task():
             task_input,
         )
 
-        # Verify results structure - the method returns a dict, not a list
-        assert isinstance(results, dict)
-
-        # Flatten the dictionary into a list for further checking
-        all_results = []
-        for metric_list in results.values():
-            all_results.extend(metric_list)
-
-        assert all(isinstance(r, MetricResult) for r in all_results)
-        assert len(all_results) == num_metrics
+        # Verify results structure - the method returns a list of MetricResult
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        assert len(results) == num_metrics
 
         # Test baseline with both mean and median
         for baseline_type in ["mean", "median"]:
@@ -354,15 +348,9 @@ def test_perturbation_task():
             )
             # Create a new task input with the baseline embedding
             baseline_results = task.run(baseline_embedding, task_input)
-            assert isinstance(baseline_results, dict)
-
-            # Flatten baseline results
-            baseline_all_results = []
-            for metric_list in baseline_results.values():
-                baseline_all_results.extend(metric_list)
-
-            assert all(isinstance(r, MetricResult) for r in baseline_all_results)
-            assert len(baseline_all_results) == num_metrics
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
+            assert len(baseline_results) == num_metrics
     except Exception as e:
         pytest.fail(f"Test failed with exception: {e}")
 
@@ -457,30 +445,25 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_lfc_gene_B)
 
     # Then, run the full task and validate metrics are perfect
-    num_metric_types = 5  # accuracy, precision, recall, f1, spearman
     results = task.run(cell_representation, task_input)
 
-    assert isinstance(results, dict)
-    assert len(results) == num_metric_types
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
+    # Expect results for both conditions x 5 metric types = 10 total results
+    assert len(results) == 10
 
-    # Each metric list should contain perfect scores for both conditions
-    for name, metric_list in results.items():
-        assert isinstance(metric_list, list)
-        assert all(isinstance(r, MetricResult) for r in metric_list)
-        # Expect results for both conditions
-        assert len(metric_list) == 2
-        for r in metric_list:
-            assert np.isclose(r.value, 1.0)
+    # Each result should have perfect scores
+    for r in results:
+        assert np.isclose(r.value, 1.0)
 
     # Verify metric types present
-    all_results = [result for metric_list in results.values() for result in metric_list]
-    metric_types = {result.metric_type for result in all_results}
+    metric_types = {result.metric_type for result in results}
     expected_types = {
-        MetricType.ACCURACY,
-        MetricType.PRECISION,
-        MetricType.RECALL,
-        MetricType.F1,
-        MetricType.SPEARMAN_CORRELATION,
+        MetricType.ACCURACY_CALCULATION,
+        MetricType.PRECISION_CALCULATION,
+        MetricType.RECALL_CALCULATION,
+        MetricType.F1_CALCULATION,
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
     }
     assert expected_types.issubset(metric_types)
 
@@ -577,31 +560,25 @@ def test_perturbation_expression_prediction_task_ttest():
     assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_smd_gene_B)
 
     # Then, run the full task and validate metrics are perfect
-    num_metric_types = 5  # accuracy, precision, recall, f1, spearman
     try:
         results = task.run(cell_representation, task_input)
 
-        assert isinstance(results, dict)
-        assert len(results) == num_metric_types
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        # Expect results for both conditions x 5 metric types = 10 total results
+        assert len(results) == 10
 
-        # Each metric list should contain perfect scores for both conditions
-        for name, metric_list in results.items():
-            assert isinstance(metric_list, list)
-            assert all(isinstance(r, MetricResult) for r in metric_list)
-            assert len(metric_list) == 2
-            for r in metric_list:
-                assert np.isclose(r.value, 1.0)
+        # Each result should have perfect scores
+        for r in results:
+            assert np.isclose(r.value, 1.0)
 
-        all_results = [
-            result for metric_list in results.values() for result in metric_list
-        ]
-        metric_types = {result.metric_type for result in all_results}
+        metric_types = {result.metric_type for result in results}
         expected_types = {
-            MetricType.ACCURACY,
-            MetricType.PRECISION,
-            MetricType.RECALL,
-            MetricType.F1,
-            MetricType.SPEARMAN_CORRELATION,
+            MetricType.ACCURACY_CALCULATION,
+            MetricType.PRECISION_CALCULATION,
+            MetricType.RECALL_CALCULATION,
+            MetricType.F1_CALCULATION,
+            MetricType.SPEARMAN_CORRELATION_CALCULATION,
         }
         assert expected_types.issubset(metric_types)
     except Exception as e:

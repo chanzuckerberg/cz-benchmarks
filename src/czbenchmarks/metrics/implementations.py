@@ -161,7 +161,7 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.ACCURACY,
+    MetricType.ACCURACY_CALCULATION,
     func=accuracy_score,
     required_args={"y_true", "y_pred"},
     description="Accuracy between true and predicted values",
@@ -169,7 +169,7 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.PRECISION,
+    MetricType.PRECISION_CALCULATION,
     func=precision_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="Precision between true and predicted values",
@@ -177,7 +177,7 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.RECALL,
+    MetricType.RECALL_CALCULATION,
     func=recall_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="Recall between true and predicted values",
@@ -185,7 +185,7 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.F1,
+    MetricType.F1_CALCULATION,
     func=f1_score_zero_division,
     required_args={"y_true", "y_pred"},
     description="F1 score between true and predicted values",
@@ -193,7 +193,7 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
-    MetricType.SPEARMAN_CORRELATION,
+    MetricType.SPEARMAN_CORRELATION_CALCULATION,
     func=spearman_correlation,
     required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
