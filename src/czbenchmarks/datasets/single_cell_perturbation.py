@@ -276,7 +276,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         obs_index = obs.index
 
         # If not already categorical, this speeds grouping and comparisons
-        if not pd.api.types.is_categorical_dtype(obs[self.condition_key]):
+        if not isinstance(obs[self.condition_key], pd.CategoricalDtype):
             obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
 
         # Fast: condition -> integer row positions
