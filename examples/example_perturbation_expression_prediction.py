@@ -25,7 +25,7 @@ if __name__ == "__main__":
     differentially expressed genes for each perturbation. The extent of the 
     perturbation is merged with the willcoxon test or t-test.
     
-    The dataset is filtered based on the type of t-test, along with the minimum 
+    The dataset is filtered based on the type of statistical test, along with the minimum 
     number of differentially expressed genes, maximum p-value, and the minimum 
     log fold change or standardized mean difference. During the dataset generation, 
     the specified percentage of genes to mask is randomly selected.
