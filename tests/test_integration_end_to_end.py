@@ -4,20 +4,27 @@ import pytest
 
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.clustering import ClusteringTaskInput
 from czbenchmarks.tasks.embedding import EmbeddingTaskInput
-from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTaskInput
+from czbenchmarks.tasks.label_prediction import (
+    MetadataLabelPredictionTaskInput,
+)
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.tasks import (
     ClusteringTask,
     EmbeddingTask,
     MetadataLabelPredictionTask,
 )
+from czbenchmarks.tasks.single_cell import (
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
 
 
 @pytest.mark.integration
-def test_end_to_end_task_execution():
+def test_end_to_end_task_execution_predictive_tasks():
     """Integration test that runs all tasks with model and baseline embeddings.
 
     This test verifies the complete workflow from loading data to generating
@@ -176,3 +183,81 @@ def test_end_to_end_task_execution():
     assert "mean_fold_precision" in prediction_model_metrics
     assert "mean_fold_recall" in prediction_model_metrics
     assert "mean_fold_auroc" in prediction_model_metrics
+
+
+@pytest.mark.integration
+def test_end_to_end_perturbation_expression_prediction():
+    """Integration test for perturbation expression prediction task.
+
+    Loads a perturbation dataset, builds task inputs following the example,
+    runs the task on a random model output and a baseline, and verifies result
+    structure and JSON serialization.
+    """
+    # Load dataset (requires cloud access)
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
+
+    # Build task input directly from dataset
+    task_input = PerturbationExpressionPredictionTaskInput(
+        de_results=dataset.de_results,
+        var_index=dataset.control_matched_adata.var.index,
+        masked_adata_obs=dataset.control_matched_adata.obs,
+        target_conditions_to_save=dataset.target_conditions_to_save,
+        row_index=dataset.adata.obs.index,
+    )
+
+    # Create random model output matching dataset dimensions
+    model_output: CellRepresentation = np.random.rand(
+        dataset.adata.shape[0], dataset.adata.shape[1]
+    )
+
+    # Initialize task
+    task = PerturbationExpressionPredictionTask()
+
+    # Run task with model output
+    model_results = task.run(model_output, task_input)
+
+    # Compute and run baseline
+    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
+    baseline_results = task.run(baseline_embedding, task_input)
+
+    # Validate results structure
+    for results in [model_results, baseline_results]:
+        assert isinstance(results, dict)
+        # Expect five metric groups
+        assert set(results.keys()) == {
+            "accuracy",
+            "precision",
+            "recall",
+            "f1",
+            "correlation",
+        }
+        # Each value should be a non-empty list of MetricResult
+        for metric_name, metric_list in results.items():
+            assert isinstance(metric_list, list)
+            assert len(metric_list) > 0
+            for result in metric_list:
+                # Result objects should have expected attributes
+                assert hasattr(result, "metric_type")
+                assert hasattr(result, "value")
+                assert hasattr(result, "params")
+
+    # Combine results for JSON validation
+    model_serialized = {
+        k: [r.model_dump() for r in v] for k, v in model_results.items()
+    }
+    baseline_serialized = {
+        k: [r.model_dump() for r in v] for k, v in baseline_results.items()
+    }
+    all_results = {
+        "perturbation": {
+            "model": model_serialized,
+            "baseline": baseline_serialized,
+        }
+    }
+
+    # Validate combined structure
+    assert "perturbation" in all_results
+    assert "model" in all_results["perturbation"]
+    assert "baseline" in all_results["perturbation"]
