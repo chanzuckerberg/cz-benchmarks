@@ -1,4 +1,4 @@
-from .cross_species import (
+from .cross_species_integration import (
     CrossSpeciesIntegrationTaskInput,
     CrossSpeciesIntegrationOutput,
     CrossSpeciesIntegrationTask,

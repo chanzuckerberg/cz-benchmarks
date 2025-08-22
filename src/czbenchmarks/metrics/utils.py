@@ -148,7 +148,7 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     return df[metric].mean()
 
 
-def classifier_metric(results_df, metric: str, **kwargs):
+def single_metric(results_df, metric: str, **kwargs):
     """Get a single metric value from filtered results.
 
     Args:

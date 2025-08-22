@@ -27,7 +27,7 @@ from scipy.stats import pearsonr
 from .utils import (
     compute_entropy_per_cell,
     mean_fold_metric,
-    classifier_metric,
+    single_metric,
     jaccard_score,
 )
 
@@ -114,7 +114,7 @@ metrics_registry.register(
 # classification metrics
 metrics_registry.register(
     MetricType.ACCURACY,
-    func=classifier_metric,
+    func=single_metric,
     required_args={"results_df", "metric"},
     default_params={"metric": "accuracy"},
     tags={"label_prediction"},
@@ -122,7 +122,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.F1_SCORE,
-    func=classifier_metric,
+    func=single_metric,
     required_args={"results_df", "metric"},
     default_params={"metric": "f1"},
     tags={"label_prediction"},
@@ -130,7 +130,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.PRECISION,
-    func=classifier_metric,
+    func=single_metric,
     required_args={"results_df", "metric"},
     default_params={"metric": "precision"},
     tags={"label_prediction"},
@@ -138,7 +138,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.RECALL,
-    func=classifier_metric,
+    func=single_metric,
     required_args={"results_df", "metric"},
     default_params={"metric": "recall"},
     tags={"label_prediction"},
@@ -146,7 +146,7 @@ metrics_registry.register(
 
 metrics_registry.register(
     MetricType.AUROC,
-    func=classifier_metric,
+    func=single_metric,
     required_args={"results_df", "metric"},
     default_params={"metric": "auroc"},
     tags={"label_prediction"},
