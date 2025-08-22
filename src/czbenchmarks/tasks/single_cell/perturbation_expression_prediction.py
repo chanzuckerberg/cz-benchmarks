@@ -78,7 +78,7 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 
 class PerturbationExpressionPredictionTask(Task):
-    display_name = "perturbation_expression_prediction"
+    display_name = "perturbation expression prediction"
 
     def __init__(
         self,
