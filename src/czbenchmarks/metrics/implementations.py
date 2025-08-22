@@ -24,7 +24,12 @@ from sklearn.metrics import (
     mean_squared_error,
 )
 from scipy.stats import pearsonr
-from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
+from .utils import (
+    compute_entropy_per_cell,
+    mean_fold_metric,
+    single_metric,
+    jaccard_score,
+)
 
 from .types import MetricRegistry, MetricType
 
@@ -104,6 +109,47 @@ metrics_registry.register(
     required_args={"y_true", "y_pred"},
     description="Jaccard similarity between true and predicted values",
     tags={"perturbation"},
+)
+
+# classification metrics
+metrics_registry.register(
+    MetricType.ACCURACY,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "accuracy"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.F1_SCORE,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "f1"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "precision"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.RECALL,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "recall"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.AUROC,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "auroc"},
+    tags={"label_prediction"},
 )
 
 # Register cross-validation classification metrics
