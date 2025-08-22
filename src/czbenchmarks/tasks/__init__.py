@@ -18,8 +18,22 @@ from .integration import (
     BatchIntegrationOutput,
     BatchIntegrationTask,
 )
+from .single_cell import (
+    CrossSpeciesIntegrationTaskInput,
+    CrossSpeciesIntegrationOutput,
+    CrossSpeciesIntegrationTask,
+    PerturbationTaskInput,
+    PerturbationOutput,
+    PerturbationTask,
+)
+
+from .task import Task, TaskInput, TaskOutput, MetricResult
 
 __all__ = [
+    "Task",
+    "TaskInput",
+    "TaskOutput",
+    "MetricResult",
     "ClusteringTaskInput",
     "ClusteringOutput",
     "ClusteringTask",
@@ -32,4 +46,10 @@ __all__ = [
     "BatchIntegrationTaskInput",
     "BatchIntegrationOutput",
     "BatchIntegrationTask",
+    "CrossSpeciesIntegrationTaskInput",
+    "CrossSpeciesIntegrationOutput",
+    "CrossSpeciesIntegrationTask",
+    "PerturbationTaskInput",
+    "PerturbationOutput",
+    "PerturbationTask",
 ]

@@ -1,53 +1,46 @@
 import click
 import logging
+import typing
 import numpy as np
+import pandas as pd
 
-from .registry import TASK_REGISTRY, get_task_def
-from .utils import (
-    add_options,
-    discover_task_parameters,
-    discover_baseline_parameters,
-    get_datasets,
-    load_embedding,
-    prepare_task_inputs,
-    write_results,
-)
+from ..tasks.task import TASK_REGISTRY
+from ..tasks.runner import run_task
+from .utils import get_datasets, write_results
 from ..metrics.types import MetricResult
 
 log = logging.getLogger(__name__)
 
+# --- NEW: Utility functions for file loading and type casting, local to the CLI ---
 
-def common_task_options(func):
-    """A decorator to apply common options to a task command."""
-    func = click.option(
-        "--dataset",
-        "-d",
-        "dataset_names",
-        required=True,
-        multiple=True,
-        help="Name of the dataset(s) to use.",
-    )
-    func = click.option(
-        "--model-embedding-path",
-        required=True,
-        type=click.Path(exists=True, dir_okay=False),
-        help="Path to the model embedding file (.npy or .csv).",
-    )
-    func = click.option(
-        "--output-file",
-        "-o",
-        type=click.Path(dir_okay=False, writable=True),
-        help="Path to save results (JSON format).",
-    )
-    func = click.option(
-        "--compute-baseline",
-        is_flag=True,
-        help="Compute and evaluate a baseline for this task.",
-    )
-    func = click.option(
-        "--random-seed", type=int, help="Random seed for reproducibility."
-    )
-    return func
+
+def load_from_path(path: str) -> typing.Any:
+    """Loads data from a file path based on its extension."""
+    if path.endswith(".npy"):
+        return np.load(path)
+    if path.endswith(".csv"):
+        return pd.read_csv(path)
+    if path.endswith((".txt", ".list")):
+        with open(path, "r") as f:
+            return [line.strip() for line in f if line.strip()]
+    raise click.BadParameter(f"Unsupported file type for path: {path}")
+
+
+def cast_to_type(value: str, target_type: typing.Type) -> typing.Any:
+    """Casts a string value to a given Python type."""
+    try:
+        if target_type is bool:
+            return value.lower() in ["true", "1", "yes"]
+        if target_type is int:
+            return int(value)
+        if target_type is float:
+            return float(value)
+        return value
+    except (ValueError, TypeError):
+        return value
+
+
+# --- Main CLI Group ---
 
 
 @click.group(invoke_without_command=True)
@@ -56,81 +49,196 @@ def run(ctx):
     """Run a benchmark task."""
     if ctx.invoked_subcommand is None:
         click.echo("Please specify a task to run, e.g., 'czbenchmarks run clustering'.")
-        click.echo(f"Available tasks: {', '.join(TASK_REGISTRY.keys())}")
+        click.echo(f"Available tasks: {', '.join(TASK_REGISTRY.list_tasks())}")
 
 
-for task_name, task_def in TASK_REGISTRY.items():
-    # Discover parameters at definition time
-    task_params = discover_task_parameters(task_def)
-    baseline_params = discover_baseline_parameters(task_def)
+# --- Dynamic Command Creation ---
 
-    @click.command(name=task_name, help=task_def.description)
-    @add_options(task_params)
-    @add_options(baseline_params)
-    @common_task_options
+for task_name in TASK_REGISTRY.list_tasks():
+    task_info = TASK_REGISTRY.get_task_info(task_name)
+
+    @click.command(name=task_name, help=task_info.description)
     def task_callback(**kwargs):
         ctx = click.get_current_context()
         invoked_task_name = ctx.command.name
-        task_def = get_task_def(invoked_task_name)
         log.info(f"Starting task: '{invoked_task_name}'")
 
-        dataset_names = kwargs.pop("dataset_names")
-        model_embedding_path = kwargs.pop("model_embedding_path")
-        output_file = kwargs.pop("output_file")
-        compute_baseline = kwargs.pop("compute_baseline")
-        random_seed = kwargs.pop("random_seed", None)
+        try:
+            # 1. Separate CLI arguments into logical groups
+            invoked_task_info = TASK_REGISTRY.get_task_info(invoked_task_name)
+            task_arg_keys = set(invoked_task_info.task_params.keys())
 
-        baseline_args = {
-            k.replace("baseline_", ""): v
-            for k, v in kwargs.items()
-            if k.startswith("baseline_")
-        }
-        task_args = {k: v for k, v in kwargs.items() if not k.startswith("baseline_")}
+            cli_args = {
+                k: v
+                for k, v in kwargs.items()
+                if k not in task_arg_keys and not k.startswith("baseline_")
+            }
+            task_args = {k: v for k, v in kwargs.items() if k in task_arg_keys}
+            baseline_args = {
+                k.replace("baseline_", ""): v
+                for k, v in kwargs.items()
+                if k.startswith("baseline_")
+            }
 
-        datasets = get_datasets(dataset_names)
-        model_embedding = load_embedding(model_embedding_path)
-        log.info(f"Loaded {len(datasets)} dataset(s) and model embedding.")
+            # 2. Prepare common parameters
+            dataset_names = cli_args["dataset_names"]
+            model_embedding_paths = cli_args[
+                "model_embedding_path"
+            ]  # Always a tuple now
+            output_file = cli_args["output_file"]
+            compute_baseline = cli_args["compute_baseline"]
+            random_seed = cli_args.get("random_seed") or 42
+            datasets = get_datasets(dataset_names)
 
-        task_input = prepare_task_inputs(task_def, datasets, task_args)
+            # 3. Process task-specific arguments: load files and cast types
+            processed_task_args = {}
+            for name, value in task_args.items():
+                param_info = invoked_task_info.task_params[name]
+                # If the value is a string and looks like a path, load it from disk
+                if isinstance(value, str) and "." in value:
+                    try:
+                        processed_task_args[name] = load_from_path(value)
+                        log.info(f"Loaded task parameter '{name}' from path: {value}")
+                        continue
+                    except click.BadParameter:
+                        pass  # It wasn't a supported file, treat as literal string
+                # Otherwise, cast the value to its expected type
+                processed_task_args[name] = cast_to_type(value, param_info.type)
 
-        task_instance = task_def.task_class(random_seed=random_seed)
+            # 4. Add dataset-derived parameters (e.g., labels, obs)
+            # This logic is simple and can live here, specific to how datasets are structured.
+            if invoked_task_name == "clustering":
+                # For clustering task, if obs and input_labels are not provided via files,
+                # try to get them from the dataset's adata
+                if "obs" not in processed_task_args:
+                    processed_task_args["obs"] = datasets[0].adata.obs
+                if (
+                    "input_labels" not in processed_task_args
+                    and hasattr(datasets[0].adata, "obs")
+                    and "cell_type" in datasets[0].adata.obs.columns
+                ):
+                    processed_task_args["input_labels"] = datasets[0].adata.obs[
+                        "cell_type"
+                    ]
+            # Add other task-specific dataset mappings here...
 
-        log.info("Running task on provided model embedding...")
-        all_metric_results: list[MetricResult] = task_instance.run(
-            cell_representation=model_embedding,
-            task_input=task_input,
+            # 5. Run the task(s)
+            all_results = []
+
+            # Run baseline if requested
+            if compute_baseline:
+                log.info("--- Running Baseline ---")
+                # For baseline, the input is always the raw expression data
+                raw_data = [d.adata.X for d in datasets]
+                baseline_input = raw_data if len(raw_data) > 1 else raw_data[0]
+
+                baseline_results = run_task(
+                    task_name=invoked_task_name,
+                    cell_representation=baseline_input,
+                    run_baseline=True,
+                    baseline_params=baseline_args,
+                    task_params=processed_task_args,
+                    random_seed=random_seed,
+                )
+                all_results.extend(baseline_results)
+                log.info("--- Baseline Run Complete ---")
+
+            # Run with model embedding
+            log.info("--- Running Model ---")
+            model_embeddings = [load_from_path(p) for p in model_embedding_paths]
+            model_input = (
+                model_embeddings if len(model_embeddings) > 1 else model_embeddings[0]
+            )
+
+            model_results = run_task(
+                task_name=invoked_task_name,
+                cell_representation=model_input,
+                run_baseline=False,  # Never compute baseline on an embedding
+                task_params=processed_task_args,
+                random_seed=random_seed,
+            )
+            all_results.extend(model_results)
+            log.info("--- Model Run Complete ---")
+
+            # 6. Write results
+            metric_objects = [MetricResult(**res) for res in all_results]
+            write_results(metric_objects, output_file)
+            click.echo(f"✅ Task '{invoked_task_name}' completed successfully.")
+
+        except (click.ClickException, ValueError) as e:
+            log.error(f"Task '{invoked_task_name}' failed: {e}")
+            raise click.ClickException(str(e))  # Re-raise as a clean CLI error
+        except Exception as e:
+            log.error(
+                f"An unexpected error occurred in task '{invoked_task_name}': {e}",
+                exc_info=True,
+            )
+            raise click.ClickException(f"An unexpected error occurred: {e}")
+
+    # --- Dynamically Add Options to the Command ---
+    def add_click_options(options):
+        def decorator(f):
+            for option in reversed(options):
+                f = option(f)
+            return f
+
+        return decorator
+
+    # Create options from task and baseline schemas
+    task_options = [
+        click.option(
+            f"--{name.replace('_', '-')}",
+            default=info.default,
+            help=f"Task parameter: {name}",
+            required=info.required,
         )
-        log.info(
-            f"Computed {len(all_metric_results)} metric(s) for the model embedding."
+        for name, info in task_info.task_params.items()
+    ]
+    baseline_options = [
+        click.option(
+            f"--baseline-{name.replace('_', '-')}",
+            default=info.default,
+            help=f"Baseline parameter for --compute-baseline: {name}",
         )
+        for name, info in task_info.baseline_params.items()
+    ]
 
-        if compute_baseline:
-            log.info("Computing and running baseline...")
+    # Define common options for all tasks
+    common_options = [
+        click.option(
+            "--dataset",
+            "-d",
+            "dataset_names",
+            required=True,
+            multiple=True,
+            help="Name of the dataset(s) to use.",
+        ),
+        click.option(
+            "--model-embedding-path",
+            required=True,
+            multiple=True,
+            type=click.Path(exists=True, dir_okay=False),
+            help="Path to model embedding file(s). Provide one per dataset.",
+        ),
+        click.option(
+            "--output-file",
+            "-o",
+            type=click.Path(dir_okay=False, writable=True),
+            help="Path to save results (JSON format).",
+        ),
+        click.option(
+            "--compute-baseline",
+            is_flag=True,
+            help="Compute and evaluate a baseline for this task.",
+        ),
+        click.option(
+            "--random-seed", type=int, help="Random seed for reproducibility."
+        ),
+    ]
 
-            if task_def.requires_multiple_datasets:
-                raw_expression = np.vstack([d.adata.X for d in datasets])
-            else:
-                raw_expression = datasets[0].adata.X
-
-            # Special context-dependent args for perturbation baseline
-            if invoked_task_name == "perturbation":
-                baseline_args["var_names"] = datasets[0].adata.var_names
-                baseline_args["obs_names"] = datasets[0].adata.obs_names
-
-            baseline_embedding = task_instance.compute_baseline(
-                cell_representation=raw_expression, **baseline_args
-            )
-            log.info("Running task on computed baseline embedding...")
-            baseline_metric_results = task_instance.run(
-                cell_representation=baseline_embedding,
-                task_input=task_input,
-            )
-            all_metric_results.extend(baseline_metric_results)
-            log.info(
-                f"Computed {len(baseline_metric_results)} metric(s) for the baseline."
-            )
-
-        write_results(all_metric_results, output_file)
-        click.echo(f"✅ Task '{invoked_task_name}' completed successfully.")
+    # Apply all options to the callback function
+    task_callback = add_click_options(common_options)(task_callback)
+    task_callback = add_click_options(baseline_options)(task_callback)
+    task_callback = add_click_options(task_options)(task_callback)
 
     run.add_command(task_callback)
