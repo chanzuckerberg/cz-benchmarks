@@ -25,39 +25,151 @@ TASK_NAMES = frozenset(
 )
 
 
-def print_metrics_summary(metrics_dict):
-    """Print a nice summary table of all metrics."""
+def print_metrics_summary(metrics_list):
+    """Print a nice summary table of all metrics.
 
-    # Extract all conditions from any metric type
-    conditions = [result.params["condition"] for result in metrics_dict["accuracy"]]
+    Args:
+        metrics_list: List of MetricResult objects or dict with metric lists
+    """
+    # Handle both list and dict inputs for backward compatibility
+    if isinstance(metrics_list, dict):
+        # Convert dict format to flat list
+        all_metrics = []
+        for metric_results in metrics_list.values():
+            all_metrics.extend(metric_results)
+        metrics_list = all_metrics
 
-    # Create a summary dictionary
+    if not metrics_list:
+        print("No metrics to display.")
+        return
+
+    # Group metrics by type
+    from collections import defaultdict
+
+    grouped_metrics = defaultdict(list)
+
+    for metric in metrics_list:
+        metric_name = (
+            metric.metric_type.value
+            if hasattr(metric.metric_type, "value")
+            else str(metric.metric_type)
+        )
+        grouped_metrics[metric_name].append(metric)
+
+    # Determine grouping strategy based on available parameters
+    sample_metric = metrics_list[0]
+    grouping_keys = list(sample_metric.params.keys()) if sample_metric.params else []
+
+    print("\n=== Metrics Summary ===")
+
+    if "condition" in grouping_keys:
+        # Group by condition (perturbation-style)
+        _print_condition_grouped_metrics(grouped_metrics)
+    elif "classifier" in grouping_keys:
+        # Group by classifier (label prediction-style)
+        _print_classifier_grouped_metrics(grouped_metrics)
+    else:
+        # Simple metric listing
+        _print_simple_metrics(grouped_metrics)
+
+    # Overall statistics
+    print("\nOverall Statistics:")
+    for metric_name, results in grouped_metrics.items():
+        values = [r.value for r in results if not np.isnan(r.value)]
+        if values:
+            print(
+                f"{metric_name.replace('_', ' ').title()}: "
+                f"mean={np.mean(values):.4f}, std={np.std(values):.4f}, "
+                f"count={len(values)}"
+            )
+
+
+def _print_condition_grouped_metrics(grouped_metrics):
+    """Print metrics grouped by condition."""
+    # Extract all unique conditions
+    all_conditions = set()
+    for results in grouped_metrics.values():
+        for result in results:
+            if "condition" in result.params:
+                all_conditions.add(result.params["condition"])
+
+    all_conditions = sorted(all_conditions)
+
+    if not all_conditions:
+        _print_simple_metrics(grouped_metrics)
+        return
+
+    # Create summary table
     summary_data = []
-    for condition in conditions:
+    for condition in all_conditions:
         row = {"condition": condition}
 
-        # Extract values for each metric type
-        for metric_name, results in metrics_dict.items():
-            # Find the result for this condition
+        for metric_name, results in grouped_metrics.items():
+            # Find result for this condition
             condition_result = next(
-                r for r in results if r.params["condition"] == condition
+                (r for r in results if r.params.get("condition") == condition), None
             )
-            row[metric_name] = f"{condition_result.value:.4f}"
+            if condition_result:
+                row[metric_name] = f"{condition_result.value:.4f}"
+            else:
+                row[metric_name] = "N/A"
 
         summary_data.append(row)
 
-    # Create and print DataFrame
-    df = pd.DataFrame(summary_data)
-    print("\n=== Perturbation Expression Prediction Results ===")
-    print(df.to_string(index=False))
+    # Print table
+    if summary_data:
+        df = pd.DataFrame(summary_data)
+        print(df.to_string(index=False))
+        print(f"\nResults across {len(all_conditions)} conditions")
 
-    # Print overall statistics
-    print(f"\nSummary Statistics across {len(conditions)} conditions:")
-    for metric_name, results in metrics_dict.items():
-        values = [r.value for r in results]
-        print(
-            f"{metric_name.title()}: mean={np.mean(values):.4f}, std={np.std(values):.4f}"
-        )
+
+def _print_classifier_grouped_metrics(grouped_metrics):
+    """Print metrics grouped by classifier."""
+    # Extract all unique classifiers
+    all_classifiers = set()
+    for results in grouped_metrics.values():
+        for result in results:
+            if "classifier" in result.params:
+                all_classifiers.add(result.params["classifier"])
+
+    all_classifiers = sorted(all_classifiers)
+
+    # Create summary table
+    summary_data = []
+    for classifier in all_classifiers:
+        row = {"classifier": classifier}
+
+        for metric_name, results in grouped_metrics.items():
+            # Find result for this classifier
+            classifier_result = next(
+                (r for r in results if r.params.get("classifier") == classifier), None
+            )
+            if classifier_result:
+                row[metric_name] = f"{classifier_result.value:.4f}"
+            else:
+                row[metric_name] = "N/A"
+
+        summary_data.append(row)
+
+    # Print table
+    if summary_data:
+        df = pd.DataFrame(summary_data)
+        print(df.to_string(index=False))
+        print(f"\nResults across {len(all_classifiers)} classifiers")
+
+
+def _print_simple_metrics(grouped_metrics):
+    """Print simple metric listing without grouping."""
+    for metric_name, results in grouped_metrics.items():
+        print(f"\n{metric_name.replace('_', ' ').title()}:")
+        for i, result in enumerate(results):
+            params_str = (
+                ", ".join([f"{k}={v}" for k, v in result.params.items()])
+                if result.params
+                else ""
+            )
+            params_display = f" ({params_str})" if params_str else ""
+            print(f"  {i + 1}: {result.value:.4f}{params_display}")
 
 
 def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):

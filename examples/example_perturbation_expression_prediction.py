@@ -25,7 +25,7 @@ if __name__ == "__main__":
     differentially expressed genes for each perturbation. The extent of the 
     perturbation is merged with the willcoxon test or t-test.
     
-    The dataset is filtered based on the type of t-test, along with the minimum 
+    The dataset is filtered based on the type of statistical test, along with the minimum 
     number of differentially expressed genes, maximum p-value, and the minimum 
     log fold change or standardized mean difference. During the dataset generation, 
     the specified percentage of genes to mask is randomly selected.
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric",
         type=str,
-        default="wilcoxon",  # wilcoxon or t-test, do not use t_test
+        default="wilcoxon",  # Set this to correspond to the type of statistical test used to determine differentially expressed genes
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         cfg_path.write_text(yaml.safe_dump(cfg))
         dataset: SingleCellPerturbationDataset = load_dataset(
             "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
-        )
+        )  # TODO: Once PR 381 is merged, use the new load_local_dataset function
 
     # Choose approach based on flag
     if args.save_inputs:

@@ -78,7 +78,7 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 
 class PerturbationExpressionPredictionTask(Task):
-    display_name = "perturbation_expression_prediction"
+    display_name = "perturbation expression prediction"
 
     def __init__(
         self,
@@ -191,7 +191,7 @@ class PerturbationExpressionPredictionTask(Task):
         self,
         task_input: PerturbationExpressionPredictionTaskInput,
         task_output: PerturbationExpressionPredictionOutput,
-    ) -> List[List[MetricResult]]:
+    ) -> List[MetricResult]:
         """
         Computes perturbation prediction quality metrics for cell line perturbation predictions.
 
@@ -216,29 +216,21 @@ class PerturbationExpressionPredictionTask(Task):
                 true log fold changes for each perturbation condition.
 
         Returns:
-            List[List[MetricResult]]: A list of 5 lists, where each inner list contains MetricResult
-                objects for one metric type across all conditions:
-                - [0]: Accuracy results for all conditions
-                - [1]: Precision results for all conditions
-                - [2]: Recall results for all conditions
-                - [3]: F1 score results for all conditions
-                - [4]: Spearman correlation results for all conditions
+            List[MetricResult]: A flat list of MetricResult objects, where each result contains
+                the metric type, value, and the corresponding perturbation condition in its params.
+                Each metric (accuracy, precision, recall, F1 score, and Spearman correlation) is
+                computed for every condition and appended to the list.
 
         Note:
             Each MetricResult includes the condition name in its params for identification.
         """
-        accuracy_metric = MetricType.ACCURACY
-        precision_metric = MetricType.PRECISION
-        recall_metric = MetricType.RECALL
-        f1_metric = MetricType.F1
-        spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION
+        accuracy_metric = MetricType.ACCURACY_CALCULATION
+        precision_metric = MetricType.PRECISION_CALCULATION
+        recall_metric = MetricType.RECALL_CALCULATION
+        f1_metric = MetricType.F1_CALCULATION
+        spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
-        precision_results = []
-        recall_results = []
-        accuracy_results = []
-        f1_results = []
-        spearman_correlation_results = []
-
+        metric_results = []
         for condition in task_output.pred_log_fc_dict.keys():
             pred_log_fc = task_output.pred_log_fc_dict[condition]
             true_log_fc = task_output.true_log_fc_dict[condition]
@@ -250,7 +242,7 @@ class PerturbationExpressionPredictionTask(Task):
                 y_true=true_binary,
                 y_pred=pred_binary,
             )
-            precision_results.append(
+            metric_results.append(
                 MetricResult(
                     metric_type=precision_metric,
                     value=precision_value,
@@ -263,7 +255,7 @@ class PerturbationExpressionPredictionTask(Task):
                 y_true=true_binary,
                 y_pred=pred_binary,
             )
-            recall_results.append(
+            metric_results.append(
                 MetricResult(
                     metric_type=recall_metric,
                     value=recall_value,
@@ -276,7 +268,7 @@ class PerturbationExpressionPredictionTask(Task):
                 y_true=true_binary,
                 y_pred=pred_binary,
             )
-            f1_results.append(
+            metric_results.append(
                 MetricResult(
                     metric_type=f1_metric,
                     value=f1_value,
@@ -292,7 +284,7 @@ class PerturbationExpressionPredictionTask(Task):
             )
             # If the result has a 'correlation' attribute (e.g., scipy.stats result), use it; otherwise, use the value directly
             spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
-            spearman_correlation_results.append(
+            metric_results.append(
                 MetricResult(
                     metric_type=spearman_correlation_metric,
                     value=spearman_corr_value,
@@ -305,22 +297,14 @@ class PerturbationExpressionPredictionTask(Task):
                 y_true=true_binary,
                 y_pred=pred_binary,
             )
-            accuracy_results.append(
+            metric_results.append(
                 MetricResult(
                     metric_type=accuracy_metric,
                     value=accuracy_value,
                     params={"condition": condition},
                 )
             )
-        metrics_dict = {
-            "accuracy": accuracy_results,
-            "precision": precision_results,
-            "recall": recall_results,
-            "f1": f1_results,
-            "correlation": spearman_correlation_results,
-        }
-
-        return metrics_dict
+        return metric_results
 
     @staticmethod
     def compute_baseline(
