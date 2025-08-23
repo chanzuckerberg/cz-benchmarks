@@ -390,12 +390,30 @@ if __name__ == "__main__":
     )
 
     print("Processing new_metrics into dictionary...")
-    new_metrics_dict = {}
-    for metric in new_metrics:
-        mapping = {}
-        for ent in new_metrics[metric]:
-            mapping[ent.params["condition"]] = ent.value
-        new_metrics_dict[metric] = mapping
+    # new_metrics is now a List[MetricResult], need to group by metric type
+    new_metrics_dict = {
+        "accuracy": {},
+        "precision": {},
+        "recall": {},
+        "f1": {},
+        "correlation": {},
+    }
+
+    # Map new metric types to old keys for backward compatibility
+    metric_type_mapping = {
+        "ACCURACY_CALCULATION": "accuracy",
+        "PRECISION_CALCULATION": "precision",
+        "RECALL_CALCULATION": "recall",
+        "F1_CALCULATION": "f1",
+        "SPEARMAN_CORRELATION_CALCULATION": "correlation",
+    }
+
+    for metric_result in new_metrics:
+        metric_type_name = metric_result.metric_type.name
+        if metric_type_name in metric_type_mapping:
+            old_metric_key = metric_type_mapping[metric_type_name]
+            condition = metric_result.params["condition"]
+            new_metrics_dict[old_metric_key][condition] = metric_result.value
 
     # Make sure all keys in new are in notebook, and compare notebook to new
     with (args.notebook_task_inputs_path / "gene_map.json").open("r") as f:
