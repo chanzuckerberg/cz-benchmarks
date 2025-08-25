@@ -22,40 +22,39 @@ The data loading method accomplishes the following:
 
 The following parameters are used in loading the data:
 
-- `**condition_key**`: The name of the column in `adata.obs` and the DE results containing condition labels for perturbations and controls. Default is "condition".
-- `**control_name**`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "ctrl".
-- `**de_gene_col**`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene".
-- `**deg_test_name**`: The name of the statistical test used to determine the DE genes. Options are "wilcoxon" or "t-test", default is "wilcoxon".
-- `**de_results_path**`: CSV path for external DE results. If not provided, DE results are read from the dataset.
+- `condition_key`: The name of the column in `adata.obs` and the DE results containing condition labels for perturbations and controls. Default is "condition".
+- `control_name`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "ctrl".
+- `de_gene_col`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene".
+- `deg_test_name`: The name of the statistical test used to determine the DE genes. Options are "wilcoxon" or "t-test", default is "wilcoxon".
+- `de_results_path`: CSV path for external DE results. If not provided, DE results are read from the dataset.
   
 
 ### Masking Parameters
 
 The following parameters control masking of the DE genes:
 
-- `**percent_genes_to_mask**`: The fraction of DE genes per condition to mask as prediction targets for the model. Default value is 0.5.
-- `**min_de_genes_to_mask**`: Minimum number of sampled DE genes required for a condition to be eligible for masking. This threshold is applied after the genes are sampled. Default value is 5.
-- `**pval_threshold**`: Maximum adjusted p-value for DE filtering based on the output of the DE analysis. This data must be in the column `pval_adj`. Default value is 1e-4.
-- `**min_logfoldchange**`: Minimum absolute log-fold change to determine when a gene is considered differentially expressed. This data must be in the column `logfoldchange`. Only used when the De analysis uses Wilcoxon rank-sum (`deg_test_name` = "wilcoxon"). Default value is 1.
-- `**min_smd**`: Minimum absolute standardized mean difference to determine when a gene is considered differentially expressed. This data must be in the column `standardized_mean_diff`. Only used when the DE analysis used t-test (`deg_test_name` = `t-test`). Default value is 0.55. 
+- `percent_genes_to_mask`: The fraction of DE genes per condition to mask as prediction targets for the model. Default value is 0.5.
+- `min_de_genes_to_mask`: Minimum number of sampled DE genes required for a condition to be eligible for masking. This threshold is applied after the genes are sampled. Default value is 5.
+- `pval_threshold`: Maximum adjusted p-value for DE filtering based on the output of the DE analysis. This data must be in the column `pval_adj`. Default value is 1e-4.
+- `min_logfoldchange`: Minimum absolute log-fold change to determine when a gene is considered differentially expressed. This data must be in the column `logfoldchange`. Only used when the De analysis uses Wilcoxon rank-sum (`deg_test_name` = "wilcoxon"). Default value is 1.
+- `min_smd`: Minimum absolute standardized mean difference to determine when a gene is considered differentially expressed. This data must be in the column `standardized_mean_diff`. Only used when the DE analysis used t-test (`deg_test_name` = `t-test`). Default value is 0.55. 
 
-Parameters shared with other single-cell datasets (e.g., `**path**`, `**organism**`, `**task_inputs_dir**`) are also required but not listed here.
+Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `task_inputs_dir`) are also required but not listed here.
 
 ### Using External Differential Expression Data
 
-DE results can be loaded from a CSV file by setting the path to the file in the parameter `**de_results_path**`. This will override the existing DE data present in the dataset. Expected column names depend on the DE test used and are described above in [Data Parameters](#data-parameters) and [Masking Parameters](#masking-parameters).
+DE results can be loaded from a CSV file by setting the path to the file in the parameter `de_results_path`. This will override the existing DE data present in the dataset. Expected column names depend on the DE test used and are described above in [Data Parameters](#data-parameters) and [Masking Parameters](#masking-parameters).
 
 ## Task Functionality and Parameters 
 
-This task evaluates perturbation-induced expression predictions against their ground truth values by calculating predicted and experimental log fold change (LFC) values. 
+This task evaluates perturbation-induced expression predictions against their ground truth values by calculating predicted and experimental log fold change (LFC) values. The class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either "median" (default) or "mean", that calculates the mean expression values across all cells in the dataset.
 
-The following parameters are used by the task, via the `PerturbationTaskInput` class:
-- `**de_results**`: DE results used by the dataset class (`SingleCellPerturbationDataset`).
-- `**masked_data_obs**`: The `obs` column from the control-matched and masked data.
-- `**var_index**`: Sequence of gene names horizontally aligned with `cell_representation` matrix.
-- `**target_conditions_to_save**`: Dictionary of target conditions whose genes were be randomly selected for masking.
-
-The class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either "median" (default) or "mean", that calculates the mean expression values across all cells in the dataset.
+The following parameters are used by the task, via the `PerturbationExpressionPredictionTask` class:
+- `de_results`: DE results used by the dataset class (`SingleCellPerturbationDataset`).
+- `masked_data_obs`: The `obs` column from the control-matched and masked data.
+- `row_index`: Sequence of cell barcodes vertically aligned with `cell_representation` matrix.
+- `var_index`: Sequence of gene names horizontally aligned with `cell_representation` matrix.
+- `target_conditions_to_save`: Dictionary of target conditions whose genes were randomly selected for masking.
 
 ## Metrics
 
