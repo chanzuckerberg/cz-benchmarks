@@ -17,7 +17,7 @@ def run_task(
     random_seed: int = RANDOM_SEED,
 ) -> List[Dict[str, Any]]:
     """
-    Runs a benchmark task with the given parameters. This is the primary API endpoint.
+    Runs a benchmark task with the given parameters. This is the primary API method for Task execution.
 
     This function expects all inputs to be fully-formed Python objects (e.g., numpy arrays,
     pandas DataFrames), not file paths. The calling layer (e.g., a CLI) is responsible
