@@ -9,7 +9,7 @@ datasets:
     control_name: non-targeting
     de_gene_col: gene_id
     deg_test_name: wilcoxon
-    path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
+    path: XXs3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
 
   human_spermatogenesis:
     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
