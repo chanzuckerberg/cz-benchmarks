@@ -447,6 +447,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             "control_matched_adata/obs": self.control_matched_adata.obs,
             "control_matched_adata/var": self.control_matched_adata.var,
             "control_matched_adata/X": self.control_matched_adata.X,
+            "original_adata/obs/index": self.adata.obs.index.astype(str).to_numpy(),
         }
 
         for key, item in inputs_to_store.items():
