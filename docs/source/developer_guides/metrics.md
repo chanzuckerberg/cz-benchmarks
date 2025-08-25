@@ -141,4 +141,4 @@ When implementing or using metrics, follow these guidelines to ensure consistenc
 - [MetricRegistry API](../autoapi/czbenchmarks/metrics/types/index)
 - [Add New Metric Guide](../how_to_guides/add_new_metric)
 - [ClusteringTask](../autoapi/czbenchmarks/tasks/clustering/index)
-- [PerturbationTask](../autoapi/czbenchmarks/tasks/single_cell/perturbation/index)
+- [PerturbationExpressionPredictionTask](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This task evaluates a model's ability to predict expression for masked genes, given the remaining (unmasked) genes for a given cell as context. Genes are randomly selected for masking from the set of genes that are identified as differentially expressed, based on threshold parameters explained in [Dataset Parameters](#dataset-parameters). The controls used for the differential expression (DE) analysis have been determined based on GEM group and UMI count (for Replogle K562 Essentials) and are stored in the dataset along with the DE results.
+This task evaluates a model's ability to predict expression for masked genes using the remaining (unmasked) genes for a given cell as context. Genes are randomly selected for masking from the set of genes that are identified as differentially expressed, based on threshold parameters explained in [Dataset Parameters](#dataset-parameters). The controls used for the differential expression (DE) analysis have been determined based on GEM group and UMI count (for Replogle K562 Essentials) and are stored in the dataset along with the DE results.
 
 - Datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the anndata under the key `control_cell_ids`. 
 - The differential expression results are also stored in the unstructured portion of the anndata in the keys `de_results_wilcoxon` and `de_results_t_test`, for analysis that utilized Wilcoxon signed-rank test or t-test statistics, respectively.
