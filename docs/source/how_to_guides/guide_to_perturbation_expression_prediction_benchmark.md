@@ -49,7 +49,8 @@ DE results can be loaded from a CSV file by setting the path to the file in the 
 
 This task evaluates perturbation-induced expression predictions against their ground truth values by calculating predicted and experimental log fold change (LFC) values. The class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either `median` (default) or `mean`, that calculates the median or mean expression values, respectively, across all cells in the dataset.
 
-The following parameters are used by the task, via the `PerturbationExpressionPredictionTask` class:
+The following parameters are used by the task, via the `PerturbationExpressionPredictionTask` class:  
+
 - `de_results`: DE results used by the dataset class (`SingleCellPerturbationDataset`).
 - `masked_data_obs`: The `obs` column from the control-matched and masked data.
 - `row_index`: Sequence of cell barcodes vertically aligned with `cell_representation` matrix.
