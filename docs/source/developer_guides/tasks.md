@@ -57,7 +57,7 @@ from czbenchmarks.tasks.runner import run_task
 import numpy as np
 import pandas as pd
 
-# Prepare your data
+# Prepare input data for Task (random data generated here as an example)
 embedding = np.random.randn(100, 50)  # 100 cells, 50 dimensions
 labels = np.random.choice(['TypeA', 'TypeB', 'TypeC'], size=100)
 obs_data = pd.DataFrame({'cell_type': labels})
