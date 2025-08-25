@@ -11,7 +11,7 @@ from ..metrics.types import MetricResult
 
 log = logging.getLogger(__name__)
 
-# --- NEW: Utility functions for file loading and type casting, local to the CLI ---
+# --- Utility functions for file loading and type casting, local to the CLI ---
 
 
 def load_from_path(path: str) -> typing.Any:
