@@ -224,32 +224,27 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Validate results structure
     for results in [model_results, baseline_results]:
-        assert isinstance(results, dict)
-        # Expect five metric groups
-        assert set(results.keys()) == {
-            "accuracy",
-            "precision",
-            "recall",
-            "f1",
-            "correlation",
-        }
-        # Each value should be a non-empty list of MetricResult
-        for metric_name, metric_list in results.items():
-            assert isinstance(metric_list, list)
-            assert len(metric_list) > 0
-            for result in metric_list:
-                # Result objects should have expected attributes
-                assert hasattr(result, "metric_type")
-                assert hasattr(result, "value")
-                assert hasattr(result, "params")
+        assert isinstance(results, list)
+        assert len(results) > 0
+        for result in results:
+            assert hasattr(result, "metric_type")
+            assert hasattr(result, "value")
+            assert hasattr(result, "params")
+
+    # Expect presence of required metric types in model results
+    model_metric_types = {r.metric_type.value for r in model_results}
+    for required_metric in {
+        "accuracy_calculation",
+        "precision_calculation",
+        "recall_calculation",
+        "f1_calculation",
+        "spearman_correlation_calculation",
+    }:
+        assert required_metric in model_metric_types
 
     # Combine results for JSON validation
-    model_serialized = {
-        k: [r.model_dump() for r in v] for k, v in model_results.items()
-    }
-    baseline_serialized = {
-        k: [r.model_dump() for r in v] for k, v in baseline_results.items()
-    }
+    model_serialized = [r.model_dump() for r in model_results]
+    baseline_serialized = [r.model_dump() for r in baseline_results]
     all_results = {
         "perturbation": {
             "model": model_serialized,
@@ -261,3 +256,25 @@ def test_end_to_end_perturbation_expression_prediction():
     assert "perturbation" in all_results
     assert "model" in all_results["perturbation"]
     assert "baseline" in all_results["perturbation"]
+    assert isinstance(all_results["perturbation"]["model"], list)
+    assert isinstance(all_results["perturbation"]["baseline"], list)
+    assert len(all_results["perturbation"]["model"]) > 0
+    assert len(all_results["perturbation"]["baseline"]) > 0
+
+    # Verify each serialized result has expected keys/types
+    for result in (
+        all_results["perturbation"]["model"] + all_results["perturbation"]["baseline"]
+    ):
+        assert isinstance(result, dict)
+        assert "metric_type" in result
+        assert "value" in result
+        assert "params" in result
+        assert isinstance(result["params"], dict)
+
+    # Verify JSON serialization and parsing
+    json_output = json.dumps(all_results, indent=2, default=str)
+    assert isinstance(json_output, str)
+    parsed = json.loads(json_output)
+    assert "perturbation" in parsed
+    assert "model" in parsed["perturbation"]
+    assert "baseline" in parsed["perturbation"]
