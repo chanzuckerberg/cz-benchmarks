@@ -4,20 +4,27 @@ import pytest
 
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.datasets.utils import load_dataset
 from czbenchmarks.tasks.clustering import ClusteringTaskInput
 from czbenchmarks.tasks.embedding import EmbeddingTaskInput
-from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTaskInput
+from czbenchmarks.tasks.label_prediction import (
+    MetadataLabelPredictionTaskInput,
+)
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.tasks import (
     ClusteringTask,
     EmbeddingTask,
     MetadataLabelPredictionTask,
 )
+from czbenchmarks.tasks.single_cell import (
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
 
 
 @pytest.mark.integration
-def test_end_to_end_task_execution():
+def test_end_to_end_task_execution_predictive_tasks():
     """Integration test that runs all tasks with model and baseline embeddings.
 
     This test verifies the complete workflow from loading data to generating
@@ -176,3 +183,98 @@ def test_end_to_end_task_execution():
     assert "mean_fold_precision" in prediction_model_metrics
     assert "mean_fold_recall" in prediction_model_metrics
     assert "mean_fold_auroc" in prediction_model_metrics
+
+
+@pytest.mark.integration
+def test_end_to_end_perturbation_expression_prediction():
+    """Integration test for perturbation expression prediction task.
+
+    Loads a perturbation dataset, builds task inputs following the example,
+    runs the task on a random model output and a baseline, and verifies result
+    structure and JSON serialization.
+    """
+    # Load dataset (requires cloud access)
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
+
+    # Build task input directly from dataset
+    task_input = PerturbationExpressionPredictionTaskInput(
+        de_results=dataset.de_results,
+        var_index=dataset.control_matched_adata.var.index,
+        masked_adata_obs=dataset.control_matched_adata.obs,
+        target_conditions_to_save=dataset.target_conditions_to_save,
+        row_index=dataset.adata.obs.index,
+    )
+
+    # Create random model output matching dataset dimensions
+    model_output: CellRepresentation = np.random.rand(
+        dataset.adata.shape[0], dataset.adata.shape[1]
+    )
+
+    # Initialize task
+    task = PerturbationExpressionPredictionTask()
+
+    # Run task with model output
+    model_results = task.run(model_output, task_input)
+
+    # Compute and run baseline
+    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
+    baseline_results = task.run(baseline_embedding, task_input)
+
+    # Validate results structure
+    for results in [model_results, baseline_results]:
+        assert isinstance(results, list)
+        assert len(results) > 0
+        for result in results:
+            assert hasattr(result, "metric_type")
+            assert hasattr(result, "value")
+            assert hasattr(result, "params")
+
+    # Expect presence of required metric types in model results
+    model_metric_types = {r.metric_type.value for r in model_results}
+    for required_metric in {
+        "accuracy_calculation",
+        "precision_calculation",
+        "recall_calculation",
+        "f1_calculation",
+        "spearman_correlation_calculation",
+    }:
+        assert required_metric in model_metric_types
+
+    # Combine results for JSON validation
+    model_serialized = [r.model_dump() for r in model_results]
+    baseline_serialized = [r.model_dump() for r in baseline_results]
+    all_results = {
+        "perturbation": {
+            "model": model_serialized,
+            "baseline": baseline_serialized,
+        }
+    }
+
+    # Validate combined structure
+    assert "perturbation" in all_results
+    assert "model" in all_results["perturbation"]
+    assert "baseline" in all_results["perturbation"]
+    assert isinstance(all_results["perturbation"]["model"], list)
+    assert isinstance(all_results["perturbation"]["baseline"], list)
+    assert len(all_results["perturbation"]["model"]) > 0
+    assert len(all_results["perturbation"]["baseline"]) > 0
+
+    # Verify each serialized result has expected keys/types
+    for result in (
+        all_results["perturbation"]["model"] + all_results["perturbation"]["baseline"]
+    ):
+        assert isinstance(result, dict)
+        assert "metric_type" in result
+        assert "value" in result
+        assert "params" in result
+        assert isinstance(result["params"], dict)
+
+    # Verify JSON serialization and parsing
+    json_output = json.dumps(all_results, indent=2, default=str)
+    assert isinstance(json_output, str)
+    parsed = json.loads(json_output)
+    assert "perturbation" in parsed
+    assert "model" in parsed["perturbation"]
+    assert "baseline" in parsed["perturbation"]
