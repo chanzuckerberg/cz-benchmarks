@@ -59,7 +59,7 @@ def cluster_embedding(
         n_iterations=n_iterations,
         random_state=random_seed,
     )
-    return list(adata.obs["leiden"])
+    return list(adata.obs[key_added])
 
 
 def filter_minimum_class(

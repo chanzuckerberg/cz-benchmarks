@@ -1,244 +1,210 @@
+from __future__ import annotations
+
+import json
+import os
+from typing import Any, Dict, Optional
+
 import click
-import logging
-import typing
 import numpy as np
 import pandas as pd
 
-from ..tasks.task import TASK_REGISTRY
-from ..tasks.runner import run_task
-from .utils import get_datasets, write_results
-from ..metrics.types import MetricResult
-
-log = logging.getLogger(__name__)
-
-# --- Utility functions for file loading and type casting, local to the CLI ---
+from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
+from czbenchmarks.tasks.task import TASK_REGISTRY
+from .runner import run_task
+from czbenchmarks.datasets import load_dataset
 
 
-def load_from_path(path: str) -> typing.Any:
-    """Loads data from a file path based on its extension."""
-    if path.endswith(".npy"):
-        return np.load(path)
-    if path.endswith(".csv"):
-        return pd.read_csv(path)
-    if path.endswith((".txt", ".list")):
-        with open(path, "r") as f:
-            return [line.strip() for line in f if line.strip()]
-    raise click.BadParameter(f"Unsupported file type for path: {path}")
+def load_numpy_array_from_path(file_path: str) -> np.ndarray:
+    if not isinstance(file_path, str):
+        raise ValueError("File path must be a string")
+    if file_path.startswith("@"):
+        raise ValueError("File path cannot be an AnnData reference")
+
+    actual_path = file_path
+    if actual_path.startswith("file://"):
+        actual_path = actual_path[7:]
+    if not os.path.exists(actual_path):
+        raise ValueError(f"File does not exist: {actual_path}")
+
+    file_extension = os.path.splitext(actual_path)[1].lower()
+    if file_extension == ".npy":
+        return np.load(actual_path)
+    if file_extension == ".npz":
+        npz_data = np.load(actual_path)
+        first_array_key = list(npz_data.keys())[0]
+        return npz_data[first_array_key]
+    if file_extension in (".csv", ".tsv"):
+        separator = "\t" if file_extension == ".tsv" else ","
+        dataframe = pd.read_csv(actual_path, sep=separator, header=None)
+        return dataframe.values
+    raise ValueError(f"Unsupported file format: {file_extension}")
 
 
-def cast_to_type(value: str, target_type: typing.Type) -> typing.Any:
-    """Casts a string value to a given Python type."""
-    try:
-        if target_type is bool:
-            return value.lower() in ["true", "1", "yes"]
-        if target_type is int:
-            return int(value)
-        if target_type is float:
-            return float(value)
-        return value
-    except (ValueError, TypeError):
-        return value
+def convert_cli_parameter(param_value: str, param_info) -> Any:
+    if param_value is None:
+        return None
+
+    param_type = param_info.type
+    param_str = str(param_type).lower()
+
+    if param_type is int or "int" == param_str:
+        return int(param_value)
+    elif param_type is float or "float" == param_str:
+        return float(param_value)
+    elif param_type is bool or "bool" == param_str:
+        return param_value.lower() in ("true", "1", "yes", "on")
+    else:
+        return param_value
 
 
-# --- Main CLI Group ---
-
-
-@click.group(invoke_without_command=True)
-@click.pass_context
-def run(ctx):
-    """Run a benchmark task."""
-    if ctx.invoked_subcommand is None:
-        click.echo("Please specify a task to run, e.g., 'czbenchmarks run clustering'.")
-        click.echo(f"Available tasks: {', '.join(TASK_REGISTRY.list_tasks())}")
-
-
-# --- Dynamic Command Creation ---
-
-for task_name in TASK_REGISTRY.list_tasks():
-    task_info = TASK_REGISTRY.get_task_info(task_name)
-
-    @click.command(name=task_name, help=task_info.description)
-    def task_callback(**kwargs):
-        ctx = click.get_current_context()
-        invoked_task_name = ctx.command.name
-        log.info(f"Starting task: '{invoked_task_name}'")
-
-        try:
-            # 1. Separate CLI arguments into logical groups
-            invoked_task_info = TASK_REGISTRY.get_task_info(invoked_task_name)
-            task_arg_keys = set(invoked_task_info.task_params.keys())
-
-            cli_args = {
-                k: v
-                for k, v in kwargs.items()
-                if k not in task_arg_keys and not k.startswith("baseline_")
-            }
-            task_args = {k: v for k, v in kwargs.items() if k in task_arg_keys}
-            baseline_args = {
-                k.replace("baseline_", ""): v
-                for k, v in kwargs.items()
-                if k.startswith("baseline_")
-            }
-
-            # 2. Prepare common parameters
-            dataset_names = cli_args["dataset_names"]
-            model_embedding_paths = cli_args[
-                "model_embedding_path"
-            ]  # Always a tuple now
-            output_file = cli_args["output_file"]
-            compute_baseline = cli_args["compute_baseline"]
-            random_seed = cli_args.get("random_seed") or 42
-            datasets = get_datasets(dataset_names)
-
-            # 3. Process task-specific arguments: load files and cast types
-            processed_task_args = {}
-            for name, value in task_args.items():
-                param_info = invoked_task_info.task_params[name]
-                # If the value is a string and looks like a path, load it from disk
-                if isinstance(value, str) and "." in value:
-                    try:
-                        processed_task_args[name] = load_from_path(value)
-                        log.info(f"Loaded task parameter '{name}' from path: {value}")
-                        continue
-                    except click.BadParameter:
-                        pass  # It wasn't a supported file, treat as literal string
-                # Otherwise, cast the value to its expected type
-                processed_task_args[name] = cast_to_type(value, param_info.type)
-
-            # 4. Add dataset-derived parameters (e.g., labels, obs)
-            # This logic is simple and can live here, specific to how datasets are structured.
-            if invoked_task_name == "clustering":
-                # For clustering task, if obs and input_labels are not provided via files,
-                # try to get them from the dataset's adata
-                if "obs" not in processed_task_args:
-                    processed_task_args["obs"] = datasets[0].adata.obs
-                if (
-                    "input_labels" not in processed_task_args
-                    and hasattr(datasets[0].adata, "obs")
-                    and "cell_type" in datasets[0].adata.obs.columns
-                ):
-                    processed_task_args["input_labels"] = datasets[0].adata.obs[
-                        "cell_type"
-                    ]
-            # Add other task-specific dataset mappings here...
-
-            # 5. Run the task(s)
-            all_results = []
-
-            # Run baseline if requested
-            if compute_baseline:
-                log.info("--- Running Baseline ---")
-                # For baseline, the input is always the raw expression data
-                raw_data = [d.adata.X for d in datasets]
-                baseline_input = raw_data if len(raw_data) > 1 else raw_data[0]
-
-                baseline_results = run_task(
-                    task_name=invoked_task_name,
-                    cell_representation=baseline_input,
-                    run_baseline=True,
-                    baseline_params=baseline_args,
-                    task_params=processed_task_args,
-                    random_seed=random_seed,
-                )
-                all_results.extend(baseline_results)
-                log.info("--- Baseline Run Complete ---")
-
-            # Run with model embedding
-            log.info("--- Running Model ---")
-            model_embeddings = [load_from_path(p) for p in model_embedding_paths]
-            model_input = (
-                model_embeddings if len(model_embeddings) > 1 else model_embeddings[0]
-            )
-
-            model_results = run_task(
-                task_name=invoked_task_name,
-                cell_representation=model_input,
-                run_baseline=False,  # Never compute baseline on an embedding
-                task_params=processed_task_args,
-                random_seed=random_seed,
-            )
-            all_results.extend(model_results)
-            log.info("--- Model Run Complete ---")
-
-            # 6. Write results
-            metric_objects = [MetricResult(**res) for res in all_results]
-            write_results(metric_objects, output_file)
-            click.echo(f"✅ Task '{invoked_task_name}' completed successfully.")
-
-        except (click.ClickException, ValueError) as e:
-            log.error(f"Task '{invoked_task_name}' failed: {e}")
-            raise click.ClickException(str(e))  # Re-raise as a clean CLI error
-        except Exception as e:
-            log.error(
-                f"An unexpected error occurred in task '{invoked_task_name}': {e}",
-                exc_info=True,
-            )
-            raise click.ClickException(f"An unexpected error occurred: {e}")
-
-    # --- Dynamically Add Options to the Command ---
-    def add_click_options(options):
-        def decorator(f):
-            for option in reversed(options):
-                f = option(f)
-            return f
-
-        return decorator
-
-    # Create options from task and baseline schemas
-    task_options = [
-        click.option(
-            f"--{name.replace('_', '-')}",
-            default=info.default,
-            help=f"Task parameter: {name}",
-            required=info.required,
-        )
-        for name, info in task_info.task_params.items()
-    ]
-    baseline_options = [
-        click.option(
-            f"--baseline-{name.replace('_', '-')}",
-            default=info.default,
-            help=f"Baseline parameter for --compute-baseline: {name}",
-        )
-        for name, info in task_info.baseline_params.items()
-    ]
-
-    # Define common options for all tasks
-    common_options = [
+def add_shared_cli_options():
+    return [
         click.option(
             "--dataset",
-            "-d",
-            "dataset_names",
             required=True,
-            multiple=True,
-            help="Name of the dataset(s) to use.",
+            help="Dataset identifier.",
         ),
         click.option(
-            "--model-embedding-path",
-            required=True,
-            multiple=True,
-            type=click.Path(exists=True, dir_okay=False),
-            help="Path to model embedding file(s). Provide one per dataset.",
-        ),
-        click.option(
-            "--output-file",
-            "-o",
-            type=click.Path(dir_okay=False, writable=True),
-            help="Path to save results (JSON format).",
+            "--cell-representation-path",
+            help="Path to embedding arrays (.npy/.npz/.csv/.tsv) or AnnData reference like @X, @obs:col, @obsm:X_pca.",
         ),
         click.option(
             "--compute-baseline",
             is_flag=True,
-            help="Compute and evaluate a baseline for this task.",
+            default=False,
+            help="If set, compute the task baseline from the (raw) representation.",
         ),
         click.option(
-            "--random-seed", type=int, help="Random seed for reproducibility."
+            "--random-seed",
+            type=int,
+            default=DEFAULT_SEED,
+            show_default=True,
+            help="Random seed.",
+        ),
+        click.option(
+            "--output-file",
+            type=click.Path(dir_okay=False, writable=True, resolve_path=True),
+            help="If provided, write JSON results to this file.",
         ),
     ]
 
-    # Apply all options to the callback function
-    task_callback = add_click_options(common_options)(task_callback)
-    task_callback = add_click_options(baseline_options)(task_callback)
-    task_callback = add_click_options(task_options)(task_callback)
 
-    run.add_command(task_callback)
+def add_task_parameter_option(parameter_name: str, param_info) -> click.Option:
+    cli_flag = f"--{parameter_name.replace('_', '-')}"
+    default_help = "" if param_info.required else f" (default: {param_info.default})"
+    return click.option(
+        cli_flag,
+        parameter_name,
+        required=param_info.required,
+        type=str,
+        help=f"{param_info.stringified_type}{default_help}",
+    )
+
+
+def add_baseline_parameter_option(parameter_name: str, param_info) -> click.Option:
+    cli_flag = f"--baseline-{parameter_name.replace('_', '-')}"
+    default_help = "" if param_info.required else f" (default: {param_info.default})"
+    return click.option(
+        cli_flag,
+        f"baseline_{parameter_name}",
+        required=False,
+        type=str,
+        help=f"[baseline] {param_info.stringified_type}{default_help}",
+    )
+
+
+@click.group(help="Run benchmark tasks.")
+def run():
+    pass
+
+
+def add_dynamic_task_command(task_name: str):
+    task_info = TASK_REGISTRY.get_task_info(task_name)
+    command_help_text = TASK_REGISTRY.get_task_help(task_name)
+
+    def task_execution_handler(**cli_kwargs):
+        dataset_name: str = cli_kwargs.pop("dataset")
+        cell_representation_path: Optional[str] = cli_kwargs.pop(
+            "cell_representation_path"
+        )
+        should_compute_baseline: bool = cli_kwargs.pop("compute_baseline")
+        random_seed: int = cli_kwargs.pop("random_seed")
+        output_file_path: Optional[str] = cli_kwargs.pop("output_file")
+
+        task_parameters: Dict[str, Any] = {}
+        baseline_parameters: Dict[str, Any] = {}
+
+        for param_name in task_info.task_params.keys():
+            if param_name in cli_kwargs and cli_kwargs[param_name] is not None:
+                task_parameters[param_name] = convert_cli_parameter(
+                    cli_kwargs[param_name], task_info.task_params[param_name]
+                )
+
+        for param_name in task_info.baseline_params.keys():
+            baseline_key = f"baseline_{param_name}"
+            if baseline_key in cli_kwargs and cli_kwargs[baseline_key] is not None:
+                baseline_parameters[param_name] = convert_cli_parameter(
+                    cli_kwargs[baseline_key], task_info.baseline_params[param_name]
+                )
+
+        try:
+            dataset = load_dataset(dataset_name)
+            if not hasattr(dataset, "adata"):
+                raise click.ClickException(
+                    f"Dataset '{dataset_name}' does not provide an `.adata` attribute."
+                )
+            adata = dataset.adata
+
+            if cell_representation_path is None:
+                cell_representation = "@X"
+            elif cell_representation_path.startswith("@"):
+                cell_representation = cell_representation_path
+            else:
+                cell_representation = load_numpy_array_from_path(
+                    cell_representation_path
+                )
+
+            execution_results = run_task(
+                task_name=task_name,
+                adata=adata,
+                cell_representation=cell_representation,
+                run_baseline=should_compute_baseline,
+                baseline_params=baseline_parameters,
+                task_params=task_parameters,
+                random_seed=random_seed,
+            )
+        except Exception as execution_error:
+            raise click.ClickException(str(execution_error)) from execution_error
+
+        json_output = json.dumps(execution_results, indent=2, default=str)
+        if output_file_path:
+            with open(output_file_path, "w") as output_file:
+                output_file.write(json_output)
+        else:
+            click.echo(json_output)
+
+    task_command = click.command(name=task_name, help=command_help_text)(
+        task_execution_handler
+    )
+
+    for param_name, param_info in reversed(list(task_info.baseline_params.items())):
+        task_command = add_baseline_parameter_option(param_name, param_info)(
+            task_command
+        )
+
+    for param_name, param_info in reversed(list(task_info.task_params.items())):
+        task_command = add_task_parameter_option(param_name, param_info)(
+            task_command
+        )
+
+    for cli_option in reversed(add_shared_cli_options()):
+        task_command = cli_option(task_command)
+
+    return task_command
+
+
+for task_name in TASK_REGISTRY.list_tasks():
+    run.add_command(add_dynamic_task_command(task_name))
+
+
+__all__ = ["run"]

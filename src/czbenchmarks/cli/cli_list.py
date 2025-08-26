@@ -2,7 +2,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 import json
-from .registry import TASK_REGISTRY
+from czbenchmarks.tasks.task import TASK_REGISTRY
 from ..datasets import utils as dataset_utils
 
 
@@ -20,10 +20,14 @@ def list_cmd(list_type: str, output_format: str):
     console = Console()
 
     if list_type == "tasks":
-        tasks = [
-            {"name": name, "description": task_def.description}
-            for name, task_def in TASK_REGISTRY.items()
-        ]
+        tasks = []
+        for name in TASK_REGISTRY.list_tasks():
+            try:
+                task_info = TASK_REGISTRY.get_task_info(name)
+                tasks.append({"name": name, "description": task_info.description})
+            except Exception as e:
+                # Optionally log or print the error, but skip the broken task
+                tasks.append({"name": name, "description": f"Error: {e}"})
         if output_format == "json":
             console.print(json.dumps(tasks, indent=2))
         else:

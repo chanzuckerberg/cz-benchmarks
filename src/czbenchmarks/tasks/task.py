@@ -1,17 +1,18 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Union
 import anndata as ad
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from ..constants import RANDOM_SEED
 from .types import CellRepresentation
 from ..metrics.types import MetricResult
 from .utils import run_standard_scrna_workflow
 
-
 import inspect
 
 from typing import Dict, Any, Type
+import typing
 
 
 from pydantic.fields import PydanticUndefined
@@ -32,7 +33,8 @@ class TaskOutput(BaseModel):
 class TaskParameter(BaseModel):
     """Schema for a single, discoverable parameter."""
 
-    type: str
+    type: Any
+    stringified_type: str
     default: Any = None
     required: bool
 
@@ -55,9 +57,12 @@ class TaskRegistry:
         self._registry: Dict[str, Type["Task"]] = {}
         self._info: Dict[str, TaskInfo] = {}
 
-    def register_task(self, task_class: Type["Task"]):
+    def register_task(self, task_class: type[Task]):
         """Registers a task class and introspects it to gather metadata."""
         if inspect.isabstract(task_class) or not hasattr(task_class, "display_name"):
+            print(
+                f"Error: Task class {task_class.__name__} missing display_name or is abstract."
+            )
             return
 
         key = (
@@ -68,7 +73,14 @@ class TaskRegistry:
         self._registry[key] = task_class
         self._info[key] = self._introspect_task(task_class)
 
-    def _introspect_task(self, task_class: Type["Task"]) -> TaskInfo:
+    def _stringify_type(self, annotation: Any) -> str:
+        """Return a string representation of a type annotation."""
+        try:
+            return str(annotation).replace("typing.", "")
+        except Exception:
+            return str(annotation)
+
+    def _introspect_task(self, task_class: type[Task]) -> TaskInfo:
         """Extracts parameter and metric information from a task class."""
         try:
             # 1. Get Task Parameters from the associated Pydantic input model
@@ -80,12 +92,13 @@ class TaskRegistry:
                     field_name,
                     field_info,
                 ) in task_class.input_model.model_fields.items():
-                    # Enhanced type information extraction
                     type_info = self._extract_type_info(
                         field_info.annotation, field_name
                     )
+                    type_str = self._stringify_type(type_info)
                     task_params[field_name] = TaskParameter(
                         type=type_info,
+                        stringified_type=type_str,
                         default=field_info.default
                         if field_info.default is not PydanticUndefined
                         else None,
@@ -95,6 +108,9 @@ class TaskRegistry:
             # 2. Get Baseline Parameters from the compute_baseline method signature
             baseline_params = {}
             try:
+                hints = typing.get_type_hints(
+                    task_class.compute_baseline, include_extras=True
+                )
                 sig = inspect.signature(task_class.compute_baseline)
                 for param in list(sig.parameters.values())[1:]:
                     if param.name in {
@@ -103,9 +119,11 @@ class TaskRegistry:
                         "expression_data",
                     }:
                         continue
-                    type_info = self._extract_type_info(param.annotation, param.name)
+                    type_info = hints.get(param.name, Any)
+                    type_str = self._stringify_type(type_info)
                     baseline_params[param.name] = TaskParameter(
                         type=type_info,
+                        stringified_type=type_str,
                         default=param.default
                         if param.default != inspect.Parameter.empty
                         else None,
@@ -150,45 +168,11 @@ class TaskRegistry:
                 metrics=[],
             )
 
-    def _extract_type_info(self, annotation: Any, param_name: str) -> str:
-        """Extract enhanced type information from parameter annotation."""
+    def _extract_type_info(self, annotation: Any, param_name: str) -> type:
+        """Return the actual annotation for downstream strict type checking."""
         if annotation == inspect.Parameter.empty:
-            return "Any"
-
-        try:
-            # Handle typing module types
-            if hasattr(annotation, "__origin__"):
-                origin = annotation.__origin__
-                if origin is list:
-                    args = getattr(annotation, "__args__", ())
-                    if args:
-                        return f"List[{args[0].__name__ if hasattr(args[0], '__name__') else str(args[0])}]"
-                    else:
-                        return "List[Any]"
-                elif origin is dict:
-                    return "Dict"
-                elif origin is Union:
-                    args = getattr(annotation, "__args__", ())
-                    arg_names = [
-                        arg.__name__ if hasattr(arg, "__name__") else str(arg)
-                        for arg in args
-                    ]
-                    return f"Union[{', '.join(arg_names)}]"
-
-            # Handle regular types
-            if hasattr(annotation, "__name__"):
-                return annotation.__name__
-            else:
-                type_str = str(annotation)
-                # Clean up common type representations
-                if "numpy.ndarray" in type_str:
-                    return "numpy.ndarray"
-                elif "pandas.core.frame.DataFrame" in type_str:
-                    return "pandas.DataFrame"
-                return type_str
-
-        except Exception:
-            return str(annotation)
+            return Any
+        return annotation  # <-- Just return the annotation itself
 
     def _extract_description(self, task_class: Type["Task"]) -> str:
         """Extract description from task class with fallbacks."""
@@ -272,6 +256,17 @@ class TaskRegistry:
         except Exception as e:
             return f"Error generating help for task '{task_name}': {e}"
 
+    def validate_task_input(self, task_name: str, parameters: Dict[str, Any]) -> None:
+        """Strictly validate parameters using the Pydantic input model."""
+        TaskClass = self.get_task_class(task_name)
+        InputModel = TaskClass.input_model
+        try:
+            InputModel(**parameters)
+        except ValidationError as e:
+            raise ValueError(f"Invalid parameters for '{task_name}': {e}")
+        except Exception as e:
+            raise ValueError(f"Invalid parameters for '{task_name}': {e}")
+
     def validate_task_parameters(
         self, task_name: str, parameters: Dict[str, Any]
     ) -> List[str]:
@@ -303,18 +298,6 @@ class TaskRegistry:
 
 # Global singleton instance, ready for import by other modules.
 TASK_REGISTRY = TaskRegistry()
-
-
-# class TaskInput(BaseModel):
-#     """Base class for task inputs."""
-
-#     model_config = {"arbitrary_types_allowed": True}
-
-
-# class TaskOutput(BaseModel):
-#     """Base class for task outputs."""
-
-#     model_config = {"arbitrary_types_allowed": True}
 
 
 class Task(ABC):

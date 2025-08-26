@@ -304,7 +304,7 @@ class MetadataLabelPredictionTask(Task):
 
     def compute_baseline(
         self,
-        cell_representation: CellRepresentation,
+        expression_data: CellRepresentation,
         **kwargs,
     ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
@@ -315,12 +315,12 @@ class MetadataLabelPredictionTask(Task):
         tasks.
 
         Args:
-            cell_representation: gene expression data or embedding
+            expression_data: gene expression data or embedding
 
         Returns:
             Baseline embedding
         """
         # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
-        return cell_representation
+        if sp.sparse.issparse(expression_data):
+            expression_data = expression_data.toarray()
+        return expression_data

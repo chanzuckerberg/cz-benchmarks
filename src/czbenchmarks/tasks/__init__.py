@@ -27,7 +27,7 @@ from .single_cell import (
     PerturbationTask,
 )
 
-from .task import Task, TaskInput, TaskOutput, MetricResult
+from .task import Task, TaskInput, TaskOutput, MetricResult, TASK_REGISTRY
 
 __all__ = [
     "Task",
@@ -52,4 +52,5 @@ __all__ = [
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
+    "TASK_REGISTRY"
 ]

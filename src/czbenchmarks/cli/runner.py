@@ -1,0 +1,80 @@
+import logging
+from typing import Any, Dict, List, Union, Optional
+
+from anndata import AnnData
+
+from ..constants import RANDOM_SEED
+from czbenchmarks.tasks import TASK_REGISTRY
+from czbenchmarks.tasks.types import CellRepresentation
+from .resolve_reference import (
+    is_anndata_reference,
+    AnnDataReference,
+    resolve_value_recursively,
+)
+
+logger = logging.getLogger(__name__)
+
+
+def resolve_cell_representation(
+    cell_rep: Union[CellRepresentation, str], adata: AnnData
+) -> CellRepresentation:
+    if is_anndata_reference(cell_rep):
+        return AnnDataReference.parse(cell_rep).resolve(adata)
+    return cell_rep
+
+
+def resolve_task_params(task_params: Dict[str, Any], adata: AnnData) -> Dict[str, Any]:
+    return resolve_value_recursively(task_params, adata)
+
+
+def run_task(
+    task_name: str,
+    *,
+    adata: AnnData,
+    cell_representation: Union[str, CellRepresentation],
+    run_baseline: bool = False,
+    baseline_params: Optional[Dict[str, Any]] = None,
+    task_params: Optional[Dict[str, Any]] = None,
+    random_seed: int = RANDOM_SEED,
+) -> List[Dict[str, Any]]:
+    logger.info(f"Preparing to run task: '{task_name}' (CLI)")
+    baseline_params = baseline_params or {}
+    task_params = task_params or {}
+
+    TaskClass = TASK_REGISTRY.get_task_class(task_name)
+    InputModel = TaskClass.input_model
+    task_instance = TaskClass(random_seed=random_seed)
+
+    rep_for_run = resolve_cell_representation(cell_representation, adata)
+    params_resolved = resolve_task_params(task_params, adata)
+    baseline_resolved = resolve_task_params(baseline_params, adata)
+
+    if run_baseline:
+        logger.info(f"Computing baseline for '{task_name}'...")
+        try:
+            rep_for_run = task_instance.compute_baseline(
+                expression_data=rep_for_run, **baseline_resolved
+            )
+            logger.info("Baseline computation complete.")
+        except NotImplementedError:
+            logger.warning(
+                f"Baseline calculation is not implemented for '{task_name}'."
+            )
+        except Exception as e:
+            logger.error(f"Error during baseline computation for '{task_name}': {e}")
+            raise
+
+    TASK_REGISTRY.validate_task_input(task_name, params_resolved)
+    try:
+        task_input = InputModel(**params_resolved)
+    except Exception as e:
+        logger.error(
+            f"Failed to create TaskInput for '{task_name}' with params {params_resolved}. Error: {e}"
+        )
+        raise ValueError(f"Invalid task parameters for '{task_name}': {e}") from e
+
+    logger.info(f"Executing task logic for '{task_name}' (CLI)...")
+    results = task_instance.run(cell_representation=rep_for_run, task_input=task_input)
+    logger.info(f"Task '{task_name}' execution complete.")
+
+    return [res.model_dump() for res in results]
