@@ -148,6 +148,37 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
     return df[metric].mean()
 
 
+def single_metric(results_df, metric: str, **kwargs):
+    """Get a single metric value from filtered results.
+
+    Args:
+        results_df: DataFrame containing classification results
+        metric: Name of metric column to extract ("accuracy", "f1", etc.)
+        **kwargs: Filter parameters (e.g., classifier, train_species, test_species)
+
+    Returns:
+        Single metric value from the filtered results
+
+    Raises:
+        ValueError: If filtering results in 0 or >1 rows
+        KeyError: If the specified metric column is not present in results_df
+    """
+    df = results_df.copy()
+
+    for param, value in kwargs.items():
+        if param in df.columns:
+            df = df[df[param] == value]
+
+    if len(df) == 0:
+        raise ValueError(f"No results found after filtering with {kwargs!r}")
+    elif len(df) > 1:
+        raise ValueError(
+            f"Multiple results found after filtering with {kwargs!r}. Expected exactly 1 row."
+        )
+
+    return df[metric].iloc[0]
+
+
 def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricResult]:
     """aggregate a collection of MetricResults by their type and parameters"""
     grouped_results = collections.defaultdict(list)
