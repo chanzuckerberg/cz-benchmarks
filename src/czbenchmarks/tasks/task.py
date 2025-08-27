@@ -30,6 +30,7 @@ class TaskOutput(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
+
 class TaskParameter(BaseModel):
     """Schema for a single, discoverable parameter."""
 
@@ -60,9 +61,7 @@ class TaskRegistry:
     def register_task(self, task_class: type[Task]):
         """Registers a task class and introspects it to gather metadata."""
         if inspect.isabstract(task_class) or not hasattr(task_class, "display_name"):
-            print(
-                f"Error: Task class {task_class.__name__} missing display_name or is abstract."
-            )
+            print(f"Error: Task class {task_class.__name__} missing display_name or is abstract.")
             return
 
         key = (
@@ -76,7 +75,7 @@ class TaskRegistry:
     def _stringify_type(self, annotation: Any) -> str:
         """Return a string representation of a type annotation."""
         try:
-            return str(annotation).replace("typing.", "")
+            return str(annotation).replace('typing.', '')
         except Exception:
             return str(annotation)
 
@@ -92,9 +91,7 @@ class TaskRegistry:
                     field_name,
                     field_info,
                 ) in task_class.input_model.model_fields.items():
-                    type_info = self._extract_type_info(
-                        field_info.annotation, field_name
-                    )
+                    type_info = self._extract_type_info(field_info.annotation, field_name)
                     type_str = self._stringify_type(type_info)
                     task_params[field_name] = TaskParameter(
                         type=type_info,
@@ -108,25 +105,17 @@ class TaskRegistry:
             # 2. Get Baseline Parameters from the compute_baseline method signature
             baseline_params = {}
             try:
-                hints = typing.get_type_hints(
-                    task_class.compute_baseline, include_extras=True
-                )
+                hints = typing.get_type_hints(task_class.compute_baseline, include_extras=True)
                 sig = inspect.signature(task_class.compute_baseline)
-                for param in list(sig.parameters.values())[1:]:
-                    if param.name in {
-                        "kwargs",
-                        "cell_representation",
-                        "expression_data",
-                    }:
+                for param in list(sig.parameters.values())[1:]: # Skip 'self'
+                    if param.name in {"kwargs", "cell_representation", "expression_data"}:
                         continue
                     type_info = hints.get(param.name, Any)
                     type_str = self._stringify_type(type_info)
                     baseline_params[param.name] = TaskParameter(
                         type=type_info,
                         stringified_type=type_str,
-                        default=param.default
-                        if param.default != inspect.Parameter.empty
-                        else None,
+                        default=param.default if param.default != inspect.Parameter.empty else None,
                         required=param.default == inspect.Parameter.empty,
                     )
             except Exception as e:
@@ -266,7 +255,7 @@ class TaskRegistry:
             raise ValueError(f"Invalid parameters for '{task_name}': {e}")
         except Exception as e:
             raise ValueError(f"Invalid parameters for '{task_name}': {e}")
-
+        
     def validate_task_parameters(
         self, task_name: str, parameters: Dict[str, Any]
     ) -> List[str]:
