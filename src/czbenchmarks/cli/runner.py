@@ -15,18 +15,6 @@ from .resolve_reference import (
 logger = logging.getLogger(__name__)
 
 
-def resolve_cell_representation(
-    cell_rep: Union[CellRepresentation, str], adata: AnnData
-) -> CellRepresentation:
-    if is_anndata_reference(cell_rep):
-        return AnnDataReference.parse(cell_rep).resolve(adata)
-    return cell_rep
-
-
-def resolve_task_params(task_params: Dict[str, Any], adata: AnnData) -> Dict[str, Any]:
-    return resolve_value_recursively(task_params, adata)
-
-
 def run_task(
     task_name: str,
     *,
@@ -45,15 +33,18 @@ def run_task(
     InputModel = TaskClass.input_model
     task_instance = TaskClass(random_seed=random_seed)
 
-    rep_for_run = resolve_cell_representation(cell_representation, adata)
-    params_resolved = resolve_task_params(task_params, adata)
-    baseline_resolved = resolve_task_params(baseline_params, adata)
+    cell_representation_for_execution = cell_representation
+    if is_anndata_reference(cell_representation):
+        cell_representation_for_execution = AnnDataReference.parse(cell_representation).resolve(adata)
+
+    params_resolved = resolve_value_recursively(task_params, adata)
+    baseline_resolved = resolve_value_recursively(baseline_params, adata)
 
     if run_baseline:
         logger.info(f"Computing baseline for '{task_name}'...")
         try:
-            rep_for_run = task_instance.compute_baseline(
-                expression_data=rep_for_run, **baseline_resolved
+            cell_representation_for_execution = task_instance.compute_baseline(
+                expression_data=cell_representation_for_execution, **baseline_resolved
             )
             logger.info("Baseline computation complete.")
         except NotImplementedError:
@@ -74,7 +65,7 @@ def run_task(
         raise ValueError(f"Invalid task parameters for '{task_name}': {e}") from e
 
     logger.info(f"Executing task logic for '{task_name}' (CLI)...")
-    results = task_instance.run(cell_representation=rep_for_run, task_input=task_input)
+    results = task_instance.run(cell_representation=cell_representation_for_execution, task_input=task_input)
     logger.info(f"Task '{task_name}' execution complete.")
 
     return [res.model_dump() for res in results]

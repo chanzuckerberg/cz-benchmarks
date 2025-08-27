@@ -12,6 +12,7 @@ from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
 from czbenchmarks.tasks.task import TASK_REGISTRY
 from .runner import run_task
 from czbenchmarks.datasets import load_dataset
+from czbenchmarks.datasets.utils import load_local_dataset
 
 
 def load_numpy_array_from_path(file_path: str) -> np.ndarray:
@@ -60,31 +61,35 @@ def convert_cli_parameter(param_value: str, param_info) -> Any:
 def add_shared_cli_options():
     return [
         click.option(
-            "--dataset",
+            "-d", "--dataset",
             required=True,
-            help="Dataset identifier.",
+            help="Dataset name available in czbenchmarks.",
         ),
         click.option(
-            "--cell-representation-path",
+            "-u", "--user-dataset",
+            help="Path to a user .h5ad file as JSON: '{\"dataset_class\": \"SingleCellDataset\", \"organism\": \"Organism.Human\", \"path\": \"~/mydata.h5ad\"}'.",
+        ),
+        click.option(
+            "-c", "--cell-representation-path",
             help="Path to embedding arrays (.npy/.npz/.csv/.tsv) or AnnData reference like @X, @obs:col, @obsm:X_pca.",
         ),
         click.option(
-            "--compute-baseline",
+            "-b", "--compute-baseline",
             is_flag=True,
             default=False,
-            help="If set, compute the task baseline from the (raw) representation.",
+            help="If set, compute the task baselines",
         ),
         click.option(
-            "--random-seed",
+            "-r", "--random-seed",
             type=int,
             default=DEFAULT_SEED,
             show_default=True,
-            help="Random seed.",
+            help="Set a random seed for reproducibility.",
         ),
         click.option(
-            "--output-file",
+            "-o", "--output-file",
             type=click.Path(dir_okay=False, writable=True, resolve_path=True),
-            help="If provided, write JSON results to this file.",
+            help="Write JSON results to a file.",
         ),
     ]
 
@@ -113,7 +118,11 @@ def add_baseline_parameter_option(parameter_name: str, param_info) -> click.Opti
     )
 
 
-@click.group(help="Run benchmark tasks.")
+@click.group(
+    name="run",
+    context_settings=dict(help_option_names=["-h", "--help"]),
+    help="""Run benchmark tasks on dataset and model output embeddings"""
+    )
 def run():
     pass
 
@@ -124,6 +133,7 @@ def add_dynamic_task_command(task_name: str):
 
     def task_execution_handler(**cli_kwargs):
         dataset_name: str = cli_kwargs.pop("dataset")
+        user_dataset_json: Optional[str] = cli_kwargs.pop("user_dataset", None)
         cell_representation_path: Optional[str] = cli_kwargs.pop(
             "cell_representation_path"
         )
@@ -148,7 +158,35 @@ def add_dynamic_task_command(task_name: str):
                 )
 
         try:
-            dataset = load_dataset(dataset_name)
+            if user_dataset_json:
+                user_dataset = json.loads(user_dataset_json)
+                required_keys = ["dataset_class", "organism", "path"]
+                missing_keys = [k for k in required_keys if k not in user_dataset]
+                if missing_keys:
+                    raise click.ClickException(
+                        f"Missing required key(s) in --user-dataset JSON: {', '.join(missing_keys)}. "
+                        "Example: '{\"dataset_class\": \"czbenchmarks.datasets.Dataset\", \"organism\": \"Organism.Human\", \"path\": \"~/mydata.h5ad\"}'"
+                    )
+                if not isinstance(user_dataset["dataset_class"], str) or not user_dataset["dataset_class"]:
+                    raise click.ClickException("The 'dataset_class' in --user-dataset must be a non-empty string.")
+                if not isinstance(user_dataset["organism"], str) or not user_dataset["organism"]:
+                    raise click.ClickException("The 'organism' in --user-dataset must be a non-empty string.")
+                if not isinstance(user_dataset["path"], str) or not user_dataset["path"]:
+                    raise click.ClickException("The 'path' in --user-dataset must be a non-empty string.")
+                resolved_path = os.path.expanduser(user_dataset["path"])
+                if not os.path.exists(resolved_path):
+                    raise click.ClickException(f"The file specified in --user-dataset 'path' does not exist: {resolved_path}")
+                dataset = load_local_dataset(
+                    dataset_class=user_dataset["dataset_class"],
+                    organism=user_dataset["organism"],
+                    path=str(resolved_path),
+                )
+            elif dataset_name:
+                dataset = load_dataset(dataset_name)
+            else:
+                raise click.ClickException("You must specify either --dataset or --user-dataset.")
+
+
             if not hasattr(dataset, "adata"):
                 raise click.ClickException(
                     f"Dataset '{dataset_name}' does not provide an `.adata` attribute."

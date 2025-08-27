@@ -141,3 +141,15 @@ def write_results(results: List[Any], output_file: str | None):
     else:
         click.echo("\n--- RESULTS ---")
         click.echo(json.dumps(results_dict, indent=2))
+
+
+def mutually_exclusive(*options):
+    def _callback(ctx, param, value):
+        if value is not None:
+            for other in options:
+                if ctx.params.get(other) is not None:
+                    raise click.UsageError(
+                        f"Options --{param.name.replace('_', '-')} and --{other.replace('_', '-')} are mutually exclusive."
+                    )
+        return value
+    return _callback

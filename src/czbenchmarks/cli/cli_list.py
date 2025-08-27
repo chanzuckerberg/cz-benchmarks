@@ -9,7 +9,7 @@ from ..datasets import utils as dataset_utils
 @click.command(name="list")
 @click.argument("list_type", type=click.Choice(["datasets", "tasks"]))
 @click.option(
-    "--format",
+    "-f", "--format",
     "output_format",
     type=click.Choice(["json", "table"], case_sensitive=False),
     default="table",
@@ -41,7 +41,6 @@ def list_cmd(list_type: str, output_format: str):
     elif list_type == "datasets":
         datasets = dataset_utils.list_available_datasets()
         if output_format == "json":
-            print(datasets)  # Print directly for JSON output
             console.print(json.dumps(datasets, indent=2))
         else:
             table = Table(title="Available Datasets", show_lines=True)
