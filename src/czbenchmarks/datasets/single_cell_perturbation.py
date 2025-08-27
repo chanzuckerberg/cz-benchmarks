@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Literal
 import io
 from pathlib import Path
 import json
@@ -323,6 +323,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def load_data(
         self,
+        backed: Literal["r", "r+"] | bool | None = None,
     ) -> None:
         """
         Load the dataset and populate perturbation truth data.
@@ -331,10 +332,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
+        Args:
+            backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset
+                into memory or use backed mode.
+                Memory: False or None. Default is None.
+                Backed: True, 'r' for read-only, 'r+' for read-write
+
         Raises:
             ValueErrors or FileNotFoundErrors based on required data structure.
         """
-        super().load_data()
+        super().load_data(backed=backed)
 
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(

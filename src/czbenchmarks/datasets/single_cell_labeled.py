@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 import pandas as pd
 
 from .single_cell import SingleCellDataset
@@ -47,17 +47,23 @@ class SingleCellLabeledDataset(SingleCellDataset):
         super().__init__("single_cell_labeled", path, organism, task_inputs_dir)
         self.label_column_key = label_column_key
 
-    def load_data(self) -> None:
+    def load_data(self, backed: Literal["r", "r+"] | bool | None = None) -> None:
         """
         Load the dataset and extract labels.
 
         This method loads the dataset using the parent class's `load_data` method
         and extracts the labels from the specified column in `adata.obs`.
 
+        Args:
+            backed (Literal['r', 'r+'] | bool | None): Whether to load the dataset
+                into memory or use backed mode.
+                Memory: False or None. Default is None.
+                Backed: True, 'r' for read-only, 'r+' for read-write
+
         Populates:
             labels (pd.Series): Extracted labels for each cell.
         """
-        super().load_data()
+        super().load_data(backed=backed)
         self.labels = self.adata.obs[self.label_column_key]
 
     def store_task_inputs(self) -> Path:
