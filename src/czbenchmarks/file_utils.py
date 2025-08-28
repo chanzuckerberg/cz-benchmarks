@@ -9,8 +9,7 @@ import botocore
 from botocore.config import Config
 
 from czbenchmarks.constants import DATASETS_CACHE_PATH
-from czbenchmarks.exceptions import (RemoteStorageError,
-                                     RemoteStorageObjectAlreadyExists)
+from czbenchmarks.exceptions import RemoteStorageError, RemoteStorageObjectAlreadyExists
 
 log = logging.getLogger(__name__)
 

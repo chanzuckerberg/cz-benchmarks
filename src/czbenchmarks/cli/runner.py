@@ -7,8 +7,11 @@ from czbenchmarks.tasks import TASK_REGISTRY
 from czbenchmarks.tasks.types import CellRepresentation
 
 from ..constants import RANDOM_SEED
-from .resolve_reference import (AnnDataReference, is_anndata_reference,
-                                resolve_value_recursively)
+from .resolve_reference import (
+    AnnDataReference,
+    is_anndata_reference,
+    resolve_value_recursively,
+)
 
 logger = logging.getLogger(__name__)
 
