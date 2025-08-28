@@ -20,7 +20,6 @@ from czbenchmarks.constants import PROCESSED_DATASETS_CACHE_PATH
 from czbenchmarks.datasets import utils as dataset_utils
 from czbenchmarks.datasets.dataset import Dataset
 
-
 log = logging.getLogger(__name__)
 
 

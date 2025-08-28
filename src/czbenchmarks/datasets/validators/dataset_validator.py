@@ -4,7 +4,6 @@ from typing import ClassVar, Type
 
 from ...datasets import Dataset
 
-
 # Configure logging to output to stdout
 logging.basicConfig(
     level=logging.INFO,

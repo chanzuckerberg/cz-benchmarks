@@ -2,13 +2,14 @@ from typing import List
 
 import numpy as np
 
+from czbenchmarks.datasets.types import Organism
+
 from ...constants import RANDOM_SEED
-from ..task import Task, TaskInput, TaskOutput
-from ...tasks.types import CellRepresentation
-from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from czbenchmarks.datasets.types import Organism
+from ...tasks.types import CellRepresentation
+from ...types import ListLike
+from ..task import Task, TaskInput, TaskOutput
 
 
 class CrossSpeciesIntegrationTaskInput(TaskInput):
@@ -38,10 +39,22 @@ class CrossSpeciesIntegrationTask(Task):
     """
 
     display_name = "cross-species integration"
+    description = (
+        "Evaluate cross-species integration quality using various integration metrics."
+    )
+    input_model = CrossSpeciesIntegrationTaskInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
         self.requires_multiple_datasets = True
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.ENTROPY_PER_CELL,
+            MetricType.BATCH_SILHOUETTE,
+        ]
 
     def _run_task(
         self,

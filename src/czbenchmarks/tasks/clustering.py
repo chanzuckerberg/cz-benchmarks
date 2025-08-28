@@ -1,18 +1,18 @@
 import logging
 from typing import List, Literal
-import pandas as pd
+
 import anndata as ad
+import pandas as pd
 
 from czbenchmarks.types import ListLike
 
-from .types import CellRepresentation
+from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from .constants import FLAVOR, KEY_ADDED, N_ITERATIONS
 from .task import Task, TaskInput, TaskOutput
+from .types import CellRepresentation
 from .utils import cluster_embedding
-from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
-from ..constants import RANDOM_SEED
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,8 @@ class ClusteringTask(Task):
     """
 
     display_name = "clustering"
+    description = "Evaluate clustering performance against ground truth labels using ARI and NMI metrics."
+    input_model = ClusteringTaskInput
 
     def __init__(
         self,
@@ -50,6 +52,14 @@ class ClusteringTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.ADJUSTED_RAND_INDEX,
+            MetricType.NORMALIZED_MUTUAL_INFO,
+        ]
 
     def _run_task(
         self,

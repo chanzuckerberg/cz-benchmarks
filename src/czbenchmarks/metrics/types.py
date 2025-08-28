@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Set
+
 from pydantic import BaseModel, Field
 
 
@@ -38,6 +39,11 @@ class MetricType(Enum):
     MEAN_SQUARED_ERROR = "mean_squared_error"
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
     JACCARD = "jaccard"
+    ACCURACY_CALCULATION = "accuracy_calculation"
+    PRECISION_CALCULATION = "precision_calculation"
+    RECALL_CALCULATION = "recall_calculation"
+    F1_CALCULATION = "f1_calculation"
+    SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
 
 class MetricInfo(BaseModel):

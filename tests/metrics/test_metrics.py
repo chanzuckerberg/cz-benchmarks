@@ -3,6 +3,7 @@ import numpy as np
 from enum import Enum
 from czbenchmarks.metrics.types import MetricType, MetricResult
 from czbenchmarks.metrics.utils import aggregate_results
+from czbenchmarks.metrics import metrics_registry
 
 
 def test_register_metric_valid(dummy_metric_registry, dummy_metric_function):
@@ -210,3 +211,216 @@ def test_aggregate_results_handles_just_one():
     assert agg_result.value_std_dev is None
     assert agg_result.values_raw == [0.42]
     assert agg_result.n_values == 1
+
+
+# Tests for newly registered metrics
+
+
+def test_accuracy_metric():
+    """Test that ACCURACY metric is registered and computes correctly."""
+    # Test perfect accuracy
+    y_true = np.array([1, 1, 0, 0, 1])
+    y_pred = np.array([1, 1, 0, 0, 1])
+
+    accuracy = metrics_registry.compute(
+        MetricType.ACCURACY_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    assert accuracy == 1.0
+
+    # Test partial accuracy
+    y_true = np.array([1, 1, 0, 0])
+    y_pred = np.array([1, 0, 0, 0])  # 3/4 correct
+
+    accuracy = metrics_registry.compute(
+        MetricType.ACCURACY_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    assert accuracy == 0.75
+
+
+def test_precision_metric():
+    """Test that PRECISION metric is registered and computes correctly."""
+    # True positives: 2, False positives: 1, Precision = 2/(2+1) = 0.67
+    y_true = np.array([1, 1, 0, 0, 1])
+    y_pred = np.array(
+        [1, 1, 1, 0, 0]
+    )  # TP: positions 0,1; FP: position 2; FN: position 4
+
+    precision = metrics_registry.compute(
+        MetricType.PRECISION_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    assert precision == pytest.approx(0.6667, abs=1e-4)
+
+
+def test_recall_metric():
+    """Test that RECALL metric is registered and computes correctly."""
+    # True positives: 2, False negatives: 1, Recall = 2/(2+1) = 0.67
+    y_true = np.array([1, 1, 0, 0, 1])
+    y_pred = np.array([1, 1, 1, 0, 0])  # TP: positions 0,1; FN: position 4
+
+    recall = metrics_registry.compute(
+        MetricType.RECALL_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    assert recall == pytest.approx(0.6667, abs=1e-4)
+
+
+def test_f1_metric():
+    """Test that F1 metric is registered and computes correctly."""
+    # F1 = 2 * (precision * recall) / (precision + recall)
+    y_true = np.array([1, 1, 0, 0, 1])
+    y_pred = np.array([1, 1, 1, 0, 0])
+
+    f1 = metrics_registry.compute(
+        MetricType.F1_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    # With precision = recall = 2/3, F1 = 2/3
+    assert f1 == pytest.approx(0.6667, abs=1e-4)
+
+
+def test_spearman_correlation_metric():
+    """Test that SPEARMAN_CORRELATION metric is registered and computes correctly."""
+    # Perfect positive correlation
+    a = np.array([1, 2, 3, 4, 5])
+    b = np.array([2, 4, 6, 8, 10])
+
+    correlation = metrics_registry.compute(
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
+        a=a,
+        b=b,
+    )
+
+    # Spearman correlation should be 1.0 for perfect monotonic relationship
+    assert isinstance(correlation, (float, np.floating))
+    assert correlation == pytest.approx(1.0, abs=1e-10)
+
+    # Perfect negative correlation
+    a = np.array([1, 2, 3, 4, 5])
+    b = np.array([5, 4, 3, 2, 1])
+
+    correlation = metrics_registry.compute(
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
+        a=a,
+        b=b,
+    )
+
+    assert isinstance(correlation, (float, np.floating))
+    assert correlation == pytest.approx(-1.0, abs=1e-10)
+
+
+def test_metric_registration_tags():
+    """Test that new metrics are registered with correct tags."""
+    # Test that accuracy is tagged as label_prediction
+    accuracy_metrics = metrics_registry.list_metrics(tags={"label_prediction"})
+
+    expected_metrics = {
+        MetricType.ACCURACY_CALCULATION,
+        MetricType.PRECISION_CALCULATION,
+        MetricType.RECALL_CALCULATION,
+        MetricType.F1_CALCULATION,
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
+    }
+
+    for metric in expected_metrics:
+        assert metric in accuracy_metrics, (
+            f"{metric} should be tagged as 'label_prediction'"
+        )
+
+
+def test_metric_required_args():
+    """Test that new metrics have correct required arguments."""
+    # Test accuracy required args
+    accuracy_info = metrics_registry.get_info(MetricType.ACCURACY_CALCULATION)
+    assert accuracy_info.required_args == {"y_true", "y_pred"}
+
+    # Test precision required args
+    precision_info = metrics_registry.get_info(MetricType.PRECISION_CALCULATION)
+    assert precision_info.required_args == {"y_true", "y_pred"}
+
+    # Test recall required args
+    recall_info = metrics_registry.get_info(MetricType.RECALL_CALCULATION)
+    assert recall_info.required_args == {"y_true", "y_pred"}
+
+    # Test F1 required args
+    f1_info = metrics_registry.get_info(MetricType.F1_CALCULATION)
+    assert f1_info.required_args == {"y_true", "y_pred"}
+
+    # Test Spearman correlation required args
+    spearman_info = metrics_registry.get_info(
+        MetricType.SPEARMAN_CORRELATION_CALCULATION
+    )
+    assert spearman_info.required_args == {"a", "b"}
+
+
+def test_metric_error_handling():
+    """Test that metrics handle error cases appropriately."""
+    # Test with mismatched array lengths
+    y_true = np.array([1, 1, 0])
+    y_pred = np.array([1, 0])  # Different length
+
+    with pytest.raises(ValueError):
+        metrics_registry.compute(
+            MetricType.ACCURACY_CALCULATION,
+            y_true=y_true,
+            y_pred=y_pred,
+        )
+
+    # Test with empty arrays - precision with empty arrays should return 0.0 with warning, not raise
+    y_true = np.array([])
+    y_pred = np.array([])
+
+    # Empty arrays should return 0.0 for precision (sklearn behavior)
+    result = metrics_registry.compute(
+        MetricType.PRECISION_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+    assert result == 0.0
+
+    # Test with invalid correlation inputs (should raise error)
+    with pytest.raises((ValueError, TypeError)):
+        metrics_registry.compute(
+            MetricType.SPEARMAN_CORRELATION_CALCULATION,
+            a=np.array([1, 2, 3]),
+            b=np.array([]),  # Mismatched lengths
+        )
+
+
+def test_metrics_with_different_data_types():
+    """Test that metrics work with different input data types."""
+    # Test with lists instead of numpy arrays
+    y_true = [1, 1, 0, 0]
+    y_pred = [1, 1, 0, 1]
+
+    accuracy = metrics_registry.compute(
+        MetricType.ACCURACY_CALCULATION,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
+
+    assert accuracy == 0.75
+
+    # Test Spearman with lists
+    a = [1, 2, 3, 4]
+    b = [1, 3, 2, 4]
+
+    correlation = metrics_registry.compute(
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
+        a=a,
+        b=b,
+    )
+
+    assert isinstance(correlation, (float, np.floating))

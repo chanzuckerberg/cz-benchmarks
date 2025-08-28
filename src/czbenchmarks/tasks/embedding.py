@@ -2,10 +2,10 @@ import logging
 from typing import List
 
 from ..constants import RANDOM_SEED
-from ..tasks.types import CellRepresentation
-from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from ..tasks.types import CellRepresentation
+from ..types import ListLike
 from .task import Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
@@ -34,9 +34,16 @@ class EmbeddingTask(Task):
     """
 
     display_name = "embedding"
+    description = "Evaluate cell representation quality using silhouette score with ground truth labels."
+    input_model = EmbeddingTaskInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [MetricType.SILHOUETTE_SCORE]
 
     def _run_task(
         self, cell_representation: CellRepresentation, _: EmbeddingTaskInput

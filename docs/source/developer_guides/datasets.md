@@ -42,16 +42,15 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    Responsibilities:
 
-   - Validates presence of `condition_key` and `split_key` (e.g., `condition`, `split`)
-   - Stores control and perturbed cells
-   - Computes and stores `DataType.PERTURBATION_TRUTH` as ground-truth reference
-   - Filters `adata` to only include control cells for inference.
+   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_ids` and `de_results_wilcoxon` or `de_results_t_test` in `adata.uns`.
+   - It also validates that `de_gene_col` is in the column names of the differential expression results. And that `control_name` is present in the data of condition column in `adata.obs`.
+   - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
+   - Computes and stores `control_matched_adata` (anndata that is split into `X`, `obs`, and `var` for output), `control_cells_ids`, `de_results`, `target_genes_to_save`.
 
    Example valid perturbation formats:
 
-   - `"ctrl"`: control
-   - `"GENE+ctrl"`: single-gene perturbation
-   - `"GENE1+GENE2"`: combinatorial perturbation
+   - ``{condition_name}`` or ``{condition_name}_{perturb}`` for matched control samples, where perturb can be any type of perturbation.
+   - ``{perturb}`` for a single perturbation
 
 - [Organism](../autoapi/czbenchmarks/datasets/types/index)  
    Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
@@ -107,8 +106,10 @@ labels_series = dataset.labels
 
 # For a SingleCellPerturbationDataset
 dataset.load_data()
-control_adata = dataset.adata
-truth_data_dict = dataset.perturbation_truth
+control_cells_ids = dataset.control_cells_ids
+target_conditions_to_save = dataset.target_conditions_to_save
+de_results = dataset.de_results
+control_matched_adata = dataset.control_matched_adata
 ```
 
 ## Tips for Developers

@@ -1,31 +1,25 @@
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import pandas as pd
 import scipy as sp
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    make_scorer,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (accuracy_score, f1_score, make_scorer,
+                             precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..tasks.types import CellRepresentation
-from ..types import ListLike
+from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from ..tasks.types import CellRepresentation
+from ..types import ListLike
+from .constants import MIN_CLASS_SIZE, N_FOLDS
 from .task import Task, TaskInput, TaskOutput
 from .utils import filter_minimum_class
-from .constants import N_FOLDS, MIN_CLASS_SIZE
-from ..constants import RANDOM_SEED
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +48,9 @@ class MetadataLabelPredictionTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "metadata label prediction"
+    display_name = "label prediction"
+    description = "Predict labels from embeddings using cross-validated classifiers and standard metrics."
+    input_model = MetadataLabelPredictionTaskInput
 
     def __init__(
         self,
@@ -62,6 +58,17 @@ class MetadataLabelPredictionTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
+
+    @staticmethod
+    def get_metric_types() -> List[MetricType]:
+        """Return the metric types computed by this task."""
+        return [
+            MetricType.MEAN_FOLD_ACCURACY,
+            MetricType.MEAN_FOLD_F1_SCORE,
+            MetricType.MEAN_FOLD_PRECISION,
+            MetricType.MEAN_FOLD_RECALL,
+            MetricType.MEAN_FOLD_AUROC,
+        ]
 
     def _run_task(
         self,
@@ -291,7 +298,7 @@ class MetadataLabelPredictionTask(Task):
 
     def compute_baseline(
         self,
-        cell_representation: CellRepresentation,
+        expression_data: CellRepresentation,
         **kwargs,
     ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
@@ -302,12 +309,12 @@ class MetadataLabelPredictionTask(Task):
         tasks.
 
         Args:
-            cell_representation: gene expression data or embedding
+            expression_data: gene expression data or embedding
 
         Returns:
             Baseline embedding
         """
         # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
-        return cell_representation
+        if sp.sparse.issparse(expression_data):
+            expression_data = expression_data.toarray()
+        return expression_data

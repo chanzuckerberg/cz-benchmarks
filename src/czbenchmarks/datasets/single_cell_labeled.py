@@ -1,11 +1,12 @@
+import io
+import logging
 from pathlib import Path
 from typing import Optional
+
 import pandas as pd
 
 from .single_cell import SingleCellDataset
 from .types import Organism
-import logging
-import io
 
 logger = logging.getLogger(__name__)
 

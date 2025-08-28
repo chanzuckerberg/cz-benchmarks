@@ -1,13 +1,16 @@
-import os
-from pathlib import Path
-from datetime import datetime, timedelta
-import boto3
-from botocore.config import Config
-import botocore
 import logging
-from czbenchmarks.constants import DATASETS_CACHE_PATH
-from czbenchmarks.exceptions import RemoteStorageError, RemoteStorageObjectAlreadyExists
 import mimetypes
+import os
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import boto3
+import botocore
+from botocore.config import Config
+
+from czbenchmarks.constants import DATASETS_CACHE_PATH
+from czbenchmarks.exceptions import (RemoteStorageError,
+                                     RemoteStorageObjectAlreadyExists)
 
 log = logging.getLogger(__name__)
 
