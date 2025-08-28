@@ -12,7 +12,7 @@ The `czbenchmarks.tasks` module defines **benchmarking tasks** that evaluate the
     It also supports multi-dataset operations (`requires_multiple_datasets`) and setting **baseline embeddings** for comparison with model outputs.
     
 - **[`TaskInput`](../autoapi/czbenchmarks/tasks/task/index)** and **[`TaskOutput`](../autoapi/czbenchmarks/tasks/task/index)** Pydantic base classes used to define structured inputs and outputs for each task, ensuring type safety and clarity. Each task defines its own subclasses of `TaskInput` and `TaskOutput`.
-    
+
 
 ## Task Organization
 

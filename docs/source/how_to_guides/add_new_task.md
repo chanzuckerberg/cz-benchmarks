@@ -98,6 +98,13 @@ This guide explains how to create and integrate your own evaluation task into cz
     
     ```
 
+The `run_task()` function will automatically:
+- Look up your task in the registry
+- Instantiate it with the provided random seed
+- Create the appropriate `TaskInput` from your `task_params`
+- Execute the task and compute metrics
+- Return serialized results as dictionaries
+
 ## Best Practices
 - **Single Responsibility:** Ensure your task has a clear and focused purpose.
 - **Error Handling:** Include robust error handling and logging.
