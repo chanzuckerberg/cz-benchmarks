@@ -1,9 +1,10 @@
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import pandas as pd
 import scipy as sp
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -17,15 +18,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ..tasks.types import CellRepresentation
-from ..types import ListLike
+from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from ..tasks.types import CellRepresentation
+from ..types import ListLike
+from .constants import MIN_CLASS_SIZE, N_FOLDS
 from .task import Task, TaskInput, TaskOutput
 from .utils import filter_minimum_class
-from .constants import N_FOLDS, MIN_CLASS_SIZE
-from ..constants import RANDOM_SEED
-
 
 logger = logging.getLogger(__name__)
 

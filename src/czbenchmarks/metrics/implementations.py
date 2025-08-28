@@ -19,19 +19,19 @@ Each metric is registered with:
 
 import numpy as np
 from scib_metrics import silhouette_batch, silhouette_label
+from scipy.stats import spearmanr
 from sklearn.metrics import (
     accuracy_score,
     adjusted_rand_score,
-    normalized_mutual_info_score,
+    f1_score,
     mean_squared_error,
+    normalized_mutual_info_score,
     precision_score,
     recall_score,
-    f1_score,
 )
-from scipy.stats import spearmanr
-from .utils import compute_entropy_per_cell, mean_fold_metric
 
 from .types import MetricRegistry, MetricType
+from .utils import compute_entropy_per_cell, mean_fold_metric
 
 
 def spearman_correlation(a, b):

@@ -1,14 +1,15 @@
 import logging
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from anndata import AnnData
 
-from ..constants import RANDOM_SEED
 from czbenchmarks.tasks import TASK_REGISTRY
 from czbenchmarks.tasks.types import CellRepresentation
+
+from ..constants import RANDOM_SEED
 from .resolve_reference import (
-    is_anndata_reference,
     AnnDataReference,
+    is_anndata_reference,
     resolve_value_recursively,
 )
 
@@ -35,7 +36,9 @@ def run_task(
 
     cell_representation_for_execution = cell_representation
     if is_anndata_reference(cell_representation):
-        cell_representation_for_execution = AnnDataReference.parse(cell_representation).resolve(adata)
+        cell_representation_for_execution = AnnDataReference.parse(
+            cell_representation
+        ).resolve(adata)
 
     params_resolved = resolve_value_recursively(task_params, adata)
     baseline_resolved = resolve_value_recursively(baseline_params, adata)
@@ -65,7 +68,9 @@ def run_task(
         raise ValueError(f"Invalid task parameters for '{task_name}': {e}") from e
 
     logger.info(f"Executing task logic for '{task_name}' (CLI)...")
-    results = task_instance.run(cell_representation=cell_representation_for_execution, task_input=task_input)
+    results = task_instance.run(
+        cell_representation=cell_representation_for_execution, task_input=task_input
+    )
     logger.info(f"Task '{task_name}' execution complete.")
 
     return [res.model_dump() for res in results]

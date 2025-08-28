@@ -2,13 +2,14 @@ from typing import List
 
 import numpy as np
 
+from czbenchmarks.datasets.types import Organism
+
 from ...constants import RANDOM_SEED
-from ..task import Task, TaskInput, TaskOutput
-from ...tasks.types import CellRepresentation
-from ...types import ListLike
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
-from czbenchmarks.datasets.types import Organism
+from ...tasks.types import CellRepresentation
+from ...types import ListLike
+from ..task import Task, TaskInput, TaskOutput
 
 
 class CrossSpeciesIntegrationTaskInput(TaskInput):

@@ -1,7 +1,7 @@
 import collections
+import logging
 import statistics
 from typing import Iterable, Union
-import logging
 
 import numpy as np
 import pandas as pd

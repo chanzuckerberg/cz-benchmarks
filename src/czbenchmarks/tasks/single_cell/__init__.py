@@ -1,12 +1,12 @@
 from .cross_species import (
-    CrossSpeciesIntegrationTaskInput,
     CrossSpeciesIntegrationOutput,
     CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
 )
 from .perturbation_expression_prediction import (
-    PerturbationExpressionPredictionTaskInput,
     PerturbationExpressionPredictionOutput,
     PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
 )
 
 __all__ = [

@@ -1,23 +1,21 @@
-import os
 import logging
-import yaml
-import hydra
-from hydra.utils import instantiate
-from typing import Dict, Optional, Tuple, List, Literal
-import numpy as np
-import scanpy as sc
-import pandas as pd
-import anndata as ad
+import os
+from pathlib import Path
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
+import anndata as ad
+import hydra
+import numpy as np
+import pandas as pd
+import scanpy as sc
+import yaml
+from hydra.utils import instantiate
 from omegaconf import OmegaConf
+
 from czbenchmarks.datasets.dataset import Dataset
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.utils import initialize_hydra
 from czbenchmarks.file_utils import download_file_from_remote
-
-from pathlib import Path
-from typing import Union
-import logging
+from czbenchmarks.utils import initialize_hydra
 
 log = logging.getLogger(__name__)
 
@@ -117,7 +115,6 @@ def list_available_datasets() -> Dict[str, Dict[str, str]]:
     datasets = dict(sorted(datasets.items()))
 
     return datasets
-
 
 
 def run_multicondition_dge_analysis(

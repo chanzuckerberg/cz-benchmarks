@@ -1,18 +1,19 @@
-import click
+import functools
+import importlib.metadata
 import json
+import logging
+import subprocess
+from pathlib import Path
+from typing import Any, List
+
+import click
 import numpy as np
 import pandas as pd
-from typing import Any, List
-from ..datasets import load_dataset, Dataset
-from ..tasks.types import CellRepresentation
-from ..metrics.utils import aggregate_results
-import importlib.metadata
-import subprocess
-import functools
-import logging
 import tomli
-from pathlib import Path
 
+from ..datasets import Dataset, load_dataset
+from ..metrics.utils import aggregate_results
+from ..tasks.types import CellRepresentation
 
 log = logging.getLogger(__name__)
 
@@ -152,4 +153,5 @@ def mutually_exclusive(*options):
                         f"Options --{param.name.replace('_', '-')} and --{other.replace('_', '-')} are mutually exclusive."
                     )
         return value
+
     return _callback

@@ -1,11 +1,12 @@
-from .utils import load_dataset, list_available_datasets
+from .dataset import Dataset
 from .single_cell_labeled import SingleCellLabeledDataset
 from .single_cell_perturbation import SingleCellPerturbationDataset
-from .dataset import Dataset
 from .types import Organism
+from .utils import list_available_datasets, load_dataset, load_local_dataset
 
 __all__ = [
     "load_dataset",
+    "load_local_dataset",
     "list_available_datasets",
     "SingleCellLabeledDataset",
     "SingleCellPerturbationDataset",

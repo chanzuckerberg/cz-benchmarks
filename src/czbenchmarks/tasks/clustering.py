@@ -1,18 +1,18 @@
 import logging
 from typing import List, Literal
-import pandas as pd
+
 import anndata as ad
+import pandas as pd
 
 from czbenchmarks.types import ListLike
 
-from .types import CellRepresentation
+from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from .constants import FLAVOR, KEY_ADDED, N_ITERATIONS
 from .task import Task, TaskInput, TaskOutput
+from .types import CellRepresentation
 from .utils import cluster_embedding
-from .constants import N_ITERATIONS, FLAVOR, KEY_ADDED
-from ..constants import RANDOM_SEED
-
 
 logger = logging.getLogger(__name__)
 

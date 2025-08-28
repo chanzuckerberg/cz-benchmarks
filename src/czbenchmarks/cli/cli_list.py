@@ -1,15 +1,19 @@
+import json
+
 import click
 from rich.console import Console
 from rich.table import Table
-import json
+
 from czbenchmarks.tasks.task import TASK_REGISTRY
+
 from ..datasets import utils as dataset_utils
 
 
 @click.command(name="list")
 @click.argument("list_type", type=click.Choice(["datasets", "tasks"]))
 @click.option(
-    "-f", "--format",
+    "-f",
+    "--format",
     "output_format",
     type=click.Choice(["json", "table"], case_sensitive=False),
     default="table",

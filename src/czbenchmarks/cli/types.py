@@ -1,5 +1,7 @@
 from typing import Any, Optional, Type
+
 from pydantic import BaseModel
+
 from ..tasks.task import Task
 
 

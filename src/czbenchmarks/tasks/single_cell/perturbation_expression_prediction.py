@@ -1,16 +1,18 @@
-from typing import List, Dict, Literal
-import pandas as pd
-import numpy as np
+import json
 import logging
-from ..task import Task, TaskInput, TaskOutput
-from ...tasks.types import CellRepresentation
+from pathlib import Path
+from typing import Dict, List, Literal
+
+import numpy as np
+import pandas as pd
+from scipy import sparse as sp_sparse
+
+from ...constants import RANDOM_SEED
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
+from ...tasks.types import CellRepresentation
+from ..task import Task, TaskInput, TaskOutput
 from ..utils import binarize_values
-from ...constants import RANDOM_SEED
-from scipy import sparse as sp_sparse
-import json
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
-from pydantic import BaseModel
-from typing import Any, Optional, Mapping, Sequence
+
+from typing import Any, Mapping, Optional, Sequence
+
 from anndata import AnnData
+from pydantic import BaseModel
 
 ANNDATA_REF_PREFIX = "@"
 

@@ -1,17 +1,18 @@
-from typing import Dict, Optional, List, Tuple
 import io
-from pathlib import Path
 import json
-import numpy as np
-import scipy.sparse as sparse
-import pandas as pd
-import anndata as ad
 import logging
-from czbenchmarks.datasets.single_cell import SingleCellDataset
-from czbenchmarks.datasets.types import Organism
-from czbenchmarks.constants import RANDOM_SEED
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import anndata as ad
+import numpy as np
+import pandas as pd
+import scipy.sparse as sparse
 from tqdm import tqdm
 
+from czbenchmarks.constants import RANDOM_SEED
+from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.types import Organism
 
 logger = logging.getLogger(__name__)
 

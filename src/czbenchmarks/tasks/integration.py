@@ -2,10 +2,10 @@ import logging
 from typing import List
 
 from ..constants import RANDOM_SEED
-from ..tasks.types import CellRepresentation
-from ..types import ListLike
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
+from ..tasks.types import CellRepresentation
+from ..types import ListLike
 from .task import Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)

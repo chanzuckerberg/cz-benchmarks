@@ -1,33 +1,21 @@
-from .clustering import (
-    ClusteringTaskInput,
-    ClusteringOutput,
-    ClusteringTask,
-)
-from .embedding import (
-    EmbeddingTaskInput,
-    EmbeddingOutput,
-    EmbeddingTask,
-)
-from .label_prediction import (
-    MetadataLabelPredictionTaskInput,
-    MetadataLabelPredictionOutput,
-    MetadataLabelPredictionTask,
-)
+from .clustering import ClusteringOutput, ClusteringTask, ClusteringTaskInput
+from .embedding import EmbeddingOutput, EmbeddingTask, EmbeddingTaskInput
 from .integration import (
-    BatchIntegrationTaskInput,
     BatchIntegrationOutput,
     BatchIntegrationTask,
+    BatchIntegrationTaskInput,
+)
+from .label_prediction import (
+    MetadataLabelPredictionOutput,
+    MetadataLabelPredictionTask,
+    MetadataLabelPredictionTaskInput,
 )
 from .single_cell import (
-    CrossSpeciesIntegrationTaskInput,
     CrossSpeciesIntegrationOutput,
     CrossSpeciesIntegrationTask,
-    PerturbationTaskInput,
-    PerturbationOutput,
-    PerturbationTask,
+    CrossSpeciesIntegrationTaskInput,
 )
-
-from .task import Task, TaskInput, TaskOutput, MetricResult, TASK_REGISTRY
+from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
 
 __all__ = [
     "Task",
@@ -52,5 +40,5 @@ __all__ = [
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
-    "TASK_REGISTRY"
+    "TASK_REGISTRY",
 ]

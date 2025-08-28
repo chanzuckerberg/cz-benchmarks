@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
+
 from ..constants import RANDOM_SEED
 from ..tasks.types import CellRepresentation
 from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
-
 
 logger = logging.getLogger(__name__)
 
