@@ -3,17 +3,17 @@ from .cross_species import (
     CrossSpeciesIntegrationOutput,
     CrossSpeciesIntegrationTask,
 )
-from .perturbation import (
-    PerturbationTaskInput,
-    PerturbationOutput,
-    PerturbationTask,
+from .perturbation_expression_prediction import (
+    PerturbationExpressionPredictionTaskInput,
+    PerturbationExpressionPredictionOutput,
+    PerturbationExpressionPredictionTask,
 )
 
 __all__ = [
     "CrossSpeciesIntegrationTaskInput",
     "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
-    "PerturbationTaskInput",
-    "PerturbationOutput",
-    "PerturbationTask",
+    "PerturbationExpressionPredictionTask",
+    "PerturbationExpressionPredictionTaskInput",
+    "PerturbationExpressionPredictionOutput",
 ]
