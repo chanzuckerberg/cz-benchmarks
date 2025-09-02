@@ -1,4 +1,3 @@
-from ast import Or
 import sys
 from czbenchmarks.datasets import utils
 import types
