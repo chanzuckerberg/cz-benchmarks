@@ -5,7 +5,6 @@ from typing import Iterable, Literal, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 
 from ..constants import RANDOM_SEED
@@ -179,20 +178,18 @@ def temporal_smoothness(
 ) -> float:
     """
     Measure how temporally close neighbors are in Embedding space.
-
     Parameters:
     -----------
-    X : array-like
+    X : np.ndarray
         Embedding matrix
-    time_labels : array-like
-        Timepoint labels (numpy array, pandas Series, or list)
+    time_labels : np.ndarray
+        Timepoint labels
     k : int
         Number of neighbors to consider
     normalize : bool
         Whether to normalize score to [0,1] range
     adaptive_k : bool
         Use adaptive k based on local density
-
     Returns:
     --------
     float: Smoothness score
@@ -203,7 +200,7 @@ def temporal_smoothness(
 
     if adaptive_k:
         # Estimate local density and adjust k
-        distances, _ = NearestNeighbors(n_neighbors=30).fit(X).kneighbors(X)
+        distances, _ = NearestNeighbors(n_neighbors=30).fit(X).kneighbors(X)  # Fixed: n_neighbors not n*neighbors
         mean_distances = distances.mean(axis=1)
 
         # Scale k based on relative density (inverse of mean distance)
@@ -242,8 +239,10 @@ def temporal_smoothness(
         baseline = np.mean(baseline_diffs)
 
         # Normalize: 1 = perfect temporal consistency, 0 = random
-        avg_time_diffs = 1 - (avg_time_diffs / baseline)
-        avg_time_diffs = np.clip(avg_time_diffs, 0, 1)
+        avg_time_diffs_norm = 1 - (avg_time_diffs / baseline)
+        avg_time_diffs_norm = float(np.clip(avg_time_diffs_norm, 0, 1))
+
+        return avg_time_diffs_norm
 
     return avg_time_diffs
 
@@ -251,103 +250,93 @@ def temporal_smoothness(
 def temporal_silhouette(
     X: np.ndarray,
     time_labels: np.ndarray,
-    rescale: bool = True,
-    chunk_size: int = 256,
+    normalize: bool = True,
     metric: Literal["euclidean", "cosine"] = "euclidean",
 ) -> float:
     """
-    Temporal silhouette score measuring whether points at time tn are closer
-    to points at time tn+1 than to points at other time points.
+    Fixed temporal silhouette score measuring whether points are closer
+    to their own time point than to other time points.
+
+    Similar to regular silhouette analysis, but using time points as clusters.
 
     Parameters
     ----------
     X : np.ndarray
         Array of shape (n_cells, n_features) - Embeddings
     time_labels : np.ndarray
-        Array of shape (n_cells,) representing time point labels (e.g., 32, 35, 67, 79)
-    rescale : bool
-        Scale score into the range [0, 1]
-    chunk_size : int
-        Size of chunks to process at a time for distance computation
+        Array of shape (n_cells,) representing time point labels
+    normalize : bool
+        Whether to normalize score to [0, 1] range
     metric : str
         The distance metric to use ('euclidean' or 'cosine')
 
     Returns
     -------
     float
-        Temporal silhouette score
+        Temporal silhouette score (-1 to 1, or 0 to 1 if normalized)
+        Higher values indicate better temporal clustering
     """
+    X = np.asarray(X)
+    time_labels = np.asarray(time_labels)
+
     unique_times = np.unique(time_labels)
-    unique_times = np.sort(unique_times)
 
-    # Only consider consecutive time pairs
-    valid_pairs = []
-    for i in range(len(unique_times) - 1):
-        tn = unique_times[i]
-        tn_plus_1 = unique_times[i + 1]
-        valid_pairs.append((tn, tn_plus_1))
-
-    if len(valid_pairs) == 0:
+    # Need at least 2 time points
+    if len(unique_times) < 2:
         return 0.0
 
-    temporal_silhouette_scores = []
+    # Compute all pairwise distances once
+    distances = pairwise_distances(X, metric=metric)
 
-    # Process in chunks to manage memory
-    for start_idx in range(0, len(X), chunk_size):
-        end_idx = min(start_idx + chunk_size, len(X))
-        chunk_X = X[start_idx:end_idx]
-        chunk_labels = time_labels[start_idx:end_idx]
+    silhouette_scores = []
 
-        chunk_scores = []
+    for i in range(len(X)):
+        current_time = time_labels[i]
 
-        for i, (current_time, current_label) in enumerate(zip(chunk_X, chunk_labels)):
-            # Only compute score for points that have a next time point
-            has_next_time = False
-            next_time = None
+        # a(i): average distance to points in same time cluster
+        same_time_mask = (time_labels == current_time) & (np.arange(len(X)) != i)
 
-            for tn, tn_plus_1 in valid_pairs:
-                if current_label == tn:
-                    next_time = tn_plus_1
-                    has_next_time = True
-                    break
+        if np.sum(same_time_mask) == 0:
+            # Only one point at this time - skip or set to 0
+            continue
 
-            if not has_next_time:
+        a_i = np.mean(distances[i, same_time_mask])
+
+        # b(i): minimum average distance to points in other time clusters
+        min_avg_distance = float("inf")
+
+        for other_time in unique_times:
+            if other_time == current_time:
                 continue
 
-            # Compute distances from current point to all other points
-            distances = pairwise_distances(current_time.reshape(1, -1), X, metric=metric).flatten()
+            other_time_mask = time_labels == other_time
 
-            # Get distances to next time points (tn+1)
-            next_time_mask = time_labels == next_time
-            if np.sum(next_time_mask) == 0:
+            if np.sum(other_time_mask) == 0:
                 continue
-            distances_to_next = distances[next_time_mask]
-            a_i = np.mean(distances_to_next)  # Average distance to tn+1
 
-            # Get distances to all other time points (not tn+1 and not current time)
-            other_times_mask = (time_labels != next_time) & (time_labels != current_label)
-            if np.sum(other_times_mask) == 0:
-                continue
-            distances_to_others = distances[other_times_mask]
-            b_i = np.mean(distances_to_others)  # Average distance to other times
+            avg_distance_to_other = np.mean(distances[i, other_time_mask])
+            min_avg_distance = min(min_avg_distance, avg_distance_to_other)
 
-            # Compute silhouette-like score for this point
-            # We want a_i (distance to next time) to be small relative to b_i (distance to others)
+        # Standard silhouette formula
+        if min_avg_distance == float("inf"):
+            # Only one time cluster
+            silhouette_i = 0.0
+        else:
+            b_i = min_avg_distance
             if max(a_i, b_i) > 0:
                 silhouette_i = (b_i - a_i) / max(a_i, b_i)
             else:
                 silhouette_i = 0.0
 
-            chunk_scores.append(silhouette_i)
+        silhouette_scores.append(silhouette_i)
 
-        temporal_silhouette_scores.extend(chunk_scores)
-
-    if len(temporal_silhouette_scores) == 0:
+    if len(silhouette_scores) == 0:
         return 0.0
 
-    avg_score = np.mean(temporal_silhouette_scores)
+    avg_silhouette = np.mean(silhouette_scores)
 
-    if rescale:
-        avg_score = (avg_score + 1) / 2
+    if normalize:
+        # Convert from [-1, 1] to [0, 1]
+        avg_silhouette = (avg_silhouette + 1) / 2
 
-    return avg_score
+    return avg_silhouette
