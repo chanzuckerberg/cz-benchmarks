@@ -186,37 +186,22 @@ datasets:
     organism: ${organism:HUMAN}
     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
 
-  allen_soundlife_cd4_t_cells:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
+  allen_soundlife_immune_variation:
+    _target_: czbenchmarks.datasets.SingleCellDataset
+    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_immune_variation.h5ad # TODO: replace with bucket links
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_cd4_t_cells.h5ad
 
-  allen_soundlife_cd8_t_cells:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
+  allen_soundlife_flu_response:
+    _target_: czbenchmarks.datasets.SingleCellDataset
+    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_flu_response.h5ad # TODO: replace with bucket links
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_cd8_t_cells.h5ad
 
-  allen_soundlife_monocytes:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
+  allen_soundlife_flu_response_subsampled: # TODO: remove after testing
+    _target_: czbenchmarks.datasets.SingleCellDataset
+    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_flu_response_subsampled.h5ad
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_monocytes.h5ad
 
-  allen_soundlife_b_and_plasma_cells:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
+  allen_soundlife_immune_variation_subsampled: # TODO: remove after testing
+    _target_: czbenchmarks.datasets.SingleCellDataset
+    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_immune_variation_subsampled.h5ad
     organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_b_and_plasma_cells.h5ad
-
-  allen_soundlife_nk_cells_and_ilcs:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
-    organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_nk_cells_and_ilcs.h5ad
-
-  allen_soundlife_dcs:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
-    organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_dcs.h5ad
-
-  allen_soundlife_other_cells:
-    _target_: czbenchmarks.datasets.single_cell.SingleCellDataset
-    organism: ${organism:HUMAN}
-    path: /data/datasets/single-cell/SoundLife/czi/processed/allen_soundlife_other_cells.h5ad
