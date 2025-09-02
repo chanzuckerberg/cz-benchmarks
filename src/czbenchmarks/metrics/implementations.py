@@ -91,8 +91,7 @@ metrics_registry.register(
     func=compute_entropy_per_cell,
     required_args={"X", "labels"},
     description=(
-        "Computes entropy of batch labels in local neighborhoods. "
-        "Higher values indicate better batch mixing."
+        "Computes entropy of batch labels in local neighborhoods. Higher values indicate better batch mixing."
     ),
     tags={"integration"},
 )
@@ -101,10 +100,7 @@ metrics_registry.register(
     MetricType.BATCH_SILHOUETTE,
     func=silhouette_batch,
     required_args={"X", "labels", "batch"},
-    description=(
-        "Batch-aware silhouette score that measures how well cells "
-        "cluster across batches."
-    ),
+    description=("Batch-aware silhouette score that measures how well cells cluster across batches."),
     tags={"integration"},
 )
 
