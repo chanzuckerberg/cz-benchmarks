@@ -80,7 +80,7 @@ def compute_entropy_per_cell(
     batch label distribution in that neighborhood.
 
     Args:
-        X: Cell Xedding matrix of shape (n_cells, n_features)
+        X: Cell Embedding matrix of shape (n_cells, n_features)
         labels: Series containing batch labels for each cell
         n_neighbors: Number of nearest neighbors to consider
         random_seed: Random seed for reproducibility
@@ -178,12 +178,12 @@ def temporal_smoothness(
     X: np.ndarray, time_labels: np.ndarray, k: int = 10, normalize: bool = True, adaptive_k: bool = False
 ) -> float:
     """
-    Measure how temporally close neighbors are in Xedding space.
+    Measure how temporally close neighbors are in Embedding space.
 
     Parameters:
     -----------
     X : array-like
-        Xedding matrix
+        Embedding matrix
     time_labels : array-like
         Timepoint labels (numpy array, pandas Series, or list)
     k : int
@@ -262,7 +262,7 @@ def temporal_silhouette(
     Parameters
     ----------
     X : np.ndarray
-        Array of shape (n_cells, n_features) - Xeddings
+        Array of shape (n_cells, n_features) - Embeddings
     time_labels : np.ndarray
         Array of shape (n_cells,) representing time point labels (e.g., 32, 35, 67, 79)
     rescale : bool
