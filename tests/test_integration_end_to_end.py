@@ -1,11 +1,18 @@
 import json
 import numpy as np
 import pytest
+import hydra
+import os
+from typing import Literal, Optional
+from omegaconf import OmegaConf
+from hydra.utils import instantiate
 
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.utils import initialize_hydra
+from czbenchmarks.file_utils import download_file_from_remote
 from czbenchmarks.tasks.clustering import ClusteringTaskInput
 from czbenchmarks.tasks.embedding import EmbeddingTaskInput
 from czbenchmarks.tasks.label_prediction import (
@@ -21,6 +28,93 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+
+
+def load_single_cell_perturbation_dataset_by_name(
+    name: str,
+    backed: Literal["r", "r+"] | bool | None = None,
+    de_results_csv: Optional[str] = None,
+) -> SingleCellPerturbationDataset:
+    """Fixture returning a customizable loader function that resolves datasets by name."""
+
+    initialize_hydra()
+    cfg = OmegaConf.create(
+        OmegaConf.to_container(
+            hydra.compose(config_name="datasets"),
+            resolve=True,
+        )
+    )
+
+    dataset_cfg = cfg.datasets[name]
+    target = str(dataset_cfg.get("_target_", ""))
+    if "SingleCellPerturbationDataset" not in target:
+        raise ValueError("This function is only for single cell perturbation datasets")
+
+    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
+    if de_results_csv is not None:
+        csv_path = os.path.abspath(os.path.expanduser(de_results_csv))
+        if not os.path.isfile(csv_path):
+            raise FileNotFoundError(f"de_results_csv not found at {csv_path}")
+        dataset_cfg["de_results_path"] = csv_path
+
+    # Ensure conditions aren't filtered from small dataset
+    dataset_cfg["min_de_genes_to_mask"] = 1
+    dataset = instantiate(dataset_cfg)
+    dataset.load_data(backed=backed)
+    return dataset
+
+
+@pytest.fixture
+def de_results_csv_path(tmp_path):
+    """Create a temp CSV with embedded DE results and return its path."""
+
+    csv_content = (
+        "gene_id,condition_name,score,logfoldchange,pval,pval_adj,condition\n"
+        "ENSG00000231607,SLC39A9,9.854462,1.0232638,6.556697337655033e-23,2.194362681479698e-19,ENSG00000029364\n"
+        "ENSG00000164070,SLC39A9,-7.5467696,-1.0965526,4.4618705071700814e-14,4.2665043199632765e-11,ENSG00000029364\n"
+        "ENSG00000100632,SLC39A9,-22.43061,-1.4799751,1.9790409798116693e-111,2.6493421596738812e-107,ENSG00000029364\n"
+    )
+    #     "ENSG00000130005,RPL3,-22.240568,-1.0988566,1.3918429119790556e-109,1.0489624106130151e-105,ENSG00000100316\n"
+    #     "ENSG00000134884,ARGLU1,-22.071707,-2.8711882,5.911787929101039e-108,7.503832418407949e-104,ENSG00000134884\n"
+    # )
+
+    csv_file = tmp_path / "de_results_small.csv"
+    csv_file.write_text(csv_content)
+    return str(csv_file)
+
+
+# @pytest.fixture
+# def load_single_cell_perturbation_dataset_by_name():
+#     """Fixture returning a customizable loader function that resolves datasets by name."""
+
+#     def _load(name, backed=None, de_results_csv=None):
+#         initialize_hydra()
+#         cfg = OmegaConf.create(
+#             OmegaConf.to_container(
+#                 hydra.compose(config_name="datasets"),
+#                 resolve=True,
+#             )
+#         )
+#         dataset_cfg = cfg.datasets[name]
+#         target = str(dataset_cfg.get("_target_", ""))
+#         if "SingleCellPerturbationDataset" not in target:
+#             raise ValueError(
+#                 "This function is only for single cell perturbation datasets"
+#             )
+
+#         dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
+#         if de_results_csv is not None:
+#             csv_path = os.path.abspath(os.path.expanduser(de_results_csv))
+#             if not os.path.isfile(csv_path):
+#                 raise FileNotFoundError(
+#                     f"de_results_csv not found at {csv_path}"
+#                 )
+#             dataset_cfg["de_results_path"] = csv_path
+#         ds = instantiate(dataset_cfg)
+#         ds.load_data(backed=backed)
+#         return ds
+
+#     return _load
 
 
 @pytest.mark.integration
@@ -186,17 +280,49 @@ def test_end_to_end_task_execution_predictive_tasks():
 
 
 @pytest.mark.integration
-def test_end_to_end_perturbation_expression_prediction():
+def test_end_to_end_perturbation_expression_prediction(de_results_csv_path):
     """Integration test for perturbation expression prediction task.
 
     Loads a perturbation dataset, builds task inputs following the example,
     runs the task on a random model output and a baseline, and verifies result
     structure and JSON serialization.
     """
-    # Load dataset (requires cloud access)
-    dataset: SingleCellPerturbationDataset = load_dataset(
-        "replogle_k562_essential_perturbpredict"
+    
+    # FIXME MICHELLE clean up this before merge
+    # dataset: SingleCellPerturbationDataset = load_dataset_by_name(
+    #     "replogle_k562_essential_perturbpredict", backed="r"
+    # )
+    # Load dataset (requires cloud access) as backed
+    name = "replogle_k562_essential_perturbpredict"
+    backed = False
+    de_results_csv = de_results_csv_path
+    dataset: SingleCellPerturbationDataset = load_single_cell_perturbation_dataset_by_name(
+        name=name, backed=backed, de_results_csv=de_results_csv
     )
+
+    initialize_hydra()
+    cfg = OmegaConf.create(
+        OmegaConf.to_container(
+            hydra.compose(config_name="datasets"),
+            resolve=True,
+        )
+    )
+
+    dataset_cfg = cfg.datasets[name]
+    target = str(dataset_cfg.get("_target_", ""))
+    if "SingleCellPerturbationDataset" not in target:
+        raise ValueError("This function is only for single cell perturbation datasets")
+
+    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
+    if de_results_csv is not None:
+        csv_path = os.path.abspath(os.path.expanduser(de_results_csv))
+        if not os.path.isfile(csv_path):
+            raise FileNotFoundError(f"de_results_csv not found at {csv_path}")
+        dataset_cfg["de_results_path"] = csv_path
+
+    dataset_cfg["min_de_genes_to_mask"] = 1
+    dataset = instantiate(dataset_cfg)
+    dataset.load_data(backed=backed)
 
     # Build task input directly from dataset
     task_input = PerturbationExpressionPredictionTaskInput(
@@ -219,7 +345,10 @@ def test_end_to_end_perturbation_expression_prediction():
     model_results = task.run(model_output, task_input)
 
     # Compute and run baseline
-    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
+    baseline_embedding = task.compute_baseline(
+        dataset.adata.X,
+        baseline_type="median",
+    )
     baseline_results = task.run(baseline_embedding, task_input)
 
     # Validate results structure
@@ -278,3 +407,8 @@ def test_end_to_end_perturbation_expression_prediction():
     assert "perturbation" in parsed
     assert "model" in parsed["perturbation"]
     assert "baseline" in parsed["perturbation"]
+
+
+# FIXME MICHELLE for testing, remove before merge
+if __name__ == "__main__":
+    pytest.main(["-k", "test_end_to_end_perturbation_expression_prediction"])
