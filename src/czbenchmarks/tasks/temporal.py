@@ -23,9 +23,9 @@ class TemporalTask(BaseTask):
         random_seed (int): Random seed for reproducibility
     """
 
-    def __init__(self, time_key: str, k: int = 15, *, random_seed: int = RANDOM_SEED):
+    def __init__(self, label_key: str, k: int = 15, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
-        self.time_key = time_key
+        self.label_key = label_key
         self.k = k
 
     @property
@@ -61,7 +61,7 @@ class TemporalTask(BaseTask):
         """
         # Store embedding and time labels for metric computation
         self.embedding = data.get_output(model_type, DataType.EMBEDDING)
-        self.time_labels = data.get_input(DataType.METADATA)[self.time_key]
+        self.time_labels = data.get_input(DataType.METADATA)[self.label_key]
 
     def _compute_metrics(self) -> List[MetricResult]:
         """Computes temporal consistency metrics.
@@ -70,6 +70,18 @@ class TemporalTask(BaseTask):
             List of MetricResult objects containing temporal metrics
         """
         results = []
+
+        # Embedding Silhouette Score with time labels
+        results.append(
+            MetricResult(
+                metric_type=MetricType.SILHOUETTE_SCORE,
+                value=metrics_registry.compute(
+                    MetricType.SILHOUETTE_SCORE,
+                    X=self.embedding,
+                    labels=self.time_labels,
+                ),
+            )
+        )
 
         # Temporal Silhouette Score
         results.append(
@@ -91,7 +103,7 @@ class TemporalTask(BaseTask):
                 value=metrics_registry.compute(
                     MetricType.TEMPORAL_SMOOTHNESS,
                     emb=self.embedding,
-                    time_var=self.time_labels,
+                    time_labels=self.time_labels,
                     k=self.k,
                 ),
                 params={"k": self.k},
