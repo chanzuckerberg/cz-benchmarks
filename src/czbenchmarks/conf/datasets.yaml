@@ -195,13 +195,3 @@ datasets:
     _target_: czbenchmarks.datasets.SingleCellDataset
     path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_flu_response.h5ad # TODO: replace with bucket links
     organism: ${organism:HUMAN}
-
-  allen_soundlife_flu_response_subsampled: # TODO: remove after testing
-    _target_: czbenchmarks.datasets.SingleCellDataset
-    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_flu_response_subsampled.h5ad
-    organism: ${organism:HUMAN}
-
-  allen_soundlife_immune_variation_subsampled: # TODO: remove after testing
-    _target_: czbenchmarks.datasets.SingleCellDataset
-    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_immune_variation_subsampled.h5ad
-    organism: ${organism:HUMAN}
