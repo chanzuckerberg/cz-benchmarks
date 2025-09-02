@@ -43,6 +43,7 @@ dependencies = [
     "tomli>=2.2.1",
     "boto3-stubs-lite[s3]>=1.38.0",
     "typer>=0.16.0",
+    "llvmlite>=0.44.0",
 ]
 
 [project.optional-dependencies]
