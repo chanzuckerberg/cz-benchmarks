@@ -40,11 +40,6 @@ class EmbeddingTask(Task):
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
 
-    @staticmethod
-    def get_metric_types() -> List[MetricType]:
-        """Return the metric types computed by this task."""
-        return [MetricType.SILHOUETTE_SCORE]
-
     def _run_task(
         self, cell_representation: CellRepresentation, _: EmbeddingTaskInput
     ) -> EmbeddingOutput:

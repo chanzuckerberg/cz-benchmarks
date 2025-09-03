@@ -65,17 +65,6 @@ class MetadataLabelPredictionTask(Task):
     ):
         super().__init__(random_seed=random_seed)
 
-    @staticmethod
-    def get_metric_types() -> List[MetricType]:
-        """Return the metric types computed by this task."""
-        return [
-            MetricType.MEAN_FOLD_ACCURACY,
-            MetricType.MEAN_FOLD_F1_SCORE,
-            MetricType.MEAN_FOLD_PRECISION,
-            MetricType.MEAN_FOLD_RECALL,
-            MetricType.MEAN_FOLD_AUROC,
-        ]
-
     def _run_task(
         self,
         cell_representation: CellRepresentation,

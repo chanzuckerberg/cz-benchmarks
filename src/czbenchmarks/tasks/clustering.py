@@ -7,7 +7,6 @@ import pandas as pd
 from czbenchmarks.types import ListLike
 
 from ..constants import RANDOM_SEED
-from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from .constants import FLAVOR, KEY_ADDED, N_ITERATIONS
 from .task import Task, TaskInput, TaskOutput
@@ -52,14 +51,6 @@ class ClusteringTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
-
-    @staticmethod
-    def get_metric_types() -> List[MetricType]:
-        """Return the metric types computed by this task."""
-        return [
-            MetricType.ADJUSTED_RAND_INDEX,
-            MetricType.NORMALIZED_MUTUAL_INFO,
-        ]
 
     def _run_task(
         self,
@@ -108,6 +99,9 @@ class ClusteringTask(Task):
         Returns:
             List of MetricResult objects containing ARI and NMI scores
         """
+
+        from ..metrics import metrics_registry
+
         predicted_labels = task_output.predicted_labels
         return [
             MetricResult(
