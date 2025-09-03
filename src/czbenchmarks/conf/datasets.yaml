@@ -188,10 +188,10 @@ datasets:
 
   allen_soundlife_immune_variation:
     _target_: czbenchmarks.datasets.SingleCellDataset
-    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_immune_variation.h5ad # TODO: replace with bucket links
     organism: ${organism:HUMAN}
+    path: s3://octo.ai.czi/allen_soundlife_immune_variation.h5ad # TODO: replace with public CZI bucket links
 
   allen_soundlife_flu_response:
     _target_: czbenchmarks.datasets.SingleCellDataset
-    path: /data/datasets/single-cell/SoundLife/cz-benchmarks/allen_soundlife_flu_response.h5ad # TODO: replace with bucket links
     organism: ${organism:HUMAN}
+    path: s3://octo.ai.czi/allen_soundlife_flu_response.h5ad # TODO: replace with publicCZI bucket links
