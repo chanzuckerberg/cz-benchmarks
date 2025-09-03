@@ -257,7 +257,9 @@ def filter_minimum_class(
     logger.info(f"Total classes before filtering: {len(class_counts)}")
 
     filtered_counts = class_counts[class_counts >= min_class_size]
-    logger.info(f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}")
+    logger.info(
+        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
+    )
 
     labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
     class_counts = labels.value_counts()

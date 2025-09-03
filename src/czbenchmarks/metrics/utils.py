@@ -100,8 +100,12 @@ def compute_entropy_per_cell(
     unique_batch_labels = np.unique(labels)
     indices_batch = labels[indices]
 
-    label_counts_per_cell = np.vstack([(indices_batch == label).sum(1) for label in unique_batch_labels]).T
-    label_counts_per_cell_normed = label_counts_per_cell / label_counts_per_cell.sum(1)[:, None]
+    label_counts_per_cell = np.vstack(
+        [(indices_batch == label).sum(1) for label in unique_batch_labels]
+    ).T
+    label_counts_per_cell_normed = (
+        label_counts_per_cell / label_counts_per_cell.sum(1)[:, None]
+    )
     return (
         (-label_counts_per_cell_normed * _safelog(label_counts_per_cell_normed)).sum(1)
         / _safelog(np.array([len(unique_batch_labels)]))
@@ -197,13 +201,19 @@ def _validate_labels(labels: np.ndarray) -> np.ndarray:
         try:
             labels = labels.astype(float)
         except (ValueError, TypeError):
-            raise ValueError(f"Cannot convert labels to numeric type. Got dtype: {labels.dtype}")
+            raise ValueError(
+                f"Cannot convert labels to numeric type. Got dtype: {labels.dtype}"
+            )
 
     return labels
 
 
 def sequential_alignment(
-    X: np.ndarray, labels: np.ndarray, k: int = 10, normalize: bool = True, adaptive_k: bool = False
+    X: np.ndarray,
+    labels: np.ndarray,
+    k: int = 10,
+    normalize: bool = True,
+    adaptive_k: bool = False,
 ) -> float:
     """
     Measure how sequentially close neighbors are in embedding space.
@@ -299,7 +309,9 @@ def _compute_adaptive_k(X: np.ndarray, base_k: int) -> np.ndarray:
     densities = 1 / (mean_distances + 1e-10)
 
     min_density, max_density = np.percentile(densities, [10, 90])
-    normalized_densities = np.clip((densities - min_density) / (max_density - min_density + 1e-10), 0, 1)
+    normalized_densities = np.clip(
+        (densities - min_density) / (max_density - min_density + 1e-10), 0, 1
+    )
 
     k_scale = 0.5 + 1.5 * (1 - normalized_densities)
     k_values = np.round(base_k * k_scale).astype(int)

@@ -48,7 +48,9 @@ def load_dataset(
     initialize_hydra()
 
     # Load default config first and make it unstructured
-    cfg = OmegaConf.create(OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True))
+    cfg = OmegaConf.create(
+        OmegaConf.to_container(hydra.compose(config_name="datasets"), resolve=True)
+    )
 
     # If custom config provided, load and merge it
     if config_path is not None:

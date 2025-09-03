@@ -131,7 +131,9 @@ class MetricRegistry:
         """
 
         if not isinstance(metric_type, MetricType):
-            raise TypeError(f"Invalid metric type: {metric_type}. Must be a MetricType enum.")
+            raise TypeError(
+                f"Invalid metric type: {metric_type}. Must be a MetricType enum."
+            )
 
         self._metrics[metric_type] = MetricInfo(
             func=func,
@@ -165,7 +167,9 @@ class MetricRegistry:
         # Validate required arguments
         missing_args = metric_info.required_args - set(kwargs.keys())
         if missing_args:
-            raise ValueError(f"Missing required arguments for {metric_type}: {missing_args}")
+            raise ValueError(
+                f"Missing required arguments for {metric_type}: {missing_args}"
+            )
 
         # Merge with defaults and compute
         params = {**metric_info.default_params, **kwargs}
@@ -202,7 +206,11 @@ class MetricRegistry:
         if tags is None:
             return set(self._metrics.keys())
 
-        return {metric_type for metric_type, info in self._metrics.items() if tags.issubset(info.tags)}
+        return {
+            metric_type
+            for metric_type, info in self._metrics.items()
+            if tags.issubset(info.tags)
+        }
 
 
 class MetricResult(BaseModel):
@@ -232,7 +240,9 @@ class MetricResult(BaseModel):
         if self.params is None:
             params = ""
         else:
-            params = "_".join((f"{key}-{value}" for key, value in sorted(self.params.items())))
+            params = "_".join(
+                (f"{key}-{value}" for key, value in sorted(self.params.items()))
+            )
         return f"{self.metric_type}({params})"
 
 
