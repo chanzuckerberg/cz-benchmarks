@@ -90,7 +90,7 @@ class SequentialTask(BaseTask):
                 value=metrics_registry.compute(
                     MetricType.SEQUENTIAL_ALIGNMENT,
                     X=self.embedding,
-                    time_labels=self.labels,
+                    labels=self.labels,
                     k=self.k,
                     normalize=True,
                     adaptive_k=False,

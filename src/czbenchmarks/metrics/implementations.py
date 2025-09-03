@@ -197,7 +197,7 @@ metrics_registry.register(
 metrics_registry.register(
     MetricType.SEQUENTIAL_ALIGNMENT,
     func=sequential_alignment,
-    required_args={"X", "time_labels"},
+    required_args={"X", "labels"},
     description="Sequential alignment score measuring consistency in embeddings",
     tags={"sequential"},
 )
