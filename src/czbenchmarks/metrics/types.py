@@ -46,7 +46,6 @@ class MetricType(Enum):
     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
     # Sequential metrics
-    SEQUENTIAL_SILHOUETTE = "sequential_silhouette"
     SEQUENTIAL_ALIGNMENT = "sequential_alignment"
 
 

@@ -55,6 +55,12 @@ def f1_score_zero_division(y_true, y_pred, **kwargs):
     """Wrapper for f1_score with zero_division=0 to suppress warnings."""
     return f1_score(y_true, y_pred, zero_division=0, **kwargs)
 
+from .utils import (
+    compute_entropy_per_cell,
+    jaccard_score,
+    mean_fold_metric,
+    sequential_alignment,
+)
 
 # Create the global metric registry
 metrics_registry = MetricRegistry()

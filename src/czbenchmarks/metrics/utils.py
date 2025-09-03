@@ -1,11 +1,10 @@
 import collections
 import logging
 import statistics
-from typing import Iterable, Literal, Union
+from typing import Iterable, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 
 from ..constants import RANDOM_SEED
@@ -203,220 +202,6 @@ def _validate_labels(labels: np.ndarray) -> np.ndarray:
     return labels
 
 
-def sequential_silhouette(
-    X: np.ndarray,
-    labels: np.ndarray,
-    normalize: bool = True,
-    distance_metric: Literal["euclidean", "cosine"] = "euclidean",
-    use_centroids: bool = False,
-) -> float:
-    """
-    Sequential silhouette score measuring whether consecutive timepoints
-    are closer to each other than to non-consecutive timepoints.
-
-    Works with UNSORTED data - does not assume X and labels are pre-sorted.
-
-    Parameters
-    ----------
-    X : np.ndarray
-        Array of shape (n_cells, n_features) - Embeddings (can be unsorted)
-    labels : np.ndarray
-        Array of shape (n_cells,) representing sequential time labels (can be unsorted)
-        Must be numeric or convertible to numeric. String labels will raise error.
-    normalize : bool
-        Whether to normalize score to [0, 1] range
-    distance_metric : str
-        The distance metric to use ('euclidean' or 'cosine')
-    use_centroids : bool
-        If True, compare distances between centroids.
-        If False, use point-to-point distances.
-
-    Returns
-    -------
-    float
-        Sequential silhouette score (-1 to 1, or 0 to 1 if normalized)
-        Higher values indicate consecutive timepoints are closer than non-consecutive ones
-    """
-    X = np.asarray(X)
-    labels = _validate_labels(labels)
-
-    if len(X) != len(labels):
-        raise ValueError("X and labels must have same length")
-
-    # Get unique labels in sorted order (this creates the time ordering)
-    unique_labels = np.unique(labels)
-
-    if len(unique_labels) < 3:
-        return 0.0  # Need at least 3 timepoints to compare consecutive vs non-consecutive
-
-    if use_centroids:
-        return _sequential_silhouette_centroids(X, labels, unique_labels, normalize, distance_metric)
-    else:
-        return _sequential_silhouette_points(X, labels, unique_labels, normalize, distance_metric)
-
-
-def _sequential_silhouette_centroids(X, labels, unique_labels, normalize, distance_metric):
-    """Compare centroid distances: consecutive vs non-consecutive timepoints."""
-    # Calculate centroids for each label
-    centroids = {}
-    for label in unique_labels:
-        mask = labels == label
-        if np.sum(mask) > 0:
-            centroids[label] = np.mean(X[mask], axis=0)
-
-    silhouette_scores = []
-
-    for i, point in enumerate(X):
-        current_label = labels[i]
-        current_label_idx = np.where(unique_labels == current_label)[0][0]
-
-        # a(i): distance to consecutive timepoint centroid(s)
-        consecutive_distances = []
-
-        # Previous consecutive label
-        if current_label_idx > 0:
-            prev_label = unique_labels[current_label_idx - 1]
-            if prev_label in centroids:
-                if distance_metric == "euclidean":
-                    dist = np.linalg.norm(point - centroids[prev_label])
-                elif distance_metric == "cosine":
-                    from sklearn.metrics.pairwise import cosine_distances
-
-                    dist = cosine_distances([point], [centroids[prev_label]])[0, 0]
-                consecutive_distances.append(dist)
-
-        # Next consecutive label
-        if current_label_idx < len(unique_labels) - 1:
-            next_label = unique_labels[current_label_idx + 1]
-            if next_label in centroids:
-                if distance_metric == "euclidean":
-                    dist = np.linalg.norm(point - centroids[next_label])
-                elif distance_metric == "cosine":
-                    from sklearn.metrics.pairwise import cosine_distances
-
-                    dist = cosine_distances([point], [centroids[next_label]])[0, 0]
-                consecutive_distances.append(dist)
-
-        if len(consecutive_distances) == 0:
-            continue
-
-        a_i = min(consecutive_distances)  # Closest consecutive timepoint
-
-        # b(i): minimum distance to non-consecutive timepoint centroids
-        non_consecutive_distances = []
-
-        for other_label_idx, other_label in enumerate(unique_labels):
-            if other_label == current_label:
-                continue
-
-            # Skip if this is a consecutive timepoint
-            if abs(other_label_idx - current_label_idx) == 1:
-                continue
-
-            if other_label in centroids:
-                if distance_metric == "euclidean":
-                    dist = np.linalg.norm(point - centroids[other_label])
-                elif distance_metric == "cosine":
-                    dist = cosine_distances([point], [centroids[other_label]])[0, 0]
-                non_consecutive_distances.append(dist)
-
-        if len(non_consecutive_distances) == 0:
-            continue
-
-        b_i = np.mean(non_consecutive_distances)  # Average distance to non-consecutive timepoints
-
-        # Silhouette formula: we want consecutive to be closer, so higher is better
-        if max(a_i, b_i) > 0:
-            silhouette_i = (b_i - a_i) / max(a_i, b_i)
-        else:
-            silhouette_i = 0.0
-
-        silhouette_scores.append(silhouette_i)
-
-    if len(silhouette_scores) == 0:
-        return 0.0
-
-    avg_silhouette = np.mean(silhouette_scores)
-
-    if normalize:
-        avg_silhouette = (avg_silhouette + 1) / 2
-
-    return avg_silhouette
-
-
-def _sequential_silhouette_points(X, labels, unique_labels, normalize, distance_metric):
-    """Compare point distances: consecutive vs non-consecutive timepoints."""
-    distances = pairwise_distances(X, metric=distance_metric)
-    silhouette_scores = []
-
-    for i in range(len(X)):
-        current_label = labels[i]
-        current_label_idx = np.where(unique_labels == current_label)[0][0]
-
-        # a(i): minimum average distance to points in consecutive timepoint labels
-        consecutive_distances = []
-
-        # Previous consecutive label
-        if current_label_idx > 0:
-            prev_label = unique_labels[current_label_idx - 1]
-            prev_label_mask = labels == prev_label
-            if np.sum(prev_label_mask) > 0:
-                avg_dist = np.mean(distances[i, prev_label_mask])
-                consecutive_distances.append(avg_dist)
-
-        # Next consecutive label
-        if current_label_idx < len(unique_labels) - 1:
-            next_label = unique_labels[current_label_idx + 1]
-            next_label_mask = labels == next_label
-            if np.sum(next_label_mask) > 0:
-                avg_dist = np.mean(distances[i, next_label_mask])
-                consecutive_distances.append(avg_dist)
-
-        if len(consecutive_distances) == 0:
-            continue
-
-        a_i = min(consecutive_distances)  # Closest consecutive timepoint
-
-        # b(i): minimum average distance to points in non-consecutive timepoint labels
-        non_consecutive_distances = []
-
-        for other_label_idx, other_label in enumerate(unique_labels):
-            if other_label == current_label:
-                continue
-
-            # Skip if this is a consecutive timepoint
-            if abs(other_label_idx - current_label_idx) == 1:
-                continue
-
-            other_label_mask = labels == other_label
-            if np.sum(other_label_mask) > 0:
-                avg_dist = np.mean(distances[i, other_label_mask])
-                non_consecutive_distances.append(avg_dist)
-
-        if len(non_consecutive_distances) == 0:
-            continue
-
-        b_i = min(non_consecutive_distances)  # Closest non-consecutive timepoint
-
-        # Silhouette formula: we want consecutive to be closer (smaller a_i), so higher is better
-        if max(a_i, b_i) > 0:
-            silhouette_i = (b_i - a_i) / max(a_i, b_i)
-        else:
-            silhouette_i = 0.0
-
-        silhouette_scores.append(silhouette_i)
-
-    if len(silhouette_scores) == 0:
-        return 0.0
-
-    avg_silhouette = np.mean(silhouette_scores)
-
-    if normalize:
-        avg_silhouette = (avg_silhouette + 1) / 2
-
-    return avg_silhouette
-
-
 def sequential_alignment(
     X: np.ndarray, labels: np.ndarray, k: int = 10, normalize: bool = True, adaptive_k: bool = False
 ) -> float:
@@ -498,7 +283,15 @@ def sequential_alignment(
 
 def _compute_adaptive_k(X: np.ndarray, base_k: int) -> np.ndarray:
     """Compute adaptive k values based on local density."""
-    density_k = min(30, len(X) // 4)
+    # Choose a neighborhood size for density estimation
+    # We want a neighborhood larger than base_k (so density reflects a wider local area),
+    # avoid n_neighbors==1 (which returns self-distance==0) and ensure we don't exceed
+    # the available samples.
+    suggested = max(2, base_k * 3, len(X) // 4)
+    max_allowed = max(1, len(X) - 1)
+    density_k = int(min(30, suggested, max_allowed))
+    # Fall back to at least 2 neighbors if dataset is very small
+    density_k = max(2, density_k)
     nn_density = NearestNeighbors(n_neighbors=density_k).fit(X)
     distances, _ = nn_density.kneighbors(X)
 
@@ -510,7 +303,12 @@ def _compute_adaptive_k(X: np.ndarray, base_k: int) -> np.ndarray:
 
     k_scale = 0.5 + 1.5 * (1 - normalized_densities)
     k_values = np.round(base_k * k_scale).astype(int)
-    k_values = np.clip(k_values, 3, min(50, len(X) // 2))
+    upper_bound = min(50, len(X) // 2)
+    lower_bound = 3
+    if upper_bound < lower_bound:
+        k_values = np.full_like(k_values, lower_bound)
+    else:
+        k_values = np.clip(k_values, lower_bound, upper_bound)
 
     return k_values
 
@@ -522,11 +320,24 @@ def _compute_random_baseline(labels: np.ndarray, k: int) -> float:
     if len(unique_labels) == 1:
         return 0.0
 
-    n_samples = min(10000, len(labels) * 10)
+    n = len(labels)
+    # ensure k does not exceed available neighbors and is at least 1
+    k = max(1, min(k, n - 1))
+    n_samples = min(10000, n * 10)
 
     random_diffs = []
     for _ in range(n_samples):
-        idx1, idx2 = np.random.choice(len(labels), 2, replace=False)
-        random_diffs.append(abs(labels[idx1] - labels[idx2]))
+        # pick a random reference index
+        i = np.random.randint(0, n)
+        # sample k distinct neighbor indices excluding i
+        if k == n - 1:
+            neighbors = np.delete(np.arange(n), i)
+        else:
+            # sample from range [0, n-2] then map to [0, n-1] skipping i
+            choices = np.random.choice(n - 1, size=k, replace=False)
+            neighbors = choices + (choices >= i).astype(int)
 
-    return np.mean(random_diffs)
+        # mean absolute difference between label[i] and its k random neighbors
+        random_diffs.append(np.mean(np.abs(labels[i] - labels[neighbors])))
+
+    return float(np.mean(random_diffs))

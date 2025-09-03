@@ -61,7 +61,7 @@ class SequentialTask(BaseTask):
         """
         # Store embedding and time labels for metric computation
         self.embedding = data.get_output(model_type, DataType.EMBEDDING)
-        self.time_labels = data.get_input(DataType.METADATA)[self.label_key]
+        self.labels = data.get_input(DataType.METADATA)[self.label_key]
 
     def _compute_metrics(self) -> List[MetricResult]:
         """Computes sequential consistency metrics.
@@ -71,40 +71,26 @@ class SequentialTask(BaseTask):
         """
         results = []
 
-        # Embedding Silhouette Score with time labels
+        # Embedding Silhouette Score with sequential labels
         results.append(
             MetricResult(
                 metric_type=MetricType.SILHOUETTE_SCORE,
                 value=metrics_registry.compute(
                     MetricType.SILHOUETTE_SCORE,
                     X=self.embedding,
-                    labels=self.time_labels,
+                    labels=self.labels,
                 ),
             )
         )
 
-        # sequential Silhouette Score
-        results.append(
-            MetricResult(
-                metric_type=MetricType.SEQUENTIAL_SILHOUETTE,
-                value=metrics_registry.compute(
-                    MetricType.SEQUENTIAL_SILHOUETTE,
-                    X=self.embedding,
-                    time_labels=self.time_labels,
-                    normalize=True,
-                    distance_metric="euclidean",
-                ),
-            )
-        )
-
-        # Temporal Smoothness Score
+        # Sequential alignment
         results.append(
             MetricResult(
                 metric_type=MetricType.SEQUENTIAL_ALIGNMENT,
                 value=metrics_registry.compute(
                     MetricType.SEQUENTIAL_ALIGNMENT,
                     X=self.embedding,
-                    time_labels=self.time_labels,
+                    time_labels=self.labels,
                     k=self.k,
                     normalize=True,
                     adaptive_k=False,
