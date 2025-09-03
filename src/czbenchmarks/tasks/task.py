@@ -44,7 +44,6 @@ class TaskInfo(BaseModel):
     description: str
     task_params: Dict[str, TaskParameter]
     baseline_params: Dict[str, TaskParameter]
-    metrics: List[str]
 
 
 class TaskRegistry:
@@ -132,16 +131,7 @@ class TaskRegistry:
                     f"Warning: Could not introspect baseline parameters for {task_class.__name__}: {e}"
                 )
 
-            # 3. Get declared metric information from the static method
-            metrics = []
-            try:
-                metrics = [m.value for m in task_class.get_metric_types()]
-            except Exception as e:
-                print(
-                    f"Warning: Could not get metric types for {task_class.__name__}: {e}"
-                )
-
-            # 4. Get additional task metadata
+            # 3. Get additional task metadata
             description = self._extract_description(task_class)
             display_name = getattr(task_class, "display_name", task_class.__name__)
 
@@ -151,7 +141,6 @@ class TaskRegistry:
                 description=description,
                 task_params=task_params,
                 baseline_params=baseline_params,
-                metrics=metrics,
             )
         except Exception as e:
             # Fallback task info if introspection fails
@@ -240,12 +229,6 @@ class TaskRegistry:
                     help_text.append(
                         f"  --baseline-{param_name.replace('_', '-')}: {param_info.type} {required_str}"
                     )
-                help_text.append("")
-
-            if task_info.metrics:
-                help_text.append("Computed Metrics:")
-                for metric in task_info.metrics:
-                    help_text.append(f"  - {metric}")
                 help_text.append("")
 
             return "\n".join(help_text)

@@ -1,4 +1,3 @@
-from ast import Or
 import sys
 from czbenchmarks.datasets import utils
 import types
@@ -10,6 +9,7 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 from czbenchmarks.datasets.utils import load_local_dataset
+
 
 def test_load_local_dataset(tmp_path, monkeypatch):
     """Test load_local_dataset instantiates and loads a dataset from a local file."""
@@ -39,7 +39,7 @@ def test_load_local_dataset(tmp_path, monkeypatch):
         dataset_class="czbenchmarks.datasets.dummy.DummyDataset",
         organism=Organism.HUMAN,
         path=str(dummy_file),
-        foo="bar"
+        foo="bar",
     )
 
     assert isinstance(dataset, DummyDataset)

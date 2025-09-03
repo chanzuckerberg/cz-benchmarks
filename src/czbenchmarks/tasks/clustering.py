@@ -52,14 +52,6 @@ class ClusteringTask(Task):
     ):
         super().__init__(random_seed=random_seed)
 
-    @staticmethod
-    def get_metric_types() -> List[MetricType]:
-        """Return the metric types computed by this task."""
-        return [
-            MetricType.ADJUSTED_RAND_INDEX,
-            MetricType.NORMALIZED_MUTUAL_INFO,
-        ]
-
     def _run_task(
         self,
         cell_representation: CellRepresentation,
@@ -107,7 +99,7 @@ class ClusteringTask(Task):
         Returns:
             List of MetricResult objects containing ARI and NMI scores
         """
-        
+
         from ..metrics import metrics_registry
 
         predicted_labels = task_output.predicted_labels
