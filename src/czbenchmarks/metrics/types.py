@@ -45,9 +45,9 @@ class MetricType(Enum):
     F1_CALCULATION = "f1_calculation"
     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
-    # Temporal metrics
-    TEMPORAL_SMOOTHNESS = "temporal_smoothness"
-    TEMPORAL_SILHOUETTE = "temporal_silhouette"
+    # Sequential metrics
+    SEQUENTIAL_SILHOUETTE = "sequential_silhouette"
+    SEQUENTIAL_ALIGNMENT = "sequential_alignment"
 
 
 class MetricInfo(BaseModel):

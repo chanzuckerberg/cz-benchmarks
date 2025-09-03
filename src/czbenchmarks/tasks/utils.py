@@ -18,7 +18,7 @@ TASK_NAMES = frozenset(
     {
         "clustering",
         "embedding",
-        "temporal",
+        "sequential",
         "label_prediction",
         "integration",
         "perturbation",

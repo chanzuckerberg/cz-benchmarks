@@ -16,6 +16,12 @@ from .single_cell import (
     CrossSpeciesIntegrationTaskInput,
 )
 from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
+from .clustering import ClusteringTask
+from .embedding import EmbeddingTask
+from .integration import BatchIntegrationTask
+from .label_prediction import MetadataLabelPredictionTask
+from .sequential import SequentialTask
+from .single_cell import CrossSpeciesIntegrationTask, PerturbationTask
 
 __all__ = [
     "Task",
@@ -41,4 +47,5 @@ __all__ = [
     "PerturbationOutput",
     "PerturbationTask",
     "TASK_REGISTRY",
+    "SequentialTask",
 ]

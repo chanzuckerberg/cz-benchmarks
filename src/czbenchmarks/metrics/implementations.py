@@ -189,6 +189,14 @@ metrics_registry.register(
 )
 
 metrics_registry.register(
+    MetricType.SEQUENTIAL_ALIGNMENT,
+    func=sequential_alignment,
+    required_args={"X", "time_labels"},
+    description="Sequential alignment score measuring consistency in embeddings",
+    tags={"sequential"},
+)
+
+metrics_registry.register(
     MetricType.SPEARMAN_CORRELATION_CALCULATION,
     func=spearman_correlation,
     required_args={"a", "b"},

@@ -11,11 +11,11 @@ from .constants import RANDOM_SEED
 logger = logging.getLogger(__name__)
 
 
-class TemporalTask(BaseTask):
-    """Task for evaluating temporal consistency in embeddings.
+class SequentialTask(BaseTask):
+    """Task for evaluating sequential consistency in embeddings.
 
-    This task computes temporal quality metrics for embeddings using time point labels.
-    Evaluates how well embeddings preserve temporal organization between cells.
+    This task computes sequential quality metrics for embeddings using time point labels.
+    Evaluates how well embeddings preserve sequential organization between cells.
 
     Args:
         time_key (str): Key to access time point labels in metadata
@@ -31,7 +31,7 @@ class TemporalTask(BaseTask):
     @property
     def display_name(self) -> str:
         """A pretty name to use when displaying task results"""
-        return "temporal"
+        return "sequential"
 
     @property
     def required_inputs(self) -> Set[DataType]:
@@ -52,7 +52,7 @@ class TemporalTask(BaseTask):
         return {DataType.EMBEDDING}
 
     def _run_task(self, data: BaseDataset, model_type: ModelType):
-        """Runs the temporal evaluation task.
+        """Runs the sequential evaluation task.
 
         Gets embedding coordinates and time labels from the dataset for metric computation.
 
@@ -64,10 +64,10 @@ class TemporalTask(BaseTask):
         self.time_labels = data.get_input(DataType.METADATA)[self.label_key]
 
     def _compute_metrics(self) -> List[MetricResult]:
-        """Computes temporal consistency metrics.
+        """Computes sequential consistency metrics.
 
         Returns:
-            List of MetricResult objects containing temporal metrics
+            List of MetricResult objects containing sequential metrics
         """
         results = []
 
@@ -83,12 +83,12 @@ class TemporalTask(BaseTask):
             )
         )
 
-        # Temporal Silhouette Score
+        # sequential Silhouette Score
         results.append(
             MetricResult(
-                metric_type=MetricType.TEMPORAL_SILHOUETTE,
+                metric_type=MetricType.SEQUENTIAL_SILHOUETTE,
                 value=metrics_registry.compute(
-                    MetricType.TEMPORAL_SILHOUETTE,
+                    MetricType.SEQUENTIAL_SILHOUETTE,
                     X=self.embedding,
                     time_labels=self.time_labels,
                     normalize=True,
@@ -100,9 +100,9 @@ class TemporalTask(BaseTask):
         # Temporal Smoothness Score
         results.append(
             MetricResult(
-                metric_type=MetricType.TEMPORAL_SMOOTHNESS,
+                metric_type=MetricType.SEQUENTIAL_ALIGNMENT,
                 value=metrics_registry.compute(
-                    MetricType.TEMPORAL_SMOOTHNESS,
+                    MetricType.SEQUENTIAL_ALIGNMENT,
                     X=self.embedding,
                     time_labels=self.time_labels,
                     k=self.k,
