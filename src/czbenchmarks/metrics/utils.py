@@ -5,6 +5,7 @@ from typing import Iterable, Literal, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 
 from ..constants import RANDOM_SEED
@@ -251,7 +252,7 @@ def temporal_silhouette(
     X: np.ndarray,
     time_labels: np.ndarray,
     normalize: bool = True,
-    metric: Literal["euclidean", "cosine"] = "euclidean",
+    distance_metric: Literal["euclidean", "cosine"] = "euclidean",
 ) -> float:
     """
     Fixed temporal silhouette score measuring whether points are closer
@@ -267,7 +268,7 @@ def temporal_silhouette(
         Array of shape (n_cells,) representing time point labels
     normalize : bool
         Whether to normalize score to [0, 1] range
-    metric : str
+    distance_metric : str
         The distance metric to use ('euclidean' or 'cosine')
 
     Returns
@@ -286,7 +287,7 @@ def temporal_silhouette(
         return 0.0
 
     # Compute all pairwise distances once
-    distances = pairwise_distances(X, metric=metric)
+    distances = pairwise_distances(X, metric=distance_metric)
 
     silhouette_scores = []
 

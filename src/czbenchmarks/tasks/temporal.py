@@ -91,8 +91,9 @@ class TemporalTask(BaseTask):
                     MetricType.TEMPORAL_SILHOUETTE,
                     X=self.embedding,
                     time_labels=self.time_labels,
+                    normalize=True,
+                    distance_metric="euclidean",
                 ),
-                params={},
             )
         )
 
@@ -102,11 +103,12 @@ class TemporalTask(BaseTask):
                 metric_type=MetricType.TEMPORAL_SMOOTHNESS,
                 value=metrics_registry.compute(
                     MetricType.TEMPORAL_SMOOTHNESS,
-                    emb=self.embedding,
+                    X=self.embedding,
                     time_labels=self.time_labels,
                     k=self.k,
+                    normalize=True,
+                    adaptive_k=False,
                 ),
-                params={"k": self.k},
             )
         )
 
