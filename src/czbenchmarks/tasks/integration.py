@@ -34,7 +34,7 @@ class BatchIntegrationTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "batch integration"
+    display_name = "Batch Integration"
     description = (
         "Evaluate batch integration quality using various integration metrics."
     )

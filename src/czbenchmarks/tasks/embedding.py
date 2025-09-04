@@ -33,7 +33,7 @@ class EmbeddingTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "embedding"
+    display_name = "Embedding"
     description = "Evaluate cell representation quality using silhouette score with ground truth labels."
     input_model = EmbeddingTaskInput
 

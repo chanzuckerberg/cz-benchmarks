@@ -54,7 +54,7 @@ class MetadataLabelPredictionTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "label prediction"
+    display_name = "Label Prediction"
     description = "Predict labels from embeddings using cross-validated classifiers and standard metrics."
     input_model = MetadataLabelPredictionTaskInput
 
