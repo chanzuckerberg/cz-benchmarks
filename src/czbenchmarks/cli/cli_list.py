@@ -28,7 +28,12 @@ def list_cmd(list_type: str, output_format: str):
         for name in TASK_REGISTRY.list_tasks():
             try:
                 task_info = TASK_REGISTRY.get_task_info(name)
-                tasks.append({"name": task_info.display_name, "description": task_info.description})
+                tasks.append(
+                    {
+                        "name": task_info.display_name,
+                        "description": task_info.description,
+                    }
+                )
             except Exception as e:
                 # Optionally log or print the error, but skip the broken task
                 tasks.append({"name": name, "description": f"Error: {e}"})
