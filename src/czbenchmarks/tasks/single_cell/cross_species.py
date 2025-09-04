@@ -38,7 +38,7 @@ class CrossSpeciesIntegrationTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "cross-species integration"
+    display_name = "Cross-species Integration"
     description = (
         "Evaluate cross-species integration quality using various integration metrics."
     )

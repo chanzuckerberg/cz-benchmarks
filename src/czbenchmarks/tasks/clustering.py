@@ -41,7 +41,7 @@ class ClusteringTask(Task):
         random_seed (int): Random seed for reproducibility
     """
 
-    display_name = "clustering"
+    display_name = "Clustering"
     description = "Evaluate clustering performance against ground truth labels using ARI and NMI metrics."
     input_model = ClusteringTaskInput
 

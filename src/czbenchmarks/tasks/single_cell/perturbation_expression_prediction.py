@@ -80,7 +80,9 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 
 class PerturbationExpressionPredictionTask(Task):
-    display_name = "perturbation expression prediction"
+    display_name = "Perturbation Expression Prediction"
+    description = "Evaluate the quality of gene perturbation predictions using multiple classification and correlation metrics."
+    input_model = PerturbationExpressionPredictionTaskInput
 
     def __init__(
         self,
