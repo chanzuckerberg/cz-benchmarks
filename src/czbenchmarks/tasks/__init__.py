@@ -15,6 +15,11 @@ from .single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
 )
+from .single_cell.cross_species_label_prediction import (
+    CrossSpeciesLabelPredictionTaskInput,
+    CrossSpeciesLabelPredictionOutput,
+    CrossSpeciesLabelPredictionTask,
+)
 from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
 
 __all__ = [
@@ -41,4 +46,7 @@ __all__ = [
     "PerturbationOutput",
     "PerturbationTask",
     "TASK_REGISTRY",
+    "CrossSpeciesLabelPredictionTaskInput",
+    "CrossSpeciesLabelPredictionOutput",
+    "CrossSpeciesLabelPredictionTask",
 ]
