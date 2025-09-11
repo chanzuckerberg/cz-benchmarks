@@ -10,18 +10,17 @@ from .label_prediction import (
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
 )
+from .sequential import (
+    SequentialOrganizationInput,
+    SequentialOrganizationOutput,
+    SequentialOrganizationTask,
+)
 from .single_cell import (
     CrossSpeciesIntegrationOutput,
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
 )
 from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
-from .clustering import ClusteringTask
-from .embedding import EmbeddingTask
-from .integration import BatchIntegrationTask
-from .label_prediction import MetadataLabelPredictionTask
-from .sequential import SequentialTask
-from .single_cell import CrossSpeciesIntegrationTask, PerturbationTask
 
 __all__ = [
     "Task",
@@ -46,6 +45,8 @@ __all__ = [
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
+    "SequentialOrganizationInput",
+    "SequentialOrganizationOutput",
+    "SequentialOrganizationTask",
     "TASK_REGISTRY",
-    "SequentialTask",
 ]
