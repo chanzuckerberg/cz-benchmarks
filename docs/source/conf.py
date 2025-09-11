@@ -48,8 +48,6 @@ autoapi_options = [
     "imported-members",
 ]
 autoapi_dirs = ["../../src/"]
-
-
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autoapi_keep_files = True
@@ -92,10 +90,10 @@ source_suffix = {
     ".md": "markdown",
 }
 
-autodoc_type_aliases = {
-    "BaseDataset": "czbenchmarks.datasets.BaseDataset",
-    "Organism": "czbenchmarks.datasets.types.Organism",
-}
+# autodoc_type_aliases = {
+#     "BaseDataset": "czbenchmarks.datasets.BaseDataset",
+#     "Organism": "czbenchmarks.datasets.types.Organism",
+# }
 
 
 inheritance_graph_attrs = dict(
@@ -114,3 +112,5 @@ inheritance_node_attrs = dict(
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
 html_css_files = ["custom.css"]
+
+nbsphinx_allow_errors = True

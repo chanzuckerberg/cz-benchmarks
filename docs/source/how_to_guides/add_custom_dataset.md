@@ -59,23 +59,32 @@ datasets:
 
   You may add multiple datasets to thie files, as children of `datasets`.
 
+
 ### 3. Load and Validate Your Dataset in Python
 
-- Use the following Python code to load your dataset:
+#### a) Load Dataset using YAML Configuration (Reusable Datasets)
 
 ```python
 from czbenchmarks.datasets import load_dataset
 
 # Instantiate the Dataset object from your custom configuration
 dataset = load_dataset(dataset_name="my_labeled_dataset")
-
-# dataset.load_data() is called automatically by the load_dataset utility.
-# You can now access the loaded data via the .adata attribute
 print(dataset.adata)
+```
 
-# Ensure the basic requirements are met by the Dataset
-dataset.validate()
-print(f"Labels: {dataset.labels.head()}")
+#### b) Load Dataset from a Local File (User/Ad Hoc Datasets)
+
+```python
+from czbenchmarks.datasets.utils import load_local_dataset
+from czbenchmarks.datasets.types import Organism
+
+dataset = load_local_dataset(
+  dataset_class="czbenchmarks.datasets.SingleCellLabeledDataset",
+  organism=Organism.HUMAN,
+  path="/path/to/your_data.h5ad",
+  label_column_key="cell_type",  # Additional config as needed
+)
+print(dataset.adata)
 ```
 
 Fix any loading or validation errors, as needed.

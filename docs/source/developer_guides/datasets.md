@@ -57,7 +57,34 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
 ## Adding a New Dataset
 
-To define a custom dataset:
+Datasets can be added and loaded using either of the following methods:
+
+### 1. Register via YAML Configuration (Recommended)
+
+Define the dataset in a YAML configuration file and load it by name using `load_dataset`. This approach is suitable for datasets intended for reuse or sharing across projects.
+
+### 2. Load Directly with `load_local_dataset`
+
+For ad hoc or temporary datasets, use the `load_local_dataset` utility to load a local dataset file (such as `.h5ad`) without requiring a YAML configuration.
+
+**Example:**
+
+```python
+from czbenchmarks.datasets.utils import load_local_dataset
+from czbenchmarks.datasets.types import Organism
+
+dataset = load_local_dataset(
+    dataset_class="czbenchmarks.datasets.SingleCellLabeledDataset",
+    organism=Organism.HUMAN,
+    path="/path/to/your_data.h5ad",
+    label_column_key="cell_type",  # Additional keyword arguments as needed
+)
+print(dataset.adata)
+```
+
+This method instantiates the specified dataset class and loads the provided file. Any supported dataset class can be used, with additional keyword arguments supplied as required.
+
+## Defining a New Dataset Type
 
 1. **Inherit from `Dataset`** or one of its subclasses (e.g., `SingleCellDataset`).
 2. Implement the abstract methods:

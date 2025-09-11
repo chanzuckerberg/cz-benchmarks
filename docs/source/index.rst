@@ -41,6 +41,7 @@ You can find **cz-benchmarks** on:
    quick_start
    how_to_guides/index
    developer_guides/index
+   notebook_examples
    api_reference
    assets
    policy/index
