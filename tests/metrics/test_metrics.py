@@ -1,9 +1,17 @@
-import pytest
-import numpy as np
 from enum import Enum
-from czbenchmarks.metrics.types import MetricType, MetricResult
-from czbenchmarks.metrics.utils import aggregate_results
+
+import numpy as np
+import pytest
+
 from czbenchmarks.metrics import metrics_registry
+from czbenchmarks.metrics.types import MetricResult, MetricType
+from czbenchmarks.metrics.utils import (
+    _compute_adaptive_k,
+    _compute_random_baseline,
+    _validate_sequential_labels,
+    aggregate_results,
+    sequential_alignment,
+)
 
 
 def test_register_metric_valid(dummy_metric_registry, dummy_metric_function):
@@ -424,3 +432,118 @@ def test_metrics_with_different_data_types():
     )
 
     assert isinstance(correlation, (float, np.floating))
+
+
+def test_sequential_alignment_perfect():
+    """Test sequential alignment with perfectly ordered data."""
+    np.random.seed(42)
+    n_samples = 100
+    X = np.array([[i + 0.01 * np.random.randn()] for i in range(n_samples)])
+    labels = np.arange(n_samples)
+
+    score = sequential_alignment(X, labels, k=5)
+    assert score > 0.8
+
+
+def test_sequential_alignment_random():
+    """Test sequential alignment with random data."""
+    np.random.seed(42)
+    X = np.random.randn(50, 2)
+    labels = np.arange(50)
+
+    score = sequential_alignment(X, labels, k=5)
+    assert 0 <= score <= 1  # Should be normalized
+
+
+def test_sequential_alignment_invalid_inputs():
+    """Test sequential alignment error handling."""
+    X = np.array([[1, 2], [3, 4]])
+    labels = np.array([1, 2, 3])  # Wrong length
+
+    with pytest.raises(ValueError, match="same length"):
+        sequential_alignment(X, labels, k=5)
+
+    # Test k too large
+    X = np.array([[1, 2], [3, 4]])
+    labels = np.array([1, 2])
+
+    with pytest.raises(ValueError, match="Need at least"):
+        sequential_alignment(X, labels, k=5)
+
+
+def test_sequential_alignment_adaptive_k():
+    """Test sequential alignment with adaptive k."""
+    X = np.array([[i, 0] for i in range(20)])
+    labels = np.arange(20)
+
+    score = sequential_alignment(X, labels, k=5, adaptive_k=True)
+    assert 0 <= score <= 1
+
+
+def test_validate_sequential_labels_valid():
+    """Test label validation with valid inputs."""
+
+    # Numeric labels
+    labels = np.array([1, 2, 3, 4])
+    result = _validate_sequential_labels(labels)
+    assert np.array_equal(result, labels)
+
+    # String numbers
+    labels = np.array(["1", "2", "3"])
+    result = _validate_sequential_labels(labels)
+    assert np.array_equal(result, [1.0, 2.0, 3.0])
+
+
+def test_validate_sequential_labels_invalid():
+    """Test label validation with invalid inputs."""
+
+    # Non-numeric strings
+    labels = np.array(["a", "b", "c"])
+    with pytest.raises(ValueError, match="must be numeric"):
+        _validate_sequential_labels(labels)
+
+
+def test_compute_adaptive_k():
+    """Test adaptive k computation."""
+
+    # Dense cluster
+    X = np.array([[0, 0], [0.1, 0.1], [0.2, 0.2], [10, 10], [10.1, 10.1]])
+    k_values = _compute_adaptive_k(X, base_k=3)
+
+    assert len(k_values) == len(X)
+    assert all(k >= 3 for k in k_values)  # Should respect lower bound
+
+
+def test_compute_random_baseline():
+    """Test random baseline computation."""
+
+    # Sequential labels
+    labels = np.arange(10)
+    baseline = _compute_random_baseline(labels, k=3)
+    assert baseline > 0
+
+    # All same labels
+    labels = np.array([1, 1, 1, 1])
+    baseline = _compute_random_baseline(labels, k=2)
+    assert baseline == 0.0
+
+
+def test_sequential_alignment_metric_registry():
+    """Test that sequential alignment is properly registered."""
+    from czbenchmarks.metrics import metrics_registry
+    from czbenchmarks.metrics.types import MetricType
+
+    # Test metric is registered
+    info = metrics_registry.get_info(MetricType.SEQUENTIAL_ALIGNMENT)
+    assert info.required_args == {"X", "labels"}
+    assert "sequential" in info.tags
+
+    n_samples = 20
+    X = np.array([[i, 0] for i in range(n_samples)])
+    labels = np.arange(n_samples)
+
+    score = metrics_registry.compute(
+        MetricType.SEQUENTIAL_ALIGNMENT, X=X, labels=labels
+    )
+    assert isinstance(score, float)
+    assert 0 <= score <= 1
