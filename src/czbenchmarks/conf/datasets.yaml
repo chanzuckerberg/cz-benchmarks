@@ -191,7 +191,7 @@ datasets:
     organism: ${organism:HUMAN}
     path: s3://octo.ai.czi/allen_soundlife_immune_variation.h5ad # TODO: replace with public CZI bucket links
 
-  allen_soundlife_flu_response:
+  allen_soundlife_flu_vax_response:
     _target_: czbenchmarks.datasets.SingleCellDataset
     organism: ${organism:HUMAN}
-    path: s3://octo.ai.czi/allen_soundlife_flu_response.h5ad # TODO: replace with publicCZI bucket links
+    path: s3://octo.ai.czi/allen_soundlife_flu_vax_response.h5ad # TODO: replace with public CZI bucket links
