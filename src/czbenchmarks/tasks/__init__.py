@@ -11,9 +11,9 @@ from .label_prediction import (
     MetadataLabelPredictionTaskInput,
 )
 from .sequential import (
-    SequentialOrganizationInput,
     SequentialOrganizationOutput,
     SequentialOrganizationTask,
+    SequentialOrganizationTaskInput,
 )
 from .single_cell import (
     CrossSpeciesIntegrationOutput,
@@ -45,7 +45,7 @@ __all__ = [
     "PerturbationTaskInput",
     "PerturbationOutput",
     "PerturbationTask",
-    "SequentialOrganizationInput",
+    "SequentialOrganizationTaskInput",
     "SequentialOrganizationOutput",
     "SequentialOrganizationTask",
     "TASK_REGISTRY",
