@@ -8,7 +8,7 @@ from czbenchmarks.metrics.types import MetricResult, MetricType
 from czbenchmarks.metrics.utils import (
     _compute_adaptive_k,
     _compute_random_baseline,
-    _validate_sequential_labels,
+    _normalize_sequential_labels,
     aggregate_results,
     sequential_alignment,
 )
@@ -480,27 +480,27 @@ def test_sequential_alignment_adaptive_k():
     assert 0 <= score <= 1
 
 
-def test_validate_sequential_labels_valid():
+def test_normalize_sequential_labels_valid():
     """Test label validation with valid inputs."""
 
     # Numeric labels
     labels = np.array([1, 2, 3, 4])
-    result = _validate_sequential_labels(labels)
+    result = _normalize_sequential_labels(labels)
     assert np.array_equal(result, labels)
 
     # String numbers
     labels = np.array(["1", "2", "3"])
-    result = _validate_sequential_labels(labels)
+    result = _normalize_sequential_labels(labels)
     assert np.array_equal(result, [1.0, 2.0, 3.0])
 
 
-def test_validate_sequential_labels_invalid():
+def test_normalize_sequential_labels_invalid():
     """Test label validation with invalid inputs."""
 
     # Non-numeric strings
     labels = np.array(["a", "b", "c"])
     with pytest.raises(ValueError, match="must be numeric"):
-        _validate_sequential_labels(labels)
+        _normalize_sequential_labels(labels)
 
 
 def test_compute_adaptive_k():

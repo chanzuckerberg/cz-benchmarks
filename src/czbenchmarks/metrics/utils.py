@@ -177,7 +177,7 @@ def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricR
     return aggregated
 
 
-def _validate_sequential_labels(labels: np.ndarray) -> np.ndarray:
+def _normalize_sequential_labels(labels: np.ndarray) -> np.ndarray:
     """
     Validate that labels are numeric or can be converted to numeric.
     Raises error for string/character labels that can't be ordered.
@@ -239,7 +239,7 @@ def sequential_alignment(
     float: Sequential alignment score (higher = better sequential consistency)
     """
     X = np.asarray(X)
-    labels = _validate_sequential_labels(labels)
+    labels = _normalize_sequential_labels(labels)
 
     if len(X) != len(labels):
         raise ValueError("X and labels must have same length")
