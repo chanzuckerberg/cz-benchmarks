@@ -11,11 +11,13 @@ from czbenchmarks.tasks.embedding import EmbeddingTaskInput
 from czbenchmarks.tasks.label_prediction import (
     MetadataLabelPredictionTaskInput,
 )
+from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.tasks import (
     ClusteringTask,
     EmbeddingTask,
     MetadataLabelPredictionTask,
+    SequentialOrganizationTask,
 )
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
@@ -42,6 +44,7 @@ def test_end_to_end_task_execution_predictive_tasks():
     clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
     embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
     prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
+    sequential_task = SequentialOrganizationTask(random_seed=RANDOM_SEED)
 
     # Get raw expression data for baseline computation
     expression_data = dataset.adata.X
@@ -50,11 +53,13 @@ def test_end_to_end_task_execution_predictive_tasks():
     clustering_baseline = clustering_task.compute_baseline(expression_data)
     embedding_baseline = embedding_task.compute_baseline(expression_data)
     prediction_baseline = prediction_task.compute_baseline(expression_data)
+    sequential_baseline = sequential_task.compute_baseline(expression_data)
 
     # Verify baselines are returned
     assert clustering_baseline is not None
     assert embedding_baseline is not None
     assert prediction_baseline is not None
+    assert sequential_baseline is not None
 
     # Run clustering task with both model output and baseline
     clustering_task_input = ClusteringTaskInput(
@@ -97,6 +102,23 @@ def test_end_to_end_task_execution_predictive_tasks():
         task_input=prediction_task_input,
     )
 
+    # Run sequential organization task with both model output and baseline
+    sequential_task_input = SequentialOrganizationTaskInput(
+        obs=dataset.adata.obs,
+        input_labels=dataset.labels,
+        k=15,
+        normalize=True,
+        adaptive_k=False,
+    )
+    sequential_results = sequential_task.run(
+        cell_representation=model_output,
+        task_input=sequential_task_input,
+    )
+    sequential_baseline_results = sequential_task.run(
+        cell_representation=sequential_baseline,
+        task_input=sequential_task_input,
+    )
+
     # Combine all results into a single dictionary
     all_results = {
         "clustering": {
@@ -111,17 +133,22 @@ def test_end_to_end_task_execution_predictive_tasks():
             "model": [result.model_dump() for result in prediction_results],
             "baseline": [result.model_dump() for result in prediction_baseline_results],
         },
+        "sequential": {
+            "model": [result.model_dump() for result in sequential_results],
+            "baseline": [result.model_dump() for result in sequential_baseline_results],
+        },
     }
 
     # Validate the overall structure
     assert isinstance(all_results, dict)
-    assert len(all_results) == 3
+    assert len(all_results) == 4
     assert "clustering" in all_results
     assert "embedding" in all_results
     assert "prediction" in all_results
+    assert "sequential" in all_results
 
     # Validate each task has both model and baseline results
-    for task_name in ["clustering", "embedding", "prediction"]:
+    for task_name in ["clustering", "embedding", "prediction", "sequential"]:
         task_results = all_results[task_name]
         assert isinstance(task_results, dict)
         assert "model" in task_results
@@ -151,10 +178,10 @@ def test_end_to_end_task_execution_predictive_tasks():
     # Verify we can parse the JSON back (note: enums become strings)
     parsed_results = json.loads(json_output)
     assert isinstance(parsed_results, dict)
-    assert len(parsed_results) == 3
+    assert len(parsed_results) == 4
 
     # Verify the parsed structure matches (enums will be strings now)
-    for task_name in ["clustering", "embedding", "prediction"]:
+    for task_name in ["clustering", "embedding", "prediction", "sequential"]:
         assert task_name in parsed_results
         assert "model" in parsed_results[task_name]
         assert "baseline" in parsed_results[task_name]
@@ -183,6 +210,13 @@ def test_end_to_end_task_execution_predictive_tasks():
     assert "mean_fold_precision" in prediction_model_metrics
     assert "mean_fold_recall" in prediction_model_metrics
     assert "mean_fold_auroc" in prediction_model_metrics
+
+    # Sequential organization should have silhouette score and ARI
+    sequential_model_metrics = [
+        r["metric_type"].value for r in all_results["sequential"]["model"]
+    ]
+    assert "silhouette_score" in sequential_model_metrics
+    assert "adjusted_rand_index" in sequential_model_metrics
 
 
 @pytest.mark.integration

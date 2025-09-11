@@ -16,6 +16,7 @@ from czbenchmarks.tasks.integration import (
     BatchIntegrationTask,
     BatchIntegrationTaskInput,
 )
+from czbenchmarks.tasks.sequential import SequentialOrganizationTask
 from czbenchmarks.tasks.single_cell.cross_species import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
@@ -437,3 +438,69 @@ def test_perturbation_expression_prediction_task_integration():
     # This test is skipped because the perturbation task does not yet
     # have sample output for test implementation
     pass
+
+@pytest.mark.skip(reason="Sequential organization task regression test needs sample output for test implementation")
+@pytest.mark.integration
+def test_sequential_organization_task_regression(dataset):
+    """Regression test for sequential organization task using fixture embeddings and expected results."""
+    # Load fixture embedding
+    # TODO: Generate this and upload to s3
+    model_output: CellRepresentation = load_embedding_fixture("allen_soundlife_immune_variation")
+
+    # TODO: Update Expected results
+    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    # TODO: THESE RESULTS NEED TO BE VALIDATED BY A COMPUTATIONAL BIOLOGIST
+    expected_metrics = [
+        {"metric_type": "sequential_alignment", "value": 0},
+        {"metric_type": "batch_silhouette", "value": 0},
+    ]
+
+    # Initialize sequential organization task
+    sequential_organization_task = SequentialOrganizationTask(random_seed=RANDOM_SEED)
+
+    # Get raw expression data for baseline computation
+    expression_data = dataset.adata.X
+
+    # Compute baseline embedding
+    sequential_organization_baseline = sequential_organization_task.compute_baseline(
+        expression_data
+    )
+    assert sequential_organization_baseline is not None
+
+    # Create batch labels from dataset metadata
+    batch_columns = ["dataset_id", "assay", "suspension_type", "donor_id"]
+    batch_labels = functools.reduce(
+        lambda a, b: a + b, [dataset.adata.obs[c].astype(str) for c in batch_columns]
+    )
+
+    # Run batch integration task with fixture embedding
+    sequential_organization_task_input = BatchIntegrationTaskInput(
+        labels=dataset.labels,
+        batch_labels=batch_labels,
+    )
+    sequential_organization_results = sequential_organization_baseline.run(
+        cell_representation=model_output,
+        task_input=sequential_organization_task_input,
+    )
+    sequential_organization_baseline_results = sequential_organization_task.run(
+        cell_representation=sequential_organization_baseline,
+        task_input=sequential_organization_task_input,
+    )
+
+    # Validate results structure
+    assert isinstance(sequential_organization_results, list)
+    assert len(sequential_organization_results) > 0
+    assert isinstance(sequential_organization_baseline_results, list)
+    assert len(sequential_organization_baseline_results) > 0
+
+    # Test specific expectations for batch integration
+    sequential_organization_model_metrics = [
+        r.metric_type.value for r in sequential_organization_results
+    ]
+    assert "entropy_per_cell" in sequential_organization_model_metrics
+    assert "batch_silhouette" in sequential_organization_model_metrics
+
+    # Regression test: Compare against expected results
+    assert_metrics_match_expected(
+        sequential_organization_results, expected_metrics, tolerance=0.01
+    )
