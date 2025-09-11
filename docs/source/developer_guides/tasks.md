@@ -43,6 +43,8 @@ Each task class implements a specific evaluation goal. All tasks are located und
     
 - [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index): Designed for perturbation models. Compares the model's ability to predict masked gene expression levels relative to ground truth using metrics like Spearman correlation, accuracy, F1, precision, and recall.
     
+- [`SequentialOrganizationTask`](../autoapi/czbenchmarks/tasks/sequential/index): Evaluates sequential consistency in embeddings using time point labels. Computes metrics like silhouette score and sequential alignment to assess how well embeddings preserve sequential organization between cells.
+    
 
 ## Extending Tasks
 
