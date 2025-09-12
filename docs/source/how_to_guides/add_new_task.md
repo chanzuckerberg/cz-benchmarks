@@ -80,10 +80,12 @@ This guide explains how to create and integrate your own evaluation task into cz
 - Implement the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a metric that is not already supported, refer to [Adding a New Metric](./add_new_metric.md).
     
 
+
 ### 3. Register the Task
 
 - Import and add your new task classes to the `__all__` list in `czbenchmarks/tasks/__init__.py` to make them easily accessible.
     
+
     ```python
     # In czbenchmarks/tasks/__init__.py
     ...
@@ -95,8 +97,12 @@ This guide explains how to create and integrate your own evaluation task into cz
         "MyTaskInput",
         "MyTaskOutput",
     ]
-    
     ```
+
+### 4. Update the Documentation
+
+- **After adding your new Task, update the documentation:**
+    - Edit `docs/source/developer_guides/tasks.md` and add your new Task to the **Available Tasks** section, with a short description and a link to its API docs if available.
 
 The `run_task()` function will automatically:
 - Look up your task in the registry
@@ -106,7 +112,11 @@ The `run_task()` function will automatically:
 - Return serialized results as dictionaries
 
 ## Best Practices
-- **Single Responsibility:** Ensure your task has a clear and focused purpose.
-- **Error Handling:** Include robust error handling and logging.
-- **Code Quality:** Use type hints and follow the project's coding style.
-- **Testing:** Write unit tests to validate your task's functionality.
+
+- Ensure each task has a clear and focused purpose.
+- Document the input and output requirements for your task.
+- Follow established patterns and conventions from existing tasks for consistency.
+- Use type hints to improve code readability and maintainability.
+- Add logging for key steps in the task lifecycle to aid debugging and monitoring.
+- Include robust error handling to make your task resilient.
+- Write unit tests to validate your task's functionality.
