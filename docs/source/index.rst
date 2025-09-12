@@ -39,14 +39,14 @@ You can find **cz-benchmarks** on:
    :maxdepth: 1
 
    quick_start
+   benchmarking_philosophy
    how_to_guides/index
-   developer_guides/index
    notebook_examples
+   developer_guides/index
    api_reference
    assets
    policy/index
    roadmap
    legal
    changelog_release_notes
-
 
