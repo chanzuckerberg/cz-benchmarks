@@ -1,4 +1,6 @@
-## Benchmarking Philosophy: Guiding Principles for Model Evaluation
+# Benchmarking Philosophy
+
+## Guiding Principles for Model Evaluation
 
 We believe that benchmarking pushes the field of model development toward biological relevance and utility. To achieve this, we’ve established the following principles to guide our design and implementation of benchmarks for AI models in biology.
 
