@@ -45,7 +45,7 @@ If you plan to contribute or debug the library, install it from source:
     pip install -e ".[dev]"
     ```
 
-## List Available Datasets and Tasks (CLI)
+## Command-Line Interface (CLI)
 
 Use the **cz-benchmarks** CLI to list supported datasets and tasks.
 
