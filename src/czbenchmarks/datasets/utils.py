@@ -126,7 +126,6 @@ def run_multicondition_dge_analysis(
     filter_min_genes: int = 1000,
     min_pert_cells: int = 50,
     remove_avg_zeros: bool = False,
-    store_dge_metadata: bool = False,
     return_merged_adata: bool = False,
 ) -> Tuple[pd.DataFrame, ad.AnnData]:
     """
@@ -143,7 +142,6 @@ def run_multicondition_dge_analysis(
     filter_min_genes (int, optional): Minimum number of genes detected per cell. Defaults to 1000.
     min_pert_cells (int, optional): Minimum number of perturbed cells required. Defaults to 50.
     remove_avg_zeros (bool, optional): Whether to remove genes with zero average expression. Defaults to True.
-    store_dge_metadata (bool, optional): Whether to store DGE metadata in the results DataFrame. Defaults to False.
     return_merged_adata (bool, optional): Whether to return the merged AnnData object. Defaults to False.
 
     Returns
@@ -197,7 +195,7 @@ def run_multicondition_dge_analysis(
         )
 
         if len(rows_cond) < min_pert_cells or len(rows_ctrl) == 0:
-            print(f"Insufficient cells for analysis of {selected_condition}")
+            log.warning(f"Insufficient cells for analysis of {selected_condition}")
             continue
 
         # Create condition and control data, then concatenate
@@ -255,7 +253,7 @@ def run_multicondition_dge_analysis(
             nc_mean = adata_control[:, results.names].X.mean(axis=0).flatten()
             indexes = np.where((target_mean > 0) & (nc_mean > 0))[0]
             log.info(
-                f"remove_avg_zeros is True.Removing {len(results) - len(indexes)} genes with zero expression"
+                f"remove_avg_zeros is True. Removing {len(results) - len(indexes)} genes with zero expression"
             )
             results = results.iloc[indexes]
 
@@ -263,13 +261,21 @@ def run_multicondition_dge_analysis(
         if return_merged_adata:
             adata_results.append(adata_merged)
 
-    results = pd.concat(results_df, ignore_index=True)
-    del results_df
+    results_df = pd.concat(results_df, ignore_index=True)
 
-    dge_params = adata_merged.uns["dge_results"]["params"]
     if return_merged_adata:
+        dge_params = adata_results[0].uns["dge_results"]["params"].copy()
         adata_merged = ad.concat(adata_results, index_unique=None)
         del adata_results
+        dge_params.update(
+            {
+                "remove_avg_zeros": remove_avg_zeros,
+                "filter_min_cells": filter_min_cells,
+                "filter_min_genes": filter_min_genes,
+                "min_pert_cells": min_pert_cells,
+            }
+        )
+        adata_merged.uns["dge_results"]["params"] = dge_params
     else:
         adata_merged = None
 
@@ -287,17 +293,6 @@ def run_multicondition_dge_analysis(
     results = results.rename(columns=col_mapper)
     cols = [x for x in col_mapper.values() if x in results.columns]
     results = results[cols]
-
-    if store_dge_metadata:
-        dge_params.update(
-            {
-                "remove_avg_zeros": remove_avg_zeros,
-                "filter_min_cells": filter_min_cells,
-                "filter_min_genes": filter_min_genes,
-                "min_pert_cells": min_pert_cells,
-            }
-        )
-        results["dge_params"] = dge_params  # NB: this is not tidy
     return results, adata_merged
 
 
