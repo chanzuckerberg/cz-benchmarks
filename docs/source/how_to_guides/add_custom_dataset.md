@@ -150,7 +150,7 @@ class MyCustomDataset(SingleCellDataset):
 ### 2. Register and Use Your Dataset
 
 - Add your new dataset class to the appropriate module in `czbenchmarks.datasets`.
-- Register it in the relevant `__init__.py` file.
+- Register it in the `src/czbenchmarks/datasets/__init__.py` file.
 - You can now use your new dataset type in YAML configs or with `load_local_dataset`.
 
 
