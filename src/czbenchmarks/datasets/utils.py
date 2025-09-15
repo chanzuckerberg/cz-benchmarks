@@ -275,6 +275,7 @@ def run_multicondition_dge_analysis(
                 "min_pert_cells": min_pert_cells,
             }
         )
+        adata_merged.uns["dge_results"] = {}
         adata_merged.uns["dge_results"]["params"] = dge_params
     else:
         adata_merged = None
