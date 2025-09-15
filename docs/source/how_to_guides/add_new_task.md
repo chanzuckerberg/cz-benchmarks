@@ -2,158 +2,280 @@
 
 This guide explains how to create and integrate your own evaluation task into cz-benchmarks.
 
+## Overview of the Task System
 
-## Overview of Task System
+### Required Components
 
-### Automatic Task Registration and Discovery
+| Component | Description | Example |
+|-----------|-------------|---------|
+| **`display_name`** | Human-readable name for the task | `"Cell Clustering"` |
+| **`input_model`** | Pydantic class defining task input schema | `ClusteringTaskInput` |
+| **`_run_task()`** | Core task implementation method | Returns `TaskOutput` instance |
+| **`_compute_metrics()`** | Metric computation method | Returns `List[MetricResult]` |
 
-- All `Task` subclasses are automatically registered in a global registry (`TASK_REGISTRY`) when defined. You do **not** need to manually register your task for it to be discoverable by the framework.
-- The registry supports listing all available tasks, and introspecting their parameters.
+### Optional Components
 
-### Task Metadata: `display_name`, `description`, and `input_model`
+| Component | Description | Default |
+|-----------|-------------|---------|
+| **`description`** | One-sentence task description | Extracted from docstring |
+| **`compute_baseline()`** | Baseline implementation for comparison | Raises `NotImplementedError` |
+| **`requires_multiple_datasets`** | Flag for multi-dataset tasks | `False` |
 
-- Each task **must** define a `display_name` (human-readable name) and should provide a `description` (short summary of the task's purpose).
-- Each task **must** set an `input_model` class attribute pointing to its Pydantic input model. This enables automatic parameter introspection and validation.
+### Key Features
 
-### Parameter Introspection and Validation
+- **Automatic Registration**: Tasks are automatically registered when defined via `__init_subclass__`
+- **Arbitrary Types**: Input/Output models support complex objects (DataFrames, arrays) via `model_config = {"arbitrary_types_allowed": True}`
+- **Type Safety**: Full Pydantic validation for all inputs
 
-- Task parameters are automatically discovered from the fields of the `input_model` (a Pydantic model). Types, defaults, and required/optional status are extracted and validated at runtime.
-- Baseline parameters (if supported) are also introspected from the `compute_baseline` method signature.
-- Users can programmatically or via CLI list available tasks and their parameters, including help text and defaults.
+## Step-by-Step Implementation
 
-### Arbitrary Types in Input/Output
+### 1. Define Input and Output Models
 
-- The Pydantic `TaskInput` and `TaskOutput` models support arbitrary types (e.g., DataFrames, arrays) via `model_config = {"arbitrary_types_allowed": True}`. You can use complex data structures as needed for your task.
+Create Pydantic models that inherit from `TaskInput` and `TaskOutput`:
 
-### Multi-Dataset Tasks
+```python
+from czbenchmarks.tasks import TaskInput, TaskOutput
+from czbenchmarks.types import ListLike
+from typing import List
+import pandas as pd
 
-- If your task requires multiple datasets (e.g., for integration or cross-species tasks), set `self.requires_multiple_datasets = True` in your task's `__init__` method. The framework will enforce correct input types at runtime.
+class MyTaskInput(TaskInput):
+    """Input model for MyTask."""
+    ground_truth_labels: ListLike
+    metadata: pd.DataFrame  # Example of arbitrary type support
 
-### Baseline Computation
+class MyTaskOutput(TaskOutput):
+    """Output model for MyTask."""
+    predictions: List[float]
+    confidence_scores: List[float]
+```
 
-- Tasks may optionally implement a `compute_baseline` method to provide a baseline embedding or prediction for comparison. If not applicable, this method can raise `NotImplementedError`.
-- Baseline parameters (if any) should be documented in the method signature.
+### 2. Implement the Task Class
 
-### Task Help and Discovery
+Create a new file in `src/czbenchmarks/tasks/` (e.g., `my_task.py`):
 
-- The registry provides methods to list all available tasks, introspect their parameters, and generate help text for each task.
+```python
+import logging
+from typing import List
+import numpy as np
 
+from ..constants import RANDOM_SEED
+from ..metrics.types import MetricResult, MetricType
+from ..metrics import metrics_registry
+from .task import Task, TaskInput, TaskOutput
+from .types import CellRepresentation
 
-## Steps to Add a New Task
+logger = logging.getLogger(__name__)
 
-### 1. Define Task-Specific Input and Output Classes
+class MyTaskInput(TaskInput):
+    """Input model for MyTask."""
+    ground_truth_labels: ListLike
 
-- Create Pydantic models that inherit from `TaskInput` and `TaskOutput` to define the data your task needs and produces.
+class MyTaskOutput(TaskOutput):
+    """Output model for MyTask."""
+    predictions: List[float]
 
-### 2. Create a New Task Class
+class MyTask(Task):
+    """Example task that demonstrates the basic task implementation pattern.
+    
+    This task performs a simple prediction based on cell embeddings
+    and evaluates against ground truth labels.
+    """
+    
+    # REQUIRED: Class attributes for task metadata
+    display_name = "My Example Task"
+    description = "Predicts numeric labels from cell embeddings using a simple algorithm."
+    input_model = MyTaskInput  # CRITICAL: Must specify input model class
+    
+    def __init__(self, my_param: int = 10, *, random_seed: int = RANDOM_SEED):
+        """Initialize the task with custom parameters.
+        
+        Args:
+            my_param: Custom parameter for the task
+            random_seed: Random seed for reproducibility
+        """
+        super().__init__(random_seed=random_seed)
+        self.my_param = my_param
+        logger.info(f"Initialized {self.display_name} with my_param={my_param}")
 
-- Extend the `Task` class to define your custom task.
-- Create a new Python file in the `czbenchmarks/tasks/` directory.
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        task_input: MyTaskInput,
+    ) -> MyTaskOutput:
+        """Core task implementation.
+        
+        Args:
+            cell_representation: Cell embeddings or gene expression data
+            task_input: Validated input parameters
+            
+        Returns:
+            Task output containing predictions
+        """
+        logger.info(f"Running task on {len(task_input.ground_truth_labels)} samples")
+        
+        # Example implementation - replace with your logic
+        np.random.seed(self.random_seed)
+        predictions = np.random.random(len(task_input.ground_truth_labels)).tolist()
+        
+        return MyTaskOutput(predictions=predictions)
 
-    Example:
-
-    ```python
-    from typing import List
-    from czbenchmarks.tasks import Task, TaskInput, TaskOutput
-    from czbenchmarks.metrics.types import MetricResult, MetricType
-    from czbenchmarks.metrics import metrics_registry
-    from czbenchmarks.types import ListLike
-    from czbenchmarks.tasks.types import CellRepresentation
-
-    # 1. Define Input and Output data structures
-    class MyTaskInput(TaskInput):
-        ground_truth_labels: ListLike
-
-    class MyTaskOutput(TaskOutput):
-        predictions: List[float]
-
-    # 2. Implement the Task class
-    class MyTask(Task):
-        display_name = "My Example Task"
-
-        def __init__(self, my_param: int = 10, *, random_seed: int = 123):
-            super().__init__(random_seed=random_seed)
-            self.my_param = my_param
-
-        def _run_task(
-            self,
-            cell_representation: CellRepresentation,
-            task_input: MyTaskInput
-        ) -> MyTaskOutput:
-            # Implement your task logic here.
-            # For example, use the cell_representation to make predictions.
-            # This is a placeholder for your actual logic.
-            predictions = list(range(len(task_input.ground_truth_labels)))
-
-            # Return the results in your output model
-            return MyTaskOutput(predictions=predictions)
-
-        def _compute_metrics(
-            self,
-            task_input: MyTaskInput,
-            task_output: MyTaskOutput
-        ) -> List[MetricResult]:
-            # Compute and return a list of MetricResult objects
-            # using the metric registry.
-            ari_score = metrics_registry.compute(
-                MetricType.ADJUSTED_RAND_INDEX,
-                labels_true=task_input.ground_truth_labels,
-                labels_pred=task_output.predictions
+    def _compute_metrics(
+        self,
+        task_input: MyTaskInput,
+        task_output: MyTaskOutput,
+    ) -> List[MetricResult]:
+        """Compute evaluation metrics.
+        
+        Args:
+            task_input: Original task input
+            task_output: Results from _run_task
+            
+        Returns:
+            List of metric results
+        """
+        # Use metrics registry to compute standard metrics
+        metrics = []
+        
+        # Example: Compute correlation if applicable
+        if len(task_input.ground_truth_labels) == len(task_output.predictions):
+            correlation = metrics_registry.compute(
+                MetricType.PEARSON_CORRELATION,
+                y_true=task_input.ground_truth_labels,
+                y_pred=task_output.predictions,
             )
-            return [
+            metrics.append(
                 MetricResult(
-                    metric_type=MetricType.ADJUSTED_RAND_INDEX,
-                    value=ari_score
+                    metric_type=MetricType.PEARSON_CORRELATION,
+                    value=correlation,
+                    params={"my_param": self.my_param},
                 )
-            ]
-    ```
+            )
+        
+        return metrics
 
-- Consult `czbenchmarks/tasks/task.py` for interface details.
-- Use `display_name` to provide a human-readable name for your task.
-- The `random_seed` should be used for all sources of randomness so results are reproducible.
-- Implement the `_run_task` method to define the core logic of your task. It takes a `cell_representation` (e.g., a model's embedding) and your custom `TaskInput` model. It should return an instance of your custom `TaskOutput` model.
-- Implement the `_compute_metrics` method to calculate and return metrics as a list of `MetricResult` objects. If your task requires a metric that is not already supported, refer to [Adding a New Metric](./add_new_metric.md).
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        **kwargs,
+    ) -> CellRepresentation:
+        """Optional: Compute baseline embedding using standard preprocessing.
+        
+        Args:
+            expression_data: Raw gene expression data
+            **kwargs: Additional parameters for baseline computation
+            
+        Returns:
+            Baseline embedding for comparison
+        """
+        # Use the parent class implementation for PCA baseline
+        return super().compute_baseline(expression_data, **kwargs)
+```
 
 ### 3. Register the Task
 
-- Import and add your new task classes to the `__all__` list in `czbenchmarks/tasks/__init__.py` to make them easily accessible.
+Add your task to `src/czbenchmarks/tasks/__init__.py`:
 
-    ```python
-    # In czbenchmarks/tasks/__init__.py
-    ...
-    from .my_task_file import MyTask, MyTaskInput, MyTaskOutput
+```python
+# Add these imports
+from .my_task import MyTask, MyTaskInput, MyTaskOutput
 
-    __all__ = [
-        ...
-        "MyTask",
-        "MyTaskInput",
-        "MyTaskOutput",
-    ]
-    ```
+# Add to __all__ list
+__all__ = [
+    # ... existing exports ...
+    "MyTask",
+    "MyTaskInput", 
+    "MyTaskOutput",
+]
+```
 
-### 4. Update the Documentation
+**Note**: Registration happens automatically when the class is defined thanks to `__init_subclass__`. Adding to `__init__.py` makes it easily importable.
 
-- **After adding your new Task, update the documentation:**
-    - Edit `docs/source/developer_guides/tasks.md` and add your new Task to the **Available Tasks** section, with a short description and a link to its API docs if available.
+### 4. Test Your Task
 
+```python
+# Test script example
+from czbenchmarks.tasks import MyTask, MyTaskInput
+import numpy as np
 
-## Task Execution Flow
+# Create test data
+cell_rep = np.random.random((100, 50))  # 100 cells, 50 features
+task_input = MyTaskInput(ground_truth_labels=np.random.randint(0, 3, 100))
 
-The `run_task()` function will automatically:
-- Look up your task in the registry
-- Instantiate it with the provided random seed
-- Create the appropriate `TaskInput` from your `task_params`
-- Execute the task and compute metrics
-- Return serialized results as dictionaries
+# Run task
+task = MyTask(my_param=5, random_seed=42)
+results = task.run(cell_rep, task_input)
+print(f"Computed {len(results)} metrics")
+```
 
+### 5. Update Documentation
+
+Add your task to `docs/source/developer_guides/tasks.md`:
+
+```markdown
+### Available Tasks
+
+- **My Example Task** – Predicts numeric labels from cell embeddings using a simple algorithm.
+  See: `czbenchmarks.tasks.my_task.MyTask`
+```
+
+## Advanced Features
+
+### Multi-Dataset Tasks
+
+For tasks requiring multiple datasets (e.g., integration tasks):
+
+```python
+def __init__(self, *, random_seed: int = RANDOM_SEED):
+    super().__init__(random_seed=random_seed)
+    self.requires_multiple_datasets = True  # Enable multi-dataset mode
+```
+
+### Custom Baseline Parameters
+
+Document baseline parameters in the method signature:
+
+```python
+def compute_baseline(
+    self,
+    expression_data: CellRepresentation,
+    n_components: int = 50,
+    highly_variable_genes: bool = True,
+    **kwargs,
+) -> CellRepresentation:
+    """Compute PCA baseline with custom parameters."""
+    return super().compute_baseline(
+        expression_data, 
+        n_components=n_components,
+        highly_variable_genes=highly_variable_genes,
+        **kwargs
+    )
+```
+
+## Task Discovery and CLI Integration
+
+Tasks are automatically discovered via the `TASK_REGISTRY`:
+
+```python
+from czbenchmarks.tasks import TASK_REGISTRY
+
+# List all available tasks
+print(TASK_REGISTRY.list_tasks())
+
+# Get task information  
+info = TASK_REGISTRY.get_task_info("my_example_task")
+print(f"Description: {info.description}")
+print(f"Parameters: {list(info.task_params.keys())}")
+```
 
 ## Best Practices
 
-- Ensure each task has a clear and focused purpose.
-- Document the input and output requirements for your task.
-- Follow established patterns and conventions from existing tasks for consistency.
-- Use type hints to improve code readability and maintainability.
-- Add logging for key steps in the task lifecycle to aid debugging and monitoring.
-- Include robust error handling to make your task resilient.
-- Write unit tests to validate your task's functionality.
+- ✅ **Single Responsibility**: Each task should solve one well-defined problem
+- ✅ **Reproducibility**: Use `self.random_seed` for all random operations  
+- ✅ **Type Safety**: Use explicit type hints throughout
+- ✅ **Logging**: Log key steps for debugging (`logger.info`, `logger.debug`)
+- ✅ **Error Handling**: Provide informative error messages
+- ✅ **Documentation**: Clear docstrings for all public methods
+- ✅ **Testing**: Unit tests for input validation, core logic, and metrics
+- ✅ **Performance**: Consider memory usage for large datasets
 
