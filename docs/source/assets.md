@@ -100,6 +100,19 @@ This task evaluates the performance of models fine-tuned to predict cellular res
 | Jaccardian Similarity                       |             |
 
 
+### Sequential Ordering
+
+Contributed by: Kasia Kedzierska (Allen Institute)
+
+This task evaluates how well a model’s embeddings capture temporal information by measuring how well embeddings preserve sequential structure. First, a forward pass of the data is run through each model to retrieve embeddings. Then, the embeddings are used to fit a kNN and query the neighbors, with the intuition that if the embedding preserves sequence, then each point’s nearest neighbors should have similar labels. 
+
+#### Task: Sequential Ordering
+
+| Metrics                                     | Description |
+| ------------------------------------------- | ----------- |
+| Sequential Ordering.                        | Measures how well embeddings preserve sequential order. |
+
+
 ## Guidelines for Included Assets
 
 As cz-benchmarks develops, robust governance policies will be developed to support direct community contribution.
