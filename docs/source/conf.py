@@ -90,12 +90,6 @@ source_suffix = {
     ".md": "markdown",
 }
 
-# autodoc_type_aliases = {
-#     "BaseDataset": "czbenchmarks.datasets.BaseDataset",
-#     "Organism": "czbenchmarks.datasets.types.Organism",
-# }
-
-
 inheritance_graph_attrs = dict(
     rankdir="LR", size='"18.0, 28.0 "', fontsize=16, ratio="expand", dpi=96
 )
@@ -112,5 +106,3 @@ inheritance_node_attrs = dict(
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
 html_css_files = ["custom.css"]
-
-nbsphinx_allow_errors = True
