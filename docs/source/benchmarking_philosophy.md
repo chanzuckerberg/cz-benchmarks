@@ -31,7 +31,7 @@ We believe that benchmarking pushes the field of model development toward biolog
 The best way to define valuable benchmarks is through community participation. To that end:
 
 - We create and support working groups of domain experts in biology and machine learning
-- We seek partnership! Work with us to contribute benchmarking assets. Right now we are prioritizing assets in the single-cell transcriptomic and perturbation modeling domains, and aim to pilot expanding to DNA and dynamic imaging by 2026. If you are working in any of these domains and are interested in partnering with us, email us at [email]  
+- We seek partnership! Work with us to contribute benchmarking assets. Right now we are prioritizing assets in the single-cell transcriptomic and perturbation modeling domains, and aim to pilot expanding to DNA and dynamic imaging by 2026. If you are working in any of these domains and are interested in partnering with us, email us at [virtualcellmodels@chanzuckerberg.com](mailto:virtualcellmodels@chanzuckerberg.com). 
 
 ### 7. Feedback Loops Are Built-In
 
@@ -41,7 +41,7 @@ We encourage feedback from the community at every stage:
 – Dataset selection  
 – Interpretation of benchmarking results
 
-Please reach out via this [feedback form](https://airtable.com/appd6ZLxfAOLcfNcs/paggB4T2aE2J5kIJs/form?hide_user_id=true&hide_device_id=true&hide_amplitude_id=true&prefill_benchmark_id=cell-clustering&hide_benchmark_id=true) or email us at [email] to help improve the benchmarking platform.
+Please reach out via this [feedback form](https://airtable.com/appd6ZLxfAOLcfNcs/paggB4T2aE2J5kIJs/form?hide_user_id=true&hide_device_id=true&hide_amplitude_id=true&prefill_benchmark_id=cell-clustering&hide_benchmark_id=true) or email us at [virtualcellmodels@chanzuckerberg.com](mailto:virtualcellmodels@chanzuckerberg.com).  to help improve the benchmarking platform.
 
 ---
 

@@ -19,20 +19,12 @@ Last year, CZI hosted a workshop focused on benchmarking and evaluation of ML Mo
 💬 Community Feedback & Contributions
 ======================================
 
-We're working to get the alpha version of cz-benchmarks stable to build with the community. In the meantime, for issues you may identify, feel free to `open an issue <https://github.com/chanzuckerberg/cz-benchmarks/issues>`_ on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
+CZI welcome your feedback and contributions as we continue to improve the package. If you encounter any issues or have suggestions, please `open an issue <https://github.com/chanzuckerberg/cz-benchmarks/issues>`_ on GitHub or reach out to us at `virtualcellmodels@chanzuckerberg.com <mailto:virtualcellmodels@chanzuckerberg.com>`_.
 
 You can find **cz-benchmarks** on:
 
 - `PyPI <https://pypi.org/project/cz-benchmarks/>`_ – for installation and release information.
 - `GitHub <https://github.com/chanzuckerberg/cz-benchmarks>`_ – for source code, issue tracking, and contributions.
-
-
-**Project Status: UNSTABLE**
-
-.. warning::
-
-   ** 🚧 Under Development** - This project is under development and not yet stable. It is being actively developed, but not supported and not ready for community contribution. Things may break without notice, and it is not likely the developers will respond to requests for user support. Feedback and contributions are welcome, but user support is limited for now.
-
 
 
 .. toctree::
