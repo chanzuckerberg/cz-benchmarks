@@ -18,7 +18,7 @@
 | Task                                                                                | Description                                                                                                                                               |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                                                       |
-| [Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
+| [Metadata label prediction - Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
 | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                                                  |
 | [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context, under CRISPRi perturbation |
 
