@@ -271,7 +271,7 @@ print(f"Parameters: {list(info.task_params.keys())}")
 ## Best Practices
 
 - ✅ **Single Responsibility**: Each task should solve one well-defined problem
-- ✅ **Reproducibility**: Use `self.random_seed` for all random operations  
+- ✅ **Reproducibility**: Pass `self.random_seed` to any library function calls that have stochastic behavior
 - ✅ **Type Safety**: Use explicit type hints throughout
 - ✅ **Logging**: Log key steps for debugging (`logger.info`, `logger.debug`)
 - ✅ **Error Handling**: Provide informative error messages
