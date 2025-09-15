@@ -78,7 +78,7 @@ dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 
 ### Accessing Dataset Attributes
 
-After loading, you can access key attributes depending on the dataset type:
+After loading, you can access the Dataset's attributes, which vary depending on the dataset type:
 
 #### For `SingleCellLabeledDataset`:
 
