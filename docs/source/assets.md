@@ -9,6 +9,7 @@
     - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
+    - [Sequential Ordering](#sequential-ordering)  
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
     
 
@@ -21,6 +22,9 @@
 | [Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
 | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                                                  |
 | [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context, under CRISPRi perturbation |
+| [Sequential Ordering](#sequential-ordering)                                         | Evaluates how well a model’s embeddings capture temporal information by measuring how well embeddings preserve sequential structure.                      |
+
+
 
 
 ## Data Descriptions
