@@ -90,10 +90,10 @@ labels_series = dataset.labels      # Labels from the specified obs column
 #### For `SingleCellPerturbationDataset`:
 
 ```python
-control_cells_ids = dataset.control_cells_ids                # List of control cell IDs
+control_cells_ids = dataset.control_cells_ids                  # List of control cell IDs
 target_conditions_to_save = dataset.target_conditions_to_save  # Conditions to be saved for benchmarking
-de_results = dataset.de_results                              # Differential expression results
-control_matched_adata = dataset.control_matched_adata        # AnnData object for matched controls
+de_results = dataset.de_results                                # Differential expression results
+control_matched_adata = dataset.control_matched_adata          # AnnData object for matched controls
 ```
 
 Refer to the class docstrings and API documentation for more details on available attributes and methods.
