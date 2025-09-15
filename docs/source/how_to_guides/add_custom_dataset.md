@@ -159,7 +159,7 @@ class MyCustomDataset(SingleCellDataset):
 - Ensure your dataset loads and validates correctly.
 - Test it with the intended tasks to ensure compatibility.
 
-**Tips:**
+### Tips
 - Place your new class in the appropriate module under `czbenchmarks.datasets`.
 - If your dataset type is specialized (e.g., single-cell), inherit from the relevant subclass (`SingleCellDataset`).
 - Refer to existing classes in `single_cell.py` or `single_cell_labeled.py` for more examples.
