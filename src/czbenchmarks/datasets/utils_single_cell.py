@@ -45,18 +45,14 @@ def create_adata_for_condition(
         )
 
     # Concatenate condition and control data
-    adata_merged = ad.concat(
-        [adata_condition, adata_control], index_unique=None
-    ).copy()
+    adata_merged = ad.concat([adata_condition, adata_control], index_unique=None).copy()
 
     label_cond = [condition] * len(adata_condition)
     label_ctrl = [f"{control_name}_{condition}"] * len(adata_control)
     adata_merged.obs[condition_key] = label_cond + label_ctrl
 
     # Add condition to cell_barcode_gene column and set as index
-    adata_merged.obs_names = (
-        adata_merged.obs_names.astype(str) + "_" + condition
-    )
+    adata_merged.obs_names = adata_merged.obs_names.astype(str) + "_" + condition
 
     return adata_merged, len(adata_condition)
 
@@ -165,7 +161,9 @@ def run_multicondition_dge_analysis(
                 f"genes using min_cells={filter_min_cells} and min_genes={filter_min_genes}"
             )
 
-            comparison_group_counts = adata_merged.obs["comparison_group"].value_counts()
+            comparison_group_counts = adata_merged.obs[
+                "comparison_group"
+            ].value_counts()
             if len(comparison_group_counts) < 2 or comparison_group_counts.min() < 1:
                 logger.warning(
                     f"Insufficient filtered cells for analysis of {selected_condition}"
@@ -193,8 +191,16 @@ def run_multicondition_dge_analysis(
                 comp_vals = adata_merged.obs["comparison_group"].to_numpy()
                 control_mask = comp_vals == "control"
                 condition_mask = comp_vals == selected_condition
-                nc_mean = adata_merged[control_mask, results["names"]].X.mean(axis=0).flatten()
-                target_mean = adata_merged[condition_mask, results["names"]].X.mean(axis=0).flatten()
+                nc_mean = (
+                    adata_merged[control_mask, results["names"]]
+                    .X.mean(axis=0)
+                    .flatten()
+                )
+                target_mean = (
+                    adata_merged[condition_mask, results["names"]]
+                    .X.mean(axis=0)
+                    .flatten()
+                )
                 indexes = np.where((target_mean > 0) & (nc_mean > 0))[0]
                 logger.info(
                     f"remove_avg_zeros is True. Removing {len(results) - len(indexes)} genes with zero expression"
@@ -205,7 +211,7 @@ def run_multicondition_dge_analysis(
             if return_merged_adata:
                 adata_merged.obs.drop(columns=["comparison_group"], inplace=True)
                 adata_results.append(adata_merged)
-                
+
             pbar.set_postfix_str(f"Completed {pbar.n + 1}/{len(target_conditions)}")
             pbar.update(1)
 
