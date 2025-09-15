@@ -290,10 +290,10 @@ def run_multicondition_dge_analysis(
         "group": "group",
         "condition": "condition",
     }
-    results = results.rename(columns=col_mapper)
-    cols = [x for x in col_mapper.values() if x in results.columns]
-    results = results[cols]
-    return results, adata_merged
+    results_df = results_df.rename(columns=col_mapper)
+    cols = [x for x in col_mapper.values() if x in results_df.columns]
+    results_df = results_df[cols]
+    return results_df, adata_merged
 
 
 def load_local_dataset(

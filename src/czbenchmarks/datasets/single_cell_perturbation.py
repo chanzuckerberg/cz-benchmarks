@@ -216,10 +216,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
 
         def _create_adata_for_condition(
-            selected_condition: str,
+            condition: str,
             target_condition_dict: dict,
-            rows_cond: np.ndarray,
-            rows_ctrl: np.ndarray,
+            rows_cond: np.ndarray[np.int_],
+            rows_ctrl: np.ndarray[np.int_],
             adata: ad.AnnData = self.adata,
             condition_key: str = self.condition_key,
             control_name: str = self.control_name,
@@ -227,14 +227,29 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             """
             Create an AnnData object for a single condition.
             Setup as a private function to allow for multiprocessing if needed.
+
+            Args:
+                condition: str, condition to create paired condition / control adata
+                condition_key: str, condition key in adata.obs
+                control_name: str, control name in adata.obs
+                target_condition_dict: dict, dictionary of target conditions for each cell
+                rows_cond: np.ndarray[np.int_], integer rows of condition in adata
+                rows_ctrl: np.ndarray[np.int_], integer rows of control in adata
+                adata: ad.AnnData, anndata with condition and control cells
+                condition_key: str, condition key in adata.obs
+                control_name: str, control name in adata.obs
+
+            Returns:
+                adata_merged: ad.AnnData, adata with condition and control cells
+                target_conditions_to_save: dict, dictionary of target conditions for each cell
             """
 
-            adata_condition = adata[rows_cond].to_memory()
-            adata_control = adata[rows_ctrl].to_memory()
+            adata_condition = adata[rows_cond]
+            adata_control = adata[rows_ctrl]
 
             if len(adata_condition) != len(adata_control):
                 logger.warning(
-                    f"Condition and control data for {selected_condition} have different lengths."
+                    f"Condition and control data for {condition} have different lengths."
                 )
 
             # Concatenate condition and control data
@@ -242,13 +257,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 [adata_condition, adata_control], index_unique=None
             ).copy()
 
-            label_cond = [selected_condition] * len(adata_condition)
-            label_ctrl = [f"{control_name}_{selected_condition}"] * len(adata_control)
+            label_cond = [condition] * len(adata_condition)
+            label_ctrl = [f"{control_name}_{condition}"] * len(adata_control)
             adata_merged.obs[condition_key] = label_cond + label_ctrl
 
             # Add condition to cell_barcode_gene column and set as index
             adata_merged.obs_names = (
-                adata_merged.obs_names.astype(str) + "_" + selected_condition
+                adata_merged.obs_names.astype(str) + "_" + condition
             )
 
             # Add target genes to the dictionary for each cell
