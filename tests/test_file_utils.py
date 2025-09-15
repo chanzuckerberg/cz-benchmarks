@@ -1,7 +1,7 @@
 import pytest
 import os
 from datetime import datetime, timedelta
-from czbenchmarks.file_utils import CacheManager, upload_file_to_remote
+from czbenchmarks.file_utils import CacheManager
 
 
 @pytest.fixture
@@ -57,13 +57,3 @@ def test_cache_manager_clean_expired_cache(temp_file, cache_manager):
 
     cache_manager.clean_expired_cache()
     assert not temp_file.exists()
-
-
-def test_upload_file_to_remote_invalid_remote_url(temp_file):
-    """Test upload_file_to_remote raises ValueError for invalid remote prefix URL."""
-    invalid_remote_prefix_url = "invalid_prefix"
-    with pytest.raises(
-        ValueError,
-        match=f"Remote URL {invalid_remote_prefix_url!r} should be a prefix ending in '/'",
-    ):
-        upload_file_to_remote(str(temp_file), invalid_remote_prefix_url)
