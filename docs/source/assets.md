@@ -9,6 +9,7 @@
     - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
+    - [Cross-Species disease label transfer](#cross-species-disease-label-transfer) 
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
     
 
@@ -21,6 +22,9 @@
 | [Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
 | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                                                  |
 | [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context, under CRISPRi perturbation |
+| [Cross-Species disease label transfer](#cross-species-disease-label-transfer)       | Evaluates how well model embeddings capture disease-relevant information that generalizes across species.                                                 |
+
+
 
 
 ## Data Descriptions
@@ -94,6 +98,23 @@ This task evaluates the performance of models fine-tuned to predict cellular res
 | Pearson Delta Correlation - top 20 DE genes |             |
 | Pearson Delta Correlation - all genes       |             |
 | Jaccardian Similarity                       |             |
+
+
+
+### Cross Species Disease Label Transfer 
+
+Contributed by: Yuyao Song (EBI), Rafaela Merika (EBI), Irene Papatheodorou (EBI), Yepeng Huang (Harvard), Ellaine Chou (CZI)
+
+This task evaluates how well model embeddings capture disease-relevant information that generalizes across species. Embeddings are generated for all cells per sample and aggregated by taking their mean, resulting in one embedding per sample. These sample-level embeddings are used to train linear probes, including k-nearest neighbors, logistic regression, and random forest, to predict disease vs healthy status. The final benchmark output is reported as an average across classifiers and, if appropriate, across cross-validation folds.
+
+#### Task: Cross Species Disease Label Transfer
+
+| Metrics   | Description                                                                                                                                                                                                                                                                                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Macro F1  | Measures the harmonic mean of precision and recall; ( 2*tp ) / ( 2 * tp + fp + fn ) where tp = true positives, fn = false negatives, fp = false positives. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L102).                         |
+| Accuracy  | Proportion of correct predictions over total predictions. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L94).                                                                                                                           |
+| Precision | Measures the proportion of true positive predictions among all positive predictions; tp / (tp + fp) where tp = true positives, fp = false positives. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L110).                               |
+| AUROC     | Measures the probability that the model will rank a randomly chosen data point belonging to that category higher than a randomly chosen data point not belonging to that category. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L126). |
 
 
 ## Guidelines for Included Assets
