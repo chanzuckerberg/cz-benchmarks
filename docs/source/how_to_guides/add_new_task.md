@@ -268,7 +268,7 @@ print(f"Description: {info.description}")
 print(f"Parameters: {list(info.task_params.keys())}")
 ```
 
-## Best Practices
+## Tips
 
 - ✅ **Single Responsibility**: Each task should solve one well-defined problem
 - ✅ **Reproducibility**: Pass `self.random_seed` to any library function calls that have stochastic behavior
