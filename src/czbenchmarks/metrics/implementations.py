@@ -31,7 +31,11 @@ from sklearn.metrics import (
 )
 
 from .types import MetricRegistry, MetricType
-from .utils import compute_entropy_per_cell, mean_fold_metric
+from .utils import (
+    compute_entropy_per_cell,
+    mean_fold_metric,
+    sequential_alignment,
+)
 
 
 def spearman_correlation(a, b):
@@ -91,8 +95,7 @@ metrics_registry.register(
     func=compute_entropy_per_cell,
     required_args={"X", "labels"},
     description=(
-        "Computes entropy of batch labels in local neighborhoods. "
-        "Higher values indicate better batch mixing."
+        "Computes entropy of batch labels in local neighborhoods. Higher values indicate better batch mixing."
     ),
     tags={"integration"},
 )
@@ -102,8 +105,7 @@ metrics_registry.register(
     func=silhouette_batch,
     required_args={"X", "labels", "batch"},
     description=(
-        "Batch-aware silhouette score that measures how well cells "
-        "cluster across batches."
+        "Batch-aware silhouette score that measures how well cells cluster across batches."
     ),
     tags={"integration"},
 )
@@ -190,6 +192,14 @@ metrics_registry.register(
     required_args={"y_true", "y_pred"},
     description="F1 score between true and predicted values",
     tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.SEQUENTIAL_ALIGNMENT,
+    func=sequential_alignment,
+    required_args={"X", "labels"},
+    description="Sequential alignment score measuring consistency in embeddings",
+    tags={"sequential"},
 )
 
 metrics_registry.register(

@@ -13,6 +13,10 @@ from czbenchmarks.tasks import (
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
 )
+from czbenchmarks.tasks.sequential import (
+    SequentialOrganizationTask,
+    SequentialOrganizationTaskInput,
+)
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
@@ -659,3 +663,25 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     assert task_input.de_results.shape[0] > 0
     assert task_input.masked_adata_obs.shape[0] > 0
     assert len(task_input.var_index) > 0
+
+
+def test_sequential_organization_task(embedding_matrix, obs):
+    """Test that SequentialOrganizationTask executes without errors."""
+    task = SequentialOrganizationTask()
+    labels = np.arange(obs.shape[0])  # must be numeric labels as numpy 1d array
+    task_input = SequentialOrganizationTaskInput(obs=obs, input_labels=labels)
+
+    # Test regular task execution
+    results = task.run(
+        cell_representation=embedding_matrix,
+        task_input=task_input,
+    )
+
+    # Verify results structure
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
+
+    # Test baseline (this is just exercising the Task base class baseline implementation)
+    baseline_results = task.compute_baseline(expression_data=embedding_matrix)
+    assert isinstance(baseline_results, CellRepresentation)
+    assert baseline_results.shape[0] == embedding_matrix.shape[0]

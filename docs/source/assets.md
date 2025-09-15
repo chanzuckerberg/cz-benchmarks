@@ -8,6 +8,7 @@
     - [Cell Clustering (in embedding space)](#cell-clustering-in-embedding-space)
     - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
+    - [Sequential Organization](#sequential-organization)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
     
@@ -20,6 +21,7 @@
 | [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                         |
 | [Cell type classification](#metadata-label-prediction-cell-type-classification)   | Use classifiers to predict cell type from embeddings                                                                        |
 | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                    |
+| [Sequential Organization](#sequential-organization)                                | Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics                               |
 | [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | [In progress, subject to further validation] Compare predicted vs ground-truth expression shifts under genetic perturbation |
 
 
@@ -74,6 +76,18 @@ This task evaluates the model's ability to learn representations that are consis
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entropy per cell | Measures the average entropy of the batch labels within the local neighborhood of each cell. Implemented [here](https://github.com/chanzuckerberg/cellxgene-census/blob/f44637ba33567400820407f4f7b9984e52966156/tools/models/metrics/run-scib.py#L86). |
 | Batch silhouette | A modified silhouette score to measure the extent of batch mixing within biological labels. Described by [Luecken et al](https://www.nature.com/articles/s41592-021-01336-8).                                                                           |
+
+
+### Sequential Organization
+
+This task evaluates sequential consistency in embeddings using time point labels and k-NN based metrics. It assesses how well embeddings preserve the sequential organization between cells, which is important for time-series or developmental trajectory data.
+
+#### Task: Sequential Organization
+
+| Metrics            | Description                                                                                                                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Silhouette score   | Measures cluster separation based on within-cluster and between-cluster distances using sequential labels to evaluate embedding quality with respect to sequential organization.                                                                                                           |
+| Sequential alignment | A k-NN based metric that evaluates how well the embedding preserves sequential relationships by measuring the consistency of sequential neighbors in the embedding space compared to the original sequential ordering.                                                                       |
 
 
 ### Genetic Perturbation Prediction
