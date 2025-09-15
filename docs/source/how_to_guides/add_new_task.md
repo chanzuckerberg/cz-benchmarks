@@ -23,7 +23,7 @@ This guide explains how to create and integrate your own evaluation task into cz
 
 ### Key Features
 
-- **Automatic Registration**: Tasks are automatically registered when defined via `__init_subclass__`
+- **Automatic Registration**: Tasks are automatically registered by the Task base class (in  `__init_subclass__`)
 - **Arbitrary Types**: Input/Output models support complex objects (DataFrames, arrays) via `model_config = {"arbitrary_types_allowed": True}`
 - **Type Safety**: Full Pydantic validation for all inputs
 
