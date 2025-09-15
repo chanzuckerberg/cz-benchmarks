@@ -13,7 +13,8 @@ Tasks are used to evaluate model outputs in a standardized way. Each task takes 
 - **[`Task`](../autoapi/czbenchmarks/tasks/task/index)**: The abstract base class for all tasks. It defines the standard lifecycle:
     1. **Execution** via the `_run_task()` method, which performs the core computation.
     2. **Metric Computation** via the `_compute_metrics()` method.
-    3. Multi-dataset operations (`requires_multiple_datasets`) and baseline embeddings are also supported.
+    3. Multi-dataset operations via the `requires_multiple_datasets` method.
+    4. Baseline embeddings via the `compute_baseline` method.
 - **[`TaskInput`](../autoapi/czbenchmarks/tasks/task/index)** and **[`TaskOutput`](../autoapi/czbenchmarks/tasks/task/index)**: Pydantic base classes used to define structured inputs and outputs for each task, ensuring type safety and clarity.
 
 ### Task Organization
