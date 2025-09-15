@@ -46,6 +46,7 @@ class TestRunMulticonditionDGEAnalysis:
         results, merged_adata = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
+            control_name="NC",
             control_cells_ids=control_cells_ids,
             deg_test_name="wilcoxon",
             filter_min_cells=1,
@@ -62,7 +63,7 @@ class TestRunMulticonditionDGEAnalysis:
         # Should contain both conditions
         assert set(results["condition"]).issuperset({"A", "B"})
 
-        # Merged AnnData should be returned and contain comparison_group labels
+        # Merged AnnData should be returned 
         assert isinstance(merged_adata, ad.AnnData)
         assert "dge_results" in merged_adata.uns
         assert "params" in merged_adata.uns["dge_results"]
@@ -74,10 +75,6 @@ class TestRunMulticonditionDGEAnalysis:
         assert deg_results["min_pert_cells"] == 1
         assert deg_results["remove_avg_zeros"] == False
 
-        assert "comparison_group" in merged_adata.obs.columns
-        groups = set(merged_adata.obs["comparison_group"].unique().tolist())
-        assert {"control", "A", "B"}.issubset(groups)
-
     def test_returns_none_when_all_filtered_out(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
@@ -85,6 +82,7 @@ class TestRunMulticonditionDGEAnalysis:
         results, merged_adata = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
+            control_name="NC",
             control_cells_ids=control_cells_ids,
             filter_min_cells=1,
             filter_min_genes=100,  # higher than number of genes to filter all cells out
@@ -101,6 +99,7 @@ class TestRunMulticonditionDGEAnalysis:
         res_w, _ = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
+            control_name="NC",
             control_cells_ids=control_cells_ids,
             deg_test_name="wilcoxon",
             filter_min_cells=1,
@@ -113,6 +112,7 @@ class TestRunMulticonditionDGEAnalysis:
         res_t, _ = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
+            control_name="NC",
             control_cells_ids=control_cells_ids,
             deg_test_name="t-test",
             filter_min_cells=1,
@@ -157,6 +157,7 @@ class TestRunMulticonditionDGEAnalysis:
         res, merged = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
+            control_name="NC",
             control_cells_ids=control_cells_ids,
             deg_test_name="wilcoxon",
             filter_min_cells=filter_min_cells,
@@ -182,7 +183,6 @@ class TestRunMulticonditionDGEAnalysis:
         # return_merged_adata flag behavior
         if return_merged_adata:
             assert isinstance(merged, ad.AnnData)
-            assert "comparison_group" in merged.obs.columns
         else:
             assert merged is None
 
