@@ -141,7 +141,7 @@ class TestRunMulticonditionDGEAnalysis:
     def test_basic_returns_df_and_merged_adata(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
-        results, merged = run_multicondition_dge_analysis(
+        results, merged_adata = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -150,7 +150,6 @@ class TestRunMulticonditionDGEAnalysis:
             filter_min_genes=1,
             min_pert_cells=1,
             remove_avg_zeros=False,
-            store_dge_metadata=False,
             return_merged_adata=True,
         )
 
@@ -162,16 +161,26 @@ class TestRunMulticonditionDGEAnalysis:
         assert set(results["condition"]).issuperset({"A", "B"})
 
         # Merged AnnData should be returned and contain comparison_group labels
-        assert isinstance(merged, ad.AnnData)
-        assert "comparison_group" in merged.obs.columns
-        groups = set(merged.obs["comparison_group"].unique().tolist())
+        assert isinstance(merged_adata, ad.AnnData)
+        assert "dge_results" in merged_adata.uns
+        assert "params" in merged_adata.uns["dge_results"]
+
+        deg_results = merged_adata.uns["dge_results"]["params"]
+        assert deg_results["method"] == "wilcoxon"
+        assert deg_results["filter_min_cells"] == 1
+        assert deg_results["filter_min_genes"] == 1
+        assert deg_results["min_pert_cells"] == 1
+        assert deg_results["remove_avg_zeros"] == False
+
+        assert "comparison_group" in merged_adata.obs.columns
+        groups = set(merged_adata.obs["comparison_group"].unique().tolist())
         assert {"control", "A", "B"}.issubset(groups)
 
     def test_returns_none_when_all_filtered_out(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
         # Set very strict filtering so cells are removed, triggering early None return
-        results, merged = run_multicondition_dge_analysis(
+        results, merged_adata = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_cells_ids=control_cells_ids,
@@ -182,7 +191,7 @@ class TestRunMulticonditionDGEAnalysis:
         )
 
         assert results is None
-        assert merged is None
+        assert merged_adata is None
 
     def test_deg_test_name_affects_scores(self, make_adata):
         adata_obj, control_cells_ids = make_adata
@@ -196,7 +205,6 @@ class TestRunMulticonditionDGEAnalysis:
             filter_min_genes=1,
             min_pert_cells=1,
             remove_avg_zeros=False,
-            store_dge_metadata=False,
             return_merged_adata=False,
         )
 
@@ -209,24 +217,26 @@ class TestRunMulticonditionDGEAnalysis:
             filter_min_genes=1,
             min_pert_cells=1,
             remove_avg_zeros=False,
-            store_dge_metadata=False,
             return_merged_adata=False,
         )
 
-        a_w = (
-            res_w[res_w["condition"] == "A"]
+        # Compare scores for any condition present in both results
+        conds_both = set(res_w["condition"]).intersection(set(res_t["condition"]))
+        assert len(conds_both) > 0
+        cond = sorted(conds_both)[0]
+        s_w = (
+            res_w[res_w["condition"] == cond]
             .sort_values("score", ascending=False)["score"]
             .tolist()
         )
-        a_t = (
-            res_t[res_t["condition"] == "A"]
+        s_t = (
+            res_t[res_t["condition"] == cond]
             .sort_values("score", ascending=False)["score"]
             .tolist()
         )
-        assert a_w != a_t
+        assert s_w != s_t
 
     @pytest.mark.parametrize("remove_avg_zeros", [False, True])
-    @pytest.mark.parametrize("store_dge_metadata", [False, True])
     @pytest.mark.parametrize("return_merged_adata", [False, True])
     @pytest.mark.parametrize("filter_min_cells", [1, 3])
     @pytest.mark.parametrize("min_pert_cells", [1, 3])
@@ -235,7 +245,6 @@ class TestRunMulticonditionDGEAnalysis:
         self,
         make_adata,
         remove_avg_zeros,
-        store_dge_metadata,
         return_merged_adata,
         filter_min_cells,
         min_pert_cells,
@@ -252,7 +261,6 @@ class TestRunMulticonditionDGEAnalysis:
             filter_min_genes=1,
             min_pert_cells=min_pert_cells,
             remove_avg_zeros=remove_avg_zeros,
-            store_dge_metadata=store_dge_metadata,
             return_merged_adata=return_merged_adata,
         )
 
@@ -268,12 +276,6 @@ class TestRunMulticonditionDGEAnalysis:
             assert target_condition not in present_conditions
         else:
             assert target_condition in present_conditions
-
-        # store_dge_metadata flag behavior
-        if store_dge_metadata:
-            assert "dge_params" in res.columns
-        else:
-            assert "dge_params" not in res.columns
 
         # return_merged_adata flag behavior
         if return_merged_adata:
@@ -308,3 +310,6 @@ class TestRunMulticonditionDGEAnalysis:
                     assert "gene_2" not in target_genes
             else:
                 assert "gene_2" not in target_genes
+
+if __name__ == "__main__":
+    pytest.main(["-k", "test_basic_returns_df_and_merged_adata"])
