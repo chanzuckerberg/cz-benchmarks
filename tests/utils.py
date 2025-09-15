@@ -139,9 +139,7 @@ class DummyTask(Task):
     """A dummy task implementation for testing."""
 
     display_name = "Dummy Task"
-    description = (
-        "Dummy task for testing."
-    )
+    description = "Dummy task for testing."
     input_model = TaskInput
 
     def __init__(
