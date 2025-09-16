@@ -41,7 +41,7 @@ set -e
 # You can also modify the model class and artifacts as needed.
 REPO_URL="https://github.com/chanzuckerberg/vcp-model-pkg-client-tools.git"
 REPO_DIR="vcp-model-pkg-client-tools"
-MODEL_PKG_DIR="$REPO_DIR/examples/mlflow_pkgs/scvi_mlflow_pkg"
+MODEL_PKG_DIR="$REPO_DIR/examples/models/scvi/mlflow_pkg/"
 VENV_NAME=".venv_mlflow_pkg"
 MODEL_DATA_DIR="model_data"
 MLFLOW_ARTIFACT_DIR="mlflow_model_artifact"
@@ -63,27 +63,27 @@ cd "$MODEL_PKG_DIR"
 echo "📁 Working directory: $(pwd)"
 
 # # Modify requirements.txt for Mac compatibility. Uncomment below if needed.
-# if [ -f "requirements.txt" ]; then
-#     echo "🔄 Modifying requirements.txt for Mac compatibility..."
+if [ -f "requirements.txt" ]; then
+    echo "🔄 Modifying requirements.txt for Mac compatibility..."
     
-#     # Create backup
-#     cp requirements.txt requirements.txt.backup
+    # Create backup
+    cp requirements.txt requirements.txt.backup
     
-#     # Comment out NVIDIA-related libraries
-#     sed -i.tmp 's/.*nvidia.*/# & # ' requirements.txt
-#     sed -i.tmp 's/.*cupy.*/# & # ' requirements.txt
-#     sed -i.tmp 's/.*torch+cu.*/# & # ' requirements.txt
-#     sed -i.tmp 's/.*cuda.*/# & # ' requirements.txt
-#     sed -i.tmp 's/.*triton.*/# & # ' requirements.txt
+    # Comment out NVIDIA-related libraries (in-place, cross-platform compatible)
+    sed -i.bak '/nvidia/ s/^/# /' requirements.txt
+    sed -i.bak '/cupy/ s/^/# /' requirements.txt
+    sed -i.bak '/torch+cu/ s/^/# /' requirements.txt
+    sed -i.bak '/cuda/ s/^/# /' requirements.txt
+    sed -i.bak '/triton/ s/^/# /' requirements.txt
     
-#     # Remove temporary file
-#     rm requirements.txt.tmp
+    # Remove temporary file
+    rm requirements.txt.bak
     
-#     echo "✅ Modified requirements.txt for Mac compatibility"
-# else
-#     echo "❌ requirements.txt not found"
-#     exit 1
-# fi
+    echo "✅ Modified requirements.txt for Mac compatibility"
+else
+    echo "❌ requirements.txt not found"
+    exit 1
+fi
 
 # Check if python3.12 is available
 if ! command -v python3.12 &> /dev/null; then
