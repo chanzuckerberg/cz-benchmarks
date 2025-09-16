@@ -203,7 +203,7 @@ def test_end_to_end_perturbation_expression_prediction():
         de_results=dataset.de_results,
         var_index=dataset.control_matched_adata.var.index,
         masked_adata_obs=dataset.control_matched_adata.obs,
-        target_conditions_to_save=dataset.target_conditions_to_save,
+        target_conditions_dict=dataset.target_conditions_dict,
         row_index=dataset.adata.obs.index,
     )
 

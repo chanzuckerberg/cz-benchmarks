@@ -307,12 +307,18 @@ def test_perturbation_task():
         control_condition_name
     )
 
-    # Create target_conditions_to_save dict - map cell IDs to lists of genes to mask
-    target_conditions_to_save = {}
-    for cell_id in adata.obs_names:
-        # Sample some genes to mask for each cell
+    # Create target_conditions_dict dict - map condition names to lists of genes to mask
+    target_conditions_dict = {}
+    # Map each perturbation condition to genes to mask
+    unique_conditions = np.unique(
+        masked_adata_obs["condition"][
+            ~masked_adata_obs["condition"].str.startswith("non-targeting")
+        ]
+    )
+    for condition in unique_conditions:
+        # Sample some genes to mask for each condition
         n_genes_to_mask = min(10, len(var_names) // 2)
-        target_conditions_to_save[cell_id] = list(
+        target_conditions_dict[condition] = list(
             np.random.choice(var_names, n_genes_to_mask, replace=False)
         )
 
@@ -320,7 +326,7 @@ def test_perturbation_task():
         de_results=de_results,
         masked_adata_obs=masked_adata_obs,
         var_index=var_names,
-        target_conditions_to_save=target_conditions_to_save,
+        target_conditions_dict=target_conditions_dict,
         row_index=adata.obs.index,
     )
 
@@ -418,7 +424,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
         var=pd.DataFrame(index=gene_names),
     )
-    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    target_conditions_dict = {"gene_A": list(gene_names), "gene_B": list(gene_names)}
     cell_representation = X
 
     # Ensure de_results has the expected gene identifier column
@@ -431,7 +437,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         de_results=de_res_wilcoxon_df,
         masked_adata_obs=adata.obs,
         var_index=adata.var_names,
-        target_conditions_to_save=target_conditions_to_save,
+        target_conditions_dict=target_conditions_dict,
         row_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
@@ -533,7 +539,7 @@ def test_perturbation_expression_prediction_task_ttest():
         obs=pd.DataFrame({"condition": conditions}, index=obs_names),
         var=pd.DataFrame(index=gene_names),
     )
-    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    target_conditions_dict = {"gene_A": list(gene_names), "gene_B": list(gene_names)}
     cell_representation = X
 
     # Ensure de_results has the expected gene identifier column
@@ -546,7 +552,7 @@ def test_perturbation_expression_prediction_task_ttest():
         de_results=de_res_ttest_df,
         masked_adata_obs=adata.obs,
         var_index=adata.var_names,
-        target_conditions_to_save=target_conditions_to_save,
+        target_conditions_dict=target_conditions_dict,
         row_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
@@ -650,10 +656,8 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
     assert isinstance(task_input.de_results, pd.DataFrame)
     assert isinstance(task_input.masked_adata_obs, pd.DataFrame)
-    assert len(task_input.target_conditions_to_save) > 0
-    assert all(
-        isinstance(v, list) for v in task_input.target_conditions_to_save.values()
-    )
+    assert len(task_input.target_conditions_dict) > 0
+    assert all(isinstance(v, list) for v in task_input.target_conditions_dict.values())
 
     # Verify data integrity
     assert task_input.de_results.shape[0] > 0

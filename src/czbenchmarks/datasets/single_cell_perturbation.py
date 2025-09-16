@@ -439,7 +439,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Condition format must be one of:
-          - ``{control_name}`` or ``{control_name}_{perturb}`` for matched control samples.
+          - ``{control_name}`` or ``{control_name}_{suffix}`` for control samples.
           - ``{perturb}`` for single perturbations.
         - Combinatorial perturbations are not currently supported.
 
@@ -448,26 +448,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         super()._validate()
 
-        # Validate condition format
-        conditions = set(self.control_matched_adata.obs[self.condition_key])
-        target_conditions = set(
-            self.target_conditions_dict.keys()
-        )  # Update for multiple perturbations
-        breakpoint()
-        for condition in conditions:
+        # Validate condition format by checking the ORIGINAL conditions before processing
+        original_conditions = set(self.adata.obs[self.condition_key])
+        target_conditions = set(self.target_conditions_dict.keys())
+
+        for condition in original_conditions:
             if condition in target_conditions:
+                # This is a valid perturbation condition
                 continue
             elif condition.startswith(self.control_name):
-                control_matched_condition = condition.split("_")[1]
-                if control_matched_condition not in target_conditions:
-                    raise ValueError(
-                        f"Invalid control matched condition format: {condition}. "
-                        f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}``"
-                    )
+                # This is a control condition - can be just control_name or control_name_*
+                continue
             else:
-                # Update for multiple perturbations
+                # Invalid condition format - not a known perturbation and doesn't start with control_name
                 raise ValueError(
-                    f"Invalid perturbation condition format: {condition}. "
-                    f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
-                    "or ``{perturb}`` for perturbations."
+                    f"Invalid condition format: {condition}. "
+                    f"Must be ``{self.control_name}`` or ``{self.control_name}_*`` for control samples "
+                    f"or one of {list(target_conditions)} for perturbations."
                 )
