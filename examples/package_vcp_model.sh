@@ -63,27 +63,27 @@ cd "$MODEL_PKG_DIR"
 echo "📁 Working directory: $(pwd)"
 
 # # Modify requirements.txt for Mac compatibility. Uncomment below if needed.
-if [ -f "requirements.txt" ]; then
-    echo "🔄 Modifying requirements.txt for Mac compatibility..."
+# if [ -f "requirements.txt" ]; then
+#     echo "🔄 Modifying requirements.txt for Mac compatibility..."
     
-    # Create backup
-    cp requirements.txt requirements.txt.backup
+#     # Create backup
+#     cp requirements.txt requirements.txt.backup
     
-    # Comment out NVIDIA-related libraries (in-place, cross-platform compatible)
-    sed -i.bak '/nvidia/ s/^/# /' requirements.txt
-    sed -i.bak '/cupy/ s/^/# /' requirements.txt
-    sed -i.bak '/torch+cu/ s/^/# /' requirements.txt
-    sed -i.bak '/cuda/ s/^/# /' requirements.txt
-    sed -i.bak '/triton/ s/^/# /' requirements.txt
+#     # Comment out NVIDIA-related libraries (in-place, cross-platform compatible)
+#     sed -i.bak '/nvidia/ s/^/# /' requirements.txt
+#     sed -i.bak '/cupy/ s/^/# /' requirements.txt
+#     sed -i.bak '/torch+cu/ s/^/# /' requirements.txt
+#     sed -i.bak '/cuda/ s/^/# /' requirements.txt
+#     sed -i.bak '/triton/ s/^/# /' requirements.txt
     
-    # Remove temporary file
-    rm requirements.txt.bak
+#     # Remove temporary file
+#     rm requirements.txt.bak
     
-    echo "✅ Modified requirements.txt for Mac compatibility"
-else
-    echo "❌ requirements.txt not found"
-    exit 1
-fi
+#     echo "✅ Modified requirements.txt for Mac compatibility"
+# else
+#     echo "❌ requirements.txt not found"
+#     exit 1
+# fi
 
 # Check if python3.12 is available
 if ! command -v python3.12 &> /dev/null; then
