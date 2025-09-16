@@ -1,7 +1,19 @@
-from .cross_species import CrossSpeciesIntegrationTask
-from .perturbation import PerturbationTask
+from .cross_species import (
+    CrossSpeciesIntegrationOutput,
+    CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
+)
+from .perturbation_expression_prediction import (
+    PerturbationExpressionPredictionOutput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
 
 __all__ = [
+    "CrossSpeciesIntegrationTaskInput",
+    "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
-    "PerturbationTask",
+    "PerturbationExpressionPredictionTask",
+    "PerturbationExpressionPredictionTaskInput",
+    "PerturbationExpressionPredictionOutput",
 ]

@@ -1,15 +1,59 @@
-"""Implementation of metric functions and registration with the registry."""
+"""
+Implementation of metric functions and registration with the registry.
 
+This file defines and registers various metrics with a global `MetricRegistry`.
+Metrics are categorized into the following types:
+- Clustering metrics (e.g., Adjusted Rand Index, Normalized Mutual Information)
+- Embedding quality metrics (e.g., Silhouette Score)
+- Integration metrics (e.g., Entropy Per Cell, Batch Silhouette)
+- Perturbation metrics (e.g., Mean Squared Error, Pearson Correlation)
+- Label prediction metrics (e.g., Mean Fold Accuracy, Mean Fold F1 Score)
+
+Each metric is registered with:
+- A unique `MetricType` identifier.
+- The function implementing the metric.
+- Required arguments for the metric function.
+- A description of the metric's purpose.
+- Tags categorizing the metric.
+"""
+
+import numpy as np
 from scib_metrics import silhouette_batch, silhouette_label
+from scipy.stats import spearmanr
 from sklearn.metrics import (
+    accuracy_score,
     adjusted_rand_score,
-    normalized_mutual_info_score,
+    f1_score,
     mean_squared_error,
+    normalized_mutual_info_score,
+    precision_score,
+    recall_score,
 )
-from scipy.stats import pearsonr
-from .utils import compute_entropy_per_cell, mean_fold_metric, jaccard_score
 
 from .types import MetricRegistry, MetricType
+from .utils import compute_entropy_per_cell, mean_fold_metric
+
+
+def spearman_correlation(a, b):
+    """Wrapper for spearmanr that returns only the correlation coefficient."""
+    result = spearmanr(a, b)
+    value = result.statistic
+    return 0 if np.isnan(value) else value
+
+
+def precision_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for precision_score with zero_division=0 to suppress warnings."""
+    return precision_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
+def recall_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for recall_score with zero_division=0 to suppress warnings."""
+    return recall_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
+def f1_score_zero_division(y_true, y_pred, **kwargs):
+    """Wrapper for f1_score with zero_division=0 to suppress warnings."""
+    return f1_score(y_true, y_pred, zero_division=0, **kwargs)
 
 
 # Create the global metric registry
@@ -73,29 +117,15 @@ metrics_registry.register(
     tags={"perturbation"},
 )
 
-metrics_registry.register(
-    MetricType.PEARSON_CORRELATION,
-    func=pearsonr,
-    required_args={"x", "y"},
-    description="Pearson correlation between true and predicted values",
-    tags={"perturbation"},
-)
-
-metrics_registry.register(
-    MetricType.JACCARD,
-    func=jaccard_score,
-    required_args={"y_true", "y_pred"},
-    description="Jaccard similarity between true and predicted values",
-    tags={"perturbation"},
-)
-
 # Register cross-validation classification metrics
 metrics_registry.register(
     MetricType.MEAN_FOLD_ACCURACY,
     func=mean_fold_metric,
     required_args={"results_df"},
     default_params={"metric": "accuracy", "classifier": None},
-    tags={"label_prediction"},
+    tags={
+        "label_prediction",
+    },
 )
 
 metrics_registry.register(
@@ -128,4 +158,44 @@ metrics_registry.register(
     required_args={"results_df"},
     default_params={"metric": "auroc", "classifier": None},
     tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.ACCURACY_CALCULATION,
+    func=accuracy_score,
+    required_args={"y_true", "y_pred"},
+    description="Accuracy between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION_CALCULATION,
+    func=precision_score_zero_division,
+    required_args={"y_true", "y_pred"},
+    description="Precision between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.RECALL_CALCULATION,
+    func=recall_score_zero_division,
+    required_args={"y_true", "y_pred"},
+    description="Recall between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.F1_CALCULATION,
+    func=f1_score_zero_division,
+    required_args={"y_true", "y_pred"},
+    description="F1 score between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.SPEARMAN_CORRELATION_CALCULATION,
+    func=spearman_correlation,
+    required_args={"a", "b"},
+    description="Spearman correlation between true and predicted values",
+    tags={"label_prediction", "perturbation"},
 )

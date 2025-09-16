@@ -1,20 +1,21 @@
-import collections
 import functools
 import importlib.metadata
-import itertools
+import json
 import logging
-from pathlib import Path
 import subprocess
-import typing
+from pathlib import Path
+from typing import Any, List
 
+import click
+import numpy as np
+import pandas as pd
 import tomli
 
-from czbenchmarks.cli.types import TaskResult
-import czbenchmarks.metrics.utils as metric_utils
-
+from ..datasets import Dataset, load_dataset
+from ..metrics.utils import aggregate_results
+from ..tasks.types import CellRepresentation
 
 log = logging.getLogger(__name__)
-
 
 _REPO_PATH = Path(__file__).parent.parent.parent.parent
 
@@ -106,35 +107,51 @@ def get_version() -> str:
     return "v" + version + git_commit
 
 
-def aggregate_task_results(results: typing.Iterable[TaskResult]) -> list[TaskResult]:
-    """Aggregate the task results by task_name, model (with args), and set(datasets).
-    Each new result will have a new set of metrics, created by aggregating together
-    metrics of the same type.
-    """
-    grouped_results = collections.defaultdict(list)
-    for result in results:
-        grouped_results[result.aggregation_key].append(result)
+def get_datasets(dataset_names: List[str]) -> List[Dataset]:
+    """Loads a list of datasets by name."""
+    try:
+        return [load_dataset(name) for name in dataset_names]
+    except Exception as e:
+        raise click.UsageError(f"Failed to load dataset: {e}")
 
-    aggregated = []
-    for results_to_agg in grouped_results.values():
-        aggregated_metrics = metric_utils.aggregate_results(
-            list(
-                itertools.chain.from_iterable(tr.metrics for tr in results_to_agg)
-            )  # cast to list is unnecessary but helps testing
-        )
-        if any(tr.runtime_metrics for tr in results_to_agg):
-            raise ValueError(
-                "Aggregating runtime_metrics for TaskResults is not supported"
+
+def load_embedding(path: str) -> CellRepresentation:
+    """Loads a model embedding from a file."""
+    try:
+        if path.endswith(".npy"):
+            return np.load(path)
+        elif path.endswith(".csv"):
+            return pd.read_csv(path, index_col=0).values
+        else:
+            raise NotImplementedError(
+                "Only .npy and .csv embedding files are supported."
             )
+    except Exception as e:
+        raise click.BadParameter(f"Could not load embedding from '{path}': {e}")
 
-        first_result = results_to_agg[0]  # everything but the metrics should be common
-        aggregated_result = TaskResult(
-            task_name=first_result.task_name,
-            task_name_display=first_result.task_name_display,
-            model=first_result.model,
-            datasets=first_result.datasets,
-            metrics=aggregated_metrics,
-            runtime_metrics={},
-        )
-        aggregated.append(aggregated_result)
-    return aggregated
+
+def write_results(results: List[Any], output_file: str | None):
+    """Aggregates metrics and writes results to stdout or a file in JSON format."""
+    aggregated = aggregate_results(results)
+    results_dict = [res.model_dump(mode="json") for res in aggregated]
+
+    if output_file:
+        with open(output_file, "w") as f:
+            json.dump(results_dict, f, indent=2)
+        click.echo(f"Results saved to {output_file}")
+    else:
+        click.echo("\n--- RESULTS ---")
+        click.echo(json.dumps(results_dict, indent=2))
+
+
+def mutually_exclusive(*options):
+    def _callback(ctx, param, value):
+        if value is not None:
+            for other in options:
+                if ctx.params.get(other) is not None:
+                    raise click.UsageError(
+                        f"Options --{param.name.replace('_', '-')} and --{other.replace('_', '-')} are mutually exclusive."
+                    )
+        return value
+
+    return _callback

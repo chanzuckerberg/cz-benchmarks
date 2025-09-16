@@ -29,11 +29,13 @@ dependencies = [
     "h5py>=3.8.0",
     "dill>=0.3.6",
     "scikit-learn",
-    "scanpy",
+    "scanpy>=1.11.0",
     "igraph>=0.11.8",
     "leidenalg>=0.10.2",
     "hydra-core>=1.3.2",
+    "omegaconf>=2.3.0",
     "scib-metrics>=0.5.1",
+    "scipy>=1.15.3",
     "scikit-misc>=0.5.1",
     "typing-extensions>=4.13.0",
     "pydantic>=2.0.0",
@@ -47,6 +49,7 @@ interactive = [
     "jupyterlab>=4.0.0",
 ]
 
+[dependency-groups]
 build = [
     "build>=1.2.2.post1",
     "wheel>=0.45.1",
@@ -74,12 +77,11 @@ docs = [
     "sphinx-autodoc-typehints",
     "sphinx-markdown-builder",
     "myst-parser",
-    "sphinxcontrib.mermaid", 
+    "sphinxcontrib.mermaid",
     "sphinx-rtd-theme",
     "sphinx-copybutton",
     "nbsphinx",
     "linkify-it-py",
-    
 ]
 
 [project.urls]
@@ -91,3 +93,12 @@ packages = ["src/czbenchmarks"]
 
 [project.scripts]
 czbenchmarks = "czbenchmarks.cli.cli:main"
+
+[tool.pytest.ini_options]
+markers = "integration: marks tests as integration tests (skipped by default, run with `-m integration`)"
+addopts = "-m 'not integration'"
+
+[tool.coverage.report]
+omit = [
+    "src/czbenchmarks/cli/*"
+]

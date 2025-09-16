@@ -1,245 +1,661 @@
 import pytest
 import pandas as pd
-from czbenchmarks.tasks.clustering import ClusteringTask
-from czbenchmarks.tasks.embedding import EmbeddingTask
-from czbenchmarks.tasks.integration import BatchIntegrationTask
-from czbenchmarks.tasks.label_prediction import MetadataLabelPredictionTask
-from czbenchmarks.tasks.single_cell.cross_species import CrossSpeciesIntegrationTask
-from czbenchmarks.tasks.single_cell.perturbation import PerturbationTask
-from czbenchmarks.datasets import (
-    DataType,
+import numpy as np
+
+import anndata as ad
+from czbenchmarks.tasks import (
+    ClusteringTask,
+    ClusteringTaskInput,
+    EmbeddingTask,
+    EmbeddingTaskInput,
+    BatchIntegrationTask,
+    BatchIntegrationTaskInput,
+    MetadataLabelPredictionTask,
+    MetadataLabelPredictionTaskInput,
 )
+from czbenchmarks.tasks.single_cell import (
+    CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
+from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.models.types import ModelType
-from czbenchmarks.metrics.types import MetricResult
-from tests.utils import DummyDataset, create_dummy_anndata, DummyTask
+from czbenchmarks.metrics.types import MetricResult, MetricType
+
+from tests.utils import (
+    create_dummy_anndata,
+    DummyTask,
+    create_dummy_perturbation_anndata,
+    DummyTaskInput,
+)
 
 
-def test_missing_required_inputs_outputs():
-    """Test that validation fails when dataset is missing required inputs/outputs."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
+# FIXME these tests could be split into multiple files and fixtures moved to
+# conftest.py
 
-    # Don't set any inputs/outputs
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required inputs.*",
-    ):
-        task.validate(dataset)
 
-    # Set inputs but no model outputs at all
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    with pytest.raises(
-        ValueError,
-        match=".*No model outputs available.*",
-    ):
-        task.validate(dataset)
-
-    # Set inputs and model type but missing required outputs
-    dataset.set_output(
-        ModelType.BASELINE, DataType.PERTURBATION_PRED, ("", pd.DataFrame())
+@pytest.fixture
+def dummy_anndata():
+    n_cells: int = 500
+    n_genes: int = 200
+    organism: Organism = Organism.HUMAN
+    obs_columns: list[str] = ["cell_type", "batch"]
+    var_columns: list[str] = ["feature_name"]
+    anndata: ad.AnnData = create_dummy_anndata(
+        n_cells=n_cells,
+        n_genes=n_genes,
+        organism=organism,
+        obs_columns=obs_columns,
+        var_columns=var_columns,
     )
-    with pytest.raises(
-        ValueError,
-        match=".*Missing required outputs for model type BASELINE.*",
-    ):
-        task.validate(dataset)
+
+    expression_matrix: CellRepresentation = anndata.X.copy()
+    obs: pd.DataFrame = anndata.obs.copy()
+    var: pd.DataFrame = anndata.var.copy()
+
+    # TODO perform PCA on expression matrix to get true embedding
+    embedding_matrix: CellRepresentation = expression_matrix.toarray()
+
+    return {
+        "anndata": anndata,
+        "expression_matrix": expression_matrix,
+        "obs": obs,
+        "var": var,
+        "embedding_matrix": embedding_matrix,
+    }
 
 
-def test_requires_multiple_datasets_validation():
-    """Test that ValueError is raised when requires_multiple_datasets is True
-    but input is not a list."""
-    task = DummyTask(requires_multiple=True)
-    dataset = DummyDataset("dummy_path", Organism.HUMAN)
-
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    with pytest.raises(ValueError, match="This task requires a list of datasets"):
-        task.run(dataset)
+@pytest.fixture
+def expression_matrix(dummy_anndata):
+    return dummy_anndata["expression_matrix"]
 
 
-def test_invalid_input_type():
-    """Test that ValueError is raised when input is not BaseDataset or list of
-    BaseDatasets."""
-    task = DummyTask()
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run("not a dataset")
-
-    with pytest.raises(ValueError, match="Invalid data type"):
-        task.run([1, 2, 3])
+@pytest.fixture
+def embedding_matrix(dummy_anndata):
+    return dummy_anndata["embedding_matrix"]
 
 
-def test_list_input_single_task():
-    """Test that List[Dict[ModelType, List[MetricResult]]] is returned for list
-    input on a task requiring a single dataset."""
-    task = DummyTask(requires_multiple=False)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(datasets)
-
-    assert isinstance(results, list)
-    assert len(results) == 2
-    assert all(isinstance(r, dict) for r in results)
-    assert all(ModelType.SCVI in r for r in results)
-    assert all(isinstance(r[ModelType.SCVI], list) for r in results)
+@pytest.fixture
+def obs(dummy_anndata):
+    return dummy_anndata["obs"]
 
 
-def test_list_input_multiple_task():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for list input
-    on a task requiring multiple datasets."""
-    task = DummyTask(requires_multiple=True)
-    datasets = [
-        DummyDataset("dummy1", Organism.HUMAN),
-        DummyDataset("dummy2", Organism.HUMAN),
-    ]
-
-    # Set required inputs/outputs for both datasets
-    for dataset in datasets:
-        adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-        dataset.set_input(DataType.ANNDATA, adata)
-        dataset.set_input(DataType.METADATA, adata.obs)
-        dataset.set_output(ModelType.SCVI, DataType.EMBEDDING, adata.X.toarray())
-    results = task.run(datasets)
-
-    assert isinstance(results, dict)
-    assert ModelType.SCVI in results
-    assert isinstance(results[ModelType.SCVI], list)
+@pytest.fixture
+def var(dummy_anndata):
+    return dummy_anndata["var"]
 
 
-def test_single_dataset_result():
-    """Test that Dict[ModelType, List[MetricResult]] is returned for single dataset."""
-    task = DummyTask()
-    dataset = DummyDataset("dummy", Organism.HUMAN)
-
-    # Set required inputs/outputs
-    adata = create_dummy_anndata(n_cells=10, n_genes=20, organism=Organism.HUMAN)
-    dataset.set_input(DataType.ANNDATA, adata)
-    dataset.set_input(DataType.METADATA, adata.obs)
-    dataset.set_output(ModelType.BASELINE, DataType.EMBEDDING, adata.X.toarray())
-
-    results = task.run(dataset)
-
-    assert isinstance(results, dict)
-    assert ModelType.BASELINE in results
-    assert isinstance(results[ModelType.BASELINE], list)
-    assert len(results[ModelType.BASELINE]) == 1
-    assert isinstance(results[ModelType.BASELINE][0], MetricResult)
+@pytest.fixture
+def fixture_data(request):
+    # Enables lazy generation of fixture data so fixtures can be used as
+    # parameters
+    valid_fixture_names = ["expression_matrix", "embedding_matrix", "obs", "var"]
+    fixture_name, other_data = request.param
+    if isinstance(fixture_name, str):
+        fixture_data = (
+            request.getfixturevalue(fixture_name)
+            if fixture_name in valid_fixture_names
+            else fixture_name
+        )
+    else:
+        fixture_data = [
+            request.getfixturevalue(f) if f in valid_fixture_names else f
+            for f in fixture_name
+        ]
+    return fixture_data, other_data
 
 
 @pytest.mark.parametrize(
-    "task_class,task_kwargs",
+    "fixture_data",
     [
-        (ClusteringTask, {"label_key": "cell_type"}),
-        (EmbeddingTask, {"label_key": "cell_type"}),
-        (BatchIntegrationTask, {"label_key": "cell_type", "batch_key": "batch"}),
-        (MetadataLabelPredictionTask, {"label_key": "cell_type", "n_folds": 3}),
+        ("expression_matrix", False),
+        (["expression_matrix", "expression_matrix"], True),
+    ],
+    indirect=True,
+)
+def test_embedding_valid_input_output(fixture_data):
+    """Test that embedding is accepted and List[MetricResult] is returned."""
+    embedding, requires_multiple_datasets = fixture_data
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    results = task.run(
+        cell_representation=embedding,
+        task_input=DummyTaskInput(),
+    )
+
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
+
+
+@pytest.mark.parametrize(
+    "fixture_data",
+    [
+        (
+            "abcd",
+            [False, "This task requires a single cell representation for input"],
+        ),
+        (
+            ["embedding_matrix"],
+            [False, "This task requires a single cell representation for input"],
+        ),
+        (
+            ["embedding_matrix", "embedding_matrix"],
+            [False, "This task requires a single cell representation for input"],
+        ),
+        (
+            "embedding_matrix",
+            [True, "This task requires a list of cell representations"],
+        ),
+        (
+            ["abcd", "embedding_matrix"],
+            [True, "This task requires a list of cell representations"],
+        ),
+        (
+            ["embedding_matrix"],
+            [
+                True,
+                "This task requires a list of cell representations but only one "
+                "was provided",
+            ],
+        ),
+    ],
+    indirect=True,
+)
+def test_embedding_invalid_input(fixture_data):
+    """Test ValueError for mismatch with requires_multiple_datasets."""
+    embedding_list, (requires_multiple_datasets, error_message) = fixture_data
+    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    with pytest.raises(ValueError, match=error_message):
+        task.run(
+            cell_representation=embedding_list,
+            task_input=DummyTaskInput(),
+        )
+
+
+@pytest.mark.parametrize(
+    "task_class,task_input_builder",
+    [
+        (
+            ClusteringTask,
+            lambda obs: ClusteringTaskInput(obs=obs, input_labels=obs["cell_type"]),
+        ),
+        (
+            EmbeddingTask,
+            lambda obs: EmbeddingTaskInput(input_labels=obs["cell_type"]),
+        ),
+        (
+            BatchIntegrationTask,
+            lambda obs: BatchIntegrationTaskInput(
+                labels=obs["cell_type"], batch_labels=obs["batch"]
+            ),
+        ),
+        (
+            MetadataLabelPredictionTask,
+            lambda obs: MetadataLabelPredictionTaskInput(labels=obs["cell_type"]),
+        ),
     ],
 )
-def test_task_execution(task_class, task_kwargs, dummy_single_cell_dataset):
+def test_task_execution(
+    task_class,
+    task_input_builder,
+    embedding_matrix,
+    expression_matrix,
+    obs,
+):
     """Test that each task executes without errors on compatible data."""
-    task = task_class(**task_kwargs)
+
+    task_input = task_input_builder(obs)
+
+    task = task_class()
 
     try:
         # Test regular task execution
-        results = task.run(dummy_single_cell_dataset)
-        assert isinstance(results, dict)
-        assert ModelType.SCVI in results
-        assert isinstance(results[ModelType.SCVI], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCVI])
+        results = task.run(
+            cell_representation=embedding_matrix,
+            task_input=task_input,
+        )
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test baseline execution if implemented
         try:
-            task.set_baseline(dummy_single_cell_dataset)
+            n_pcs = min(50, expression_matrix.shape[1] - 1)
+            baseline_embedding = task.compute_baseline(expression_matrix, n_pcs=n_pcs)
+            if hasattr(task_input, "var"):
+                task_input.var = task_input.var.iloc[:n_pcs]
+
             baseline_results = task.run(
-                dummy_single_cell_dataset, model_types=[ModelType.BASELINE]
+                cell_representation=baseline_embedding,
+                task_input=task_input,
             )
-            assert ModelType.BASELINE in baseline_results
-            assert isinstance(baseline_results[ModelType.BASELINE], list)
-            assert all(
-                isinstance(m, MetricResult)
-                for m in baseline_results[ModelType.BASELINE]
-            )
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
         except NotImplementedError:
-            # Some tasks may not implement set_baseline
+            # Some tasks may not implement compute_baseline
             pass
 
     except Exception as e:
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-def test_cross_species_task(dummy_cross_species_datasets):
+def test_cross_species_task(embedding_matrix, obs):
     """Test that CrossSpeciesIntegrationTask executes without errors."""
-    task = CrossSpeciesIntegrationTask(label_key="cell_type")
+    task = CrossSpeciesIntegrationTask()
+    embedding_list = [embedding_matrix, embedding_matrix]
+    labels = obs["cell_type"]
+    labels_list = [labels, labels]
+    organism_list = [Organism.HUMAN, Organism.MOUSE]
+    task_input = CrossSpeciesIntegrationTaskInput(
+        labels=labels_list, organism_list=organism_list
+    )
 
     try:
         # Test regular task execution
-        results = task.run(dummy_cross_species_datasets)
+        results = task.run(
+            cell_representation=embedding_list,
+            task_input=task_input,
+        )
 
         # Verify results structure
-        assert isinstance(results, dict)
-        assert ModelType.UCE in results
-        assert isinstance(results[ModelType.UCE], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.UCE])
-        assert (
-            len(results[ModelType.UCE]) == 2
-        )  # Should have entropy and silhouette metrics
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
 
         # Test that baseline raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            task.set_baseline(dummy_cross_species_datasets)
+            task.compute_baseline()
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
 
 
-def test_perturbation_task(dummy_perturbation_dataset):
-    """Test that PerturbationTask executes without errors."""
-    task = PerturbationTask()
+def test_perturbation_task():
+    """Test that PerturbationExpressionPredictionTask executes without errors."""
+    # Create dummy perturbation data
+    perturbation_data: dict = create_dummy_perturbation_anndata(
+        n_cells=500,
+        n_genes=200,
+        organism=Organism.HUMAN,
+        condition_column="condition",
+        split_column="split",
+    )
+    gene_pert = perturbation_data["gene_pert"]
+    # Convert sparse matrix to dense array to avoid matrix object issues
+    cell_representation = perturbation_data["adata"].X.toarray()
+    var_names = perturbation_data["adata"].var_names
+
+    # Task and argument setup
+    task = PerturbationExpressionPredictionTask()
+
+    # Create DE results DataFrame matching expected structure
+    de_results = pd.DataFrame(
+        {
+            "condition": [gene_pert] * len(var_names),
+            "gene_id": var_names,
+            "logfoldchange": np.random.randn(len(var_names)),
+            "pval_adj": np.random.uniform(0, 0.01, len(var_names)),
+        }
+    )
+
+    # Create masked_adata_obs DataFrame and fix condition naming
+    adata = perturbation_data["adata"]
+    masked_adata_obs = adata.obs.copy()
+
+    # Fix condition naming to match task expectations
+    # Task expects control cells to be named: {control_prefix}_{condition}
+    control_condition_name = f"non-targeting_{gene_pert}"
+    masked_adata_obs.loc[masked_adata_obs["condition"] == "ctrl", "condition"] = (
+        control_condition_name
+    )
+
+    # Create target_conditions_to_save dict - map cell IDs to lists of genes to mask
+    target_conditions_to_save = {}
+    for cell_id in adata.obs_names:
+        # Sample some genes to mask for each cell
+        n_genes_to_mask = min(10, len(var_names) // 2)
+        target_conditions_to_save[cell_id] = list(
+            np.random.choice(var_names, n_genes_to_mask, replace=False)
+        )
+
+    task_input = PerturbationExpressionPredictionTaskInput(
+        de_results=de_results,
+        masked_adata_obs=masked_adata_obs,
+        var_index=var_names,
+        target_conditions_to_save=target_conditions_to_save,
+        row_index=adata.obs.index,
+    )
+
+    # Five metrics per condition: accuracy, precision, recall, f1, correlation
+    # We have one perturbed condition, so 5 metrics total
+    num_metrics = 5
 
     try:
         # Test regular task execution
-        results = task.run(dummy_perturbation_dataset)
+        results = task.run(
+            cell_representation,
+            task_input,
+        )
 
-        # Verify results structure
-        assert isinstance(results, dict)
-        assert ModelType.SCGENEPT in results
-        assert isinstance(results[ModelType.SCGENEPT], list)
-        assert all(isinstance(m, MetricResult) for m in results[ModelType.SCGENEPT])
-
-        # Should have 8 metrics: MSE and R2 for all/top20/top100 genes,
-        # plus Jaccard for top20/100
-        assert len(results[ModelType.SCGENEPT]) == 8
+        # Verify results structure - the method returns a list of MetricResult
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        assert len(results) == num_metrics
 
         # Test baseline with both mean and median
         for baseline_type in ["mean", "median"]:
-            task.set_baseline(
-                dummy_perturbation_dataset,
-                gene_pert="ENSG00000123456+ctrl",
+            baseline_embedding = task.compute_baseline(
+                cell_representation=cell_representation,
                 baseline_type=baseline_type,
             )
-            baseline_results = task.run(
-                dummy_perturbation_dataset, model_types=[ModelType.BASELINE]
-            )
-            assert ModelType.BASELINE in baseline_results
-            assert isinstance(baseline_results[ModelType.BASELINE], list)
-            assert len(baseline_results[ModelType.BASELINE]) == 8
-
+            # Create a new task input with the baseline embedding
+            baseline_results = task.run(baseline_embedding, task_input)
+            assert isinstance(baseline_results, list)
+            assert all(isinstance(r, MetricResult) for r in baseline_results)
+            assert len(baseline_results) == num_metrics
     except Exception as e:
-        pytest.fail(f"PerturbationTask failed unexpectedly: {e}")
+        pytest.fail(f"Test failed with exception: {e}")
+
+
+def test_perturbation_expression_prediction_task_wilcoxon():
+    """Test Wilcoxon path computes correct vectors and metrics."""
+    # Deterministic gene set and per-condition true/predicted effects
+    gene_names = ["G0", "G1", "G2", "G3"]
+    true_lfc_gene_A = np.array([1.0, 0.5, -0.5, -1.0])
+    true_lfc_gene_B = np.array([2.0, 1.0, -1.0, -2.0])
+
+    # Build DE results matching the designed true effects for both conditions
+    de_res_wilcoxon_df = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "logfoldchange": true_lfc_gene_A,
+                    "target_gene": ["gene_A"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
+                    "condition": ["gene_A"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "logfoldchange": true_lfc_gene_B,
+                    "target_gene": ["gene_B"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
+                    "condition": ["gene_B"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
+                }
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    # Build AnnData with 4 groups: condition/control for A and B
+    n_per_group = 4
+    conditions = (
+        ["gene_A"] * n_per_group
+        + ["ctrl_gene_A"] * n_per_group
+        + ["gene_B"] * n_per_group
+        + ["ctrl_gene_B"] * n_per_group
+    )
+    # Create base cell names without underscores (so str.split("_").str[0] works correctly)
+    base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
+    # Create extended obs names like real dataset: base_name + "_" + condition
+    obs_names = [
+        f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)
+    ]
+
+    X = np.zeros((len(conditions), len(gene_names)), dtype=float)
+    # Set group means so that pred_log_fc equals the designed true_lfc
+    X[0:n_per_group, :] = true_lfc_gene_A  # gene_A group
+    X[n_per_group : 2 * n_per_group, :] = 0.0  # ctrl_gene_A group
+    X[2 * n_per_group : 3 * n_per_group, :] = true_lfc_gene_B  # gene_B group
+    X[3 * n_per_group : 4 * n_per_group, :] = 0.0  # ctrl_gene_B group
+
+    adata = ad.AnnData(
+        X=X,
+        obs=pd.DataFrame({"condition": conditions}, index=obs_names),
+        var=pd.DataFrame(index=gene_names),
+    )
+    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    cell_representation = X
+
+    # Ensure de_results has the expected gene identifier column
+    de_res_wilcoxon_df["gene_id"] = de_res_wilcoxon_df["names"]
+
+    task = PerturbationExpressionPredictionTask(
+        control_prefix="ctrl",
+    )
+    task_input = PerturbationExpressionPredictionTaskInput(
+        de_results=de_res_wilcoxon_df,
+        masked_adata_obs=adata.obs,
+        var_index=adata.var_names,
+        target_conditions_to_save=target_conditions_to_save,
+        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
+    )
+
+    # First, check that true/pred vectors produced by _run_task match expectations
+    task_output = task._run_task(cell_representation, task_input)
+    assert set(task_output.pred_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert set(task_output.true_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert np.allclose(task_output.pred_log_fc_dict["gene_A"], true_lfc_gene_A)
+    assert np.allclose(task_output.pred_log_fc_dict["gene_B"], true_lfc_gene_B)
+    assert np.allclose(task_output.true_log_fc_dict["gene_A"], true_lfc_gene_A)
+    assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_lfc_gene_B)
+
+    # Then, run the full task and validate metrics are perfect
+    results = task.run(cell_representation, task_input)
+
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
+    # Expect results for both conditions x 5 metric types = 10 total results
+    assert len(results) == 10
+
+    # Each result should have perfect scores
+    for r in results:
+        assert np.isclose(r.value, 1.0)
+
+    # Verify metric types present
+    metric_types = {result.metric_type for result in results}
+    expected_types = {
+        MetricType.ACCURACY_CALCULATION,
+        MetricType.PRECISION_CALCULATION,
+        MetricType.RECALL_CALCULATION,
+        MetricType.F1_CALCULATION,
+        MetricType.SPEARMAN_CORRELATION_CALCULATION,
+    }
+    assert expected_types.issubset(metric_types)
+
+
+def test_perturbation_expression_prediction_task_ttest():
+    """Test t-test path computes correct vectors and metrics."""
+    # Deterministic gene set and per-condition true/predicted effects
+    gene_names = ["G0", "G1", "G2", "G3"]
+    true_smd_gene_A = np.array([0.2, 0.5, -0.5, -0.2])
+    true_smd_gene_B = np.array([1.0, 0.7, -0.7, -1.0])
+
+    # Build DE results matching the designed true effects for both conditions
+    de_res_ttest_df = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "standardized_mean_diff": true_smd_gene_A,
+                    "logfoldchange": true_smd_gene_A,  # Add logfoldchange column for compatibility
+                    "target_gene": ["gene_A"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
+                    "condition": ["gene_A"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_A"] * len(gene_names),
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "standardized_mean_diff": true_smd_gene_B,
+                    "logfoldchange": true_smd_gene_B,  # Add logfoldchange column for compatibility
+                    "target_gene": ["gene_B"] * len(gene_names),
+                    "names": gene_names,
+                    "pval": [0.001] * len(gene_names),
+                    "pval_adj": [0.001] * len(gene_names),
+                    "condition": ["gene_B"] * len(gene_names),
+                    "condition_ensembl_id": ["ENSG_B"] * len(gene_names),
+                }
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    # Build AnnData with 4 groups: condition/control for A and B
+    n_per_group = 4
+    conditions = (
+        ["gene_A"] * n_per_group
+        + ["ctrl_gene_A"] * n_per_group
+        + ["gene_B"] * n_per_group
+        + ["ctrl_gene_B"] * n_per_group
+    )
+    # Create base cell names without underscores (so str.split("_").str[0] works correctly)
+    base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
+    # Create extended obs names like real dataset: base_name + "_" + condition
+    obs_names = [
+        f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)
+    ]
+
+    X = np.zeros((len(conditions), len(gene_names)), dtype=float)
+    # Set group means so that pred_log_fc equals the designed "true" standardized_mean_diff
+    X[0:n_per_group, :] = true_smd_gene_A  # gene_A group
+    X[n_per_group : 2 * n_per_group, :] = 0.0  # ctrl_gene_A group
+    X[2 * n_per_group : 3 * n_per_group, :] = true_smd_gene_B  # gene_B group
+    X[3 * n_per_group : 4 * n_per_group, :] = 0.0  # ctrl_gene_B group
+
+    adata = ad.AnnData(
+        X=X,
+        obs=pd.DataFrame({"condition": conditions}, index=obs_names),
+        var=pd.DataFrame(index=gene_names),
+    )
+    target_conditions_to_save = {obs_name: list(gene_names) for obs_name in obs_names}
+    cell_representation = X
+
+    # Ensure de_results has the expected gene identifier column
+    de_res_ttest_df["gene_id"] = de_res_ttest_df["names"]
+
+    task = PerturbationExpressionPredictionTask(
+        control_prefix="ctrl",
+    )
+    task_input = PerturbationExpressionPredictionTaskInput(
+        de_results=de_res_ttest_df,
+        masked_adata_obs=adata.obs,
+        var_index=adata.var_names,
+        target_conditions_to_save=target_conditions_to_save,
+        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
+    )
+
+    # First, check that true/pred vectors produced by _run_task match expectations
+    task_output = task._run_task(cell_representation, task_input)
+    assert set(task_output.pred_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert set(task_output.true_log_fc_dict.keys()) == {"gene_A", "gene_B"}
+    assert np.allclose(task_output.pred_log_fc_dict["gene_A"], true_smd_gene_A)
+    assert np.allclose(task_output.pred_log_fc_dict["gene_B"], true_smd_gene_B)
+    assert np.allclose(task_output.true_log_fc_dict["gene_A"], true_smd_gene_A)
+    assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_smd_gene_B)
+
+    # Then, run the full task and validate metrics are perfect
+    try:
+        results = task.run(cell_representation, task_input)
+
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+        # Expect results for both conditions x 5 metric types = 10 total results
+        assert len(results) == 10
+
+        # Each result should have perfect scores
+        for r in results:
+            assert np.isclose(r.value, 1.0)
+
+        metric_types = {result.metric_type for result in results}
+        expected_types = {
+            MetricType.ACCURACY_CALCULATION,
+            MetricType.PRECISION_CALCULATION,
+            MetricType.RECALL_CALCULATION,
+            MetricType.F1_CALCULATION,
+            MetricType.SPEARMAN_CORRELATION_CALCULATION,
+        }
+        assert expected_types.issubset(metric_types)
+    except Exception as e:
+        pytest.fail(
+            f"PerturbationExpressionPredictionTask (t-test) failed unexpectedly: {e}"
+        )
+
+
+def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path):
+    """Test that the task can load inputs from stored task files."""
+    from czbenchmarks.datasets.single_cell_perturbation import (
+        SingleCellPerturbationDataset,
+    )
+    from czbenchmarks.datasets.types import Organism
+    from tests.utils import create_dummy_anndata
+
+    # Create a dummy dataset and store its task inputs
+    file_path = tmp_path / "dummy_perturbation.h5ad"
+    adata = create_dummy_anndata(
+        n_cells=6,
+        n_genes=3,
+        obs_columns=["condition"],
+        organism=Organism.HUMAN,
+    )
+    adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
+    adata.obs_names = [
+        "ctrl_test1_a",
+        "ctrl_test2_b",
+        "cond_test1_a",
+        "cond_test1_b",
+        "cond_test2_a",
+        "cond_test2_b",
+    ]
+    # Provide matched control cell IDs and DE results
+    adata.uns["control_cells_ids"] = {
+        "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+        "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+    }
+    de_conditions = ["test1"] * 10 + ["test2"] * 10
+    de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+    adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+        {
+            "condition": de_conditions,
+            "gene": de_genes,
+            "pval_adj": [1e-6] * 20,
+            "logfoldchange": [2.0] * 20,
+        }
+    )
+    adata.write_h5ad(file_path)
+
+    # Create dataset and store task inputs
+    dataset = SingleCellPerturbationDataset(
+        path=file_path,
+        organism=Organism.HUMAN,
+        condition_key="condition",
+        control_name="ctrl",
+    )
+    dataset.load_data()
+    stored_dir = dataset.store_task_inputs()
+
+    # Test loading task inputs using the standalone function
+    from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+        load_perturbation_task_input_from_saved_files,
+    )
+
+    task_input = load_perturbation_task_input_from_saved_files(stored_dir)
+
+    # Verify the loaded task input has the expected structure
+    assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
+    assert isinstance(task_input.de_results, pd.DataFrame)
+    assert isinstance(task_input.masked_adata_obs, pd.DataFrame)
+    assert len(task_input.target_conditions_to_save) > 0
+    assert all(
+        isinstance(v, list) for v in task_input.target_conditions_to_save.values()
+    )
+
+    # Verify data integrity
+    assert task_input.de_results.shape[0] > 0
+    assert task_input.masked_adata_obs.shape[0] > 0
+    assert len(task_input.var_index) > 0

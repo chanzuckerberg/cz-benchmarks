@@ -1,6 +1,6 @@
 # Datasets
 
-The `czbenchmarks.datasets` module defines the dataset abstraction used across all benchmark pipelines. It provides a uniform and type-safe way to manage dataset inputs and outputs, ensuring compatibility with models and tasks.
+The `czbenchmarks.datasets` module defines the dataset abstraction used across all benchmark pipelines. It provides a uniform and type-safe way to manage dataset inputs ensuring compatibility with tasks.
 
 ## Overview
 
@@ -8,126 +8,103 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
 ## Key Components
 
--  [BaseDataset](../autoapi/czbenchmarks/datasets/base/index)  
-   An abstract class that provides methods for:
-  
-   - Storing typed inputs and model outputs (`set_input`, `set_output`)
-   - Type validation via `DataType` enums
-   - Serialization and deserialization using [`dill`](https://dill.readthedocs.io/en/latest/) 
-   - Loading/unloading memory-intensive data
+- [Dataset](../autoapi/czbenchmarks/datasets/dataset/index)  
+   An abstract class that provides ensures all concrete classes provide the following functionality:
 
-   All dataset types must inherit from `BaseDataset`.
+   - Loading a dataset file into memory.
+   - Validation of the specified dataset file.
+   - Specification of an `Organism`.
+   - Performs organism-based validation using the `Organism` enum.
+   - Storing task-specific outputs to disk for later use by `Task`s.
 
--  [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
-   A concrete implementation of `BaseDataset` for single-cell data.
+   All dataset types must inherit from `Dataset`.
+
+- [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
+   An abstract implementation of `Dataset` for single-cell data.
 
    Responsibilities:
 
-   - Loads anndata files via `anndata.read_h5ad`
-   - Stores metadata as `.obs` or `.var` and the expression matrix as `.X`
-   - Performs organism-based validation using the `Organism` enum
-   - Validates gene name prefixes and presence of expected columns
+   - Loads AnnData object from H5AD files via `anndata.read_h5ad`.
+   - Stores Anndata in `adata` instance variable.
+   - Validates gene name prefixes and that expression values are raw counts.
 
-   Automatically sets:
-
-   - `DataType.ANNDATA`
-   - `DataType.METADATA`
-   - `DataType.ORGANISM`
-
--  [PerturbationSingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
+- [SingleCellLabeledDataset](../autoapi/czbenchmarks/datasets/single_cell_labeled/index)  
    Subclass of `SingleCellDataset` designed for perturbation benchmarks.
 
    Responsibilities:
 
-   - Validates presence of `condition_key` and `split_key` (e.g., `condition`, `split`)
-   - Stores control and perturbed cells
-   - Computes and stores `DataType.PERTURBATION_TRUTH` as ground-truth reference
+   - Stores labels (expected prediction values) from a specified `obs` column.
+   - Validates the label column exists
 
-   Automatically filters `adata` to only include control cells for inference.
+
+- [SingleCellPerturbationDataset](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index)  
+   Subclass of `SingleCellDataset` designed for perturbation benchmarks.
+
+   Responsibilities:
+
+   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_ids` and `de_results_wilcoxon` or `de_results_t_test` in `adata.uns`.
+   - It also validates that `de_gene_col` is in the column names of the differential expression results. And that `control_name` is present in the data of condition column in `adata.obs`.
+   - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
+   - Computes and stores `control_matched_adata` (anndata that is split into `X`, `obs`, and `var` for output), `control_cells_ids`, `de_results`, `target_genes_to_save`.
 
    Example valid perturbation formats:
 
-   - `"ctrl"`: control
-   - `"GENE+ctrl"`: single-gene perturbation
-   - `"GENE1+GENE2"`: combinatorial perturbation
+   - ``{condition_name}`` or ``{condition_name}_{perturb}`` for matched control samples, where perturb can be any type of perturbation.
+   - ``{perturb}`` for a single perturbation
 
--  [DataType](../autoapi/czbenchmarks/datasets/types/index)  
-   Defines all valid input and output types (e.g., `ANNDATA`, `METADATA`, `EMBEDDING`, etc.) with expected Python types (`AnnData`, `pd.DataFrame`, `np.ndarray`, etc.)
-
--  [Organism](../autoapi/czbenchmarks/datasets/types/index)  
+- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
    Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
-## Adding a New Dataset
+## Using Available Datasets
 
-To define a custom dataset:
+### Listing Available Datasets
 
-1. **Inherit from `BaseDataset`** and implement:
-
-   - `_validate(self)` — raise exceptions for missing or malformed data
-   - `load_data(self)` — populate `self.inputs` with required values
-   - `unload_data(self)` — clear memory-heavy inputs (e.g., `adata`) before serialization
-
-2. **Register all required inputs** using `self.set_input(data_type, value)`
-3. **Store model outputs** using `self.set_output(model_type, data_type, value)`
-4. **Use the `DataType` enum** to enforce type safety and input validation
-
-### Example Skeleton
+To list all datasets registered in the system:
 
 ```python
-from czbenchmarks.datasets.base import BaseDataset
-from czbenchmarks.datasets.types import DataType, Organism
-import anndata as ad
-
-class MyCustomDataset(BaseDataset):
-    def load_data(self):
-        adata = ad.read_h5ad(self.path)
-        self.set_input(DataType.ANNDATA, adata)
-        self.set_input(DataType.METADATA, adata.obs)
-        self.set_input(DataType.ORGANISM, Organism.HUMAN)
-
-    def unload_data(self):
-        self._inputs.pop(DataType.ANNDATA, None)
-        self._inputs.pop(DataType.METADATA, None)
-
-    def _validate(self):
-        adata = self.get_input(DataType.ANNDATA)
-        assert "my_custom_key" in adata.obs.columns, "Missing key!"
+from czbenchmarks.datasets.utils import list_available_datasets
+available_datasets = list_available_datasets()
 ```
 
-## Accessing Inputs and Outputs
+### Loading a Dataset
 
-Use the following methods for safe access:
+To load a dataset by name, use the `load_dataset` utility. The returned object will be an instance of the appropriate dataset class, such as `SingleCellLabeledDataset` or `SingleCellPerturbationDataset`:
 
 ```python
-dataset.get_input(DataType.ANNDATA)
-dataset.get_input(DataType.METADATA)
-dataset.get_output(ModelType.SCVI, DataType.EMBEDDING)
+from czbenchmarks.datasets import load_dataset, SingleCellLabeledDataset
+
+dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 ```
 
-## Serialization Support
+### Accessing Dataset Attributes
 
-Datasets can be serialized to disk after model inference. Internally, [`dill`](https://dill.readthedocs.io/en/latest/) is used to support complex Python objects like `AnnData`.
+After loading, you can access the Dataset's attributes, which vary depending on the dataset type:
+
+#### For `SingleCellLabeledDataset`:
 
 ```python
-dataset.serialize("/tmp/my_dataset.dill")
-loaded = BaseDataset.deserialize("/tmp/my_dataset.dill")
-
-# Don't forget to reload memory-intensive fields
-loaded.load_data()
+adata_object = dataset.adata        # AnnData object with expression data
+labels_series = dataset.labels      # Labels from the specified obs column
 ```
+
+#### For `SingleCellPerturbationDataset`:
+
+```python
+control_cells_ids = dataset.control_cells_ids                  # List of control cell IDs
+target_conditions_to_save = dataset.target_conditions_to_save  # Conditions to be saved for benchmarking
+de_results = dataset.de_results                                # Differential expression results
+control_matched_adata = dataset.control_matched_adata          # AnnData object for matched controls
+```
+
+Refer to the class docstrings and API documentation for more details on available attributes and methods.
 
 ## Tips for Developers
 
 - **AnnData Views:** Use `.copy()` when slicing to avoid "view" issues in Scanpy.
-- **Organism Validation:** Always set `DataType.ORGANISM` and validate `var_names` with `Organism.prefix`.
-- **Gene Names:** Ensure `.var` has `feature_name` or `ensembl_id` depending on model requirements.
-- **Metadata Compatibility:** Validate that all label keys required by tasks (e.g., `cell_type`, `sex`, `batch`) exist in `.obs`.
 
 ## Related References
 
 - [Add Custom Dataset Guide](../how_to_guides/add_custom_dataset)
-- [BaseDataset API](../autoapi/czbenchmarks/datasets/base/index)
+- [Dataset API](../autoapi/czbenchmarks/datasets/dataset/index)
 - [SingleCellDataset API](../autoapi/czbenchmarks/datasets/single_cell/index)
-- [DataType Enum](../autoapi/czbenchmarks/datasets/types/index)
 - [Organism Enum](../autoapi/czbenchmarks/datasets/types/index)
-

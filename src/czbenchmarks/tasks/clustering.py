@@ -1,102 +1,115 @@
 import logging
-from typing import Set, List
+from typing import List, Literal
 
-from ..datasets import BaseDataset, DataType
-from ..metrics import metrics_registry
+import anndata as ad
+import pandas as pd
+
+from czbenchmarks.types import ListLike
+
+from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult, MetricType
-from ..models.types import ModelType
-from .base import BaseTask
+from .constants import FLAVOR, KEY_ADDED, N_ITERATIONS
+from .task import Task, TaskInput, TaskOutput
+from .types import CellRepresentation
 from .utils import cluster_embedding
-from .constants import RANDOM_SEED, N_ITERATIONS, FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
 
 
-class ClusteringTask(BaseTask):
+class ClusteringTaskInput(TaskInput):
+    obs: pd.DataFrame
+    input_labels: ListLike
+    use_rep: str = "X"
+    n_iterations: int = N_ITERATIONS
+    flavor: Literal["leidenalg", "igraph"] = FLAVOR
+    key_added: str = KEY_ADDED
+
+
+class ClusteringOutput(TaskOutput):
+    """Output for clustering task."""
+
+    predicted_labels: List[int]  # Predicted cluster labels
+
+
+class ClusteringTask(Task):
     """Task for evaluating clustering performance against ground truth labels.
 
     This task performs clustering on embeddings and evaluates the results
     using multiple clustering metrics (ARI and NMI).
 
     Args:
-        label_key (str): Key to access ground truth labels in metadata
         random_seed (int): Random seed for reproducibility
     """
 
+    display_name = "Clustering"
+    description = "Evaluate clustering performance against ground truth labels using ARI and NMI metrics."
+    input_model = ClusteringTaskInput
+
     def __init__(
         self,
-        label_key: str,
-        n_iterations: int = N_ITERATIONS,
-        flavor: str = FLAVOR,
-        key_added: str = KEY_ADDED,
         *,
         random_seed: int = RANDOM_SEED,
     ):
         super().__init__(random_seed=random_seed)
-        self.label_key = label_key
-        self.n_iterations = n_iterations
-        self.flavor = flavor
-        self.key_added = key_added
 
-    @property
-    def display_name(self) -> str:
-        """A pretty name to use when displaying task results"""
-        return "clustering"
-
-    @property
-    def required_inputs(self) -> Set[DataType]:
-        """Required input data types.
-
-        Returns:
-            Set of required input DataTypes (metadata with labels)
-        """
-        return {DataType.METADATA}
-
-    @property
-    def required_outputs(self) -> Set[DataType]:
-        """Required output data types.
-
-        Returns:
-            required output types from models this task to run (embedding to cluster)
-        """
-        return {DataType.EMBEDDING}
-
-    def _run_task(self, data: BaseDataset, model_type: ModelType):
-        """Runs clustering on the embedding data.
+    def _run_task(
+        self,
+        cell_representation: CellRepresentation,
+        task_input: ClusteringTaskInput,
+    ) -> ClusteringOutput:
+        """Runs clustering on the cell representation.
 
         Performs clustering and stores results for metric computation.
 
         Args:
-            data: Dataset containing embedding and ground truth labels
+            cell_representation: gene expression data or embedding for task
+            task_input: Pydantic model with inputs for the task
+        Returns:
+            ClusteringOutput: Pydantic model with predicted cluster labels
         """
-        # Get anndata object and add embedding
-        adata = data.adata
-        adata.obsm["emb"] = data.get_output(model_type, DataType.EMBEDDING)
 
-        # Store labels and generate clusters
-        self.input_labels = data.get_input(DataType.METADATA)[self.label_key]
-        self.predicted_labels = cluster_embedding(
-            adata,
-            obsm_key=OBSM_KEY,
-            random_seed=self.random_seed,
-            n_iterations=self.n_iterations,
-            flavor=self.flavor,
-            key_added=self.key_added,
+        # Create the AnnData object
+        adata = ad.AnnData(
+            X=cell_representation,
+            obs=task_input.obs,
         )
 
-    def _compute_metrics(self) -> List[MetricResult]:
+        predicted_labels = cluster_embedding(
+            adata,
+            use_rep=task_input.use_rep,
+            random_seed=self.random_seed,
+            n_iterations=task_input.n_iterations,
+            flavor=task_input.flavor,
+            key_added=task_input.key_added,
+        )
+
+        return ClusteringOutput(predicted_labels=predicted_labels)
+
+    def _compute_metrics(
+        self,
+        task_input: ClusteringTaskInput,
+        task_output: ClusteringOutput,
+    ) -> List[MetricResult]:
         """Computes clustering evaluation metrics.
+
+        Args:
+            task_input: Pydantic model with inputs for the task
+            task_output: Pydantic model with outputs from _run_task
 
         Returns:
             List of MetricResult objects containing ARI and NMI scores
         """
+
+        from ..metrics import metrics_registry
+
+        predicted_labels = task_output.predicted_labels
         return [
             MetricResult(
                 metric_type=metric_type,
                 value=metrics_registry.compute(
                     metric_type,
-                    labels_true=self.input_labels,
-                    labels_pred=self.predicted_labels,
+                    labels_true=task_input.input_labels,
+                    labels_pred=predicted_labels,
                 ),
                 params={},
             )

@@ -1,14 +1,49 @@
-from .clustering import ClusteringTask
-from .embedding import EmbeddingTask
-from .label_prediction import MetadataLabelPredictionTask
-from .integration import BatchIntegrationTask
-from .single_cell import PerturbationTask, CrossSpeciesIntegrationTask
+from .clustering import ClusteringOutput, ClusteringTask, ClusteringTaskInput
+from .embedding import EmbeddingOutput, EmbeddingTask, EmbeddingTaskInput
+from .integration import (
+    BatchIntegrationOutput,
+    BatchIntegrationTask,
+    BatchIntegrationTaskInput,
+)
+from .label_prediction import (
+    MetadataLabelPredictionOutput,
+    MetadataLabelPredictionTask,
+    MetadataLabelPredictionTaskInput,
+)
+from .single_cell import (
+    CrossSpeciesIntegrationOutput,
+    CrossSpeciesIntegrationTask,
+    CrossSpeciesIntegrationTaskInput,
+)
+from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
+from .single_cell.perturbation_expression_prediction import (
+    PerturbationExpressionPredictionOutput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
 
 __all__ = [
-    "EmbeddingTask",
+    "Task",
+    "TaskInput",
+    "TaskOutput",
+    "MetricResult",
+    "ClusteringTaskInput",
+    "ClusteringOutput",
     "ClusteringTask",
+    "EmbeddingTaskInput",
+    "EmbeddingOutput",
+    "EmbeddingTask",
+    "MetadataLabelPredictionTaskInput",
+    "MetadataLabelPredictionOutput",
     "MetadataLabelPredictionTask",
+    "BatchIntegrationTaskInput",
+    "BatchIntegrationOutput",
     "BatchIntegrationTask",
-    "PerturbationTask",
+    "CrossSpeciesIntegrationTaskInput",
+    "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
+    "PerturbationExpressionPredictionTaskInput",
+    "PerturbationExpressionPredictionOutput",
+    "PerturbationExpressionPredictionTask",
+    "TASK_REGISTRY",
 ]

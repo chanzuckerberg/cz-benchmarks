@@ -10,6 +10,7 @@ The repository utilizes three primary GitHub workflows to manage the release pro
 1. `Conventional Commits Validation`: Ensures that all pull request titles adhere to the conventional commits format.
 2. `Automated Release Management`: Uses the release-please action to generate version bumps, update release notes based on commit history, create a Release PR which includes all of the commits to be included in the next release, and create a release upon the merging of the Release PR.
 3. `Publishing to PyPI`: Builds the package and publishes it to TestPyPI (with plans to move to the official PyPI registry) after a new release is published.
+4. `Documentation Publishing Workflow`: Builds and publishes the documentation to GitHub Pages.
 
 Maintainers of cz-benchmarks:
 
@@ -83,10 +84,3 @@ After `release-please.yml` finishes publishing a new release, this workflow will
 
 The documentation is automatically updated whenever a new release is published, ensuring that the online documentation always matches the latest released version. The workflow can also be triggered manually through the GitHub Actions interface for testing purposes.
 
-## Building Model Images
-
-After `release-please.yml` finishes publishing a new release, this workflow will also be triggered (like `publish-pypy.yml`).
-
-This action will:
-
-- Build images of the models and push them to a private ECR repo that is publicly readable.
