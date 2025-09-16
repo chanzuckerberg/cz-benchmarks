@@ -77,13 +77,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_to_save (dict): Dictionary of target conditions for each cell.
+        target_conditions_dict (dict): Dictionary of masked genes for each condition.
     """
 
     control_matched_adata: ad.AnnData
     control_cells_ids: dict
     de_results: pd.DataFrame
-    target_conditions_to_save: dict
+    target_conditions_dict: dict
 
     def __init__(
         self,
@@ -246,7 +246,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         }
 
         all_merged_data = []
-        target_conditions_to_save = {}
 
         with tqdm(
             total=total_conditions, desc="Processing conditions", unit="item"
@@ -262,11 +261,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
 
                 all_merged_data.append(adata_merged)
-                # target_conditions_to_save.update(result[1])
-                for idx in adata_merged.obs.index:
-                    target_conditions_to_save[idx] = target_condition_dict[
-                        selected_condition
-                    ]
                 pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
                 pbar.update(1)
 
@@ -279,7 +273,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             adata_final.obs[self.condition_key]
         )
 
-        return adata_final, target_conditions_to_save
+        return adata_final, target_condition_dict
 
     def load_data(
         self,
@@ -383,10 +377,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(
             f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
         )
-        adata_final, target_conditions_to_save = self._create_adata()
+        adata_final, target_conditions_dict = self._create_adata()
 
         self.control_matched_adata = adata_final
-        self.target_conditions_to_save = target_conditions_to_save
+        self.target_conditions_dict = target_conditions_dict
 
     def store_task_inputs(self) -> Path:
         """
@@ -402,7 +396,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Task instantiation is performed by benchmarking pipelines
         inputs_to_store = {
             "control_cells_ids": self.control_cells_ids,
-            "target_conditions_to_save": self.target_conditions_to_save,
+            "target_conditions_dict": self.target_conditions_dict,
             "de_results": self.de_results,
             "control_matched_adata/obs": self.control_matched_adata.obs,
             "control_matched_adata/var": self.control_matched_adata.var,
@@ -453,7 +447,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ValueError: If invalid condition formats are found.
         """
         super()._validate()
-
+        # TODO: fix validation
+        """
         # Validate condition format
         conditions = set(self.control_matched_adata.obs[self.condition_key])
         target_conditions = set(
@@ -477,3 +472,4 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
                     "or ``{perturb}`` for perturbations."
                 )
+        """

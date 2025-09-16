@@ -83,9 +83,9 @@ def assert_metrics_match_expected(
         actual_value = actual_dict[metric_type]
 
         # Allow for small numerical differences
-        assert abs(actual_value - expected_value) <= tolerance, (
-            f"Metric {metric_type}: expected {expected_value}, got {actual_value} (tolerance: {tolerance})"
-        )
+        assert (
+            abs(actual_value - expected_value) <= tolerance
+        ), f"Metric {metric_type}: expected {expected_value}, got {actual_value} (tolerance: {tolerance})"
 
 
 @pytest.fixture
