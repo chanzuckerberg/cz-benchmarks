@@ -24,23 +24,19 @@ jobs:
       - name: Install OpenMP
         run: sudo apt-get update && sudo apt-get install -y libomp-dev
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.11'
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Install dependencies
         run: |
-          uv venv
-          source .venv/bin/activate
-          uv pip install -e ".[dev]"
+          uv sync --group dev
 
       - name: Run tests
         run: |
-          source .venv/bin/activate
-          make test 
+          uv run make test
