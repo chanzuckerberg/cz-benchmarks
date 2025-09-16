@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.10.2...v0.11.0) (2025-09-16)
+
+
+### Features
+
+* Major API redesign and model removals ([#403](https://github.com/chanzuckerberg/cz-benchmarks/issues/403)) ([51b2a65](https://github.com/chanzuckerberg/cz-benchmarks/commit/51b2a65dd65509d1f5aa3a482d6316fddb4dba10))
+
 ## [0.10.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.10.1...v0.10.2) (2025-07-18)
 
 
