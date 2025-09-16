@@ -447,14 +447,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ValueError: If invalid condition formats are found.
         """
         super()._validate()
-        # TODO: fix validation
-        """
+
         # Validate condition format
         conditions = set(self.control_matched_adata.obs[self.condition_key])
         target_conditions = set(
-            x.split("_")[1] for x in self.target_conditions_to_save.keys()
+            self.target_conditions_dict.keys()
         )  # Update for multiple perturbations
-
+        breakpoint()
         for condition in conditions:
             if condition in target_conditions:
                 continue
@@ -472,4 +471,3 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
                     "or ``{perturb}`` for perturbations."
                 )
-        """

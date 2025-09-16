@@ -216,8 +216,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         self,
         perturbation_invalid_condition_h5ad,
     ):
-        # TODO: fix validation
-        return
         """Test that validation fails with invalid condition format."""
         dataset = SingleCellPerturbationDataset(
             perturbation_invalid_condition_h5ad,
