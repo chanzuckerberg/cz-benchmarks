@@ -13,7 +13,6 @@ on:
         required: true
         type: string
 
-
 jobs:
   publish-test-pypi:
     runs-on: ubuntu-latest
@@ -34,26 +33,20 @@ jobs:
         run: |
           echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: .python-version
-
-      - name: Cache python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
-          restore-keys: ${{ runner.os }}-python-3.10-build-
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Install dependencies
-        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
+        run: uv sync --group build
 
       - name: Build package
-        run: uv run python -m build
+        run: uv build .
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -71,13 +64,13 @@ jobs:
           max_attempts: 15
           timeout_seconds: 30
           polling_interval_seconds: 5
-          command: uv run pip index versions --index-url https://test.pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+          command: uvx pip index versions --index-url https://test.pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
 
       - name: Install and Test Package from Test PyPI
         # Add PyPi index to the pip install command so that any dependencies not on TestPyPI are installed from PyPI
         # For example, anndata >= 0.9.0 is not on TestPyPI, so it is installed from PyPI
         run: |
-          uv run python -m venv venv
+          uv venv venv
           source venv/bin/activate
           # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           uv pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
@@ -112,26 +105,20 @@ jobs:
         run: |
           echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: .python-version
-
-      - name: Cache python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-python-3.10-build-${{ hashFiles('uv.lock') }}
-          restore-keys: ${{ runner.os }}-python-3.10-build-
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Install dependencies
-        run: uv pip install --system --cache-dir ~/.cache/uv -e '.[build]'
+        run: uv sync --group build
 
       - name: Build package
-        run: uv run python -m build
+        run: uv build .
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -145,14 +132,13 @@ jobs:
           max_attempts: 15
           timeout_seconds: 30
           polling_interval_seconds: 5
-          command: uv run pip index versions --index-url https://pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+          command: uvx pip index versions --index-url https://pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
 
       - name: Install and Test Package from PyPI
         run: |
-          uv run python -m venv venv
+          uv venv venv
           source venv/bin/activate
           # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           uv pip install --no-cache-dir cz-benchmarks
           uv run python -c "import czbenchmarks"
           uv pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
-
