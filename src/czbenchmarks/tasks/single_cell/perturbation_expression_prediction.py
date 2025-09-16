@@ -23,7 +23,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     de_results: pd.DataFrame
     masked_adata_obs: pd.DataFrame
     var_index: pd.Index
-    target_conditions_to_save: Dict[str, List[str]]
+    target_conditions_dict: Dict[str, List[str]]
     row_index: pd.Index
 
 
@@ -51,9 +51,9 @@ def load_perturbation_task_input_from_saved_files(
     de_results = pd.read_json(de_results_path)
 
     # Load target conditions to save
-    target_genes_path = inputs_dir / "target_conditions_to_save.json"
+    target_genes_path = inputs_dir / "target_condition_dict.json"
     with target_genes_path.open("r") as f:
-        target_conditions_to_save = json.load(f)
+        target_conditions_dict = json.load(f)
 
     # Rebuild AnnData obs and var
     adata_dir = inputs_dir / "control_matched_adata"
@@ -64,11 +64,11 @@ def load_perturbation_task_input_from_saved_files(
     )
 
     return PerturbationExpressionPredictionTaskInput(
-        de_results=de_results,
-        masked_adata_obs=obs,
-        var_index=var.index,
-        target_conditions_to_save=target_conditions_to_save,
-        row_index=row_index,
+        de_results=de_results,  # DataFrame with differential expression results [19705 x 7]
+        masked_adata_obs=obs,  # [192358 x 11]
+        var_index=var.index,  # List of gene names [8563]
+        target_conditions_dict=target_conditions_dict,
+        row_index=row_index,  # List of cell barcodes [310385]
     )
 
 
@@ -143,20 +143,16 @@ class PerturbationExpressionPredictionTask(Task):
         for condition in condition_list:
             condition_de_df = de_results[de_results["condition"] == condition]
 
-            masked_genes = np.array(
-                task_input.target_conditions_to_save[
-                    task_input.masked_adata_obs.index[
-                        task_input.masked_adata_obs["condition"] == condition
-                    ][0]
-                ]
-            )
+            masked_genes = np.array(task_input.target_conditions_dict[condition])
             # Filter masked_genes to only those present in var.index
             masked_genes = np.array(
                 [g for g in masked_genes if g in task_input.var_index]
             )
 
             if len(masked_genes) == 0:
-                print("Skipping condition because it has no masked genes.")
+                logger.warning(
+                    "Skipping condition %s because it has no masked genes.", condition
+                )
                 continue
             true_log_fc = (
                 condition_de_df.set_index("gene_id")
