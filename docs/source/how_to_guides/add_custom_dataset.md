@@ -1,8 +1,6 @@
 
 # Add a Custom Dataset Type
 
-This guide explains how to add your own single-cell dataset or define a new custom dataset type (i.e., a new Python class for a dataset) to cz-benchmarks.
-
 
 ## Adding Datasets for Supported Types
 
@@ -78,9 +76,9 @@ Define datasets in a YAML file and load them by name using `load_dataset`:
 ```yaml
 datasets:
   user_dataset:
-  _target_: czbenchmarks.datasets.SingleCellLabeledDataset
-  organism: ${organism:HUMAN}
-  path: s3://<bucket name>/<path>/example-small.h5ad
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    organism: ${organism:HUMAN}
+    path: s3://<bucket name>/<path>/example-small.h5ad
 ```
 
 Load the dataset in Python:

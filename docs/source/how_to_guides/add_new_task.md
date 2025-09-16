@@ -85,7 +85,7 @@ class MyTask(Task):
     # REQUIRED: Class attributes for task metadata
     display_name = "My Example Task"
     description = "Predicts numeric labels from cell embeddings using a simple algorithm."
-    input_model = MyTaskInput  # CRITICAL: Must specify input model class
+    input_model = MyTaskInput
     
     def __init__(self, my_param: int = 10, *, random_seed: int = RANDOM_SEED):
         """Initialize the task with custom parameters.
