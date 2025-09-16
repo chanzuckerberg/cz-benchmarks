@@ -45,6 +45,25 @@ If you plan to contribute or debug the library, install it from source:
     pip install -e ".[dev]"
     ```
 
+## Command-Line Interface (CLI)
+
+Use the **cz-benchmarks** CLI to list supported datasets and tasks.
+
+- **List all available datasets**:
+    ```bash
+    czbenchmarks list datasets
+    ```
+
+- **List all available tasks**:
+    ```bash
+    czbenchmarks list tasks
+    ```
+
+For a full list of options, run:
+```bash
+czbenchmarks list --help
+```
+
 ## Running Benchmarks
 
 The library is designed to be used programmatically within your Python workflow. Here’s how you can run a benchmark task on a model's output.

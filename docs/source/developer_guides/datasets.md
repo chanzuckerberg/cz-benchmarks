@@ -55,62 +55,48 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 - [Organism](../autoapi/czbenchmarks/datasets/types/index)  
    Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
-## Adding a New Dataset
+## Using Available Datasets
 
-To define a custom dataset:
+### Listing Available Datasets
 
-1. **Inherit from `Dataset`** or one of its subclasses (e.g., `SingleCellDataset`).
-2. Implement the abstract methods:
-    - `load_data(self)` — Populate instance variables (e.g., `self.adata`, `self.labels`) with data loaded from `self.path`.
-    - `store_task_inputs(self)` — Save processed data needed by tasks to the `task_inputs_dir`.
-    - `_validate(self)` — Raise exceptions for missing or malformed data.
-
-
-### Example Skeleton
+To list all datasets registered in the system:
 
 ```python
-from czbenchmarks.datasets import SingleCellDataset
-from czbenchmarks.datasets.types import Organism
-import anndata as ad
-
-class MyCustomDataset(SingleCellDataset):
-    def load_data(self):
-        # First, load the base data
-        super().load_data()
-        # Then, load any custom data. For example, a special annotation.
-        if "my_custom_key" not in self.adata.obs:
-            raise ValueError("Dataset is missing 'my_custom_key' in obs.")
-        self.my_annotation = self.adata.obs["my_custom_key"]
-
-    def _validate(self):
-        # First, run parent validation
-        super()._validate()
-        # Then, add custom validation logic
-        assert all(self.my_annotation.notna()), "Custom annotation has missing values!"
-
-    def store_task_inputs(self):
-        # This method would be implemented to save any derived data
-        # that tasks might need.
-        pass
+from czbenchmarks.datasets.utils import list_available_datasets
+available_datasets = list_available_datasets()
 ```
 
-## Accessing Data
+### Loading a Dataset
 
-Once a dataset is loaded, its data is stored in instance attributes, which can be accessed directly.
+To load a dataset by name, use the `load_dataset` utility. The returned object will be an instance of the appropriate dataset class, such as `SingleCellLabeledDataset` or `SingleCellPerturbationDataset`:
 
 ```python
-# For a SingleCellLabeledDataset
-dataset.load_data()
-adata_object = dataset.adata
-labels_series = dataset.labels
+from czbenchmarks.datasets import load_dataset, SingleCellLabeledDataset
 
-# For a SingleCellPerturbationDataset
-dataset.load_data()
-control_cells_ids = dataset.control_cells_ids
-target_conditions_to_save = dataset.target_conditions_to_save
-de_results = dataset.de_results
-control_matched_adata = dataset.control_matched_adata
+dataset: SingleCellLabeledDataset = load_dataset("tsv2_prostate")
 ```
+
+### Accessing Dataset Attributes
+
+After loading, you can access the Dataset's attributes, which vary depending on the dataset type:
+
+#### For `SingleCellLabeledDataset`:
+
+```python
+adata_object = dataset.adata        # AnnData object with expression data
+labels_series = dataset.labels      # Labels from the specified obs column
+```
+
+#### For `SingleCellPerturbationDataset`:
+
+```python
+control_cells_ids = dataset.control_cells_ids                  # List of control cell IDs
+target_conditions_to_save = dataset.target_conditions_to_save  # Conditions to be saved for benchmarking
+de_results = dataset.de_results                                # Differential expression results
+control_matched_adata = dataset.control_matched_adata          # AnnData object for matched controls
+```
+
+Refer to the class docstrings and API documentation for more details on available attributes and methods.
 
 ## Tips for Developers
 
@@ -122,4 +108,3 @@ control_matched_adata = dataset.control_matched_adata
 - [Dataset API](../autoapi/czbenchmarks/datasets/dataset/index)
 - [SingleCellDataset API](../autoapi/czbenchmarks/datasets/single_cell/index)
 - [Organism Enum](../autoapi/czbenchmarks/datasets/types/index)
-

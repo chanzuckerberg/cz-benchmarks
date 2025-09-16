@@ -48,8 +48,6 @@ autoapi_options = [
     "imported-members",
 ]
 autoapi_dirs = ["../../src/"]
-
-
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autoapi_keep_files = True
@@ -91,12 +89,6 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
 }
-
-autodoc_type_aliases = {
-    "BaseDataset": "czbenchmarks.datasets.BaseDataset",
-    "Organism": "czbenchmarks.datasets.types.Organism",
-}
-
 
 inheritance_graph_attrs = dict(
     rankdir="LR", size='"18.0, 28.0 "', fontsize=16, ratio="expand", dpi=96

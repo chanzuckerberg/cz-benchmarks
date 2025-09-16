@@ -24,6 +24,26 @@ Dependencies for building the documentation are listed in `pyproject.toml`. Inst
 pip install -e ".[docs]"
 ```
 
+### Step 3: Install Pandoc for Notebook Support
+
+To build documentation from Jupyter notebooks (`.ipynb` files), you need to install **Pandoc**. Pandoc is required by Sphinx extensions `nbsphinx` to convert notebooks into HTML.
+
+#### On macOS:
+
+```bash
+brew install pandoc
+```
+
+#### On Linux (Debian/Ubuntu):
+
+```bash
+sudo apt-get update
+sudo apt-get install pandoc
+```
+
+Alternatively, you can download the latest Pandoc release from the [Pandoc installation page](https://pandoc.org/installing.html).
+
+
 ---
 
 ## Building the Documentation
