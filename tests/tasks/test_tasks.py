@@ -325,9 +325,9 @@ def test_perturbation_task():
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_results,
         masked_adata_obs=masked_adata_obs,
-        var_index=var_names,
+        gene_index=var_names,
         target_conditions_dict=target_conditions_dict,
-        row_index=adata.obs.index,
+        perturb_index=adata.obs.index,
     )
 
     # Five metrics per condition: accuracy, precision, recall, f1, correlation
@@ -436,9 +436,9 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_wilcoxon_df,
         masked_adata_obs=adata.obs,
-        var_index=adata.var_names,
+        gene_index=adata.var_names,
         target_conditions_dict=target_conditions_dict,
-        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
+        perturb_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -551,9 +551,9 @@ def test_perturbation_expression_prediction_task_ttest():
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_ttest_df,
         masked_adata_obs=adata.obs,
-        var_index=adata.var_names,
+        gene_index=adata.var_names,
         target_conditions_dict=target_conditions_dict,
-        row_index=pd.Index(base_cell_names),  # Full dataset uses base names
+        perturb_index=pd.Index(base_cell_names),  # Full dataset uses base names
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -643,14 +643,14 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
         control_name="ctrl",
     )
     dataset.load_data()
-    stored_dir = dataset.store_task_inputs()
+    task_inputs_file = dataset.store_task_inputs()
 
     # Test loading task inputs using the standalone function
     from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
         load_perturbation_task_input_from_saved_files,
     )
 
-    task_input = load_perturbation_task_input_from_saved_files(stored_dir)
+    task_input = load_perturbation_task_input_from_saved_files(task_inputs_file)
 
     # Verify the loaded task input has the expected structure
     assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
@@ -662,4 +662,4 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     # Verify data integrity
     assert task_input.de_results.shape[0] > 0
     assert task_input.masked_adata_obs.shape[0] > 0
-    assert len(task_input.var_index) > 0
+    assert len(task_input.gene_index) > 0

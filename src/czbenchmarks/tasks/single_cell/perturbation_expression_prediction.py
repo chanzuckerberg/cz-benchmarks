@@ -1,4 +1,3 @@
-import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Literal
@@ -22,53 +21,43 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
 
     de_results: pd.DataFrame
     masked_adata_obs: pd.DataFrame
-    var_index: pd.Index
+    gene_index: pd.Index
     target_conditions_dict: Dict[str, List[str]]
-    row_index: pd.Index
+    perturb_index: pd.Index
 
 
 def load_perturbation_task_input_from_saved_files(
-    task_inputs_dir: Path,
+    task_inputs_file: Path,
 ) -> PerturbationExpressionPredictionTaskInput:
     """
-    Load task input from files saved by dataset's `store_task_inputs`.
+    Load task input from a single AnnData file saved by dataset's `store_task_inputs`.
 
-    This creates a PerturbationExpressionPredictionTaskInput from stored files,
+    This creates a PerturbationExpressionPredictionTaskInput from a stored AnnData file,
     allowing the task to be instantiated without going through the full dataset
     loading process.
 
     Args:
-        task_inputs_dir: Directory containing task inputs.
+        task_inputs_file: Path to the task_inputs.h5ad file.
 
     Returns:
         PerturbationExpressionPredictionTaskInput: Task input ready for use.
     """
+    import anndata as ad
 
-    inputs_dir = Path(task_inputs_dir)
+    # Load the AnnData file
+    task_adata = ad.read_h5ad(task_inputs_file)
 
-    # Load DE results
-    de_results_path = inputs_dir / "de_results.json"
-    de_results = pd.read_json(de_results_path)
-
-    # Load target conditions to save
-    target_genes_path = inputs_dir / "target_conditions_dict.json"
-    with target_genes_path.open("r") as f:
-        target_conditions_dict = json.load(f)
-
-    # Rebuild AnnData obs and var
-    adata_dir = inputs_dir / "control_matched_adata"
-    obs = pd.read_json(adata_dir / "obs.json", orient="split")
-    var = pd.read_json(adata_dir / "var.json", orient="split")
-    row_index = pd.Index(
-        np.load(inputs_dir / "original_adata/obs/index.npy", allow_pickle=True)
-    )
+    # Extract data from uns
+    de_results = pd.DataFrame(task_adata.uns["de_results"])
+    target_conditions_dict = task_adata.uns["target_conditions_dict"]
+    perturb_index = pd.Index(task_adata.uns["original_obs_index"])
 
     return PerturbationExpressionPredictionTaskInput(
         de_results=de_results,
-        masked_adata_obs=obs,
-        var_index=var.index,
+        masked_adata_obs=task_adata.obs,
+        gene_index=task_adata.var.index,
         target_conditions_dict=target_conditions_dict,
-        row_index=row_index,
+        perturb_index=perturb_index,
     )
 
 
@@ -138,7 +127,7 @@ class PerturbationExpressionPredictionTask(Task):
         condition_list = np.unique(
             condition_series[~condition_series.str.startswith(self.control_prefix)]
         )
-        row_index = task_input.row_index.str.split("_").str[0]
+        perturb_index = task_input.perturb_index.str.split("_").str[0]
 
         for condition in condition_list:
             condition_de_df = de_results[de_results["condition"] == condition]
@@ -147,7 +136,7 @@ class PerturbationExpressionPredictionTask(Task):
 
             # Filter masked_genes to only those present in var.index
             masked_genes = np.array(
-                [g for g in masked_genes if g in task_input.var_index]
+                [g for g in masked_genes if g in task_input.gene_index]
             )
 
             if len(masked_genes) == 0:
@@ -161,19 +150,19 @@ class PerturbationExpressionPredictionTask(Task):
             valid = ~np.isnan(true_log_fc)
             masked_genes = masked_genes[valid]
             true_log_fc = true_log_fc[valid]
-            col_indices = task_input.var_index.get_indexer(masked_genes)
+            col_indices = task_input.gene_index.get_indexer(masked_genes)
             condition_adata = task_input.masked_adata_obs[
                 task_input.masked_adata_obs["condition"] == condition
             ].index
             condition_col_ids = condition_adata.to_series().str.split("_").str[0]
-            condition_idx = np.where(row_index.isin(condition_col_ids))[0]
+            condition_idx = np.where(perturb_index.isin(condition_col_ids))[0]
             control_adata = task_input.masked_adata_obs[
                 task_input.masked_adata_obs["condition"]
                 == f"{self.control_prefix}_{condition}"
             ].index
             control_col_ids = control_adata.to_series().str.split("_").str[0]
 
-            control_idx = np.where(row_index.isin(control_col_ids))[0]
+            control_idx = np.where(perturb_index.isin(control_col_ids))[0]
             condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
             control_vals = cell_representation[np.ix_(control_idx, col_indices)]
             ctrl_mean = np.mean(control_vals, axis=0)

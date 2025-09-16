@@ -1,5 +1,3 @@
-import io
-import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -7,7 +5,6 @@ from typing import Dict, List, Optional, Tuple
 import anndata as ad
 import numpy as np
 import pandas as pd
-import scipy.sparse as sparse
 from tqdm import tqdm
 
 from czbenchmarks.constants import RANDOM_SEED
@@ -384,54 +381,34 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def store_task_inputs(self) -> Path:
         """
-        Store auxiliary data files.
+        Store all task inputs to a single AnnData file.
 
-        This method saves the IDs of the control cells and the target conditions dictionary
-            to JSON files.
+        This method saves all task-related data (control cells, target conditions,
+        DE results, and indices) to a single AnnData file for easy loading.
 
         Returns:
-            Path: Path to the directory storing the task input files.
+            Path: Path to the saved AnnData file.
         """
-        # TODO: Might be better as a single adata, pending future design on how
-        # Task instantiation is performed by benchmarking pipelines
-        inputs_to_store = {
-            "control_cells_ids": self.control_cells_ids,
-            "target_conditions_dict": self.target_conditions_dict,
-            "de_results": self.de_results,
-            "control_matched_adata/obs": self.control_matched_adata.obs,
-            "control_matched_adata/var": self.control_matched_adata.var,
-            "control_matched_adata/X": self.control_matched_adata.X,
-            "original_adata/obs/index": self.adata.obs.index.astype(str).to_numpy(),
+        # Create a copy of control_matched_adata to avoid modifying the original
+        task_adata = self.control_matched_adata.copy()
+
+        # Store all task inputs in the uns (unstructured) section
+        task_adata.uns["control_cells_ids"] = self.control_cells_ids
+        task_adata.uns["target_conditions_dict"] = self.target_conditions_dict
+        # Convert DataFrame to dict of arrays for HDF5 compatibility
+        task_adata.uns["de_results"] = {
+            col: self.de_results[col].values for col in self.de_results.columns
         }
+        task_adata.uns["original_obs_index"] = self.adata.obs.index.astype(str).values
 
-        for key, item in inputs_to_store.items():
-            if hasattr(item, "to_json"):
-                # For pandas DataFrames. Preserve index for obs/var by using orient="split".
-                buffer = io.StringIO()
-                if key in {"control_matched_adata/obs", "control_matched_adata/var"}:
-                    item.to_json(buffer, orient="split")
-                else:
-                    item.to_json(buffer)
-                self._store_task_input(f"{key}.json", buffer.getvalue())
+        # Ensure the task inputs directory exists
+        self.task_inputs_dir.mkdir(parents=True, exist_ok=True)
 
-            elif isinstance(item, np.ndarray):
-                output_dir = self.task_inputs_dir / Path(key).parent
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_file = self.task_inputs_dir / (key + ".npy")
-                np.save(output_file, item)
+        # Save to a single h5ad file
+        output_file = self.task_inputs_dir / "task_inputs.h5ad"
+        task_adata.write_h5ad(output_file)
 
-            elif isinstance(item, sparse.csr_matrix):
-                output_dir = self.task_inputs_dir / Path(key).parent
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_file = self.task_inputs_dir / (key + ".npz")
-                sparse.save_npz(output_file, item)
-
-            else:
-                # For dictionaries and other JSON-serializable objects
-                json_string = json.dumps(item)
-                self._store_task_input(f"{key}.json", json_string)
-
-        return self.task_inputs_dir
+        return output_file
 
     def _validate(self) -> None:
         """
@@ -439,7 +416,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Condition format must be one of:
-          - ``{control_name}`` or ``{control_name}_{suffix}`` for control samples.
+          - ``{control_name}_{perturb}`` for matched control samples.
           - ``{perturb}`` for single perturbations.
         - Combinatorial perturbations are not currently supported.
 

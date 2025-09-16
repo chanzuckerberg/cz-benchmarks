@@ -11,6 +11,7 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
 import numpy as np
+import pandas as pd
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.tasks.types import CellRepresentation
 import tempfile
@@ -86,6 +87,14 @@ if __name__ == "__main__":
         default=0.55,
         help="Minimum standardized mean difference for DE filtering (used when --metric=t-test)",
     )
+    parser.add_argument(
+        "--gene_index_file",
+        help="File with gene names (one per line) to use as gene_index",
+    )
+    parser.add_argument(
+        "--perturb_index_file",
+        help="File with perturbation names (one per line) to use as perturb_index",
+    )
 
     args = parser.parse_args()
 
@@ -112,23 +121,45 @@ if __name__ == "__main__":
             "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
         )  # TODO: Once PR 381 is merged, use the new load_local_dataset function
 
+    # Load custom indices if provided, with assertions
+    gene_index = dataset.control_matched_adata.var.index
+    if args.gene_index_file:
+        gene_index = pd.Index(open(args.gene_index_file).read().strip().split("\n"))
+        assert len(gene_index) == len(dataset.control_matched_adata.var.index), (
+            f"Length of gene_index from file ({len(gene_index)}) does not match "
+            f"length of dataset.control_matched_adata.var.index ({len(dataset.control_matched_adata.var.index)})"
+        )
+
+    perturb_index = dataset.adata.obs.index
+    if args.perturb_index_file:
+        perturb_index = pd.Index(
+            open(args.perturb_index_file).read().strip().split("\n")
+        )
+        assert len(perturb_index) == len(dataset.adata.obs.index), (
+            f"Length of perturb_index from file ({len(perturb_index)}) does not match "
+            f"length of dataset.adata.obs.index ({len(dataset.adata.obs.index)})"
+        )
+
     # Choose approach based on flag
     if args.save_inputs:
         print("Using save/load approach...")
         # Save and load dataset task inputs
-        task_inputs_dir = dataset.store_task_inputs()
-        print(f"Task inputs saved to: {task_inputs_dir}")
-        task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
+        task_inputs_file = dataset.store_task_inputs()
+        print(f"Task inputs saved to: {task_inputs_file}")
+        task_input = load_perturbation_task_input_from_saved_files(task_inputs_file)
+        # Override with custom indices if provided
+        task_input.gene_index = gene_index
+        task_input.perturb_index = perturb_index
         print("Task inputs loaded from saved files")
     else:
         print("Creating task input directly from dataset...")
         # Create task input directly from dataset
         task_input = PerturbationExpressionPredictionTaskInput(
             de_results=dataset.de_results,
-            var_index=dataset.control_matched_adata.var.index,
+            gene_index=gene_index,
             masked_adata_obs=dataset.control_matched_adata.obs,
-            target_conditions_to_save=dataset.target_conditions_to_save,
-            row_index=dataset.adata.obs.index,
+            target_conditions_dict=dataset.target_conditions_dict,
+            perturb_index=perturb_index,
         )
 
     # Generate random model output

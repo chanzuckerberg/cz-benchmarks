@@ -201,10 +201,10 @@ def test_end_to_end_perturbation_expression_prediction():
     # Build task input directly from dataset
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=dataset.de_results,
-        var_index=dataset.control_matched_adata.var.index,
+        gene_index=dataset.control_matched_adata.var.index,
         masked_adata_obs=dataset.control_matched_adata.obs,
         target_conditions_dict=dataset.target_conditions_dict,
-        row_index=dataset.adata.obs.index,
+        perturb_index=dataset.adata.obs.index,
     )
 
     # Create random model output matching dataset dimensions

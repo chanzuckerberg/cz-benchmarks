@@ -238,7 +238,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         tmp_path,
         deg_test_name,
     ):
-        """Tests that the store_task_inputs method writes expected files."""
+        """Tests that the store_task_inputs method writes expected AnnData file."""
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
@@ -252,17 +252,23 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         )
         dataset.load_data()
 
-        out_dir = dataset.store_task_inputs()
-        control_file = out_dir / "control_cells_ids.json"
-        target_conditions_file = out_dir / "target_conditions_dict.json"
-        de_results_file = out_dir / "de_results.json"
+        task_inputs_file = dataset.store_task_inputs()
+        assert task_inputs_file.exists()
+        assert task_inputs_file.name == "task_inputs.h5ad"
 
-        assert control_file.exists()
-        assert target_conditions_file.exists()
-        assert de_results_file.exists()
+        # Load and validate the AnnData file contents
+        import anndata as ad
 
-        # Validate that DE results JSON is readable and has expected columns
-        de_df = pd.read_json(de_results_file)
+        task_adata = ad.read_h5ad(task_inputs_file)
+
+        # Check that required keys exist in uns
+        assert "control_cells_ids" in task_adata.uns
+        assert "target_conditions_dict" in task_adata.uns
+        assert "de_results" in task_adata.uns
+        assert "original_obs_index" in task_adata.uns
+
+        # Validate that DE results can be reconstructed and has expected columns
+        de_df = pd.DataFrame(task_adata.uns["de_results"])
         assert not de_df.empty
         base_cols = {"condition", "gene", "pval_adj"}
         assert base_cols.issubset(set(de_df.columns))
