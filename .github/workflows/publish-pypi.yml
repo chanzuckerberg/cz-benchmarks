@@ -3,15 +3,9 @@ name: Publish to PyPi
 on:
   release:
     types: [published]
-  # For testing/debugging purposes, you make changes to this workflow on a branch and then trigger the workflow manually from the Github Actions tab,
-  # specifying the version to publish. Doing will only run the publish-test-pyi job and *not* the publish-prod-pypi job, unless you comment out the
-  # publish-prod-pypi job's `if` condition
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g. "1.2.3"). For testing/debugging.'
-        required: true
-        type: string
+  # For testing/debugging purposes, you make changes to this workflow on a branch and then trigger the workflow manually from the Github Actions tab
+  # Doing will only run the publish-test-pyi job and *not* the publish-prod-pypi job, unless you comment out the publish-prod-pypi job's `if` condition
 
 jobs:
   publish-test-pypi:
@@ -19,19 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Get the version
-        id: get_version
-        run: |
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Display version being published
-        run: |
-          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
@@ -41,6 +22,15 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
+
+      - name: Get the version
+        id: get_version
+        run: |
+          echo "VERSION=$(uv version --short)" >> $GITHUB_OUTPUT
+
+      - name: Display version being published
+        run: |
+          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
 
       - name: Install dependencies
         run: uv sync --group build
@@ -57,14 +47,14 @@ jobs:
           # Useful if prod pypi publish failed (below), and this workflow is re-run
           skip-existing: true
 
-
       - name: Confirm publish to Test PyPI
         uses: nick-fields/retry@v3
         with:
           max_attempts: 15
           timeout_seconds: 30
           polling_interval_seconds: 5
-          command: uv run pip index versions --index-url https://test.pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+          command: uv run pip index versions --index-url https://test.pypi.org/simple/ cz-benchmarks | tee | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+          # it takes a little time for a package to show up so the first try might fail
 
       - name: Install and Test Package from Test PyPI
         # Add PyPi index to the pip install command so that any dependencies not on TestPyPI are installed from PyPI
@@ -74,14 +64,14 @@ jobs:
           source venv/bin/activate
           # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           uv pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cz-benchmarks
-          uv run python -c "import czbenchmarks"
-          uv pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+          uv run --active python -c "import czbenchmarks"  # --active uses the venv
+          uv pip show cz-benchmarks | grep "Version: ${{ steps.get_version.outputs.VERSION }}"
 
   publish-prod-pypi:
     # This job will only run if the test-pypi job is successful
     needs: publish-test-pypi
     # Only run if done for an official release, not via a triggered workflow, which is used for testing
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -95,11 +85,7 @@ jobs:
       - name: Get the version
         id: get_version
         run: |
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          fi
+          echo "VERSION=$(uv version --short)" >> $GITHUB_OUTPUT
 
       - name: Display version being published
         run: |
@@ -133,6 +119,7 @@ jobs:
           timeout_seconds: 30
           polling_interval_seconds: 5
           command: uv run pip index versions --index-url https://pypi.org/simple/ cz-benchmarks | grep "Available.*${{ steps.get_version.outputs.VERSION }}"
+          # it takes a little time for a package to show up so the first try might fail
 
       - name: Install and Test Package from PyPI
         run: |
@@ -140,5 +127,5 @@ jobs:
           source venv/bin/activate
           # Note: We install the "latest" version (i.e. no explicit version) to ensure that the newly published version is in fact the latest version (verified below).
           uv pip install --no-cache-dir cz-benchmarks
-          uv run python -c "import czbenchmarks"
-          uv pip freeze | grep "cz-benchmarks==${{ steps.get_version.outputs.VERSION }}"
+          uv run --active python -c "import czbenchmarks"  # --active uses the venv
+          uv pip show cz-benchmarks | grep "Version: ${{ steps.get_version.outputs.VERSION }}"
