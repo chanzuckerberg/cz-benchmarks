@@ -1,5 +1,6 @@
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
+from pathlib import Path
 
 import hydra
 import yaml
@@ -7,6 +8,7 @@ from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
 from czbenchmarks.datasets.dataset import Dataset
+from czbenchmarks.datasets.types import Organism
 from czbenchmarks.file_utils import download_file_from_remote
 from czbenchmarks.utils import initialize_hydra
 
@@ -106,3 +108,57 @@ def list_available_datasets() -> Dict[str, Dict[str, str]]:
     datasets = dict(sorted(datasets.items()))
 
     return datasets
+
+
+def load_local_dataset(
+    dataset_class: str,
+    organism: Organism,
+    path: Union[str, Path],
+    **kwargs,
+) -> Dataset:
+    """
+    Instantiate a dataset directly from arguments without requiring a YAML file.
+
+    This function is completely independent from load_dataset() and directly
+    instantiates the dataset class without using OmegaConf objects.
+
+    Args:
+        target: The full import path to the Dataset class to instantiate.
+        organism: The organism of the dataset.
+        path: The local or remote path to the dataset file.
+        **kwargs: Additional key-value pairs for the dataset config.
+
+    Returns:
+        Instantiated dataset object with data loaded.
+
+    Example:
+        dataset = load_local_dataset(
+            target="czbenchmarks.datasets.SingleCellLabeledDataset",
+            organism=Organism.HUMAN,
+            path="example-small.h5ad",
+        )
+    """
+
+    if not dataset_class:
+        raise ValueError("The 'dataset_class' argument must be non-empty")
+    if not dataset_class.startswith("czbenchmarks.datasets."):
+        raise ValueError(
+            f"Invalid dataset class {dataset_class!r}. Must start with 'czbenchmarks.datasets.'"
+        )
+
+    if isinstance(path, str):
+        path = Path(path)
+
+    resolved_path = path.expanduser().resolve()
+
+    if not resolved_path.exists():
+        raise FileNotFoundError(f"Local dataset file not found: {resolved_path}")
+
+    module_path, class_name = dataset_class.rsplit(".", 1)
+    module = __import__(module_path, fromlist=[class_name])
+    DatasetClass = getattr(module, class_name)
+
+    dataset = DatasetClass(path=str(resolved_path), organism=organism, **kwargs)
+    dataset.load_data()
+
+    return dataset

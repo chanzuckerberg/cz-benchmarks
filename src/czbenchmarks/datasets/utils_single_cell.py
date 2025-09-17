@@ -153,12 +153,12 @@ def run_multicondition_dge_analysis(
             # Normalize and filter
             if deg_test_name == "wilcoxon":
                 logger.info(
-                    f"Normalizing total counts and log transforming for Wilcoxon test"
+                    "Normalizing total counts and log transforming for Wilcoxon test"
                 )
                 sc.pp.normalize_total(adata_merged, target_sum=1e4)
                 sc.pp.log1p(adata_merged)
             elif deg_test_name == "t-test":
-                logger.info(f"Calculating z-scores for genes by gem group for T-test")
+                logger.info("Calculating z-scores for genes by gem group for T-test")
                 logger.warning("This is not implemented yet")
                 # FIXME MICHELLE: calculate z-scores for genes by gem group
 
