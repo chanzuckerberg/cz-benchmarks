@@ -196,7 +196,30 @@ def test_end_to_end_sequential_organization_task():
     time point labels required for sequential organization evaluation.
     """
 
-    dataset: SingleCellLabeledDataset = load_dataset("allen_soundlife_immune_variation")
+    # Create a temp config as a workaround to use for a small dataset
+    from pathlib import Path
+    from tempfile import NamedTemporaryFile
+
+    import yaml
+
+    with NamedTemporaryFile(mode="w+", suffix=".yaml", delete=False) as temp_config:
+        config_data = {
+            "defaults": ["_self_"],
+            "datasets": {
+                "allen_soundlife_immune_variation_subsampled": {
+                    "_target_": "czbenchmarks.datasets.SingleCellLabeledDataset",
+                    "organism": "${organism:HUMAN}",
+                    "label_column_key": "subject__ageAtFirstDraw",
+                    "path": "s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_immune_variation_subsampled.h5ad",
+                }
+            },
+        }
+        yaml.dump(config_data, temp_config)
+        temp_config_path = Path(temp_config.name)
+
+    dataset: SingleCellLabeledDataset = load_dataset(
+        "allen_soundlife_immune_variation_subsampled", temp_config_path
+    )
 
     # Create random model output as a stand-in for real model results
     model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
