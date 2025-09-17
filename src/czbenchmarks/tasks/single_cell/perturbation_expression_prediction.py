@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Literal
 
+import anndata as ad
 import numpy as np
 import pandas as pd
 from scipy import sparse as sp_sparse
@@ -19,11 +20,10 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
-    de_results: pd.DataFrame
-    masked_adata_obs: pd.DataFrame
-    gene_index: pd.Index
-    target_conditions_dict: Dict[str, List[str]]
-    perturb_index: pd.Index
+    adata: ad.AnnData
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def load_perturbation_task_input_from_saved_files(
@@ -32,33 +32,16 @@ def load_perturbation_task_input_from_saved_files(
     """
     Load task input from a single AnnData file saved by dataset's `store_task_inputs`.
 
-    This creates a PerturbationExpressionPredictionTaskInput from a stored AnnData file,
-    allowing the task to be instantiated without going through the full dataset
-    loading process.
-
     Args:
         task_inputs_file: Path to the task_inputs.h5ad file.
 
     Returns:
-        PerturbationExpressionPredictionTaskInput: Task input ready for use.
+        PerturbationExpressionPredictionTaskInput: Task input with loaded AnnData.
     """
-    import anndata as ad
-
     # Load the AnnData file
     task_adata = ad.read_h5ad(task_inputs_file)
 
-    # Extract data from uns
-    de_results = pd.DataFrame(task_adata.uns["de_results"])
-    target_conditions_dict = task_adata.uns["target_conditions_dict"]
-    perturb_index = pd.Index(task_adata.uns["original_obs_index"])
-
-    return PerturbationExpressionPredictionTaskInput(
-        de_results=de_results,
-        masked_adata_obs=task_adata.obs,
-        gene_index=task_adata.var.index,
-        target_conditions_dict=target_conditions_dict,
-        perturb_index=perturb_index,
-    )
+    return PerturbationExpressionPredictionTaskInput(adata=task_adata)
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
@@ -77,6 +60,7 @@ class PerturbationExpressionPredictionTask(Task):
         self,
         metric: str = "wilcoxon",
         control_prefix: str = "non-targeting",
+        condition_key: str = "condition",
         *,
         random_seed: int = RANDOM_SEED,
     ):
@@ -93,6 +77,7 @@ class PerturbationExpressionPredictionTask(Task):
         else:
             raise ValueError(f"Metric {metric} not supported")
         self.control_prefix = control_prefix
+        self.condition_key = condition_key
 
     def _run_task(
         self,
@@ -102,74 +87,83 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Runs the perturbation evaluation task.
 
-        This method computes predicted and ground truth log fold changes for each perturbation
-        condition in the dataset, using the provided cell representations and differential
-        expression results. It aligns predictions and ground truth values for masked genes,
-        and prepares data for downstream metric computation.
-
         Args:
-            cell_representation (CellRepresentation): A numpy matrix of shape (n_cells, n_genes)
-            task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
-                - de_results (pd.DataFrame): DataFrame with differential expression results,
-                  including log fold changes/standard mean deviation and gene names.
-                - control_cells_ids (Dict[str, np.ndarray]): Dictionary of control cell IDs for each perturbation condition.
+            cell_representation: Cell expression matrix of shape (n_cells, n_genes)
+            task_input: Task input containing AnnData with all necessary data
 
         Returns:
-            PerturbationExpressionPredictionOutput: Output object containing dictionaries of predicted and true log fold changes
-            for each perturbation condition.
+            PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
-
         pred_log_fc_dict = {}
         true_log_fc_dict = {}
-        de_results = task_input.de_results
+        adata = task_input.adata
 
-        condition_series = task_input.masked_adata_obs["condition"].astype(str)
-        condition_list = np.unique(
-            condition_series[~condition_series.str.startswith(self.control_prefix)]
+        # Extract data from AnnData
+        obs = adata.obs
+        de_results = pd.DataFrame(adata.uns["de_results"])
+        target_conditions_dict = adata.uns["target_conditions_dict"]
+        cell_barcode_index = pd.Index(adata.uns["cell_barcode_index"])
+
+        # Get perturbation conditions (non-control)
+        conditions = obs[self.condition_key].astype(str)
+        perturbation_conditions = np.unique(
+            conditions[~conditions.str.startswith(self.control_prefix)]
         )
-        perturb_index = task_input.perturb_index.str.split("_").str[0]
 
-        for condition in condition_list:
-            condition_de_df = de_results[de_results["condition"] == condition]
+        # Extract base cell IDs for matching
+        base_cell_ids = cell_barcode_index.str.split("_").str[0]
 
-            masked_genes = np.array(task_input.target_conditions_dict[condition])
+        for condition in perturbation_conditions:
+            # Get target genes for this condition
+            target_genes = target_conditions_dict.get(condition, [])
+            valid_genes = [g for g in target_genes if g in adata.var.index]
 
-            # Filter masked_genes to only those present in var.index
-            masked_genes = np.array(
-                [g for g in masked_genes if g in task_input.gene_index]
-            )
-
-            if len(masked_genes) == 0:
-                print("Skipping condition because it has no masked genes.")
+            if not valid_genes:
+                logger.warning(
+                    "Skipping condition %s - no valid target genes", condition
+                )
                 continue
-            true_log_fc = (
-                condition_de_df.set_index("gene_id")
-                .reindex(masked_genes)[self.metric_column]
+
+            # Get true log fold changes from DE results
+            condition_de = de_results[de_results[self.condition_key] == condition]
+            true_lfc = (
+                condition_de.set_index("gene_id")
+                .reindex(valid_genes)[self.metric_column]
                 .values
             )
-            valid = ~np.isnan(true_log_fc)
-            masked_genes = masked_genes[valid]
-            true_log_fc = true_log_fc[valid]
-            col_indices = task_input.gene_index.get_indexer(masked_genes)
-            condition_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"] == condition
-            ].index
-            condition_col_ids = condition_adata.to_series().str.split("_").str[0]
-            condition_idx = np.where(perturb_index.isin(condition_col_ids))[0]
-            control_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"]
-                == f"{self.control_prefix}_{condition}"
-            ].index
-            control_col_ids = control_adata.to_series().str.split("_").str[0]
 
-            control_idx = np.where(perturb_index.isin(control_col_ids))[0]
-            condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
-            control_vals = cell_representation[np.ix_(control_idx, col_indices)]
-            ctrl_mean = np.mean(control_vals, axis=0)
-            cond_mean = np.mean(condition_vals, axis=0)
-            pred_log_fc = cond_mean - ctrl_mean
-            pred_log_fc_dict[condition] = pred_log_fc
-            true_log_fc_dict[condition] = true_log_fc
+            # Filter out NaN values
+            valid_mask = ~np.isnan(true_lfc)
+            final_genes = np.array(valid_genes)[valid_mask]
+            true_lfc = true_lfc[valid_mask]
+
+            if len(final_genes) == 0:
+                continue
+
+            # Get gene indices for slicing
+            gene_indices = adata.var.index.get_indexer(final_genes)
+
+            # Find condition and control cells
+            condition_cells = (
+                obs[obs[self.condition_key] == condition].index.str.split("_").str[0]
+            )
+            control_cells = (
+                obs[obs[self.condition_key] == f"{self.control_prefix}_{condition}"]
+                .index.str.split("_")
+                .str[0]
+            )
+
+            condition_idx = np.where(base_cell_ids.isin(condition_cells))[0]
+            control_idx = np.where(base_cell_ids.isin(control_cells))[0]
+
+            # Compute predicted log fold change
+            pred_lfc = cell_representation[np.ix_(condition_idx, gene_indices)].mean(
+                axis=0
+            ) - cell_representation[np.ix_(control_idx, gene_indices)].mean(axis=0)
+
+            pred_log_fc_dict[condition] = pred_lfc
+            true_log_fc_dict[condition] = true_lfc
+
         return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,
             true_log_fc_dict=true_log_fc_dict,
@@ -234,7 +228,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=precision_metric,
                     value=precision_value,
-                    params={"condition": condition},
+                    params={self.condition_key: condition},
                 )
             )
 
@@ -247,7 +241,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=recall_metric,
                     value=recall_value,
-                    params={"condition": condition},
+                    params={self.condition_key: condition},
                 )
             )
 
@@ -260,7 +254,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=f1_metric,
                     value=f1_value,
-                    params={"condition": condition},
+                    params={self.condition_key: condition},
                 )
             )
 
@@ -276,7 +270,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=spearman_correlation_metric,
                     value=spearman_corr_value,
-                    params={"condition": condition},
+                    params={self.condition_key: condition},
                 )
             )
 
@@ -289,7 +283,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=accuracy_metric,
                     value=accuracy_value,
-                    params={"condition": condition},
+                    params={self.condition_key: condition},
                 )
             )
         return metric_results

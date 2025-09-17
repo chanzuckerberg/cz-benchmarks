@@ -270,6 +270,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             adata_final.obs[self.condition_key]
         )
 
+        # Add task-related data to uns for easy access
+        adata_final.uns["target_conditions_dict"] = target_condition_dict
+        adata_final.uns["de_results"] = {
+            col: self.de_results[col].values for col in self.de_results.columns
+        }
+        adata_final.uns["cell_barcode_index"] = self.adata.obs.index.astype(str).values
+        adata_final.uns["control_cells_ids"] = self.control_cells_ids
+
         return adata_final, target_condition_dict
 
     def load_data(
@@ -399,7 +407,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         task_adata.uns["de_results"] = {
             col: self.de_results[col].values for col in self.de_results.columns
         }
-        task_adata.uns["original_obs_index"] = self.adata.obs.index.astype(str).values
+        task_adata.uns["cell_barcode_index"] = self.adata.obs.index.astype(str).values
 
         # Ensure the task inputs directory exists
         self.task_inputs_dir.mkdir(parents=True, exist_ok=True)

@@ -265,7 +265,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert "control_cells_ids" in task_adata.uns
         assert "target_conditions_dict" in task_adata.uns
         assert "de_results" in task_adata.uns
-        assert "original_obs_index" in task_adata.uns
+        assert "cell_barcode_index" in task_adata.uns
 
         # Validate that DE results can be reconstructed and has expected columns
         de_df = pd.DataFrame(task_adata.uns["de_results"])
@@ -346,3 +346,127 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         expected_sampled = int(10 * percent_genes_to_mask)
         sampled_lengths = {len(v) for v in dataset.target_conditions_dict.values()}
         assert sampled_lengths == {expected_sampled}
+
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    def test_control_matched_adata_contains_task_data(self, deg_test_name, tmp_path):
+        """Test that control_matched_adata contains all required task data in uns."""
+        dataset = SingleCellPerturbationDataset(
+            path=self.valid_dataset_file(tmp_path),
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            deg_test_name=deg_test_name,
+            percent_genes_to_mask=0.5,
+            min_de_genes_to_mask=2,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
+        )
+        dataset.load_data()
+
+        # Verify that control_matched_adata exists and has the required keys in uns
+        assert hasattr(dataset, "control_matched_adata")
+        assert dataset.control_matched_adata is not None
+
+        required_uns_keys = {
+            "target_conditions_dict",
+            "de_results",
+            "cell_barcode_index",
+            "control_cells_ids",
+        }
+
+        actual_uns_keys = set(dataset.control_matched_adata.uns.keys())
+        assert required_uns_keys.issubset(actual_uns_keys), (
+            f"Missing required keys in control_matched_adata.uns. "
+            f"Required: {required_uns_keys}, Found: {actual_uns_keys}"
+        )
+
+        # Verify the contents of each key
+        uns = dataset.control_matched_adata.uns
+
+        # Check target_conditions_dict
+        assert isinstance(uns["target_conditions_dict"], dict)
+        assert len(uns["target_conditions_dict"]) > 0
+        assert uns["target_conditions_dict"] == dataset.target_conditions_dict
+
+        # Check de_results can be reconstructed as DataFrame
+        assert isinstance(uns["de_results"], dict)
+        de_df = pd.DataFrame(uns["de_results"])
+        assert not de_df.empty
+        base_cols = {"condition", "gene", "pval_adj"}
+        assert base_cols.issubset(set(de_df.columns))
+        if deg_test_name == "wilcoxon":
+            assert "logfoldchange" in de_df.columns
+        else:
+            assert "standardized_mean_diff" in de_df.columns
+
+        # Check cell_barcode_index
+        assert isinstance(uns["cell_barcode_index"], np.ndarray)
+        assert len(uns["cell_barcode_index"]) == len(dataset.adata.obs.index)
+        # Should match the original dataset's observation index
+        np.testing.assert_array_equal(
+            uns["cell_barcode_index"], dataset.adata.obs.index.astype(str).values
+        )
+
+        # Check control_cells_ids
+        assert isinstance(uns["control_cells_ids"], dict)
+        assert len(uns["control_cells_ids"]) > 0
+        assert uns["control_cells_ids"] == dataset.control_cells_ids
+
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    def test_task_input_creation_from_control_matched_adata(
+        self, deg_test_name, tmp_path
+    ):
+        """Test that PerturbationExpressionPredictionTaskInput can be created directly from control_matched_adata."""
+        from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+            PerturbationExpressionPredictionTaskInput,
+        )
+
+        dataset = SingleCellPerturbationDataset(
+            path=self.valid_dataset_file(tmp_path),
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            deg_test_name=deg_test_name,
+            percent_genes_to_mask=0.5,
+            min_de_genes_to_mask=2,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
+        )
+        dataset.load_data()
+
+        # This should work without any errors since control_matched_adata contains all required data
+        task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata
+        )
+
+        # Verify the task input was created successfully
+        assert task_input is not None
+        assert hasattr(task_input, "adata")
+        assert task_input.adata is not None
+
+        # Verify that all required data is accessible from the task input
+        required_uns_keys = {
+            "target_conditions_dict",
+            "de_results",
+            "cell_barcode_index",
+            "control_cells_ids",
+        }
+        actual_uns_keys = set(task_input.adata.uns.keys())
+        assert required_uns_keys.issubset(actual_uns_keys)
+
+        # Verify data integrity - the data should match the original dataset
+        assert (
+            task_input.adata.uns["target_conditions_dict"]
+            == dataset.target_conditions_dict
+        )
+        assert task_input.adata.uns["control_cells_ids"] == dataset.control_cells_ids
+
+        # Check that DE results can be reconstructed
+        de_df = pd.DataFrame(task_input.adata.uns["de_results"])
+        assert len(de_df) == len(dataset.de_results)
+
+        # Check cell barcode index
+        np.testing.assert_array_equal(
+            task_input.adata.uns["cell_barcode_index"],
+            dataset.adata.obs.index.astype(str).values,
+        )
