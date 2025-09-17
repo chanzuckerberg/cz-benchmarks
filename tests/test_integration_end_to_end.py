@@ -1,28 +1,29 @@
 import json
+
 import numpy as np
 import pytest
 
 from czbenchmarks.constants import RANDOM_SEED
-from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets import SingleCellPerturbationDataset
+from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets.utils import load_dataset
-from czbenchmarks.tasks.clustering import ClusteringTaskInput
-from czbenchmarks.tasks.embedding import EmbeddingTaskInput
-from czbenchmarks.tasks.label_prediction import (
-    MetadataLabelPredictionTaskInput,
-)
-from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
-from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.tasks import (
     ClusteringTask,
     EmbeddingTask,
     MetadataLabelPredictionTask,
     SequentialOrganizationTask,
 )
+from czbenchmarks.tasks.clustering import ClusteringTaskInput
+from czbenchmarks.tasks.embedding import EmbeddingTaskInput
+from czbenchmarks.tasks.label_prediction import (
+    MetadataLabelPredictionTaskInput,
+)
+from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+from czbenchmarks.tasks.types import CellRepresentation
 
 
 @pytest.mark.integration
@@ -98,7 +99,6 @@ def test_end_to_end_task_execution_predictive_tasks():
         cell_representation=prediction_baseline,
         task_input=prediction_task_input,
     )
-
 
     # Combine all results into a single dictionary
     all_results = {
@@ -195,7 +195,7 @@ def test_end_to_end_sequential_organization_task():
     This test uses the allen_soundlife_immune_variation dataset which contains
     time point labels required for sequential organization evaluation.
     """
-    # Load dataset (requires cloud access)
+
     dataset: SingleCellLabeledDataset = load_dataset("allen_soundlife_immune_variation")
 
     # Create random model output as a stand-in for real model results
@@ -239,6 +239,7 @@ def test_end_to_end_sequential_organization_task():
         "sequential_alignment",
     }:
         assert required_metric in model_metric_types
+
 
 @pytest.mark.integration
 def test_end_to_end_perturbation_expression_prediction():

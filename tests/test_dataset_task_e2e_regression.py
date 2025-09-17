@@ -439,13 +439,18 @@ def test_perturbation_expression_prediction_task_integration():
     # have sample output for test implementation
     pass
 
-@pytest.mark.skip(reason="Sequential organization task regression test needs sample output for test implementation")
+
+@pytest.mark.skip(
+    reason="Sequential organization task regression test needs sample output for test implementation"
+)
 @pytest.mark.integration
 def test_sequential_organization_task_regression(dataset):
     """Regression test for sequential organization task using fixture embeddings and expected results."""
     # Load fixture embedding
     # TODO: Generate this and upload to s3
-    model_output: CellRepresentation = load_embedding_fixture("allen_soundlife_immune_variation")
+    model_output: CellRepresentation = load_embedding_fixture(
+        "allen_soundlife_immune_variation"
+    )
 
     # TODO: Update Expected results
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.

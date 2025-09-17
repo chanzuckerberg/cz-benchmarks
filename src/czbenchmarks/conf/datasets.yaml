@@ -187,11 +187,13 @@ datasets:
     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
 
   allen_soundlife_immune_variation:
-    _target_: czbenchmarks.datasets.SingleCellDataset
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
     organism: ${organism:HUMAN}
     path: s3://octo.ai.czi/allen_soundlife_immune_variation.h5ad # TODO: replace with public CZI bucket links
+    label_column_key: subject__ageAtFirstDraw
 
   allen_soundlife_flu_vax_response:
-    _target_: czbenchmarks.datasets.SingleCellDataset
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
     organism: ${organism:HUMAN}
     path: s3://octo.ai.czi/allen_soundlife_flu_vax_response.h5ad # TODO: replace with public CZI bucket links
+    label_column_key: sample__visitName
