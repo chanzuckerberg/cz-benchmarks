@@ -143,38 +143,50 @@ def run_multicondition_dge_analysis(
             )
 
             # Add simple comparison group label for rank_genes_groups
-            adata_merged.obs["comparison_group"] = selected_condition
+            comparison_group_col = "comparison_group"
+            adata_merged.obs[comparison_group_col] = selected_condition
             control_idx = np.arange(num_condition, adata_merged.n_obs)
             adata_merged.obs.iloc[
-                control_idx, adata_merged.obs.columns.get_loc("comparison_group")
-            ] = "control"
+                control_idx, adata_merged.obs.columns.get_loc(comparison_group_col)
+            ] = control_name
 
             # Normalize and filter
-            sc.pp.normalize_total(adata_merged, target_sum=1e4)
-            sc.pp.log1p(adata_merged)
+            if deg_test_name == "wilcoxon":
+                logger.info(f"Normalizing total counts and log transforming for Wilcoxon test")
+                sc.pp.normalize_total(adata_merged, target_sum=1e4)
+                sc.pp.log1p(adata_merged)
+            elif deg_test_name == "t-test":
+                logger.error(f"Calculating z-scores for genes by gem group for T-test")
+                breakpoint()
+                # FIXME MICHELLE: calculate z-scores for genes by gem group
+            
             orig_shape = adata_merged.shape
             sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
             sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
             new_shape = adata_merged.shape
-            logger.info(
-                f"Filtered {orig_shape[0] - new_shape[0]} cells and {orig_shape[1] - new_shape[1]} "
-                f"genes using min_cells={filter_min_cells} and min_genes={filter_min_genes}"
-            )
+            if orig_shape[0] != new_shape[0]:
+                logger.info(
+                    f"Filtered {orig_shape[0] - new_shape[0]} cells using min_genes={filter_min_genes}"
+                )
+            if orig_shape[1] != new_shape[1]:
+                logger.info(
+                    f"Filtered {orig_shape[1] - new_shape[1]} genes using min_cells={filter_min_cells}"
+                )
 
             comparison_group_counts = adata_merged.obs[
-                "comparison_group"
+                comparison_group_col
             ].value_counts()
             if len(comparison_group_counts) < 2 or comparison_group_counts.min() < 1:
                 logger.warning(
                     f"Insufficient filtered cells for analysis of {selected_condition}"
                 )
-                return None, None
+                continue
 
             # Run statistical test
             sc.tl.rank_genes_groups(
                 adata_merged,
-                groupby="comparison_group",
-                reference="control",
+                groupby=comparison_group_col,
+                reference=control_name,
                 method=deg_test_name,
                 key_added="dge_results",
             )
@@ -183,13 +195,17 @@ def run_multicondition_dge_analysis(
             results = sc.get.rank_genes_groups_df(
                 adata_merged, group=selected_condition, key="dge_results"
             )
-            results["condition"] = selected_condition
+            results[condition_key] = selected_condition
+            if deg_test_name == "t-test":
+                n = len(adata_merged)
+                effective_n = np.sqrt(4/n)
+                results["standardized_mean_diff"] = results["scores"] * effective_n
 
             # Option to remove zero expression genes
             if remove_avg_zeros:
                 # Filtering can change cells so need to recalculate masks
-                comp_vals = adata_merged.obs["comparison_group"].to_numpy()
-                control_mask = comp_vals == "control"
+                comp_vals = adata_merged.obs[comparison_group_col].to_numpy()
+                control_mask = comp_vals == control_name
                 condition_mask = comp_vals == selected_condition
                 nc_mean = (
                     adata_merged[control_mask, results["names"]]
@@ -209,7 +225,7 @@ def run_multicondition_dge_analysis(
 
             results_df.append(results)
             if return_merged_adata:
-                adata_merged.obs.drop(columns=["comparison_group"], inplace=True)
+                adata_merged.obs.drop(columns=[comparison_group_col], inplace=True)
                 adata_results.append(adata_merged)
 
             pbar.set_postfix_str(f"Completed {pbar.n + 1}/{len(target_conditions)}")
@@ -217,10 +233,23 @@ def run_multicondition_dge_analysis(
 
     results_df = pd.concat(results_df, ignore_index=True)
 
+    # Standardize column names
+    col_mapper = {
+        "names": "gene_id",
+        "group": "group",
+        "scores": "score",
+        "logfoldchanges": "logfoldchange",
+        "pvals": "pval",
+        "pvals_adj": "pval_adj",
+        "standardized_mean_diff": "standardized_mean_diff",
+    }
+    results_df = results_df.rename(columns=col_mapper)
+    cols = [condition_key] + [x for x in col_mapper.values() if x in results_df.columns]
+    results_df = results_df[cols]
+
+    # Create merged anndata if it will be returned
     if return_merged_adata:
         dge_params = adata_results[0].uns["dge_results"]["params"].copy()
-        adata_merged = ad.concat(adata_results, index_unique=None)
-        del adata_results
         dge_params.update(
             {
                 "remove_avg_zeros": remove_avg_zeros,
@@ -229,22 +258,10 @@ def run_multicondition_dge_analysis(
                 "min_pert_cells": min_pert_cells,
             }
         )
-        adata_merged.uns["dge_results"] = {"params": dge_params}
-    else:
-        adata_merged = None
 
-    # Standardize column names
-    col_mapper = {
-        "names": "gene_id",
-        "scores": "score",
-        "logfoldchanges": "logfoldchange",
-        "pvals": "pval",
-        "pvals_adj": "pval_adj",
-        "smd": "standardized_mean_diff",
-        "group": "group",
-        "condition": "condition",
-    }
-    results_df = results_df.rename(columns=col_mapper)
-    cols = [x for x in col_mapper.values() if x in results_df.columns]
-    results_df = results_df[cols]
-    return results_df, adata_merged
+        adata_merged = ad.concat(adata_results, index_unique=None)
+        del adata_results
+        adata_merged.uns["dge_results"] = {"params": dge_params}
+        return results_df, adata_merged
+
+    return results_df

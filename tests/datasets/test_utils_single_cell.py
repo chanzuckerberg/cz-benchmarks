@@ -138,13 +138,13 @@ class TestRunMulticonditionDGEAnalysis:
         assert deg_results["filter_min_cells"] == 1
         assert deg_results["filter_min_genes"] == 1
         assert deg_results["min_pert_cells"] == 1
-        assert deg_results["remove_avg_zeros"] == False
+        assert not deg_results["remove_avg_zeros"]
 
     def test_returns_none_when_all_filtered_out(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
         # Set very strict filtering so cells are removed, triggering early None return
-        results, merged_adata = run_multicondition_dge_analysis(
+        results = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_name="NC",
@@ -156,12 +156,11 @@ class TestRunMulticonditionDGEAnalysis:
         )
 
         assert results is None
-        assert merged_adata is None
 
     def test_deg_test_name_affects_scores(self, make_adata):
         adata_obj, control_cells_ids = make_adata
 
-        res_w, _ = run_multicondition_dge_analysis(
+        res_w = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_name="NC",
@@ -174,7 +173,7 @@ class TestRunMulticonditionDGEAnalysis:
             return_merged_adata=False,
         )
 
-        res_t, _ = run_multicondition_dge_analysis(
+        res_t = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_name="NC",
@@ -219,7 +218,7 @@ class TestRunMulticonditionDGEAnalysis:
     ):
         adata_obj, control_cells_ids = make_adata
 
-        res, merged = run_multicondition_dge_analysis(
+        results = run_multicondition_dge_analysis(
             adata=adata_obj,
             condition_key="condition",
             control_name="NC",
@@ -231,10 +230,14 @@ class TestRunMulticonditionDGEAnalysis:
             remove_avg_zeros=remove_avg_zeros,
             return_merged_adata=return_merged_adata,
         )
+        if return_merged_adata:
+            deg_results, merged_adata = results
+        else:
+            deg_results = results
 
         # Basic assertions and present conditions
-        assert res is not None and res.shape[0] > 0
-        present_conditions = set(res["condition"].unique().tolist())
+        assert deg_results is not None and deg_results.shape[0] > 0
+        present_conditions = set(deg_results["condition"].unique().tolist())
 
         # min_pert_cells behavior for target condition
         num_cells_condition = int(
@@ -247,14 +250,12 @@ class TestRunMulticonditionDGEAnalysis:
 
         # return_merged_adata flag behavior
         if return_merged_adata:
-            assert isinstance(merged, ad.AnnData)
-        else:
-            assert merged is None
+            assert isinstance(merged_adata, ad.AnnData)
 
         # Only perform gene assertions if target condition is present
         if target_condition in present_conditions:
             target_genes = set(
-                res[res["condition"] == target_condition]["gene_id"].tolist()
+                deg_results[deg_results["condition"] == target_condition]["gene_id"].tolist()
             )
 
             # remove_avg_zeros behavior for gene_4
