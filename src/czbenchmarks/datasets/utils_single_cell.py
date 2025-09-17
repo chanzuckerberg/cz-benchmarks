@@ -160,18 +160,18 @@ def run_multicondition_dge_analysis(
                 logger.info("Calculating z-scores for genes by gem group for T-test")
                 logger.warning("This is not implemented yet")
                 # FIXME MICHELLE: calculate z-scores for genes by gem group
-
-            orig_shape = adata_merged.shape
+            n_vars = adata_merged.n_vars
             sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
-            sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
-            new_shape = adata_merged.shape
-            if orig_shape[0] != new_shape[0]:
+            if n_vars != adata_merged.n_vars:
                 logger.info(
-                    f"Filtered {orig_shape[0] - new_shape[0]} cells using min_genes={filter_min_genes}"
+                    f"Filtered {n_vars - adata_merged.n_vars} genes using min_cells={filter_min_cells}"
                 )
-            if orig_shape[1] != new_shape[1]:
+
+            n_obs = adata_merged.n_obs
+            sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
+            if n_obs != adata_merged.n_obs:
                 logger.info(
-                    f"Filtered {orig_shape[1] - new_shape[1]} genes using min_cells={filter_min_cells}"
+                    f"Filtered {n_obs - adata_merged.n_obs} cells using min_genes={filter_min_genes}"
                 )
 
             comparison_group_counts = adata_merged.obs[
