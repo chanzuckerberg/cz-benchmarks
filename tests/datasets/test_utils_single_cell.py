@@ -144,18 +144,19 @@ class TestRunMulticonditionDGEAnalysis:
         adata_obj, control_cells_ids = make_adata
 
         # Set very strict filtering so cells are removed, triggering early None return
-        results = run_multicondition_dge_analysis(
-            adata=adata_obj,
-            condition_key="condition",
-            control_name="NC",
-            control_cells_ids=control_cells_ids,
-            filter_min_cells=1,
-            filter_min_genes=100,  # higher than number of genes to filter all cells out
-            min_pert_cells=1,
-            return_merged_adata=False,
-        )
-
-        assert results is None
+        with pytest.raises(
+            ValueError, match="No differential expression results were produced"
+        ):
+            _ = run_multicondition_dge_analysis(
+                adata=adata_obj,
+                condition_key="condition",
+                control_name="NC",
+                control_cells_ids=control_cells_ids,
+                filter_min_cells=1,
+                filter_min_genes=100,  # higher than number of genes to filter all cells out
+                min_pert_cells=1,
+                return_merged_adata=False,
+            )
 
     def test_deg_test_name_affects_scores(self, make_adata):
         adata_obj, control_cells_ids = make_adata
@@ -255,7 +256,9 @@ class TestRunMulticonditionDGEAnalysis:
         # Only perform gene assertions if target condition is present
         if target_condition in present_conditions:
             target_genes = set(
-                deg_results[deg_results["condition"] == target_condition]["gene_id"].tolist()
+                deg_results[deg_results["condition"] == target_condition][
+                    "gene_id"
+                ].tolist()
             )
 
             # remove_avg_zeros behavior for gene_4

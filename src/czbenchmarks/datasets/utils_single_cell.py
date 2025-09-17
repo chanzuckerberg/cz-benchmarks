@@ -152,14 +152,16 @@ def run_multicondition_dge_analysis(
 
             # Normalize and filter
             if deg_test_name == "wilcoxon":
-                logger.info(f"Normalizing total counts and log transforming for Wilcoxon test")
+                logger.info(
+                    f"Normalizing total counts and log transforming for Wilcoxon test"
+                )
                 sc.pp.normalize_total(adata_merged, target_sum=1e4)
                 sc.pp.log1p(adata_merged)
             elif deg_test_name == "t-test":
                 logger.info(f"Calculating z-scores for genes by gem group for T-test")
                 logger.warning("This is not implemented yet")
                 # FIXME MICHELLE: calculate z-scores for genes by gem group
-            
+
             orig_shape = adata_merged.shape
             sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
             sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
@@ -198,7 +200,7 @@ def run_multicondition_dge_analysis(
             results[condition_key] = selected_condition
             if deg_test_name == "t-test":
                 n = len(adata_merged)
-                effective_n = np.sqrt(4/n)
+                effective_n = np.sqrt(4 / n)
                 results["standardized_mean_diff"] = results["scores"] * effective_n
 
             # Option to remove zero expression genes
@@ -231,21 +233,32 @@ def run_multicondition_dge_analysis(
             pbar.set_postfix_str(f"Completed {pbar.n + 1}/{len(target_conditions)}")
             pbar.update(1)
 
-    results_df = pd.concat(results_df, ignore_index=True)
+    if len(results_df) > 0:
+        results_df = pd.concat(results_df, ignore_index=True)
 
-    # Standardize column names
-    col_mapper = {
-        "names": "gene_id",
-        "group": "group",
-        "scores": "score",
-        "logfoldchanges": "logfoldchange",
-        "pvals": "pval",
-        "pvals_adj": "pval_adj",
-        "standardized_mean_diff": "standardized_mean_diff",
-    }
-    results_df = results_df.rename(columns=col_mapper)
-    cols = [condition_key] + [x for x in col_mapper.values() if x in results_df.columns]
-    results_df = results_df[cols]
+        # Standardize column names
+        col_mapper = {
+            "names": "gene_id",
+            "group": "group",
+            "scores": "score",
+            "logfoldchanges": "logfoldchange",
+            "pvals": "pval",
+            "pvals_adj": "pval_adj",
+            "standardized_mean_diff": "standardized_mean_diff",
+        }
+        results_df = results_df.rename(columns=col_mapper)
+        cols = [condition_key] + [
+            x for x in col_mapper.values() if x in results_df.columns
+        ]
+        results_df = results_df[cols]
+    else:
+        logger.error(
+            "No differential expression results were produced. All conditions were skipped after filtering. "
+            f"Parameters: filter_min_cells={filter_min_cells}, filter_min_genes={filter_min_genes}, min_pert_cells={min_pert_cells}"
+        )
+        raise ValueError(
+            "No differential expression results were produced. Try relaxing filtering thresholds or checking inputs."
+        )
 
     # Create merged anndata if it will be returned
     if return_merged_adata:
