@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.1...v0.11.2) (2025-09-17)
+
+
+### Bug Fixes
+
+* for publish-pypi to work on prod pypi ([#413](https://github.com/chanzuckerberg/cz-benchmarks/issues/413)) ([329ac2f](https://github.com/chanzuckerberg/cz-benchmarks/commit/329ac2f23813ee927bb182d092e8ed7cf3b28e1e))
+
+## [0.11.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.0...v0.11.1) (2025-09-17)
+
+
+### Bug Fixes
+
+* github actions now use uv properly ([#409](https://github.com/chanzuckerberg/cz-benchmarks/issues/409)) ([01fe9f9](https://github.com/chanzuckerberg/cz-benchmarks/commit/01fe9f95dc176ee5b52b2607a84cf48f739fbbd8))
+* tweaking the publish-pypi github action ([#411](https://github.com/chanzuckerberg/cz-benchmarks/issues/411)) ([0307c73](https://github.com/chanzuckerberg/cz-benchmarks/commit/0307c73c7125d16e7bfcdb46399f610868e5e381))
+
 ## [0.11.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.10.2...v0.11.0) (2025-09-16)
 
 
