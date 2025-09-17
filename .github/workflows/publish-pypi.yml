@@ -30,7 +30,7 @@ jobs:
 
       - name: Display version being published
         run: |
-          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }}"
+          echo "Publishing version: ${{ steps.get_version.outputs.VERSION }} from ${{ github.ref }}"
 
       - name: Install dependencies
         run: uv sync --group build
