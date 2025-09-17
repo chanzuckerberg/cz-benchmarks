@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cz-benchmarks"
-version = "0.11.0"
+version = "0.11.1"
 description = "A framework for benchmarking single-cell machine learning models"
 authors = [{ name = "Chan Zuckerberg Initiative", email = "pypi@chanzuckerberg.com" }]
 readme = "README-pypi.md"
