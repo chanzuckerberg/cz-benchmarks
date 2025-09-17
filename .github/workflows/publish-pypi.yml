@@ -71,7 +71,7 @@ jobs:
     # This job will only run if the test-pypi job is successful
     needs: publish-test-pypi
     # Only run if done for an official release, not via a triggered workflow, which is used for testing
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment:
       name: pypi
