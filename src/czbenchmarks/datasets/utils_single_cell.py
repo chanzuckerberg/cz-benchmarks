@@ -21,15 +21,14 @@ def create_adata_for_condition(
 ) -> Tuple[ad.AnnData, int]:
     """
     Create an AnnData object for a single condition.
-    Setup as a private function to allow for multiprocessing if needed.
 
     Args:
         adata: ad.AnnData, anndata with condition and control cells
         condition: str, condition to create paired condition / control adata
         condition_key: str, condition key in adata.obs
         control_name: str, control name in adata.obs
-        rows_cond: np.ndarray[np.int_], integer rows of condition in adata
-        rows_ctrl: np.ndarray[np.int_], integer rows of control in adata
+        rows_cond: ``np.ndarray[np.int_]``, integer rows of condition cells in adata
+        rows_ctrl: ``np.ndarray[np.int_]``, integer rows of matched control cells in adata
 
     Returns:
         adata_merged: ad.AnnData, adata with condition and control cells
