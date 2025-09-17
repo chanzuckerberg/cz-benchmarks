@@ -16,6 +16,11 @@ from .single_cell import (
     CrossSpeciesIntegrationTaskInput,
 )
 from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
+from .single_cell.perturbation_expression_prediction import (
+    PerturbationExpressionPredictionOutput,
+    PerturbationExpressionPredictionTask,
+    PerturbationExpressionPredictionTaskInput,
+)
 
 __all__ = [
     "Task",
@@ -37,8 +42,8 @@ __all__ = [
     "CrossSpeciesIntegrationTaskInput",
     "CrossSpeciesIntegrationOutput",
     "CrossSpeciesIntegrationTask",
-    "PerturbationTaskInput",
-    "PerturbationOutput",
-    "PerturbationTask",
+    "PerturbationExpressionPredictionTaskInput",
+    "PerturbationExpressionPredictionOutput",
+    "PerturbationExpressionPredictionTask",
     "TASK_REGISTRY",
 ]

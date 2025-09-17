@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from anndata import AnnData
 
-from czbenchmarks.tasks import TASK_REGISTRY
+from czbenchmarks.tasks.task import TASK_REGISTRY
 from czbenchmarks.tasks.types import CellRepresentation
 
 from ..constants import RANDOM_SEED
