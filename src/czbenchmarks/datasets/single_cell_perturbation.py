@@ -6,7 +6,7 @@ import anndata as ad
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+import json
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell import SingleCellDataset
 from czbenchmarks.datasets.utils_single_cell import create_adata_for_condition
@@ -389,34 +389,45 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def store_task_inputs(self) -> Path:
         """
-        Store all task inputs to a single AnnData file.
+        Store all task inputs as separate files.
 
-        This method saves all task-related data (control cells, target conditions,
-        DE results, and indices) to a single AnnData file for easy loading.
+        This method saves all task-related data as separate files:
+        - control_matched_adata.h5ad: The main AnnData object
+        - control_cells_ids.json: Control cell IDs mapping
+        - target_conditions_dict.json: Target conditions dictionary
+        - de_results.csv: Differential expression results
+        - cell_barcode_index.npy: Original cell barcode indices
 
         Returns:
-            Path: Path to the saved AnnData file.
+            Path: Path to the task inputs directory.
         """
-        # Create a copy of control_matched_adata to avoid modifying the original
-        task_adata = self.control_matched_adata.copy()
-
-        # Store all task inputs in the uns (unstructured) section
-        task_adata.uns["control_cells_ids"] = self.control_cells_ids
-        task_adata.uns["target_conditions_dict"] = self.target_conditions_dict
-        # Convert DataFrame to dict of arrays for HDF5 compatibility
-        task_adata.uns["de_results"] = {
-            col: self.de_results[col].values for col in self.de_results.columns
-        }
-        task_adata.uns["cell_barcode_index"] = self.adata.obs.index.astype(str).values
-
         # Ensure the task inputs directory exists
         self.task_inputs_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save to a single h5ad file
-        output_file = self.task_inputs_dir / "task_inputs.h5ad"
-        task_adata.write_h5ad(output_file)
+        # Add control_cells_ids to the AnnData uns section before saving
+        # Save control_cells_ids as JSON
+        control_cells_ids_file = self.task_inputs_dir / "control_cells_ids.json"
+        with open(control_cells_ids_file, "w") as f:
+            json.dump(self.control_cells_ids, f)
+        adata_to_save = self.control_matched_adata.copy()
+        adata_to_save.uns["cell_barcode_index"] = self.adata.obs.index.astype(
+            str
+        ).values
 
-        return output_file
+        # Save the main AnnData object
+        adata_file = self.task_inputs_dir / "control_matched_adata.h5ad"
+        adata_to_save.write_h5ad(adata_file)
+
+        # Save target conditions dict as JSON
+        target_conditions_file = self.task_inputs_dir / "target_conditions_dict.json"
+        with open(target_conditions_file, "w") as f:
+            json.dump(self.target_conditions_dict, f)
+
+        # Save DE results as CSV
+        de_results_file = self.task_inputs_dir / "de_results.csv"
+        self.de_results.to_csv(de_results_file, index=False)
+
+        return self.task_inputs_dir
 
     def _validate(self) -> None:
         """

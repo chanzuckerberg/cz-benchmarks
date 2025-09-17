@@ -280,21 +280,21 @@ if __name__ == "__main__":
     #### NEW CODE ####
     logger.info(f"Running new code with args: {args}")
     new_dataset = run_new_code(args.percent_genes_to_mask, args.metric)
-    new_output_file = Path(new_dataset.store_task_inputs())
-    # Move/rename the new_output_file to include metric type and percent genes to mask
-    new_output_file_named = (
-        new_output_file.parent
-        / f"{new_output_file.stem}_{args.metric}_{args.percent_genes_to_mask}{new_output_file.suffix}"
+    new_output_dir = Path(new_dataset.store_task_inputs())
+    # Move/rename the new_output_dir to include metric type and percent genes to mask
+    new_output_dir_named = (
+        new_output_dir.parent
+        / f"{new_output_dir.stem}_{args.metric}_{args.percent_genes_to_mask}"
     )
-    if new_output_file != new_output_file_named:
-        if new_output_file_named.exists():
+    if new_output_dir != new_output_dir_named:
+        if new_output_dir_named.exists():
             logger.info(
-                f"Target file {new_output_file_named} already exists, removing it before move."
+                f"Target directory {new_output_dir_named} already exists, removing it before move."
             )
-            new_output_file_named.unlink()
-        shutil.move(str(new_output_file), str(new_output_file_named))
-        new_output_file = new_output_file_named
-    logger.info(f"New code output saved to: {new_output_file}")
+            shutil.rmtree(new_output_dir_named)
+        shutil.move(str(new_output_dir), str(new_output_dir_named))
+        new_output_dir = new_output_dir_named
+    logger.info(f"New code output saved to: {new_output_dir}")
     #### COMPARE OUTPUTS ####
     # Compare DE results CSV to dataset.de_results with column name mapping
     logger.info(

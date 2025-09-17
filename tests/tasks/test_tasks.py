@@ -326,13 +326,13 @@ def test_perturbation_task():
     test_adata = ad.AnnData(
         X=adata.X, obs=masked_adata_obs, var=pd.DataFrame(index=var_names)
     )
-    test_adata.uns["de_results"] = {
-        col: de_results[col].values for col in de_results.columns
-    }
-    test_adata.uns["target_conditions_dict"] = target_conditions_dict
     test_adata.uns["cell_barcode_index"] = adata.obs.index.astype(str).values
 
-    task_input = PerturbationExpressionPredictionTaskInput(adata=test_adata)
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=test_adata,
+        target_conditions_dict=target_conditions_dict,
+        de_results=de_results,
+    )
 
     # Five metrics per condition: accuracy, precision, recall, f1, correlation
     # We have one perturbed condition, so 5 metrics total
@@ -439,13 +439,13 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     )
     # Create AnnData with required data
     test_adata = adata.copy()
-    test_adata.uns["de_results"] = {
-        col: de_res_wilcoxon_df[col].values for col in de_res_wilcoxon_df.columns
-    }
-    test_adata.uns["target_conditions_dict"] = target_conditions_dict
     test_adata.uns["cell_barcode_index"] = pd.Index(base_cell_names).astype(str).values
 
-    task_input = PerturbationExpressionPredictionTaskInput(adata=test_adata)
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=test_adata,
+        target_conditions_dict=target_conditions_dict,
+        de_results=de_res_wilcoxon_df,
+    )
 
     # First, check that true/pred vectors produced by _run_task match expectations
     task_output = task._run_task(cell_representation, task_input)
@@ -556,13 +556,13 @@ def test_perturbation_expression_prediction_task_ttest():
     )
     # Create AnnData with required data
     test_adata = adata.copy()
-    test_adata.uns["de_results"] = {
-        col: de_res_ttest_df[col].values for col in de_res_ttest_df.columns
-    }
-    test_adata.uns["target_conditions_dict"] = target_conditions_dict
     test_adata.uns["cell_barcode_index"] = pd.Index(base_cell_names).astype(str).values
 
-    task_input = PerturbationExpressionPredictionTaskInput(adata=test_adata)
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=test_adata,
+        target_conditions_dict=target_conditions_dict,
+        de_results=de_res_ttest_df,
+    )
 
     # First, check that true/pred vectors produced by _run_task match expectations
     task_output = task._run_task(cell_representation, task_input)
@@ -651,32 +651,33 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
         control_name="ctrl",
     )
     dataset.load_data()
-    task_inputs_file = dataset.store_task_inputs()
+    task_inputs_dir = dataset.store_task_inputs()
 
     # Test loading task inputs using the standalone function
     from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
         load_perturbation_task_input_from_saved_files,
     )
 
-    task_input = load_perturbation_task_input_from_saved_files(task_inputs_file)
+    task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
 
     # Verify the loaded task input has the expected structure
     assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
     assert hasattr(task_input, "adata")
+    assert hasattr(task_input, "target_conditions_dict")
+    assert hasattr(task_input, "de_results")
     assert isinstance(task_input.adata, ad.AnnData)
+    assert isinstance(task_input.target_conditions_dict, dict)
+    assert isinstance(task_input.de_results, pd.DataFrame)
 
-    # Verify AnnData contains required data
-    assert "de_results" in task_input.adata.uns
-    assert "target_conditions_dict" in task_input.adata.uns
+    # Verify AnnData contains required data in uns
     assert "cell_barcode_index" in task_input.adata.uns
+    assert "control_cells_ids" in task_input.adata.uns
 
     # Verify data integrity
-    de_results = pd.DataFrame(task_input.adata.uns["de_results"])
-    assert de_results.shape[0] > 0
+    assert task_input.de_results.shape[0] > 0
     assert task_input.adata.obs.shape[0] > 0
     assert len(task_input.adata.var.index) > 0
-    assert len(task_input.adata.uns["target_conditions_dict"]) > 0
-    assert all(
-        isinstance(v, np.ndarray)
-        for v in task_input.adata.uns["target_conditions_dict"].values()
-    )
+    assert len(task_input.target_conditions_dict) > 0
+
+    # Verify cell barcode index matches adata size
+    assert len(task_input.adata.uns["cell_barcode_index"]) == dataset.adata.shape[0]

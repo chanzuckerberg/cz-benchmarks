@@ -162,16 +162,17 @@ if __name__ == "__main__":
     if args.save_inputs:
         print("Using save/load approach...")
         # Save and load dataset task inputs
-        task_inputs_file = dataset.store_task_inputs()
-        print(f"Task inputs saved to: {task_inputs_file}")
-        task_input = load_perturbation_task_input_from_saved_files(task_inputs_file)
+        task_inputs_dir = dataset.store_task_inputs()
+        print(f"Task inputs saved to: {task_inputs_dir}")
+        task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
         print("Task inputs loaded from saved files")
     else:
         print("Creating task input directly from dataset...")
-        # Create task input directly from dataset - just pass the AnnData!
-        # The control_matched_adata already contains all required data in uns
+        # Create task input directly from dataset with separate fields
         task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
         )
 
     # Load model data or generate random data

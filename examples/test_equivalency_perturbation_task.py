@@ -229,7 +229,7 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
 
 def run_new_code(model_output, args):
     print("Loading dataset from task inputs...")
-    task_input = load_perturbation_task_input_from_saved_files(args.new_saved_path)
+    task_input = load_perturbation_task_input_from_saved_files(args.new_saved_dir)
     print("Done loading dataset from task inputs.")
     task = PerturbationExpressionPredictionTask(metric=args.metric_type)
     print("Running task.run()...")
@@ -344,10 +344,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--new_saved_path",
+        "--new_saved_dir",
         type=str,
         default=os.environ["HOME"]
-        + "/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation/task_inputs_{metric_type}_{percent_genes_to_mask}.h5ad",
+        + "/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells_task_inputs/single_cell_perturbation_{metric_type}_{percent_genes_to_mask}",
     )
 
     parser.add_argument(
@@ -367,8 +367,8 @@ if __name__ == "__main__":
             percent_genes_to_mask=args.percent_genes_to_mask,
         )
     )
-    args.new_saved_path = Path(
-        args.new_saved_path.format(
+    args.new_saved_dir = Path(
+        args.new_saved_dir.format(
             metric_type=args.metric_type,
             percent_genes_to_mask=args.percent_genes_to_mask,
         )

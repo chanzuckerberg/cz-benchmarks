@@ -238,7 +238,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         tmp_path,
         deg_test_name,
     ):
-        """Tests that the store_task_inputs method writes expected AnnData file."""
+        """Tests that the store_task_inputs method writes expected separate files."""
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
@@ -252,23 +252,40 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         )
         dataset.load_data()
 
-        task_inputs_file = dataset.store_task_inputs()
-        assert task_inputs_file.exists()
-        assert task_inputs_file.name == "task_inputs.h5ad"
+        task_inputs_dir = dataset.store_task_inputs()
+        assert task_inputs_dir.exists()
+        assert task_inputs_dir.is_dir()
 
-        # Load and validate the AnnData file contents
+        # Check that all required files exist
+        expected_files = [
+            "control_matched_adata.h5ad",
+            "target_conditions_dict.json",
+            "de_results.csv",
+        ]
+
+        for filename in expected_files:
+            filepath = task_inputs_dir / filename
+            assert filepath.exists(), f"Expected file {filename} not found"
+
+        # Load and validate the main AnnData file
         import anndata as ad
+        import json
+        import numpy as np
 
-        task_adata = ad.read_h5ad(task_inputs_file)
+        task_adata = ad.read_h5ad(task_inputs_dir / "control_matched_adata.h5ad")
+        assert isinstance(task_adata, ad.AnnData)
 
-        # Check that required keys exist in uns
-        assert "control_cells_ids" in task_adata.uns
-        assert "target_conditions_dict" in task_adata.uns
-        assert "de_results" in task_adata.uns
-        assert "cell_barcode_index" in task_adata.uns
+        # Load and validate JSON files
+        with open(task_inputs_dir / "control_cells_ids.json", "r") as f:
+            control_cells_ids = json.load(f)
+        assert isinstance(control_cells_ids, dict)
 
-        # Validate that DE results can be reconstructed and has expected columns
-        de_df = pd.DataFrame(task_adata.uns["de_results"])
+        with open(task_inputs_dir / "target_conditions_dict.json", "r") as f:
+            target_conditions_dict = json.load(f)
+        assert isinstance(target_conditions_dict, dict)
+
+        # Load and validate DE results CSV
+        de_df = pd.read_csv(task_inputs_dir / "de_results.csv")
         assert not de_df.empty
         base_cols = {"condition", "gene", "pval_adj"}
         assert base_cols.issubset(set(de_df.columns))
@@ -276,6 +293,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             assert "logfoldchange" in de_df.columns
         else:
             assert "standardized_mean_diff" in de_df.columns
+
+        # Load and validate cell barcode index
+        cell_barcode_index = task_adata.uns["cell_barcode_index"]
+        assert isinstance(cell_barcode_index, np.ndarray)
+        assert len(cell_barcode_index) == dataset.adata.shape[0]
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
@@ -388,6 +410,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert len(uns["target_conditions_dict"]) > 0
         assert uns["target_conditions_dict"] == dataset.target_conditions_dict
 
+        # Check control_cells_ids
+        assert isinstance(uns["control_cells_ids"], dict)
+        assert len(uns["control_cells_ids"]) > 0
+        assert uns["control_cells_ids"] == dataset.control_cells_ids
+
         # Check de_results can be reconstructed as DataFrame
         assert isinstance(uns["de_results"], dict)
         de_df = pd.DataFrame(uns["de_results"])
@@ -406,11 +433,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         np.testing.assert_array_equal(
             uns["cell_barcode_index"], dataset.adata.obs.index.astype(str).values
         )
-
-        # Check control_cells_ids
-        assert isinstance(uns["control_cells_ids"], dict)
-        assert len(uns["control_cells_ids"]) > 0
-        assert uns["control_cells_ids"] == dataset.control_cells_ids
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     def test_task_input_creation_from_control_matched_adata(
@@ -436,18 +458,20 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         # This should work without any errors since control_matched_adata contains all required data
         task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
         )
 
         # Verify the task input was created successfully
         assert task_input is not None
         assert hasattr(task_input, "adata")
+        assert hasattr(task_input, "target_conditions_dict")
+        assert hasattr(task_input, "de_results")
         assert task_input.adata is not None
 
-        # Verify that all required data is accessible from the task input
+        # Verify that required data in uns is accessible
         required_uns_keys = {
-            "target_conditions_dict",
-            "de_results",
             "cell_barcode_index",
             "control_cells_ids",
         }

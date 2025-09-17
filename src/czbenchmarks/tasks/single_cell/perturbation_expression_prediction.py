@@ -6,6 +6,7 @@ import anndata as ad
 import numpy as np
 import pandas as pd
 from scipy import sparse as sp_sparse
+import json
 
 from ...constants import RANDOM_SEED
 from ...metrics import metrics_registry
@@ -21,27 +22,44 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for PerturbationTask inputs."""
 
     adata: ad.AnnData
+    target_conditions_dict: dict
+    de_results: pd.DataFrame
 
     class Config:
         arbitrary_types_allowed = True
 
 
 def load_perturbation_task_input_from_saved_files(
-    task_inputs_file: Path,
+    task_inputs_dir: Path,
 ) -> PerturbationExpressionPredictionTaskInput:
     """
-    Load task input from a single AnnData file saved by dataset's `store_task_inputs`.
+    Load perturbation task inputs from saved separate files.
 
     Args:
-        task_inputs_file: Path to the task_inputs.h5ad file.
+        task_inputs_dir: Path to the directory containing saved task input files.
 
     Returns:
-        PerturbationExpressionPredictionTaskInput: Task input with loaded AnnData.
+        PerturbationExpressionPredictionTaskInput: The loaded task input.
     """
-    # Load the AnnData file
-    task_adata = ad.read_h5ad(task_inputs_file)
 
-    return PerturbationExpressionPredictionTaskInput(adata=task_adata)
+    # Load the main AnnData object
+    adata_file = task_inputs_dir / "control_matched_adata.h5ad"
+    task_adata = ad.read_h5ad(adata_file)
+
+    # Load target conditions dict from JSON
+    target_conditions_file = task_inputs_dir / "target_conditions_dict.json"
+    with open(target_conditions_file, "r") as f:
+        target_conditions_dict = json.load(f)
+
+    # Load DE results from CSV
+    de_results_file = task_inputs_dir / "de_results.csv"
+    de_results = pd.read_csv(de_results_file)
+
+    return PerturbationExpressionPredictionTaskInput(
+        adata=task_adata,
+        target_conditions_dict=target_conditions_dict,
+        de_results=de_results,
+    )
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
@@ -100,8 +118,8 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Extract data from AnnData
         obs = adata.obs
-        de_results = pd.DataFrame(adata.uns["de_results"])
-        target_conditions_dict = adata.uns["target_conditions_dict"]
+        de_results = task_input.de_results
+        target_conditions_dict = task_input.target_conditions_dict
         cell_barcode_index = pd.Index(adata.uns["cell_barcode_index"])
 
         # Get perturbation conditions (non-control)

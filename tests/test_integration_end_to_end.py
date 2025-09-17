@@ -201,13 +201,15 @@ def test_end_to_end_perturbation_expression_prediction():
     # Build task input directly from dataset
     # Create AnnData with required data in uns
     adata = dataset.control_matched_adata.copy()
-    adata.uns["de_results"] = {
-        col: dataset.de_results[col].values for col in dataset.de_results.columns
-    }
-    adata.uns["target_conditions_dict"] = dataset.target_conditions_dict
-    adata.uns["cell_barcode_index"] = dataset.adata.obs.index.astype(str).values
+    adata.uns["cell_barcode_index"] = dataset.control_matched_adata.obs.index.astype(
+        str
+    ).values
 
-    task_input = PerturbationExpressionPredictionTaskInput(adata=adata)
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=adata,
+        target_conditions_dict=dataset.target_conditions_dict,
+        de_results=dataset.de_results,
+    )
 
     # Create random model output matching dataset dimensions
     model_output: CellRepresentation = np.random.rand(
