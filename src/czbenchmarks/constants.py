@@ -10,9 +10,6 @@ PROCESSED_DATASETS_CACHE_PATH = os.environ.get(
 # Constants
 RANDOM_SEED = 42
 
-# Constants
-RANDOM_SEED = 42
-
 
 # Derived constants
 def get_numbered_path(base_path: str, index: int) -> str:
