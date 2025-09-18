@@ -268,12 +268,21 @@ def generate_model_predictions(masked_notebook_adata, args):
             f"generated_model_data_{args.metric_type}_{args.percent_genes_to_mask}.h5ad"
         )
         print(f"Creating and saving model data to {filename}")
-
+        # Shuffle obs and var (rows and columns) and X accordingly
+        # Shuffle obs and var (rows and columns) and X accordingly using obs_shuffled and var_shuffled
+        obs_shuffled = masked_notebook_adata.obs.sample(frac=1, random_state=42)
+        var_shuffled = masked_notebook_adata.var.sample(frac=1, random_state=42)
+        # Get the new order indices for rows and columns
+        obs_indices = obs_shuffled.index.get_indexer(masked_notebook_adata.obs.index)
+        var_indices = var_shuffled.index.get_indexer(masked_notebook_adata.var.index)
+        # Shuffle X to match new obs and var order
+        X_shuffled = model_output[obs_indices, :]
+        X_shuffled = X_shuffled[:, var_indices]
         # Create AnnData object with the generated model data
         model_adata = ad.AnnData(
-            X=model_output,
-            obs=masked_notebook_adata.obs.copy(),
-            var=masked_notebook_adata.var.copy(),
+            X=X_shuffled,
+            obs=obs_shuffled,
+            var=var_shuffled,
         )
 
         # Save to h5ad file

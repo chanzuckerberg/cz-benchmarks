@@ -13,13 +13,15 @@ logger = logging.getLogger(__name__)
 
 # NB: sparse_mean_var_minor_axis has been moved to a new package (fast-array-utils)
 # in main branch of scanpy, but not yet released. Try/except is for when
-# cz-benchmarks supports scanpy versions with different requirements, but should 
+# cz-benchmarks supports scanpy versions with different requirements, but should
 # be removed once all supported scanpy versions require fast-array-utils
 try:
     from scanpy.preprocessing._utils import sparse_mean_var_minor_axis
+
     logger.info("Using sparse_mean_var_minor_axis from scanpy.preprocessing._utils")
 except ImportError:
     from fast_array_utils import sparse_mean_var_minor_axis
+
     logger.info("Using sparse_mean_var_minor_axis from fast_array_utils")
 
 CPU_COUNT = os.cpu_count()
@@ -115,7 +117,7 @@ def run_multicondition_dge_analysis(
             f"Invalid deg_test_name: {deg_test_name}. Must be 'wilcoxon' or 't-test'."
         )
 
-    if deg_test_name == 'wilcoxon' and z_scale_group_col is not None:
+    if deg_test_name == "wilcoxon" and z_scale_group_col is not None:
         logger.warning(
             f"z_scale_group_col is set to {z_scale_group_col} but will not be used for Wilcoxon Rank-Sum test."
         )
@@ -123,8 +125,8 @@ def run_multicondition_dge_analysis(
     if deg_test_name == "t-test":
         if z_scale_group_col is None:
             logger.info(
-                    "t-test is selected and z_scale_group_col is None, so all cells will be used for z-scaling."
-                )
+                "t-test is selected and z_scale_group_col is None, so all cells will be used for z-scaling."
+            )
         else:
             logger.info(
                 f"t-test is selected and z_scale_group_col is set to group cells by{z_scale_group_col}."
@@ -150,7 +152,9 @@ def run_multicondition_dge_analysis(
         cond: obs_index.get_indexer_for(ids) for cond, ids in control_cells_ids.items()
     }
 
-    target_conditions = list(control_cells_ids.keys())[:3] # FIXME MICHELLE: remove this
+    target_conditions = list(control_cells_ids.keys())[
+        :3
+    ]  # FIXME MICHELLE: remove this
     adata_results = []
     results_df = []
 
@@ -193,7 +197,6 @@ def run_multicondition_dge_analysis(
                 sc.pp.normalize_total(adata_merged, target_sum=1e4)
                 sc.pp.log1p(adata_merged)
             elif deg_test_name == "t-test":
-                breakpoint()
                 logger.info("Calculating z-scores for genes by gem group for T-test")
                 logger.warning("This is experimental and may not function correctly.")
                 # FIXME MICHELLE: calculate z-scores for genes by gem group
@@ -206,7 +209,6 @@ def run_multicondition_dge_analysis(
                     X_zscaled = adata_merged.X.copy()
 
                 n_rows, n_cols = X_zscaled.shape
-                breakpoint()
 
                 if z_scale_group_col:
                     # These are the row numbers of the cells to be z-scaled
@@ -218,7 +220,7 @@ def run_multicondition_dge_analysis(
                     }
                 else:
                     z_scale_indexes = {0: np.arange(len(adata_merged))}
-                
+
                 for group, indices in z_scale_indexes.items():
                     gene_mean, gene_var = sparse_mean_var_minor_axis(
                         X_zscaled.data,
@@ -228,18 +230,14 @@ def run_multicondition_dge_analysis(
                         n_cols,
                         CPU_COUNT,
                     )
-                    breakpoint()
                     gene_std = np.sqrt(gene_var)
                     X_zscaled[indices] = (X_zscaled[indices] - gene_mean) / gene_std
-                    breakpoint()
 
-                breakpoint()
                 if converted_to_sparse:
                     X_zscaled = X_zscaled.toarray()
-                
+
                 adata_merged.X = X_zscaled
 
-            breakpoint()
             n_vars = adata_merged.n_vars
             sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
             if n_vars != adata_merged.n_vars:
@@ -264,7 +262,6 @@ def run_multicondition_dge_analysis(
                 continue
 
             # Run statistical test
-            breakpoint()
             sc.tl.rank_genes_groups(
                 adata_merged,
                 groupby=comparison_group_col,
@@ -279,13 +276,12 @@ def run_multicondition_dge_analysis(
             )
             results[condition_key] = selected_condition
             if deg_test_name == "t-test":
-                breakpoint()
                 n = len(adata_merged)
                 effective_n = np.sqrt(4 / n)
                 results["standardized_mean_diff"] = results["scores"] * effective_n
 
             # Option to remove zero expression genes
-            breakpoint()
+
             if remove_avg_zeros:
                 # Filtering can change cells so need to recalculate masks
                 comp_vals = adata_merged.obs[comparison_group_col].to_numpy()
@@ -308,7 +304,6 @@ def run_multicondition_dge_analysis(
                 results = results.iloc[indexes]
 
             results_df.append(results)
-            breakpoint()
             if return_merged_adata:
                 # FIXME MICHELLE: how to save unprocessed adata_merged?
                 # if adata_merged.raw is not None:
@@ -320,7 +315,6 @@ def run_multicondition_dge_analysis(
             pbar.update(1)
 
     if len(results_df) > 0:
-        breakpoint()
         results_df = pd.concat(results_df, ignore_index=True)
 
         # Standardize column names
@@ -348,7 +342,6 @@ def run_multicondition_dge_analysis(
         )
 
     # Create merged anndata if it will be returned
-    breakpoint()
     if return_merged_adata:
         dge_params = adata_results[0].uns["dge_results"]["params"].copy()
         dge_params.update(
@@ -359,13 +352,9 @@ def run_multicondition_dge_analysis(
                 "min_pert_cells": min_pert_cells,
             }
         )
-        breakpoint()
         adata_merged = ad.concat(adata_results, index_unique=None)
         del adata_results
         adata_merged.uns["dge_results"] = {"params": dge_params}
         return results_df, adata_merged
-    breakpoint()
-
 
     return results_df
-
