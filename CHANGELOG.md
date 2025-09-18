@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.3](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.2...v0.11.3) (2025-09-18)
+
+
+### Bug Fixes
+
+* broken links ([#415](https://github.com/chanzuckerberg/cz-benchmarks/issues/415)) ([339974a](https://github.com/chanzuckerberg/cz-benchmarks/commit/339974a109dbe137b7c2c0a4604521dfa7895812))
+* doc email link ([#417](https://github.com/chanzuckerberg/cz-benchmarks/issues/417)) ([1880e19](https://github.com/chanzuckerberg/cz-benchmarks/commit/1880e19cf6b3532a952565aa14a6a129b7a5b195))
+
 ## [0.11.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.1...v0.11.2) (2025-09-17)
 
 
