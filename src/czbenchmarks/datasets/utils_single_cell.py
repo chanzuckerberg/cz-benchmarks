@@ -1,11 +1,12 @@
 from typing import Dict, List, Literal, Tuple, Optional
 import logging
 import os
-
+import numba as nb
 import anndata as ad
 import numpy as np
 import pandas as pd
 import scanpy as sc
+
 from scipy.sparse import csr_matrix
 from tqdm import tqdm
 
@@ -23,6 +24,32 @@ except ImportError:
     logger.info("Using sparse_mean_var_minor_axis from fast_array_utils")
 
 CPU_COUNT = os.cpu_count()
+
+
+@nb.njit(parallel=True, fastmath=True)
+def colwise_nonzero_mean_var_numba(X):
+    n_rows, n_cols = X.shape
+    sums  = np.zeros(n_cols, np.float64)
+    sumsq = np.zeros(n_cols, np.float64)
+    counts  = np.zeros(n_cols, np.int64)
+
+    for i in range(n_rows):
+        for j in range(n_cols):
+            v = X[i, j]
+            if v != 0.0:
+                sums[j]  += v
+                sumsq[j] += v * v
+                counts[j]  += 1
+
+    mean = np.zeros(n_cols, np.float64)
+    var  = np.zeros(n_cols, np.float64)
+    for j in nb.prange(n_cols):
+        c = counts[j]
+        if c > 0:
+            mu = sums[j] / c
+            mean[j] = mu
+            var[j]  = sumsq[j] / c - mu * mu
+    return mean, var
 
 
 def create_adata_for_condition(
@@ -70,13 +97,139 @@ def create_adata_for_condition(
     return adata_merged, len(adata_condition)
 
 
+def z_scale_genes_by_group(
+    adata: ad.AnnData, 
+    z_scale_group_col: Optional[str]
+) -> np.ndarray:
+    """
+    Calculate z-scores for genes, optionally grouped by a column in `obs`,
+    for use with a t-test. 
+    """
+    # FIXME MICHELLE: confirm that only non-zero values used for and scaled?
+
+    if isinstance(adata.X, np.ndarray):
+        converted_to_sparse = True
+        X_zscaled = csr_matrix(adata.X) # FIXME MICHELLE: does this require a csr?
+    else:
+        converted_to_sparse = False
+        X_zscaled = adata.X.copy() # FIXME MICHELLE: if we don't return data, can skip this copy
+
+    if z_scale_group_col:
+        # These are the row numbers of the cells to be z-scaled
+        z_scale_indexes = {
+            group: indices
+            for group, indices in adata.obs.groupby(
+                z_scale_group_col
+            ).indices.items()
+        }
+    else:
+        z_scale_indexes = {0: np.arange(len(adata))}
+
+    logger.info(f"Z-scaling genes for {len(z_scale_indexes)} groups as defined by {z_scale_group_col}")
+    n_rows, n_cols = X_zscaled.shape
+    for group, indices in z_scale_indexes.items():
+        gene_mean, gene_var = sparse_mean_var_minor_axis(
+            X_zscaled.data,
+            X_zscaled.indices,
+            X_zscaled.indptr,
+            n_rows,
+            n_cols,
+            CPU_COUNT,
+        )
+        gene_std = np.sqrt(gene_var)
+        X_zscaled[indices] = (X_zscaled[indices] - gene_mean) / gene_std
+
+    if converted_to_sparse:
+        X_zscaled = X_zscaled.toarray()
+
+    return X_zscaled
+
+
+def preprocess_adata_for_deg(
+    adata: ad.AnnData,
+    deg_test_name: Literal["wilcoxon", "t-test"],
+    filter_min_cells: int,
+    filter_min_genes: int,
+    z_scale_group_col: Optional[str],
+) -> ad.AnnData:
+    """
+    Apply preprocessing to `adata` prior to DGE analysis based on the selected test.
+
+    - For Wilcoxon: library size normalization and log1p transform.
+    - For t-test: z-scale genes optionally by groups defined in `z_scale_group_col`.
+    - Filter genes and cells by provided thresholds, with logging.
+    """
+    if adata.isbacked:
+        adata = adata.to_memory()
+
+    # Filter data
+    # FIXME MICHELLE: should this be done before the scaling and transformation?
+    n_vars = adata.n_vars
+    sc.pp.filter_genes(adata, min_cells=filter_min_cells)
+    if n_vars != adata.n_vars:
+        logger.info(
+            f"Filtered {n_vars - adata.n_vars} genes using "
+            f"min_cells={filter_min_cells}"
+        )
+
+    n_obs = adata.n_obs
+    sc.pp.filter_cells(adata, min_genes=filter_min_genes)
+    if n_obs != adata.n_obs:
+        logger.info(
+            f"Filtered {n_obs - adata.n_obs} cells using "
+            f"min_genes={filter_min_genes}"
+        )
+
+    # Transform data
+    if deg_test_name == "wilcoxon":
+        logger.info(
+            "Normalizing total counts and log transforming for Wilcoxon test"
+        )
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        sc.pp.log1p(adata)
+
+    else:
+        # t-test
+        if z_scale_group_col is None:
+            log_message = (
+                "Z-scaling genes by group for t-test using all cells"
+            )
+        else:
+            log_message = (
+                "Z-scaling genes by group for t-test using metadata "
+                f"from column {z_scale_group_col}"
+            )
+        logger.info(log_message)
+        X_zscaled = z_scale_genes_by_group(adata, z_scale_group_col)
+        adata.X = X_zscaled
+
+    # breakpoint()
+    # # FIXME MICHELLE: should this be done before the scaling and transformation?
+    # n_vars = adata.n_vars
+    # sc.pp.filter_genes(adata, min_cells=filter_min_cells)
+    # if n_vars != adata.n_vars:
+    #     logger.info(
+    #         f"Filtered {n_vars - adata.n_vars} genes using "
+    #         f"min_cells={filter_min_cells}"
+    #     )
+
+    # n_obs = adata.n_obs
+    # sc.pp.filter_cells(adata, min_genes=filter_min_genes)
+    # if n_obs != adata.n_obs:
+    #     logger.info(
+    #         f"Filtered {n_obs - adata.n_obs} cells using "
+    #         f"min_genes={filter_min_genes}"
+    #     )
+    return adata
+
+
 def run_multicondition_dge_analysis(
     adata: ad.AnnData,
     condition_key: str,
     control_name: str,
     control_cells_ids: Dict[str, List[str]],
     deg_test_name: Literal["wilcoxon", "t-test"] = "wilcoxon",
-    filter_min_cells: int = 10,
+    filter_min_cells: int = 10, # FIXME MICHELLE: should these defaults be 0,0,1?
     filter_min_genes: int = 1000,
     min_pert_cells: int = 50,
     remove_avg_zeros: bool = False,
@@ -127,7 +280,7 @@ def run_multicondition_dge_analysis(
                 )
         else:
             logger.info(
-                f"t-test is selected and z_scale_group_col is set to group cells by{z_scale_group_col}."
+                f"t-test is selected and z_scale_group_col is set to group cells by metadata from column {z_scale_group_col}."
             )
 
     if return_merged_adata:
@@ -149,6 +302,16 @@ def run_multicondition_dge_analysis(
     control_to_indices = {
         cond: obs_index.get_indexer_for(ids) for cond, ids in control_cells_ids.items()
     }
+
+    # FIXME MICHELLE: should this be done before the condition loop
+    adata = preprocess_adata_for_deg(
+        adata=adata,
+        deg_test_name=deg_test_name,
+        filter_min_cells=filter_min_cells,
+        filter_min_genes=filter_min_genes,
+        z_scale_group_col=z_scale_group_col,
+    )
+    breakpoint()
 
     target_conditions = list(control_cells_ids.keys())[:3] # FIXME MICHELLE: remove this
     adata_results = []
@@ -186,73 +349,28 @@ def run_multicondition_dge_analysis(
             ] = control_name
 
             # Normalize and filter
-            if deg_test_name == "wilcoxon":
-                logger.info(
-                    "Normalizing total counts and log transforming for Wilcoxon test"
-                )
-                sc.pp.normalize_total(adata_merged, target_sum=1e4)
-                sc.pp.log1p(adata_merged)
-            elif deg_test_name == "t-test":
-                breakpoint()
-                logger.info("Calculating z-scores for genes by gem group for T-test")
-                logger.warning("This is experimental and may not function correctly.")
-                # FIXME MICHELLE: calculate z-scores for genes by gem group
-                # FIXME MICHELLE: are only non-zero values used for and scaled?
-                if isinstance(adata_merged.X, np.ndarray):
-                    converted_to_sparse = True
-                    X_zscaled = csr_matrix(adata_merged.X)
-                else:
-                    converted_to_sparse = False
-                    X_zscaled = adata_merged.X.copy()
+            # FIXME MICHELLE: should this be done before the condition loop?
+            # if deg_test_name == "wilcoxon":
+            #     logger.info(
+            #         "Normalizing total counts and log transforming for Wilcoxon test"
+            #     )
+            #     sc.pp.normalize_total(adata_merged, target_sum=1e4)
+            #     sc.pp.log1p(adata_merged)
 
-                n_rows, n_cols = X_zscaled.shape
-                breakpoint()
+            # breakpoint()
+            # n_vars = adata_merged.n_vars
+            # sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
+            # if n_vars != adata_merged.n_vars:
+            #     logger.info(
+            #         f"Filtered {n_vars - adata_merged.n_vars} genes using min_cells={filter_min_cells}"
+            #     )
 
-                if z_scale_group_col:
-                    # These are the row numbers of the cells to be z-scaled
-                    z_scale_indexes = {
-                        group: indices
-                        for group, indices in adata_merged.obs.groupby(
-                            z_scale_group_col
-                        ).indices.items()
-                    }
-                else:
-                    z_scale_indexes = {0: np.arange(len(adata_merged))}
-                
-                for group, indices in z_scale_indexes.items():
-                    gene_mean, gene_var = sparse_mean_var_minor_axis(
-                        X_zscaled.data,
-                        X_zscaled.indices,
-                        X_zscaled.indptr,
-                        n_rows,
-                        n_cols,
-                        CPU_COUNT,
-                    )
-                    breakpoint()
-                    gene_std = np.sqrt(gene_var)
-                    X_zscaled[indices] = (X_zscaled[indices] - gene_mean) / gene_std
-                    breakpoint()
-
-                breakpoint()
-                if converted_to_sparse:
-                    X_zscaled = X_zscaled.toarray()
-                
-                adata_merged.X = X_zscaled
-
-            breakpoint()
-            n_vars = adata_merged.n_vars
-            sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
-            if n_vars != adata_merged.n_vars:
-                logger.info(
-                    f"Filtered {n_vars - adata_merged.n_vars} genes using min_cells={filter_min_cells}"
-                )
-
-            n_obs = adata_merged.n_obs
-            sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
-            if n_obs != adata_merged.n_obs:
-                logger.info(
-                    f"Filtered {n_obs - adata_merged.n_obs} cells using min_genes={filter_min_genes}"
-                )
+            # n_obs = adata_merged.n_obs
+            # sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
+            # if n_obs != adata_merged.n_obs:
+            #     logger.info(
+            #         f"Filtered {n_obs - adata_merged.n_obs} cells using min_genes={filter_min_genes}"
+            #     )
 
             comparison_group_counts = adata_merged.obs[
                 comparison_group_col
@@ -278,14 +396,13 @@ def run_multicondition_dge_analysis(
                 adata_merged, group=selected_condition, key="dge_results"
             )
             results[condition_key] = selected_condition
+
             if deg_test_name == "t-test":
-                breakpoint()
                 n = len(adata_merged)
                 effective_n = np.sqrt(4 / n)
                 results["standardized_mean_diff"] = results["scores"] * effective_n
 
             # Option to remove zero expression genes
-            breakpoint()
             if remove_avg_zeros:
                 # Filtering can change cells so need to recalculate masks
                 comp_vals = adata_merged.obs[comparison_group_col].to_numpy()
@@ -308,7 +425,7 @@ def run_multicondition_dge_analysis(
                 results = results.iloc[indexes]
 
             results_df.append(results)
-            breakpoint()
+            
             if return_merged_adata:
                 # FIXME MICHELLE: how to save unprocessed adata_merged?
                 # if adata_merged.raw is not None:
@@ -320,7 +437,6 @@ def run_multicondition_dge_analysis(
             pbar.update(1)
 
     if len(results_df) > 0:
-        breakpoint()
         results_df = pd.concat(results_df, ignore_index=True)
 
         # Standardize column names
@@ -348,7 +464,6 @@ def run_multicondition_dge_analysis(
         )
 
     # Create merged anndata if it will be returned
-    breakpoint()
     if return_merged_adata:
         dge_params = adata_results[0].uns["dge_results"]["params"].copy()
         dge_params.update(
@@ -359,12 +474,10 @@ def run_multicondition_dge_analysis(
                 "min_pert_cells": min_pert_cells,
             }
         )
-        breakpoint()
         adata_merged = ad.concat(adata_results, index_unique=None)
         del adata_results
         adata_merged.uns["dge_results"] = {"params": dge_params}
         return results_df, adata_merged
-    breakpoint()
 
 
     return results_df
