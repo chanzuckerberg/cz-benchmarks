@@ -218,7 +218,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             percent_genes_to_mask=self.percent_genes_to_mask,
             min_de_genes_to_mask=self.min_de_genes_to_mask,
             condition_col=self.condition_key,
-            gene_col=self.de_gene_col,
+            gene_col="gene_id",  # Column was renamed to gene_id during optimization
         )
 
         target_conditions = list(target_condition_dict.keys())
@@ -269,6 +269,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
         )
+
+        # Optimize: Keep only necessary columns in obs (only condition_key is used in task)
+        adata_final.obs = adata_final.obs[[self.condition_key]]
 
         # Add task-related data to uns for easy access
         adata_final.uns["target_conditions_dict"] = target_condition_dict
@@ -341,6 +344,24 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.de_results = self.load_and_filter_deg_results()
         logger.info(f"Using {len(self.de_results)} differential expression values")
 
+        # Optimize: Keep only necessary columns in de_results
+        # Task only uses: condition_key, "gene_id", and metric_column (logfoldchange or standardized_mean_diff)
+        metric_column = (
+            "logfoldchange"
+            if self.deg_test_name == "wilcoxon"
+            else "standardized_mean_diff"
+        )
+        necessary_columns = [self.condition_key, self.de_gene_col, metric_column]
+
+        # Ensure we have gene_id column for compatibility with task
+        if self.de_gene_col != "gene_id":
+            self.de_results = self.de_results.rename(
+                columns={self.de_gene_col: "gene_id"}
+            )
+            necessary_columns = [self.condition_key, "gene_id", metric_column]
+
+        self.de_results = self.de_results[necessary_columns]
+
         # Compare conditions and throw warning or error for unmatched conditions
         unique_conditions_adata = set(self.adata.obs[self.condition_key])
         unique_conditions_control_cells_ids = set(self.control_cells_ids.keys())
@@ -392,11 +413,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Store all task inputs as separate files.
 
         This method saves all task-related data as separate files:
-        - control_matched_adata.h5ad: The main AnnData object
+        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_index in uns)
         - control_cells_ids.json: Control cell IDs mapping
         - target_conditions_dict.json: Target conditions dictionary
         - de_results.csv: Differential expression results
-        - cell_barcode_index.npy: Original cell barcode indices
 
         Returns:
             Path: Path to the task inputs directory.

@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-
+from pathlib import Path
 import anndata as ad
 from czbenchmarks.tasks import (
     ClusteringTask,
@@ -22,7 +22,6 @@ from czbenchmarks.tasks.single_cell import (
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.metrics.types import MetricResult, MetricType
-
 from tests.utils import (
     create_dummy_anndata,
     DummyTask,
@@ -681,3 +680,343 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
 
     # Verify cell barcode index matches adata size
     assert len(task_input.adata.uns["cell_barcode_index"]) == dataset.adata.shape[0]
+
+
+def test_perturbation_expression_prediction_task_with_shuffled_input():
+    """Test that the perturbation task works with shuffled AnnData input."""
+    from czbenchmarks.datasets.single_cell_perturbation import (
+        SingleCellPerturbationDataset,
+    )
+    from czbenchmarks.datasets.types import Organism
+    from tests.utils import create_dummy_anndata
+    import tempfile
+
+    # Create a dummy dataset
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = Path(tmp_dir) / "dummy_perturbation.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=4,  # Use 4 genes for easier testing
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        # Provide matched control cell IDs and DE results
+        adata.uns["control_cells_ids"] = {
+            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+        }
+
+        # Create DE results that match the actual gene names in the dataset
+        # The create_dummy_anndata creates genes with names like "ENSG000000000{i:02d}"
+        gene_names = (
+            adata.var.index.tolist()
+        )  # Get actual gene names from the created dataset
+
+        # Create sufficient DE results for both conditions using actual gene names
+        de_data = []
+        for condition in ["test1", "test2"]:
+            for gene in gene_names:
+                de_data.append(
+                    {
+                        "condition": condition,
+                        "gene_id": gene,  # Use gene_id instead of gene
+                        "pval_adj": 1e-6,
+                        "logfoldchange": 2.0,
+                    }
+                )
+
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
+        adata.write_h5ad(file_path)
+
+        # Create dataset and load data with relaxed parameters
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            deg_test_name="wilcoxon",
+            percent_genes_to_mask=1.0,  # Use all genes to avoid filtering
+            min_de_genes_to_mask=1,  # Minimum threshold
+            pval_threshold=1.0,  # Accept all p-values
+            min_logfoldchange=0.0,  # Accept all log fold changes
+        )
+        dataset.load_data()
+
+        # Create task input with original ordering
+        original_task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
+        )
+
+        # Create shuffled version of the AnnData
+        shuffled_adata = dataset.control_matched_adata.copy()
+
+        # Shuffle obs and var with fixed random seed for reproducibility
+        np.random.seed(42)
+        obs_shuffled = shuffled_adata.obs.sample(frac=1, random_state=42)
+        var_shuffled = shuffled_adata.var.sample(frac=1, random_state=42)
+
+        # Get the indices for shuffling
+        obs_order = [shuffled_adata.obs.index.get_loc(i) for i in obs_shuffled.index]
+        var_order = [shuffled_adata.var.index.get_loc(i) for i in var_shuffled.index]
+
+        # Shuffle the data matrix accordingly
+        X_shuffled = shuffled_adata.X[np.ix_(obs_order, var_order)]
+
+        # Create new AnnData with shuffled data
+        shuffled_adata = ad.AnnData(X=X_shuffled, obs=obs_shuffled, var=var_shuffled)
+
+        # Copy over the uns data
+        shuffled_adata.uns = dataset.control_matched_adata.uns.copy()
+
+        # Create task input with shuffled AnnData
+        shuffled_task_input = PerturbationExpressionPredictionTaskInput(
+            adata=shuffled_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
+        )
+
+        # Create identical model output for both (using original dimensions)
+        model_output = np.random.rand(
+            dataset.control_matched_adata.shape[0],
+            dataset.control_matched_adata.shape[1],
+        )
+
+        # For shuffled input, we need to reorder the model output to match
+        model_output_shuffled = model_output[np.ix_(obs_order, var_order)]
+
+        # Initialize task
+        task = PerturbationExpressionPredictionTask()
+
+        # Run task with both inputs
+        original_result = task._run_task(model_output, original_task_input)
+        shuffled_result = task._run_task(model_output_shuffled, shuffled_task_input)
+
+        # Results should be identical (same conditions, same relative data)
+        assert set(original_result.pred_log_fc_dict.keys()) == set(
+            shuffled_result.pred_log_fc_dict.keys()
+        )
+        assert set(original_result.true_log_fc_dict.keys()) == set(
+            shuffled_result.true_log_fc_dict.keys()
+        )
+
+        # The predicted values should be the same since we used correspondingly shuffled model output
+        for condition in original_result.pred_log_fc_dict.keys():
+            np.testing.assert_allclose(
+                original_result.pred_log_fc_dict[condition],
+                shuffled_result.pred_log_fc_dict[condition],
+                rtol=1e-10,
+                err_msg=f"Predicted log fold changes differ for condition {condition}",
+            )
+            np.testing.assert_allclose(
+                original_result.true_log_fc_dict[condition],
+                shuffled_result.true_log_fc_dict[condition],
+                rtol=1e-10,
+                err_msg=f"True log fold changes differ for condition {condition}",
+            )
+
+
+def test_perturbation_task_apply_model_ordering():
+    """Test the apply_model_ordering method for PerturbationExpressionPredictionTaskInput."""
+    from czbenchmarks.datasets.single_cell_perturbation import (
+        SingleCellPerturbationDataset,
+    )
+    from czbenchmarks.datasets.types import Organism
+    from tests.utils import create_dummy_anndata
+    import tempfile
+
+    # Create a dummy dataset
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = Path(tmp_dir) / "dummy_perturbation.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=4,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+
+        # Provide matched control cell IDs and DE results
+        adata.uns["control_cells_ids"] = {
+            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+        }
+
+        # Create DE results
+        gene_names = adata.var.index.tolist()
+        de_data = []
+        for condition in ["test1", "test2"]:
+            for gene in gene_names:
+                de_data.append(
+                    {
+                        "condition": condition,
+                        "gene_id": gene,
+                        "pval_adj": 1e-6,
+                        "logfoldchange": 2.0,
+                    }
+                )
+
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
+        adata.write_h5ad(file_path)
+
+        # Create dataset and get task input
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            min_de_genes_to_mask=1,  # Lower threshold so genes get sampled
+            percent_genes_to_mask=1.0,  # Use all genes
+        )
+        dataset.load_data()
+
+        # Create task input
+        task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
+        )
+
+        # Create model data with shuffled ordering (same content, different order)
+        model_adata = dataset.control_matched_adata.copy()
+
+        # Shuffle gene order
+        import numpy as np
+
+        np.random.seed(42)  # For reproducible test
+        gene_order = np.random.permutation(model_adata.var.index)
+        model_adata = model_adata[:, gene_order]
+
+        # Shuffle cell order
+        cell_order = np.random.permutation(model_adata.obs.index)
+        model_adata = model_adata[cell_order, :]
+
+        # Store original orderings
+        original_gene_order = task_input.adata.var.index.copy()
+        original_cell_barcode_index = task_input.adata.uns["cell_barcode_index"].copy()
+
+        # Apply model ordering
+        task_input.apply_model_ordering(model_adata)
+
+        # Verify that orderings have changed to match model data
+        pd.testing.assert_index_equal(task_input.adata.var.index, model_adata.var.index)
+        np.testing.assert_array_equal(
+            task_input.adata.uns["cell_barcode_index"],
+            model_adata.obs.index.astype(str).values,
+        )
+
+        # Verify orderings are different from original (unless by chance they're the same)
+        assert not task_input.adata.var.index.equals(original_gene_order)
+        assert not np.array_equal(
+            task_input.adata.uns["cell_barcode_index"], original_cell_barcode_index
+        )
+
+
+def test_perturbation_task_apply_model_ordering_validation():
+    """Test that apply_model_ordering validates matching gene and cell sets."""
+    from czbenchmarks.datasets.single_cell_perturbation import (
+        SingleCellPerturbationDataset,
+    )
+    from czbenchmarks.datasets.types import Organism
+    from tests.utils import create_dummy_anndata
+    import tempfile
+
+    # Create a dummy dataset
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = Path(tmp_dir) / "dummy_perturbation.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=4,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1"]
+        adata.obs_names = ["ctrl_a", "ctrl_b", "cond_a", "cond_b"]
+
+        # Provide matched control cell IDs and DE results
+        adata.uns["control_cells_ids"] = {"test1": ["ctrl_a", "ctrl_b"]}
+
+        # Create DE results
+        gene_names = adata.var.index.tolist()
+        de_data = []
+        for gene in gene_names:
+            de_data.append(
+                {
+                    "condition": "test1",
+                    "gene_id": gene,
+                    "pval_adj": 1e-6,
+                    "logfoldchange": 2.0,
+                }
+            )
+
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
+        adata.write_h5ad(file_path)
+
+        # Create dataset and get task input
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            min_de_genes_to_mask=1,  # Lower threshold so genes get sampled
+            percent_genes_to_mask=1.0,  # Use all genes
+        )
+        dataset.load_data()
+
+        # Create task input
+        task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
+        )
+
+        # Test with mismatched genes
+        model_adata_bad_genes = create_dummy_anndata(
+            n_cells=4,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        model_adata_bad_genes.obs_names = task_input.adata.obs.index  # Same cells
+        model_adata_bad_genes.var_names = [
+            "different_gene1",
+            "different_gene2",
+            "different_gene3",
+        ]  # Different genes
+
+        with pytest.raises(
+            ValueError, match="Gene indices in task input and model data do not match"
+        ):
+            task_input.apply_model_ordering(model_adata_bad_genes)
+
+        # Test with mismatched cells
+        model_adata_bad_cells = task_input.adata.copy()
+        model_adata_bad_cells.obs_names = [
+            "different_cell1",
+            "different_cell2",
+            "different_cell3",
+            "different_cell4",
+        ]  # Different cells
+
+        with pytest.raises(
+            ValueError, match="Cell indices in task input and model data do not match"
+        ):
+            task_input.apply_model_ordering(model_adata_bad_cells)

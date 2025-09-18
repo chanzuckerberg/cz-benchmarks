@@ -329,7 +329,6 @@ if __name__ == "__main__":
         filter &= df_csv["standardized_mean_diff"].abs() >= args.min_smd
 
     df_csv = df_csv[filter]
-
     assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)
     logger.info("DE results matched")
 

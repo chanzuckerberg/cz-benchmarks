@@ -259,6 +259,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Check that all required files exist
         expected_files = [
             "control_matched_adata.h5ad",
+            "control_cells_ids.json",
             "target_conditions_dict.json",
             "de_results.csv",
         ]
@@ -284,15 +285,16 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             target_conditions_dict = json.load(f)
         assert isinstance(target_conditions_dict, dict)
 
-        # Load and validate DE results CSV
+        # Load and validate DE results CSV (should only have optimized columns)
         de_df = pd.read_csv(task_inputs_dir / "de_results.csv")
         assert not de_df.empty
-        base_cols = {"condition", "gene", "pval_adj"}
-        assert base_cols.issubset(set(de_df.columns))
+        # Only the necessary columns should be present
+        expected_cols = {"condition", "gene_id"}
         if deg_test_name == "wilcoxon":
-            assert "logfoldchange" in de_df.columns
+            expected_cols.add("logfoldchange")
         else:
-            assert "standardized_mean_diff" in de_df.columns
+            expected_cols.add("standardized_mean_diff")
+        assert set(de_df.columns) == expected_cols
 
         # Load and validate cell barcode index
         cell_barcode_index = task_adata.uns["cell_barcode_index"]
@@ -415,16 +417,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert len(uns["control_cells_ids"]) > 0
         assert uns["control_cells_ids"] == dataset.control_cells_ids
 
-        # Check de_results can be reconstructed as DataFrame
+        # Check de_results can be reconstructed as DataFrame (should only have optimized columns)
         assert isinstance(uns["de_results"], dict)
         de_df = pd.DataFrame(uns["de_results"])
         assert not de_df.empty
-        base_cols = {"condition", "gene", "pval_adj"}
-        assert base_cols.issubset(set(de_df.columns))
+        # Only the necessary columns should be present
+        expected_cols = {"condition", "gene_id"}
         if deg_test_name == "wilcoxon":
-            assert "logfoldchange" in de_df.columns
+            expected_cols.add("logfoldchange")
         else:
-            assert "standardized_mean_diff" in de_df.columns
+            expected_cols.add("standardized_mean_diff")
+        assert set(de_df.columns) == expected_cols
 
         # Check cell_barcode_index
         assert isinstance(uns["cell_barcode_index"], np.ndarray)

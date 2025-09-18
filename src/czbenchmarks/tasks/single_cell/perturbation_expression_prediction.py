@@ -25,8 +25,24 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     target_conditions_dict: dict
     de_results: pd.DataFrame
 
-    class Config:
-        arbitrary_types_allowed = True
+    def apply_model_ordering(self, model_adata: ad.AnnData) -> None:
+        """
+        Apply gene and cell ordering from model data to match the task input.
+
+        Args:
+            model_adata: AnnData object containing the desired gene and cell ordering
+        """
+
+        # Apply gene ordering
+        # Assert that the same values are in both gene and cell indices before re-assigning
+        if set(self.adata.var.index) != set(model_adata.var.index):
+            raise ValueError("Gene indices in task input and model data do not match.")
+        if set(self.adata.obs.index) != set(model_adata.obs.index):
+            raise ValueError("Cell indices in task input and model data do not match.")
+        self.adata.var.index = model_adata.var.index
+
+        # Apply cell barcode ordering
+        self.adata.uns["cell_barcode_index"] = model_adata.obs.index.astype(str).values
 
 
 def load_perturbation_task_input_from_saved_files(
@@ -42,7 +58,7 @@ def load_perturbation_task_input_from_saved_files(
         PerturbationExpressionPredictionTaskInput: The loaded task input.
     """
 
-    # Load the main AnnData object
+    # Load the main AnnData object (contains cell_barcode_index in uns)
     adata_file = task_inputs_dir / "control_matched_adata.h5ad"
     task_adata = ad.read_h5ad(adata_file)
 
@@ -133,6 +149,7 @@ class PerturbationExpressionPredictionTask(Task):
 
         for condition in perturbation_conditions:
             # Get target genes for this condition
+
             target_genes = target_conditions_dict.get(condition, [])
             valid_genes = [g for g in target_genes if g in adata.var.index]
 
@@ -170,7 +187,6 @@ class PerturbationExpressionPredictionTask(Task):
                 .index.str.split("_")
                 .str[0]
             )
-
             condition_idx = np.where(base_cell_ids.isin(condition_cells))[0]
             control_idx = np.where(base_cell_ids.isin(control_cells))[0]
 

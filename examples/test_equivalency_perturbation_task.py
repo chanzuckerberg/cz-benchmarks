@@ -255,9 +255,30 @@ def generate_model_predictions(masked_notebook_adata, args):
     ) as f:
         target_genes_to_save = json.load(f)
     print("Generating model predictions matrix...")
+    # Generate random model data
+    print("Generating random model data for testing")
     model_output: CellRepresentation = np.random.rand(
         masked_notebook_adata.shape[0], masked_notebook_adata.shape[1]
     )
+
+    # Create and save h5ad file if save_model_data is specified
+    if args.save_model_data:
+        # Auto-generate filename based on test parameters
+        filename = (
+            f"generated_model_data_{args.metric_type}_{args.percent_genes_to_mask}.h5ad"
+        )
+        print(f"Creating and saving model data to {filename}")
+
+        # Create AnnData object with the generated model data
+        model_adata = ad.AnnData(
+            X=model_output,
+            obs=masked_notebook_adata.obs.copy(),
+            var=masked_notebook_adata.var.copy(),
+        )
+
+        # Save to h5ad file
+        model_adata.write_h5ad(filename)
+        print(f"Saved model data with shape {model_output.shape} to {filename}")
     obs_index = masked_notebook_adata.obs.index
 
     # Speed up by using numpy and pandas vectorized lookups instead of repeated .index() calls
@@ -354,6 +375,14 @@ if __name__ == "__main__":
         "--notebook_task_inputs_path",
         type=str,
         default="notebook_task_inputs_{metric_type}_{percent_genes_to_mask}",
+    )
+    parser.add_argument(
+        "--save_model_data",
+        action="store_true",
+        help="[OPTIONAL] Save the generated random model data as an AnnData file (.h5ad). "
+        "The file will be automatically named based on the test parameters and saved in the current directory. "
+        "The saved file will contain: cell representations in .X, gene names in .var.index, "
+        "and cell identifiers in .obs.index.",
     )
 
     args = parser.parse_args()

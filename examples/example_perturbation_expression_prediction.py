@@ -130,7 +130,7 @@ if __name__ == "__main__":
         "If not provided, random data will be generated for testing. "
         "The file should have: cell representations in .X, gene names in .var.index, "
         "and cell identifiers in .obs.index. "
-        "Example: adata.write_h5ad('my_model_data.h5ad')",
+        "The gene names and cell identifiers should match the task input, although the ordering does not need to be the same.",
     )
 
     args = parser.parse_args()
@@ -178,20 +178,15 @@ if __name__ == "__main__":
     # Load model data or generate random data
     if args.model_data_file:
         model_adata = ad.read_h5ad(args.model_data_file)
-        # Validate dimensions
-        assert model_adata.shape == dataset.adata.shape, (
-            f"Model data shape {model_adata.shape} does not match dataset shape {dataset.adata.shape}"
-        )
 
         # Use the cell representation data from the file
-        model_output: CellRepresentation = model_adata.X
-
-        # Apply the gene and cell ordering from the model data to the task input
-        task_input.adata.var.index = model_adata.var.index
-        task_input.adata.uns["cell_barcode_index"] = model_adata.obs.index.astype(
-            str
-        ).values
-
+        # Handle both dense and sparse model_adata.X
+        if hasattr(model_adata.X, "toarray"):
+            model_output: CellRepresentation = model_adata.X.toarray()
+        else:
+            model_output: CellRepresentation = model_adata.X
+        # Apply the gene and cell ordering from the model data to the task input and validate dimensions
+        task_input.apply_model_ordering(model_adata)
     else:
         print("No model data file provided - generating random data for testing")
 
