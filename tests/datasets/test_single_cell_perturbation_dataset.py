@@ -1,7 +1,9 @@
+import json
 import numpy as np
 from pathlib import Path
 import pandas as pd
 import pytest
+import anndata as ad
 
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.datasets.types import Organism
@@ -155,11 +157,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         pval_threshold,
     ):
         """Tests the loading of perturbation dataset data across parameter combinations."""
-
+        condition_key = "condition"
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
-            condition_key="condition",
+            condition_key=condition_key,
             control_name="ctrl",
             deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
@@ -177,8 +179,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert hasattr(dataset, "target_conditions_dict")
         unique_condition_count = len(
             np.unique(
-                dataset.control_matched_adata.obs["condition"][
-                    ~dataset.control_matched_adata.obs["condition"].str.startswith(
+                dataset.control_matched_adata.obs[condition_key][
+                    ~dataset.control_matched_adata.obs[condition_key].str.startswith(
                         "ctrl"
                     )
                 ]
@@ -195,11 +197,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         self,
         perturbation_missing_condition_column_h5ad,
     ):
+        condition_key = "condition"
         """Tests that loading data fails when the condition column is missing."""
         invalid_dataset = SingleCellPerturbationDataset(
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
-            condition_key="condition",
+            condition_key=condition_key,
             deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
@@ -208,7 +211,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         )
 
         with pytest.raises(
-            ValueError, match="Condition key 'condition' not found in adata.obs"
+            ValueError, match=f"Condition key '{condition_key}' not found in adata.obs"
         ):
             invalid_dataset.load_data()
 
@@ -217,10 +220,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         perturbation_invalid_condition_h5ad,
     ):
         """Test that validation fails with invalid condition format."""
+        condition_key = "condition"
         dataset = SingleCellPerturbationDataset(
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
-            condition_key="condition",
+            condition_key=condition_key,
             deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
@@ -239,10 +243,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         deg_test_name,
     ):
         """Tests that the store_task_inputs method writes expected separate files."""
+        condition_key = "condition"
+
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
-            condition_key="condition",
+            condition_key=condition_key,
             control_name="ctrl",
             deg_test_name=deg_test_name,
             percent_genes_to_mask=0.5,
@@ -269,9 +275,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             assert filepath.exists(), f"Expected file {filename} not found"
 
         # Load and validate the main AnnData file
-        import anndata as ad
-        import json
-        import numpy as np
 
         task_adata = ad.read_h5ad(task_inputs_dir / "control_matched_adata.h5ad")
         assert isinstance(task_adata, ad.AnnData)
@@ -289,7 +292,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         de_df = pd.read_csv(task_inputs_dir / "de_results.csv")
         assert not de_df.empty
         # Only the necessary columns should be present
-        expected_cols = {"condition", "gene_id"}
+        expected_cols = {condition_key, "gene_id"}
         if deg_test_name == "wilcoxon":
             expected_cols.add("logfoldchange")
         else:

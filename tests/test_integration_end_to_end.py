@@ -1,9 +1,10 @@
 import json
 import numpy as np
+import os
 import pandas as pd
 import pytest
-import anndata as ad
 import tempfile
+import anndata as ad
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets import SingleCellPerturbationDataset
@@ -311,7 +312,6 @@ def test_end_to_end_perturbation_with_model_anndata_file():
     model_adata = dataset.control_matched_adata.copy()
 
     # Shuffle the ordering to simulate different gene/cell order from model
-    import numpy as np
 
     np.random.seed(123)  # For reproducible test
 
@@ -392,7 +392,6 @@ def test_end_to_end_perturbation_with_model_anndata_file():
 
     finally:
         # Clean up temporary file
-        import os
 
         if os.path.exists(model_file_path):
             os.unlink(model_file_path)

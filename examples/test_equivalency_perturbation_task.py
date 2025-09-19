@@ -227,12 +227,15 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
     return pred_log_fc_dict, true_log_fc_dict, metrics_dict
 
 
-def run_new_code(model_output, args):
+def run_new_code(model_adata_new_output, args):
     print("Loading dataset from task inputs...")
     task_input = load_perturbation_task_input_from_saved_files(args.new_saved_dir)
     print("Done loading dataset from task inputs.")
     task = PerturbationExpressionPredictionTask(metric=args.metric_type)
     print("Running task.run()...")
+    model_output = model_adata_new_output.X
+    if args.shuffle_model_data:
+        task_input.apply_model_ordering(model_adata_new_output)
     result = task._run_task(model_output, task_input)
     print("Running task._compute_metrics()...")
     # Run the metrics from the task
@@ -257,37 +260,46 @@ def generate_model_predictions(masked_notebook_adata, args):
     print("Generating model predictions matrix...")
     # Generate random model data
     print("Generating random model data for testing")
+    # Make random generation reproducible by setting a fixed seed
     model_output: CellRepresentation = np.random.rand(
         masked_notebook_adata.shape[0], masked_notebook_adata.shape[1]
     )
 
     # Create and save h5ad file if save_model_data is specified
-    if args.save_model_data:
+    if args.shuffle_model_data:
         # Auto-generate filename based on test parameters
-        filename = (
-            f"generated_model_data_{args.metric_type}_{args.percent_genes_to_mask}.h5ad"
-        )
-        print(f"Creating and saving model data to {filename}")
+        print("Shffling Model Data...")
         # Shuffle obs and var (rows and columns) and X accordingly
         # Shuffle obs and var (rows and columns) and X accordingly using obs_shuffled and var_shuffled
-        obs_shuffled = masked_notebook_adata.obs.sample(frac=1, random_state=42)
-        var_shuffled = masked_notebook_adata.var.sample(frac=1, random_state=42)
-        # Get the new order indices for rows and columns
-        obs_indices = obs_shuffled.index.get_indexer(masked_notebook_adata.obs.index)
-        var_indices = var_shuffled.index.get_indexer(masked_notebook_adata.var.index)
+        # Only shuffle the indices, not the whole obs/var DataFrames
+        obs_shuffled_idx = (
+            masked_notebook_adata.obs.index.to_series()
+            .sample(frac=1, random_state=42)
+            .values
+        )
+        var_shuffled_idx = (
+            masked_notebook_adata.var.index.to_series()
+            .sample(frac=1, random_state=42)
+            .values
+        )
         # Shuffle X to match new obs and var order
-        X_shuffled = model_output[obs_indices, :]
+        obs_indices = [
+            masked_notebook_adata.obs.index.get_loc(i) for i in obs_shuffled_idx
+        ]
+        var_indices = [
+            masked_notebook_adata.var.index.get_loc(i) for i in var_shuffled_idx
+        ]
+        X_shuffled = model_output.copy()[obs_indices, :]
         X_shuffled = X_shuffled[:, var_indices]
-        # Create AnnData object with the generated model data
-        model_adata = ad.AnnData(
+        # Create AnnData object with the generated model data and shuffled indices
+        model_adata_new_output = ad.AnnData(
             X=X_shuffled,
-            obs=obs_shuffled,
-            var=var_shuffled,
+            obs=masked_notebook_adata.obs.loc[obs_shuffled_idx],
+            var=masked_notebook_adata.var.loc[var_shuffled_idx],
         )
 
-        # Save to h5ad file
-        model_adata.write_h5ad(filename)
-        print(f"Saved model data with shape {model_output.shape} to {filename}")
+    else:
+        model_adata_new_output = ad.AnnData(X=model_output)
     obs_index = masked_notebook_adata.obs.index
 
     # Speed up by using numpy and pandas vectorized lookups instead of repeated .index() calls
@@ -314,7 +326,7 @@ def generate_model_predictions(masked_notebook_adata, args):
         all_col_indices.extend(col_indices)
 
     print("Model predictions matrix generated.")
-    return model_output, sample_ids, target_genes, predictions
+    return model_adata_new_output, sample_ids, target_genes, predictions
 
 
 if __name__ == "__main__":
@@ -386,7 +398,7 @@ if __name__ == "__main__":
         default="notebook_task_inputs_{metric_type}_{percent_genes_to_mask}",
     )
     parser.add_argument(
-        "--save_model_data",
+        "--shuffle_model_data",
         action="store_true",
         help="[OPTIONAL] Save the generated random model data as an AnnData file (.h5ad). "
         "The file will be automatically named based on the test parameters and saved in the current directory. "
@@ -416,11 +428,12 @@ if __name__ == "__main__":
     initial_datast = ad.read_h5ad(args.initial_data_set_path, backed="r")
 
     print("Generating model_output...")
-    model_output, sample_ids, target_genes, predictions = generate_model_predictions(
-        initial_datast, args
+    model_adata_new_output, sample_ids, target_genes, predictions = (
+        generate_model_predictions(initial_datast, args)
     )
+
     print("Running new code for new_result and new_metrics...")
-    new_result, new_metrics = run_new_code(model_output, args)
+    new_result, new_metrics = run_new_code(model_adata_new_output, args)
     print("Running notebook code for comparison...")
 
     notebook_pred_log_fc_dict, notebook_true_log_fc_dict, metrics_dict = (
@@ -468,6 +481,7 @@ if __name__ == "__main__":
         assert notebook_gene_map[k] in notebook_pred_log_fc_dict, (
             f"Key {k} missing in notebook_pred_log_fc_dict"
         )
+
         assert np.allclose(
             np.sort(notebook_pred_log_fc_dict[notebook_gene_map[k]][0]),
             np.sort(new_result.pred_log_fc_dict[k]),

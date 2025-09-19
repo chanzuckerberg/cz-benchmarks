@@ -1,6 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
+import tempfile
 from pathlib import Path
 import anndata as ad
 from czbenchmarks.tasks import (
@@ -19,8 +20,14 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+    load_perturbation_task_input_from_saved_files,
+)
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
+from czbenchmarks.datasets.single_cell_perturbation import (
+    SingleCellPerturbationDataset,
+)
 from czbenchmarks.metrics.types import MetricResult, MetricType
 from tests.utils import (
     create_dummy_anndata,
@@ -602,11 +609,6 @@ def test_perturbation_expression_prediction_task_ttest():
 
 def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path):
     """Test that the task can load inputs from stored task files."""
-    from czbenchmarks.datasets.single_cell_perturbation import (
-        SingleCellPerturbationDataset,
-    )
-    from czbenchmarks.datasets.types import Organism
-    from tests.utils import create_dummy_anndata
 
     # Create a dummy dataset and store its task inputs
     file_path = tmp_path / "dummy_perturbation.h5ad"
@@ -653,9 +655,6 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     task_inputs_dir = dataset.store_task_inputs()
 
     # Test loading task inputs using the standalone function
-    from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-        load_perturbation_task_input_from_saved_files,
-    )
 
     task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
 
@@ -684,12 +683,6 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
 
 def test_perturbation_expression_prediction_task_with_shuffled_input():
     """Test that the perturbation task works with shuffled AnnData input."""
-    from czbenchmarks.datasets.single_cell_perturbation import (
-        SingleCellPerturbationDataset,
-    )
-    from czbenchmarks.datasets.types import Organism
-    from tests.utils import create_dummy_anndata
-    import tempfile
 
     # Create a dummy dataset
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -828,12 +821,6 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
 
 def test_perturbation_task_apply_model_ordering():
     """Test the apply_model_ordering method for PerturbationExpressionPredictionTaskInput."""
-    from czbenchmarks.datasets.single_cell_perturbation import (
-        SingleCellPerturbationDataset,
-    )
-    from czbenchmarks.datasets.types import Organism
-    from tests.utils import create_dummy_anndata
-    import tempfile
 
     # Create a dummy dataset
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -896,18 +883,23 @@ def test_perturbation_task_apply_model_ordering():
         )
 
         # Create model data with shuffled ordering (same content, different order)
-        model_adata = dataset.control_matched_adata.copy()
-
-        # Shuffle gene order
-        import numpy as np
-
+        # We need to create model data that has the same cells as in cell_barcode_index
         np.random.seed(42)  # For reproducible test
-        gene_order = np.random.permutation(model_adata.var.index)
-        model_adata = model_adata[:, gene_order]
 
-        # Shuffle cell order
-        cell_order = np.random.permutation(model_adata.obs.index)
-        model_adata = model_adata[cell_order, :]
+        # Get the cell barcodes that should match between model and task input
+        task_cell_barcodes = task_input.adata.uns["cell_barcode_index"]
+        task_genes = task_input.adata.var.index
+
+        # Create model AnnData with the same cells and genes but in shuffled order
+        gene_order = np.random.permutation(task_genes)
+        cell_order = np.random.permutation(task_cell_barcodes)
+
+        # Create a model AnnData with the shuffled ordering
+        model_adata = ad.AnnData(
+            X=np.random.rand(len(cell_order), len(gene_order)),
+            obs=pd.DataFrame(index=cell_order),
+            var=pd.DataFrame(index=gene_order),
+        )
 
         # Store original orderings
         original_gene_order = task_input.adata.var.index.copy()
@@ -932,12 +924,6 @@ def test_perturbation_task_apply_model_ordering():
 
 def test_perturbation_task_apply_model_ordering_validation():
     """Test that apply_model_ordering validates matching gene and cell sets."""
-    from czbenchmarks.datasets.single_cell_perturbation import (
-        SingleCellPerturbationDataset,
-    )
-    from czbenchmarks.datasets.types import Organism
-    from tests.utils import create_dummy_anndata
-    import tempfile
 
     # Create a dummy dataset
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1003,7 +989,7 @@ def test_perturbation_task_apply_model_ordering_validation():
         ]  # Different genes
 
         with pytest.raises(
-            ValueError, match="Gene indices in task input and model data do not match"
+            ValueError, match="Model data contains genes that are not in the task input"
         ):
             task_input.apply_model_ordering(model_adata_bad_genes)
 
@@ -1017,6 +1003,6 @@ def test_perturbation_task_apply_model_ordering_validation():
         ]  # Different cells
 
         with pytest.raises(
-            ValueError, match="Cell indices in task input and model data do not match"
+            ValueError, match="Model data contains cells that are not in the task input"
         ):
             task_input.apply_model_ordering(model_adata_bad_cells)

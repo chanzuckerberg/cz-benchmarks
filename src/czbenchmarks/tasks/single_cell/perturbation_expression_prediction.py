@@ -33,12 +33,27 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
             model_adata: AnnData object containing the desired gene and cell ordering
         """
 
-        # Apply gene ordering
+        if "cell_barcode_index" not in self.adata.uns:
+            raise ValueError("Task input contains no cell barcode index.")
         # Assert that the same values are in both gene and cell indices before re-assigning
-        if set(self.adata.var.index) != set(model_adata.var.index):
-            raise ValueError("Gene indices in task input and model data do not match.")
-        if set(self.adata.obs.index) != set(model_adata.obs.index):
-            raise ValueError("Cell indices in task input and model data do not match.")
+        if not set(model_adata.var.index).issubset(set(self.adata.var.index)):
+            raise ValueError(
+                "Model data contains genes that are not in the task input."
+            )
+        if not set(model_adata.obs.index).issubset(
+            set(self.adata.uns["cell_barcode_index"])
+        ):
+            raise ValueError(
+                "Model data contains cells that are not in the task input."
+            )
+
+        if set(model_adata.var.index) != set(self.adata.var.index):
+            logger.warning("Task input contains genes that are not in the model input.")
+
+        if set(model_adata.obs.index) != set(self.adata.uns["cell_barcode_index"]):
+            logger.warning("Task input contains cells that are not in the model input.")
+
+        # Apply gene ordering
         self.adata.var.index = model_adata.var.index
 
         # Apply cell barcode ordering
@@ -149,52 +164,65 @@ class PerturbationExpressionPredictionTask(Task):
 
         for condition in perturbation_conditions:
             # Get target genes for this condition
-
             target_genes = target_conditions_dict.get(condition, [])
             valid_genes = [g for g in target_genes if g in adata.var.index]
-
             if not valid_genes:
                 logger.warning(
                     "Skipping condition %s - no valid target genes", condition
                 )
                 continue
+            # This is where the true and predicted log fold changes are computed for each condition
+            # This outputs an array of true log fold changes for each cell in the condition
+            # and a corresponding array of predicted log fold changes for each cell in the condition
+            # Get the true DE results for this condition
+            condition_de = de_results[de_results[self.condition_key] == condition]
 
             # Get true log fold changes from DE results
-            condition_de = de_results[de_results[self.condition_key] == condition]
             true_lfc = (
                 condition_de.set_index("gene_id")
                 .reindex(valid_genes)[self.metric_column]
                 .values
             )
-
-            # Filter out NaN values
+            # Mask out genes with NaN true log fold change values
             valid_mask = ~np.isnan(true_lfc)
+            n_filtered = (~valid_mask).sum()
+            if n_filtered:
+                logger.warning(
+                    f"Filtered out {n_filtered} NaN true log fold changes for {condition}"
+                )
+            # Only keep genes with valid (non-NaN) true log fold change values
             final_genes = np.array(valid_genes)[valid_mask]
             true_lfc = true_lfc[valid_mask]
+            # true_lfc could be float, so convert to string for join
 
+            # If no valid genes remain for this condition, skip to next
             if len(final_genes) == 0:
                 continue
 
-            # Get gene indices for slicing
+            # Get indices of the valid genes in adata.var.index for slicing the cell_representation matrix
             gene_indices = adata.var.index.get_indexer(final_genes)
-
-            # Find condition and control cells
+            # Find cell barcodes for the current perturbation condition
+            # This extracts the base cell IDs (before the underscore) for all cells in the current condition
             condition_cells = (
                 obs[obs[self.condition_key] == condition].index.str.split("_").str[0]
             )
+            # Find cell barcodes for the corresponding control cells
+            # Control cells are expected to have a condition label like "controlPrefix_condition"
             control_cells = (
                 obs[obs[self.condition_key] == f"{self.control_prefix}_{condition}"]
                 .index.str.split("_")
                 .str[0]
             )
+            # Get indices of the condition and control cells in the cell_representation matrix
             condition_idx = np.where(base_cell_ids.isin(condition_cells))[0]
             control_idx = np.where(base_cell_ids.isin(control_cells))[0]
-
-            # Compute predicted log fold change
+            # Compute predicted log fold change for each gene:
+            #   - Take the mean expression of each gene across all condition cells
+            #   - Subtract the mean expression of the same gene across all control cells
             pred_lfc = cell_representation[np.ix_(condition_idx, gene_indices)].mean(
                 axis=0
             ) - cell_representation[np.ix_(control_idx, gene_indices)].mean(axis=0)
-
+            # Store the predicted and true log fold changes for this condition
             pred_log_fc_dict[condition] = pred_lfc
             true_log_fc_dict[condition] = true_lfc
 
