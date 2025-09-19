@@ -125,7 +125,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             min_smd (float): Minimum standardized mean difference for differential
                 expression. Default is 0.55.
             de_results_path (Optional[Path]): Path to load differential expression
-                results from csv file. If not provided, the deg data are used from
+                results from CSV file. If not provided, the deg data are used from
                 adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific
                 inputs.
@@ -416,7 +416,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_index in uns)
         - control_cells_ids.json: Control cell IDs mapping
         - target_conditions_dict.json: Target conditions dictionary
-        - de_results.csv: Differential expression results
+        - de_results.parquet: Differential expression results
 
         Returns:
             Path: Path to the task inputs directory.
@@ -443,9 +443,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         with open(target_conditions_file, "w") as f:
             json.dump(self.target_conditions_dict, f)
 
-        # Save DE results as CSV
-        de_results_file = self.task_inputs_dir / "de_results.csv"
-        self.de_results.to_csv(de_results_file, index=False)
+        # Save DE results as Parquet
+        de_results_file = self.task_inputs_dir / "de_results.parquet"
+        self.de_results.to_parquet(de_results_file, engine='pyarrow', index=False)
 
         return self.task_inputs_dir
 

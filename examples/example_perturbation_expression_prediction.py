@@ -1,39 +1,3 @@
-"""
-Example script for running the Perturbation Expression Prediction Task.
-
-CELL REPRESENTATION DATA (OPTIONAL):
-By default, this script generates random cell representation data for testing.
-You can provide your own cell representation data as an AnnData file:
-
-For model_data_file (OPTIONAL):
-    # Create an AnnData object with your cell representations
-    import anndata as ad
-    import numpy as np
-
-    # Your cell representation matrix (cells x genes)
-    cell_representations = np.random.rand(1000, 500)  # Replace with your actual data
-
-    # Gene names should be in .var.index
-    gene_names = ['GENE1', 'GENE2', 'GENE3', ...]  # Your gene identifiers
-
-    # Cell/perturbation identifiers should be in .obs.index
-    cell_ids = ['CELL_1', 'CELL_2', 'CELL_3', ...]  # Your cell identifiers
-
-    # Create and save AnnData
-    adata = ad.AnnData(X=cell_representations)
-    adata.var.index = gene_names
-    adata.obs.index = cell_ids
-    adata.write_h5ad('my_model_data.h5ad')
-
-    # Then run the script with:
-    # python example_perturbation_expression_prediction.py --model_data_file my_model_data.h5ad
-
-IMPORTANT:
-- If no model_data_file is provided, random data will be generated for testing
-- The gene ordering (.var.index) and cell ordering (.obs.index) from your file will be used
-- Your data dimensions must match the dataset dimensions
-"""
-
 import logging
 import sys
 import argparse
@@ -54,6 +18,25 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
 from czbenchmarks.tasks.types import CellRepresentation
+
+def generate_random_model_predictions(n_cells, n_genes):
+    """This demonstrates the expected format for the model predictions.
+    This should be an anndata file where the obs.index contains the cell 
+    barcodes and the var.index contains the genes. These should be the same or a
+    subset of the genes and cells in the dataset. The X matrix should be the 
+    model predictions.
+    """
+
+    model_predictions: CellRepresentation = np.random.rand(
+            n_cells, n_genes
+        )
+    # Put the predictions in an anndata object
+    model_adata = ad.AnnData(X=model_predictions)
+
+    #The same genes and cells (or a subset of them) should be in the model adata. 
+    model.adata.obs.index = dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
+    model_adata.var.index = dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+    return model_adata
 
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
@@ -92,7 +75,7 @@ if __name__ == "__main__":
         "--metric",
         type=str,
         default="wilcoxon",  # Set this to correspond to the type of statistical test used to determine differentially expressed genes
-        help="Metric to use for DE analysis",
+        help="Metric to use for DE analysis should be one of ['wilcoxon', 't-test']",
     )
     parser.add_argument(
         "--percent_genes_to_mask",
@@ -124,18 +107,11 @@ if __name__ == "__main__":
         default=0.55,
         help="Minimum standardized mean difference for DE filtering (used when --metric=t-test)",
     )
-    parser.add_argument(
-        "--model_data_file",
-        help="[OPTIONAL] Path to AnnData file (.h5ad) containing your cell representation data. "
-        "If not provided, random data will be generated for testing. "
-        "The file should have: cell representations in .X, gene names in .var.index, "
-        "and cell identifiers in .obs.index. "
-        "The gene names and cell identifiers should match the task input, although the ordering does not need to be the same.",
-    )
 
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logger = logging.getLogger(__name__)
 
     # Instantiate a config and load the input data
     cfg = {
@@ -156,43 +132,33 @@ if __name__ == "__main__":
         cfg_path.write_text(yaml.safe_dump(cfg))
         dataset: SingleCellPerturbationDataset = load_dataset(
             "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
-        )  # TODO: Once PR 381 is merged, use the new load_local_dataset function
+        )
+
+    # This generates a sample model anndata file. In applications, this should be 
+    # provided by the user. 
+    model_adata = generate_random_model_predictions(dataset.adata.shape[0], dataset.adata.shape[1])
 
     # Choose approach based on flag
     if args.save_inputs:
-        print("Using save/load approach...")
+        logger.info("Using save/load approach...")
         # Save and load dataset task inputs
         task_inputs_dir = dataset.store_task_inputs()
-        print(f"Task inputs saved to: {task_inputs_dir}")
+        logger.info(f"Task inputs saved to: {task_inputs_dir}")
         task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
-        print("Task inputs loaded from saved files")
+        logger.info("Task inputs loaded from saved files")
+
+        #Update with the model ordering of the genes and of the cells
+        task_input.gene_index = model_adata.var.index
+        task_input.cell_index = model_adata.obs.index
     else:
-        print("Creating task input directly from dataset...")
+        logger.info("Creating task input directly from dataset...")
         # Create task input directly from dataset with separate fields
         task_input = PerturbationExpressionPredictionTaskInput(
             adata=dataset.control_matched_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
-        )
-
-    # Load model data or generate random data
-    if args.model_data_file:
-        model_adata = ad.read_h5ad(args.model_data_file)
-
-        # Use the cell representation data from the file
-        # Handle both dense and sparse model_adata.X
-        if hasattr(model_adata.X, "toarray"):
-            model_output: CellRepresentation = model_adata.X.toarray()
-        else:
-            model_output: CellRepresentation = model_adata.X
-        # Apply the gene and cell ordering from the model data to the task input and validate dimensions
-        task_input.apply_model_ordering(model_adata)
-    else:
-        print("No model data file provided - generating random data for testing")
-
-        # Generate random model output for testing
-        model_output: CellRepresentation = np.random.rand(
-            dataset.adata.shape[0], dataset.adata.shape[1]
+            gene_index=model_adata.var.index,
+            cell_index=model_adata.obs.index
         )
 
     # Run task

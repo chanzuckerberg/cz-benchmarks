@@ -24,41 +24,8 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     adata: ad.AnnData
     target_conditions_dict: dict
     de_results: pd.DataFrame
-
-    def apply_model_ordering(self, model_adata: ad.AnnData) -> None:
-        """
-        Apply gene and cell ordering from model data to match the task input.
-
-        Args:
-            model_adata: AnnData object containing the desired gene and cell ordering
-        """
-
-        if "cell_barcode_index" not in self.adata.uns:
-            raise ValueError("Task input contains no cell barcode index.")
-        # Assert that the same values are in both gene and cell indices before re-assigning
-        if not set(model_adata.var.index).issubset(set(self.adata.var.index)):
-            raise ValueError(
-                "Model data contains genes that are not in the task input."
-            )
-        if not set(model_adata.obs.index).issubset(
-            set(self.adata.uns["cell_barcode_index"])
-        ):
-            raise ValueError(
-                "Model data contains cells that are not in the task input."
-            )
-
-        if set(model_adata.var.index) != set(self.adata.var.index):
-            logger.warning("Task input contains genes that are not in the model input.")
-
-        if set(model_adata.obs.index) != set(self.adata.uns["cell_barcode_index"]):
-            logger.warning("Task input contains cells that are not in the model input.")
-
-        # Apply gene ordering
-        self.adata.var.index = model_adata.var.index
-
-        # Apply cell barcode ordering
-        self.adata.uns["cell_barcode_index"] = model_adata.obs.index.astype(str).values
-
+    gene_index: pd.Index
+    cell_index: pd.Index
 
 def load_perturbation_task_input_from_saved_files(
     task_inputs_dir: Path,
@@ -82,14 +49,16 @@ def load_perturbation_task_input_from_saved_files(
     with open(target_conditions_file, "r") as f:
         target_conditions_dict = json.load(f)
 
-    # Load DE results from CSV
-    de_results_file = task_inputs_dir / "de_results.csv"
-    de_results = pd.read_csv(de_results_file)
+    # Load DE results from Parquet
+    de_results_file = task_inputs_dir / "de_results.parquet"
+    de_results = pd.read_parquet(de_results_file, engine='pyarrow')
 
     return PerturbationExpressionPredictionTaskInput(
         adata=task_adata,
         target_conditions_dict=target_conditions_dict,
         de_results=de_results,
+        gene_index=adata.var.index,
+        cell_index=adata.uns["cell_barcode_index"],
     )
 
 
@@ -107,7 +76,7 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        metric: str = "wilcoxon",
+        metric: Literal["wilcoxon", "t-test"] = "wilcoxon",
         control_prefix: str = "non-targeting",
         condition_key: str = "condition",
         *,
@@ -143,6 +112,7 @@ class PerturbationExpressionPredictionTask(Task):
         Returns:
             PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
+        self._validate(task_input)
         pred_log_fc_dict = {}
         true_log_fc_dict = {}
         adata = task_input.adata
@@ -151,7 +121,6 @@ class PerturbationExpressionPredictionTask(Task):
         obs = adata.obs
         de_results = task_input.de_results
         target_conditions_dict = task_input.target_conditions_dict
-        cell_barcode_index = pd.Index(adata.uns["cell_barcode_index"])
 
         # Get perturbation conditions (non-control)
         conditions = obs[self.condition_key].astype(str)
@@ -160,12 +129,12 @@ class PerturbationExpressionPredictionTask(Task):
         )
 
         # Extract base cell IDs for matching
-        base_cell_ids = cell_barcode_index.str.split("_").str[0]
+        base_cell_ids = task_input.cell_index.str.split("_").str[0]
 
         for condition in perturbation_conditions:
             # Get target genes for this condition
             target_genes = target_conditions_dict.get(condition, [])
-            valid_genes = [g for g in target_genes if g in adata.var.index]
+            valid_genes = [g for g in target_genes if g in task_input.gene_index]
             if not valid_genes:
                 logger.warning(
                     "Skipping condition %s - no valid target genes", condition
@@ -197,10 +166,11 @@ class PerturbationExpressionPredictionTask(Task):
 
             # If no valid genes remain for this condition, skip to next
             if len(final_genes) == 0:
+                logger.warning(f"Skipping condition {condition} - no valid genes remain after filtering")
                 continue
 
-            # Get indices of the valid genes in adata.var.index for slicing the cell_representation matrix
-            gene_indices = adata.var.index.get_indexer(final_genes)
+            # Get indices of the valid genes in task_input.gene_index for slicing the cell_representation matrix
+            gene_indices = task_input.gene_index.get_indexer(final_genes)
             # Find cell barcodes for the current perturbation condition
             # This extracts the base cell IDs (before the underscore) for all cells in the current condition
             condition_cells = (
@@ -381,3 +351,26 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
+
+    def _validate(self, task_input: PerturbationExpressionPredictionTaskInput) -> None:
+        assert self.metric in ["wilcoxon", "t-test"]
+        
+        if "cell_barcode_index" not in task_input.adata.uns:
+            raise ValueError("Task input contains no cell barcode index.")
+        # Assert that the same values are in both gene and cell indices before re-assigning
+        if not set(task_input.gene_index).issubset(set(task_input.adata.var.index)):
+            raise ValueError(
+                "Model data contains genes that are not in the task input."
+            )
+        if not set(task_input.cell_index).issubset(
+            set(task_input.adata.uns["cell_barcode_index"])
+        ):
+            raise ValueError(
+                "Model data contains cells that are not in the task input."
+            )
+
+        if set(task_input.gene_index) != set(task_input.adata.var.index):
+            logger.warning("Task input contains genes that are not in the model input.")
+
+        if set(task_input.cell_index) != set(task_input.adata.uns["cell_barcode_index"]):
+            logger.warning("Task input contains cells that are not in the model input.")
