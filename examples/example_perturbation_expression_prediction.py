@@ -1,7 +1,14 @@
 import logging
 import sys
 import argparse
-from czbenchmarks.datasets import load_dataset
+import tempfile
+import yaml
+from pathlib import Path
+
+import anndata as ad
+import numpy as np
+
+from czbenchmarks.datasets import load_dataset, SingleCellPerturbationDataset
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
@@ -10,12 +17,26 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     load_perturbation_task_input_from_saved_files,
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
-import numpy as np
-from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.tasks.types import CellRepresentation
-import tempfile
-import yaml
-from pathlib import Path
+
+def generate_random_model_predictions(n_cells, n_genes):
+    """This demonstrates the expected format for the model predictions.
+    This should be an anndata file where the obs.index contains the cell 
+    barcodes and the var.index contains the genes. These should be the same or a
+    subset of the genes and cells in the dataset. The X matrix should be the 
+    model predictions.
+    """
+
+    model_predictions: CellRepresentation = np.random.rand(
+            n_cells, n_genes
+        )
+    # Put the predictions in an anndata object
+    model_adata = ad.AnnData(X=model_predictions)
+
+    #The same genes and cells (or a subset of them) should be in the model adata. 
+    model.adata.obs.index = dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
+    model_adata.var.index = dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+    return model_adata
 
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
@@ -54,7 +75,7 @@ if __name__ == "__main__":
         "--metric",
         type=str,
         default="wilcoxon",  # Set this to correspond to the type of statistical test used to determine differentially expressed genes
-        help="Metric to use for DE analysis",
+        help="Metric to use for DE analysis should be one of ['wilcoxon', 't-test']",
     )
     parser.add_argument(
         "--percent_genes_to_mask",
@@ -90,6 +111,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logger = logging.getLogger(__name__)
 
     # Instantiate a config and load the input data
     cfg = {
@@ -110,31 +132,34 @@ if __name__ == "__main__":
         cfg_path.write_text(yaml.safe_dump(cfg))
         dataset: SingleCellPerturbationDataset = load_dataset(
             "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
-        )  # TODO: Once PR 381 is merged, use the new load_local_dataset function
+        )
+
+    # This generates a sample model anndata file. In applications, this should be 
+    # provided by the user. 
+    model_adata = generate_random_model_predictions(dataset.adata.shape[0], dataset.adata.shape[1])
 
     # Choose approach based on flag
     if args.save_inputs:
-        print("Using save/load approach...")
+        logger.info("Using save/load approach...")
         # Save and load dataset task inputs
         task_inputs_dir = dataset.store_task_inputs()
-        print(f"Task inputs saved to: {task_inputs_dir}")
+        logger.info(f"Task inputs saved to: {task_inputs_dir}")
         task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
-        print("Task inputs loaded from saved files")
-    else:
-        print("Creating task input directly from dataset...")
-        # Create task input directly from dataset
-        task_input = PerturbationExpressionPredictionTaskInput(
-            de_results=dataset.de_results,
-            var_index=dataset.control_matched_adata.var.index,
-            masked_adata_obs=dataset.control_matched_adata.obs,
-            target_conditions_to_save=dataset.target_conditions_to_save,
-            row_index=dataset.adata.obs.index,
-        )
+        logger.info("Task inputs loaded from saved files")
 
-    # Generate random model output
-    model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[1]
-    )
+        #Update with the model ordering of the genes and of the cells
+        task_input.gene_index = model_adata.var.index
+        task_input.cell_index = model_adata.obs.index
+    else:
+        logger.info("Creating task input directly from dataset...")
+        # Create task input directly from dataset with separate fields
+        task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata,
+            target_conditions_dict=dataset.target_conditions_dict,
+            de_results=dataset.de_results,
+            gene_index=model_adata.var.index,
+            cell_index=model_adata.obs.index
+        )
 
     # Run task
     task = PerturbationExpressionPredictionTask(metric=args.metric)
