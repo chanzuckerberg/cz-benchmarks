@@ -19,7 +19,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -66,15 +65,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
                 "gene": de_genes,
                 "pval_adj": [1e-6] * 20,
                 "logfoldchange": [2.0] * 20,
-            }
-        )
-        # Provide corresponding t-test DE results used when deg_test_name == "t-test"
-        adata.uns["de_results_t_test"] = pd.DataFrame(
-            {
-                "condition": de_conditions,
-                "gene": de_genes,
-                "pval_adj": [1e-6] * 20,
-                "standardized_mean_diff": [2.0] * 20,
             }
         )
         adata.write_h5ad(file_path)
@@ -128,27 +118,16 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
                 "logfoldchange": [2.0] * 20,
             }
         )
-        # Also include t-test results for parameterized runs with deg_test_name == "t-test"
-        adata.uns["de_results_t_test"] = pd.DataFrame(
-            {
-                "condition": de_conditions,
-                "gene": de_genes,
-                "pval_adj": [1e-6] * 20,
-                "standardized_mean_diff": [2.0] * 20,
-            }
-        )
         adata.write_h5ad(file_path)
 
         return file_path
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
     def test_perturbation_dataset_load_data(
         self,
         tmp_path,
-        deg_test_name,
         percent_genes_to_mask,
         min_de_genes_to_mask,
         pval_threshold,
@@ -160,7 +139,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
@@ -190,7 +168,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -211,21 +188,21 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
         dataset.load_data()
-        with pytest.raises(ValueError, match=""):
+        with pytest.raises(
+            ValueError,
+            match="Invalid perturbation condition format",
+        ):
             dataset.validate()
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     def test_perturbation_dataset_store_task_inputs(
         self,
         tmp_path,
-        deg_test_name,
     ):
         """Tests that the store_task_inputs method writes expected files."""
         dataset = SingleCellPerturbationDataset(
@@ -233,7 +210,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -255,19 +231,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert not de_df.empty
         base_cols = {"condition", "gene", "pval_adj"}
         assert base_cols.issubset(set(de_df.columns))
-        if deg_test_name == "wilcoxon":
-            assert "logfoldchange" in de_df.columns
-        else:
-            assert "standardized_mean_diff" in de_df.columns
+        assert "logfoldchange" in de_df.columns
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
     def test_perturbation_dataset_load_de_results_from_csv(
         self,
         tmp_path,
-        deg_test_name,
         percent_genes_to_mask,
         min_de_genes_to_mask,
         pval_threshold,
@@ -287,7 +258,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
                 "gene": genes,
                 "pval_adj": [1e-6] * 20,
                 "logfoldchange": [2.0] * 20,
-                "standardized_mean_diff": [2.0] * 20,
             }
         )
         de_df.to_csv(csv_path, index=False)
@@ -298,12 +268,10 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
             min_logfoldchange=0.0,
-            de_results_path=csv_path,
         )
 
         dataset.load_data()
