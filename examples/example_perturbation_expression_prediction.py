@@ -116,11 +116,9 @@ if __name__ == "__main__":
         "datasets": {
             "replogle_k562_essential_perturbpredict": {
                 "percent_genes_to_mask": args.percent_genes_to_mask,
-                "deg_test_name": args.metric,
                 "min_logfoldchange": args.min_logfoldchange,
                 "pval_threshold": args.pval_threshold,
                 "min_de_genes_to_mask": args.min_de_genes_to_mask,
-                "min_smd": args.min_smd,
             }
         }
     }
