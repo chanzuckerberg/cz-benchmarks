@@ -25,7 +25,7 @@ except ImportError:
 
 CPU_COUNT = os.cpu_count()
 
-
+# FIXME MICHELLE remove this for the DGE free version of code
 @nb.njit(parallel=True, fastmath=True)
 def colwise_nonzero_mean_var_numba(X):
     n_rows, n_cols = X.shape
@@ -50,6 +50,7 @@ def colwise_nonzero_mean_var_numba(X):
             mean[j] = mu
             var[j]  = sumsq[j] / c - mu * mu
     return mean, var
+
 
 
 def create_adata_for_condition(
@@ -96,7 +97,7 @@ def create_adata_for_condition(
 
     return adata_merged, len(adata_condition)
 
-
+# FIXME MICHELLE remove this for the DGE free version of code
 def z_scale_genes_by_group(
     adata: ad.AnnData, 
     z_scale_group_col: Optional[str]
@@ -144,7 +145,7 @@ def z_scale_genes_by_group(
 
     return X_zscaled
 
-
+# FIXME MICHELLE remove this for the DGE free version of code
 def preprocess_adata_for_deg(
     adata: ad.AnnData,
     deg_test_name: Literal["wilcoxon", "t-test"],
@@ -203,7 +204,6 @@ def preprocess_adata_for_deg(
         X_zscaled = z_scale_genes_by_group(adata, z_scale_group_col)
         adata.X = X_zscaled
 
-    # breakpoint()
     # # FIXME MICHELLE: should this be done before the scaling and transformation?
     # n_vars = adata.n_vars
     # sc.pp.filter_genes(adata, min_cells=filter_min_cells)
@@ -304,16 +304,15 @@ def run_multicondition_dge_analysis(
     }
 
     # FIXME MICHELLE: should this be done before the condition loop
-    adata = preprocess_adata_for_deg(
-        adata=adata,
-        deg_test_name=deg_test_name,
-        filter_min_cells=filter_min_cells,
-        filter_min_genes=filter_min_genes,
-        z_scale_group_col=z_scale_group_col,
-    )
-    breakpoint()
+    # adata = preprocess_adata_for_deg(
+    #     adata=adata,
+    #     deg_test_name=deg_test_name,
+    #     filter_min_cells=filter_min_cells,
+    #     filter_min_genes=filter_min_genes,
+    #     z_scale_group_col=z_scale_group_col,
+    # )
 
-    target_conditions = list(control_cells_ids.keys())[:3] # FIXME MICHELLE: remove this
+    target_conditions = list(control_cells_ids.keys())
     adata_results = []
     results_df = []
 
@@ -350,27 +349,26 @@ def run_multicondition_dge_analysis(
 
             # Normalize and filter
             # FIXME MICHELLE: should this be done before the condition loop?
-            # if deg_test_name == "wilcoxon":
-            #     logger.info(
-            #         "Normalizing total counts and log transforming for Wilcoxon test"
-            #     )
-            #     sc.pp.normalize_total(adata_merged, target_sum=1e4)
-            #     sc.pp.log1p(adata_merged)
+            if deg_test_name == "wilcoxon":
+                logger.info(
+                    "Normalizing total counts and log transforming for Wilcoxon test"
+                )
+                sc.pp.normalize_total(adata_merged, target_sum=1e4)
+                sc.pp.log1p(adata_merged)
 
-            # breakpoint()
-            # n_vars = adata_merged.n_vars
-            # sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
-            # if n_vars != adata_merged.n_vars:
-            #     logger.info(
-            #         f"Filtered {n_vars - adata_merged.n_vars} genes using min_cells={filter_min_cells}"
-            #     )
+            n_vars = adata_merged.n_vars
+            sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
+            if n_vars != adata_merged.n_vars:
+                logger.info(
+                    f"Filtered {n_vars - adata_merged.n_vars} genes using min_cells={filter_min_cells}"
+                )
 
-            # n_obs = adata_merged.n_obs
-            # sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
-            # if n_obs != adata_merged.n_obs:
-            #     logger.info(
-            #         f"Filtered {n_obs - adata_merged.n_obs} cells using min_genes={filter_min_genes}"
-            #     )
+            n_obs = adata_merged.n_obs
+            sc.pp.filter_cells(adata_merged, min_genes=filter_min_genes)
+            if n_obs != adata_merged.n_obs:
+                logger.info(
+                    f"Filtered {n_obs - adata_merged.n_obs} cells using min_genes={filter_min_genes}"
+                )
 
             comparison_group_counts = adata_merged.obs[
                 comparison_group_col
@@ -382,7 +380,6 @@ def run_multicondition_dge_analysis(
                 continue
 
             # Run statistical test
-            breakpoint()
             sc.tl.rank_genes_groups(
                 adata_merged,
                 groupby=comparison_group_col,
