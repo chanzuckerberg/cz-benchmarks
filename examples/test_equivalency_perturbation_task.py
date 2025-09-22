@@ -235,7 +235,8 @@ def run_new_code(model_adata_new_output, args):
     print("Running task.run()...")
     model_output = model_adata_new_output.X
     if args.shuffle_model_data:
-        task_input.apply_model_ordering(model_adata_new_output)
+        task_input.gene_index = model_adata_new_output.var.index
+        task_input.cell_index = model_adata_new_output.obs.index
     result = task._run_task(model_output, task_input)
     print("Running task._compute_metrics()...")
     # Run the metrics from the task
@@ -400,10 +401,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--shuffle_model_data",
         action="store_true",
-        help="[OPTIONAL] Save the generated random model data as an AnnData file (.h5ad). "
-        "The file will be automatically named based on the test parameters and saved in the current directory. "
-        "The saved file will contain: cell representations in .X, gene names in .var.index, "
-        "and cell identifiers in .obs.index.",
+        help="Shuffle the indices of the model data",
     )
 
     args = parser.parse_args()

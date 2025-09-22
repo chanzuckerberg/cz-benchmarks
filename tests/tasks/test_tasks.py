@@ -287,6 +287,8 @@ def test_perturbation_task():
     gene_pert = perturbation_data["gene_pert"]
     # Convert sparse matrix to dense array to avoid matrix object issues
     cell_representation = perturbation_data["adata"].X.toarray()
+    # Log-normalize the data to pass validation (add small constant to avoid log(0))
+    cell_representation = np.log1p(cell_representation)
     var_names = perturbation_data["adata"].var_names
 
     # Task and argument setup
@@ -332,12 +334,14 @@ def test_perturbation_task():
     test_adata = ad.AnnData(
         X=adata.X, obs=masked_adata_obs, var=pd.DataFrame(index=var_names)
     )
-    test_adata.uns["cell_barcode_index"] = adata.obs.index.astype(str).values
+    test_adata.uns["cell_barcode_condition_index"] = adata.obs.index.astype(str).values
 
     task_input = PerturbationExpressionPredictionTaskInput(
         adata=test_adata,
         target_conditions_dict=target_conditions_dict,
         de_results=de_results,
+        gene_index=test_adata.var.index,
+        cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
     )
 
     # Five metrics per condition: accuracy, precision, recall, f1, correlation
@@ -435,22 +439,45 @@ def test_perturbation_expression_prediction_task_wilcoxon():
         var=pd.DataFrame(index=gene_names),
     )
     target_conditions_dict = {"gene_A": list(gene_names), "gene_B": list(gene_names)}
-    cell_representation = X
+
+    # Create log-normalized data that will pass validation and gives expected differences
+    # Since the task computes: mean(treatment) - mean(control), we create data where this equals true_lfc
+    base_value = 1.0  # Base value that will become 0 after log transformation
+    cell_representation = np.zeros_like(X, dtype=float)
+
+    # For treatment groups: set to base_value + true_lfc so log difference will be true_lfc
+    cell_representation[0:n_per_group, :] = base_value + true_lfc_gene_A  # gene_A group
+    cell_representation[n_per_group : 2 * n_per_group, :] = (
+        base_value  # ctrl_gene_A group
+    )
+    cell_representation[2 * n_per_group : 3 * n_per_group, :] = (
+        base_value + true_lfc_gene_B
+    )  # gene_B group
+    cell_representation[3 * n_per_group : 4 * n_per_group, :] = (
+        base_value  # ctrl_gene_B group
+    )
+
+    # Add small constant to ensure fractional cell sums for validation (must exceed epsilon=1e-2)
+    cell_representation += 0.003
 
     # Ensure de_results has the expected gene identifier column
     de_res_wilcoxon_df["gene_id"] = de_res_wilcoxon_df["names"]
 
     task = PerturbationExpressionPredictionTask(
-        control_prefix="ctrl",
+        control_name="ctrl",
     )
     # Create AnnData with required data
     test_adata = adata.copy()
-    test_adata.uns["cell_barcode_index"] = pd.Index(base_cell_names).astype(str).values
+    test_adata.uns["cell_barcode_condition_index"] = (
+        pd.Index(base_cell_names).astype(str).values
+    )
 
     task_input = PerturbationExpressionPredictionTaskInput(
         adata=test_adata,
         target_conditions_dict=target_conditions_dict,
         de_results=de_res_wilcoxon_df,
+        gene_index=test_adata.var.index,
+        cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -552,22 +579,45 @@ def test_perturbation_expression_prediction_task_ttest():
         var=pd.DataFrame(index=gene_names),
     )
     target_conditions_dict = {"gene_A": list(gene_names), "gene_B": list(gene_names)}
-    cell_representation = X
+
+    # Create log-normalized data that will pass validation and gives expected differences
+    # Since the task computes: mean(treatment) - mean(control), we create data where this equals true_smd
+    base_value = 1.0  # Base value that will become 0 after log transformation
+    cell_representation = np.zeros_like(X, dtype=float)
+
+    # For treatment groups: set to base_value + true_smd so log difference will be true_smd
+    cell_representation[0:n_per_group, :] = base_value + true_smd_gene_A  # gene_A group
+    cell_representation[n_per_group : 2 * n_per_group, :] = (
+        base_value  # ctrl_gene_A group
+    )
+    cell_representation[2 * n_per_group : 3 * n_per_group, :] = (
+        base_value + true_smd_gene_B
+    )  # gene_B group
+    cell_representation[3 * n_per_group : 4 * n_per_group, :] = (
+        base_value  # ctrl_gene_B group
+    )
+
+    # Add small constant to ensure fractional cell sums for validation (must exceed epsilon=1e-2)
+    cell_representation += 0.003
 
     # Ensure de_results has the expected gene identifier column
     de_res_ttest_df["gene_id"] = de_res_ttest_df["names"]
 
     task = PerturbationExpressionPredictionTask(
-        control_prefix="ctrl",
+        control_name="ctrl",
     )
     # Create AnnData with required data
     test_adata = adata.copy()
-    test_adata.uns["cell_barcode_index"] = pd.Index(base_cell_names).astype(str).values
+    test_adata.uns["cell_barcode_condition_index"] = (
+        pd.Index(base_cell_names).astype(str).values
+    )
 
     task_input = PerturbationExpressionPredictionTaskInput(
         adata=test_adata,
         target_conditions_dict=target_conditions_dict,
         de_results=de_res_ttest_df,
+        gene_index=test_adata.var.index,
+        cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -668,7 +718,7 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     assert isinstance(task_input.de_results, pd.DataFrame)
 
     # Verify AnnData contains required data in uns
-    assert "cell_barcode_index" in task_input.adata.uns
+    assert "cell_barcode_condition_index" in task_input.adata.uns
     assert "control_cells_ids" in task_input.adata.uns
 
     # Verify data integrity
@@ -678,7 +728,10 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     assert len(task_input.target_conditions_dict) > 0
 
     # Verify cell barcode index matches adata size
-    assert len(task_input.adata.uns["cell_barcode_index"]) == dataset.adata.shape[0]
+    assert (
+        len(task_input.adata.uns["cell_barcode_condition_index"])
+        == dataset.adata.shape[0]
+    )
 
 
 def test_perturbation_expression_prediction_task_with_shuffled_input():
@@ -749,6 +802,10 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
             adata=dataset.control_matched_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
+            gene_index=dataset.control_matched_adata.var.index,
+            cell_index=pd.Index(
+                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
+            ),
         )
 
         # Create shuffled version of the AnnData
@@ -777,6 +834,8 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
             adata=shuffled_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
+            gene_index=shuffled_adata.var.index,
+            cell_index=pd.Index(shuffled_adata.uns["cell_barcode_condition_index"]),
         )
 
         # Create identical model output for both (using original dimensions)
@@ -880,14 +939,18 @@ def test_perturbation_task_apply_model_ordering():
             adata=dataset.control_matched_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
+            gene_index=dataset.control_matched_adata.var.index,
+            cell_index=pd.Index(
+                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
+            ),
         )
 
         # Create model data with shuffled ordering (same content, different order)
-        # We need to create model data that has the same cells as in cell_barcode_index
+        # We need to create model data that has the same cells as in cell_barcode_condition_index
         np.random.seed(42)  # For reproducible test
 
         # Get the cell barcodes that should match between model and task input
-        task_cell_barcodes = task_input.adata.uns["cell_barcode_index"]
+        task_cell_barcodes = task_input.adata.uns["cell_barcode_condition_index"]
         task_genes = task_input.adata.var.index
 
         # Create model AnnData with the same cells and genes but in shuffled order
@@ -903,23 +966,24 @@ def test_perturbation_task_apply_model_ordering():
 
         # Store original orderings
         original_gene_order = task_input.adata.var.index.copy()
-        original_cell_barcode_index = task_input.adata.uns["cell_barcode_index"].copy()
+        original_cell_barcode_index = task_input.adata.uns[
+            "cell_barcode_condition_index"
+        ].copy()
 
         # Apply model ordering
-        task_input.apply_model_ordering(model_adata)
+        task_input.gene_index = model_adata.var.index
+        task_input.cell_index = model_adata.obs.index
 
         # Verify that orderings have changed to match model data
-        pd.testing.assert_index_equal(task_input.adata.var.index, model_adata.var.index)
+        pd.testing.assert_index_equal(task_input.gene_index, model_adata.var.index)
         np.testing.assert_array_equal(
-            task_input.adata.uns["cell_barcode_index"],
+            task_input.cell_index,
             model_adata.obs.index.astype(str).values,
         )
 
         # Verify orderings are different from original (unless by chance they're the same)
-        assert not task_input.adata.var.index.equals(original_gene_order)
-        assert not np.array_equal(
-            task_input.adata.uns["cell_barcode_index"], original_cell_barcode_index
-        )
+        assert not task_input.gene_index.equals(original_gene_order)
+        assert not np.array_equal(task_input.cell_index, original_cell_barcode_index)
 
 
 def test_perturbation_task_apply_model_ordering_validation():
@@ -972,6 +1036,10 @@ def test_perturbation_task_apply_model_ordering_validation():
             adata=dataset.control_matched_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
+            gene_index=dataset.control_matched_adata.var.index,
+            cell_index=pd.Index(
+                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
+            ),
         )
 
         # Test with mismatched genes
@@ -987,11 +1055,19 @@ def test_perturbation_task_apply_model_ordering_validation():
             "different_gene2",
             "different_gene3",
         ]  # Different genes
+        task = PerturbationExpressionPredictionTask(
+            control_name="ctrl",
+        )
 
         with pytest.raises(
             ValueError, match="Model data contains genes that are not in the task input"
         ):
-            task_input.apply_model_ordering(model_adata_bad_genes)
+            task_input.gene_index = model_adata_bad_genes.var.index
+            task_input.cell_index = model_adata_bad_genes.obs.index
+            task._run_task(
+                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
+                task_input,
+            )
 
         # Test with mismatched cells
         model_adata_bad_cells = task_input.adata.copy()
@@ -1001,8 +1077,11 @@ def test_perturbation_task_apply_model_ordering_validation():
             "different_cell3",
             "different_cell4",
         ]  # Different cells
-
+        task_input.cell_index = model_adata_bad_cells.obs.index
         with pytest.raises(
-            ValueError, match="Model data contains cells that are not in the task input"
+            ValueError, match="Model data contains genes that are not in the task input"
         ):
-            task_input.apply_model_ordering(model_adata_bad_cells)
+            task._run_task(
+                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
+                task_input,
+            )

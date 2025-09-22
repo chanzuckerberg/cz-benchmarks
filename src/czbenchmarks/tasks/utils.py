@@ -313,3 +313,36 @@ def run_standard_scrna_workflow(
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]
+
+
+def guess_is_lognorm(
+    input_data: CellRepresentation,
+    n_cells: int | float = 500,
+    epsilon: float = 1e-2,
+) -> bool:
+    """
+    Heuristically determine if the input AnnData.X is log-normalized (i.e., not integer counts).
+
+    This function samples a subset of cells and checks if the sum of their expression values
+    has a significant fractional component, which would suggest the data is not raw counts.
+
+    Note:
+        This method cannot distinguish between normalized (but not log-transformed) and log-normalized data.
+        It only attempts to detect if the data is not integer counts.
+
+    Args:
+        adata: AnnData object.
+        n_cells: Number of cells to sample for the check (default: 500 or all if fewer).
+        epsilon: Tolerance for detecting non-integer sums (default: 1e-2).
+
+    Returns:
+        bool: True if the data appears to be log-normalized (non-integer), False if likely raw counts.
+    """
+    n_cells = int(min(input_data.shape[0], n_cells))
+    # Randomly sample cell indices
+    sampled_indices = np.random.choice(input_data.shape[0], n_cells, replace=False)
+    # Compute sum of expression values for each sampled cell
+    cell_sums = input_data[sampled_indices].sum(axis=1)
+    # If any cell sum is not (within epsilon) an integer, likely not raw counts
+    has_fractional = np.any(np.abs(cell_sums - np.round(cell_sums)) > epsilon)
+    return bool(has_fractional)

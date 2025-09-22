@@ -19,24 +19,28 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
 from czbenchmarks.tasks.utils import print_metrics_summary
 from czbenchmarks.tasks.types import CellRepresentation
 
+
 def generate_random_model_predictions(n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
-    This should be an anndata file where the obs.index contains the cell 
+    This should be an anndata file where the obs.index contains the cell
     barcodes and the var.index contains the genes. These should be the same or a
-    subset of the genes and cells in the dataset. The X matrix should be the 
+    subset of the genes and cells in the dataset. The X matrix should be the
     model predictions.
     """
 
-    model_predictions: CellRepresentation = np.random.rand(
-            n_cells, n_genes
-        )
+    model_predictions: CellRepresentation = np.random.rand(n_cells, n_genes)
     # Put the predictions in an anndata object
     model_adata = ad.AnnData(X=model_predictions)
 
-    #The same genes and cells (or a subset of them) should be in the model adata. 
-    model.adata.obs.index = dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
-    model_adata.var.index = dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+    # The same genes and cells (or a subset of them) should be in the model adata.
+    model_adata.obs.index = (
+        dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
+    )
+    model_adata.var.index = (
+        dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+    )
     return model_adata
+
 
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
@@ -134,9 +138,11 @@ if __name__ == "__main__":
             "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
         )
 
-    # This generates a sample model anndata file. In applications, this should be 
-    # provided by the user. 
-    model_adata = generate_random_model_predictions(dataset.adata.shape[0], dataset.adata.shape[1])
+    # This generates a sample model anndata file. In applications, this should be
+    # provided by the user.
+    model_adata = generate_random_model_predictions(
+        dataset.adata.shape[0], dataset.adata.shape[1]
+    )
 
     # Choose approach based on flag
     if args.save_inputs:
@@ -147,7 +153,7 @@ if __name__ == "__main__":
         task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
         logger.info("Task inputs loaded from saved files")
 
-        #Update with the model ordering of the genes and of the cells
+        # Update with the model ordering of the genes and of the cells
         task_input.gene_index = model_adata.var.index
         task_input.cell_index = model_adata.obs.index
     else:
@@ -158,9 +164,10 @@ if __name__ == "__main__":
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
             gene_index=model_adata.var.index,
-            cell_index=model_adata.obs.index
+            cell_index=model_adata.obs.index,
         )
-
+    # Convert model adata to cell representation
+    model_output = model_adata.X
     # Run task
     task = PerturbationExpressionPredictionTask(metric=args.metric)
     metrics_dict = task.run(model_output, task_input)

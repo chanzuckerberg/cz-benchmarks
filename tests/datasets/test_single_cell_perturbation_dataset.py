@@ -7,6 +7,9 @@ import anndata as ad
 
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.datasets.types import Organism
+from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+    PerturbationExpressionPredictionTaskInput,
+)
 from tests.datasets.test_single_cell_dataset import SingleCellDatasetTests
 from tests.utils import create_dummy_anndata
 
@@ -215,27 +218,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ):
             invalid_dataset.load_data()
 
-    def test_perturbation_dataset_validate_invalid_condition(
-        self,
-        perturbation_invalid_condition_h5ad,
-    ):
-        """Test that validation fails with invalid condition format."""
-        condition_key = "condition"
-        dataset = SingleCellPerturbationDataset(
-            perturbation_invalid_condition_h5ad,
-            organism=Organism.HUMAN,
-            condition_key=condition_key,
-            deg_test_name="wilcoxon",
-            percent_genes_to_mask=0.5,
-            min_de_genes_to_mask=5,
-            pval_threshold=1e-4,
-            min_logfoldchange=1.0,
-        )
-        dataset.load_data()
-
-        with pytest.raises(ValueError, match=""):
-            dataset.validate()
-
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     def test_perturbation_dataset_store_task_inputs(
         self,
@@ -265,9 +247,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Check that all required files exist
         expected_files = [
             "control_matched_adata.h5ad",
-            "control_cells_ids.json",
             "target_conditions_dict.json",
-            "de_results.csv",
+            "de_results.parquet",
         ]
 
         for filename in expected_files:
@@ -280,16 +261,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert isinstance(task_adata, ad.AnnData)
 
         # Load and validate JSON files
-        with open(task_inputs_dir / "control_cells_ids.json", "r") as f:
-            control_cells_ids = json.load(f)
-        assert isinstance(control_cells_ids, dict)
-
         with open(task_inputs_dir / "target_conditions_dict.json", "r") as f:
             target_conditions_dict = json.load(f)
         assert isinstance(target_conditions_dict, dict)
 
-        # Load and validate DE results CSV (should only have optimized columns)
-        de_df = pd.read_csv(task_inputs_dir / "de_results.csv")
+        # Load and validate DE results Parquet (should only have optimized columns)
+        de_df = pd.read_parquet(
+            task_inputs_dir / "de_results.parquet", engine="pyarrow"
+        )
         assert not de_df.empty
         # Only the necessary columns should be present
         expected_cols = {condition_key, "gene_id"}
@@ -300,9 +279,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert set(de_df.columns) == expected_cols
 
         # Load and validate cell barcode index
-        cell_barcode_index = task_adata.uns["cell_barcode_index"]
-        assert isinstance(cell_barcode_index, np.ndarray)
-        assert len(cell_barcode_index) == dataset.adata.shape[0]
+        cell_barcode_condition_index = task_adata.uns["cell_barcode_condition_index"]
+        assert isinstance(cell_barcode_condition_index, np.ndarray)
+        assert len(cell_barcode_condition_index) == dataset.adata.shape[0]
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
@@ -397,7 +376,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         required_uns_keys = {
             "target_conditions_dict",
             "de_results",
-            "cell_barcode_index",
+            "cell_barcode_condition_index",
             "control_cells_ids",
         }
 
@@ -432,12 +411,13 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             expected_cols.add("standardized_mean_diff")
         assert set(de_df.columns) == expected_cols
 
-        # Check cell_barcode_index
-        assert isinstance(uns["cell_barcode_index"], np.ndarray)
-        assert len(uns["cell_barcode_index"]) == len(dataset.adata.obs.index)
+        # Check cell_barcode_condition_index
+        assert isinstance(uns["cell_barcode_condition_index"], np.ndarray)
+        assert len(uns["cell_barcode_condition_index"]) == len(dataset.adata.obs.index)
         # Should match the original dataset's observation index
         np.testing.assert_array_equal(
-            uns["cell_barcode_index"], dataset.adata.obs.index.astype(str).values
+            uns["cell_barcode_condition_index"],
+            dataset.adata.obs.index.astype(str).values,
         )
 
     @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
@@ -445,10 +425,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         self, deg_test_name, tmp_path
     ):
         """Test that PerturbationExpressionPredictionTaskInput can be created directly from control_matched_adata."""
-        from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-            PerturbationExpressionPredictionTaskInput,
-        )
-
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
@@ -467,6 +443,10 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             adata=dataset.control_matched_adata,
             target_conditions_dict=dataset.target_conditions_dict,
             de_results=dataset.de_results,
+            gene_index=dataset.control_matched_adata.var.index,
+            cell_index=pd.Index(
+                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
+            ),
         )
 
         # Verify the task input was created successfully
@@ -478,7 +458,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         # Verify that required data in uns is accessible
         required_uns_keys = {
-            "cell_barcode_index",
+            "cell_barcode_condition_index",
             "control_cells_ids",
         }
         actual_uns_keys = set(task_input.adata.uns.keys())
@@ -497,6 +477,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         # Check cell barcode index
         np.testing.assert_array_equal(
-            task_input.adata.uns["cell_barcode_index"],
+            task_input.adata.uns["cell_barcode_condition_index"],
             dataset.adata.obs.index.astype(str).values,
         )

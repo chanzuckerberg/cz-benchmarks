@@ -13,7 +13,7 @@ from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ..task import Task, TaskInput, TaskOutput
-from ..utils import binarize_values
+from ..utils import binarize_values, guess_is_lognorm
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     de_results: pd.DataFrame
     gene_index: pd.Index
     cell_index: pd.Index
+
 
 def load_perturbation_task_input_from_saved_files(
     task_inputs_dir: Path,
@@ -40,7 +41,7 @@ def load_perturbation_task_input_from_saved_files(
         PerturbationExpressionPredictionTaskInput: The loaded task input.
     """
 
-    # Load the main AnnData object (contains cell_barcode_index in uns)
+    # Load the main AnnData object (contains cell_barcode_condition_index in uns)
     adata_file = task_inputs_dir / "control_matched_adata.h5ad"
     task_adata = ad.read_h5ad(adata_file)
 
@@ -51,14 +52,14 @@ def load_perturbation_task_input_from_saved_files(
 
     # Load DE results from Parquet
     de_results_file = task_inputs_dir / "de_results.parquet"
-    de_results = pd.read_parquet(de_results_file, engine='pyarrow')
+    de_results = pd.read_parquet(de_results_file, engine="pyarrow")
 
     return PerturbationExpressionPredictionTaskInput(
         adata=task_adata,
         target_conditions_dict=target_conditions_dict,
         de_results=de_results,
-        gene_index=adata.var.index,
-        cell_index=adata.uns["cell_barcode_index"],
+        gene_index=task_adata.var.index,
+        cell_index=pd.Index(task_adata.uns["cell_barcode_condition_index"]),
     )
 
 
@@ -77,24 +78,26 @@ class PerturbationExpressionPredictionTask(Task):
     def __init__(
         self,
         metric: Literal["wilcoxon", "t-test"] = "wilcoxon",
-        control_prefix: str = "non-targeting",
+        control_name: str = "non-targeting",
         condition_key: str = "condition",
         *,
         random_seed: int = RANDOM_SEED,
     ):
         """
         Args:
-            control_prefix (str): Prefix for control conditions.
+            control_name (str): Prefix for control conditions.
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
+        assert metric in ["wilcoxon", "t-test"]
+
         if metric == "wilcoxon":
             self.metric_column = "logfoldchange"
         elif metric == "t-test":
             self.metric_column = "standardized_mean_diff"
         else:
             raise ValueError(f"Metric {metric} not supported")
-        self.control_prefix = control_prefix
+        self.control_name = control_name
         self.condition_key = condition_key
 
     def _run_task(
@@ -112,7 +115,7 @@ class PerturbationExpressionPredictionTask(Task):
         Returns:
             PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
-        self._validate(task_input)
+        self._validate(task_input, cell_representation)
         pred_log_fc_dict = {}
         true_log_fc_dict = {}
         adata = task_input.adata
@@ -125,7 +128,7 @@ class PerturbationExpressionPredictionTask(Task):
         # Get perturbation conditions (non-control)
         conditions = obs[self.condition_key].astype(str)
         perturbation_conditions = np.unique(
-            conditions[~conditions.str.startswith(self.control_prefix)]
+            conditions[~conditions.str.startswith(self.control_name)]
         )
 
         # Extract base cell IDs for matching
@@ -166,7 +169,9 @@ class PerturbationExpressionPredictionTask(Task):
 
             # If no valid genes remain for this condition, skip to next
             if len(final_genes) == 0:
-                logger.warning(f"Skipping condition {condition} - no valid genes remain after filtering")
+                logger.warning(
+                    f"Skipping condition {condition} - no valid genes remain after filtering"
+                )
                 continue
 
             # Get indices of the valid genes in task_input.gene_index for slicing the cell_representation matrix
@@ -179,7 +184,7 @@ class PerturbationExpressionPredictionTask(Task):
             # Find cell barcodes for the corresponding control cells
             # Control cells are expected to have a condition label like "controlPrefix_condition"
             control_cells = (
-                obs[obs[self.condition_key] == f"{self.control_prefix}_{condition}"]
+                obs[obs[self.condition_key] == f"{self.control_name}_{condition}"]
                 .index.str.split("_")
                 .str[0]
             )
@@ -352,10 +357,17 @@ class PerturbationExpressionPredictionTask(Task):
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
 
-    def _validate(self, task_input: PerturbationExpressionPredictionTaskInput) -> None:
-        assert self.metric in ["wilcoxon", "t-test"]
-        
-        if "cell_barcode_index" not in task_input.adata.uns:
+    def _validate(
+        self,
+        task_input: PerturbationExpressionPredictionTaskInput,
+        cell_representation: CellRepresentation,
+    ) -> None:
+        if not guess_is_lognorm(cell_representation, n_cells=500):
+            raise ValueError(
+                "Task input likelihood contains non-log-normalized data. Please provide a log-normalized cell representation."
+            )
+
+        if "cell_barcode_condition_index" not in task_input.adata.uns:
             raise ValueError("Task input contains no cell barcode index.")
         # Assert that the same values are in both gene and cell indices before re-assigning
         if not set(task_input.gene_index).issubset(set(task_input.adata.var.index)):
@@ -363,7 +375,7 @@ class PerturbationExpressionPredictionTask(Task):
                 "Model data contains genes that are not in the task input."
             )
         if not set(task_input.cell_index).issubset(
-            set(task_input.adata.uns["cell_barcode_index"])
+            set(task_input.adata.uns["cell_barcode_condition_index"])
         ):
             raise ValueError(
                 "Model data contains cells that are not in the task input."
@@ -372,5 +384,7 @@ class PerturbationExpressionPredictionTask(Task):
         if set(task_input.gene_index) != set(task_input.adata.var.index):
             logger.warning("Task input contains genes that are not in the model input.")
 
-        if set(task_input.cell_index) != set(task_input.adata.uns["cell_barcode_index"]):
+        if set(task_input.cell_index) != set(
+            task_input.adata.uns["cell_barcode_condition_index"]
+        ):
             logger.warning("Task input contains cells that are not in the model input.")

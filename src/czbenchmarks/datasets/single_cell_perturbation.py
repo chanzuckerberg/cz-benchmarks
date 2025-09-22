@@ -87,7 +87,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         path: Path,
         organism: Organism,
         condition_key: str = "condition",
-        control_name: str = "ctrl",
+        control_name: str = "non-targeting",
         de_gene_col: str = "gene",
         deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
@@ -125,7 +125,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             min_smd (float): Minimum standardized mean difference for differential
                 expression. Default is 0.55.
             de_results_path (Optional[Path]): Path to load differential expression
-                results from CSV file. If not provided, the deg data are used from
+                results from csv file. If not provided, the deg data are used from
                 adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific
                 inputs.
@@ -278,7 +278,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_final.uns["de_results"] = {
             col: self.de_results[col].values for col in self.de_results.columns
         }
-        adata_final.uns["cell_barcode_index"] = self.adata.obs.index.astype(str).values
+        adata_final.uns["cell_barcode_condition_index"] = self.adata.obs.index.astype(
+            str
+        ).values
         adata_final.uns["control_cells_ids"] = self.control_cells_ids
 
         return adata_final, target_condition_dict
@@ -297,7 +299,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ValueErrors or FileNotFoundErrors based on required data structure.
         """
         super().load_data()
-
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
                 f"Condition key '{self.condition_key}' not found in adata.obs"
@@ -413,8 +414,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Store all task inputs as separate files.
 
         This method saves all task-related data as separate files:
-        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_index in uns)
-        - control_cells_ids.json: Control cell IDs mapping
+        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_condition_index, control_cells_ids, target_conditions_dict, and de_results in uns)
         - target_conditions_dict.json: Target conditions dictionary
         - de_results.parquet: Differential expression results
 
@@ -423,14 +423,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         # Ensure the task inputs directory exists
         self.task_inputs_dir.mkdir(parents=True, exist_ok=True)
-
-        # Add control_cells_ids to the AnnData uns section before saving
-        # Save control_cells_ids as JSON
-        control_cells_ids_file = self.task_inputs_dir / "control_cells_ids.json"
-        with open(control_cells_ids_file, "w") as f:
-            json.dump(self.control_cells_ids, f)
         adata_to_save = self.control_matched_adata.copy()
-        adata_to_save.uns["cell_barcode_index"] = self.adata.obs.index.astype(
+        adata_to_save.uns["cell_barcode_condition_index"] = self.adata.obs.index.astype(
             str
         ).values
 
@@ -443,9 +437,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         with open(target_conditions_file, "w") as f:
             json.dump(self.target_conditions_dict, f)
 
-        # Save DE results as Parquet
+        # Save DE results as Parquet using PyArrow
         de_results_file = self.task_inputs_dir / "de_results.parquet"
-        self.de_results.to_parquet(de_results_file, engine='pyarrow', index=False)
+        self.de_results.to_parquet(de_results_file, engine="pyarrow", index=False)
 
         return self.task_inputs_dir
 
