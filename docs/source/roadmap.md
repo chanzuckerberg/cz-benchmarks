@@ -46,7 +46,7 @@ The [cz-benchmarks](https://github.com/chanzuckerberg/cz-benchmarks) repository 
 - Following up on the work to pull models out of cz-benchmarks and have them be compatible with the package, we’ll be following the same pattern with benchmark datasets. At the end of this work, the goal is to have cz-benchmarks stay focused on metrics & tasks, while being complementary with the VCP curated and hosted models & datasets.
 - Expand suite of community-driven assets to incorporate additional [working group](https://virtualcellmodels.cziscience.com/micro-pub/jamboree-launches-working-group) recommendations and NVIDIA
 - Expand suite of transcriptomic perturbation benchmarks
-- 🔬 Explore expanding domain focus to: Imaging (specifically, image representation learning, virtual staining, and dynamic imaging) and DNA models. If you’re interested in contributing to early stage work in these areas, please reach out to us at XXXX.
+- 🔬 Explore expanding domain focus to: Imaging (specifically, image representation learning, virtual staining, and dynamic imaging) and DNA models. If you’re interested in contributing to early stage work in these areas, please reach out to us at [virtualcellmodels@chanzuckerberg.com](mailto:virtualcellmodels@chanzuckerberg.com).
 
 ---
 

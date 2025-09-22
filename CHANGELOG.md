@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.1...v0.11.2) (2025-09-17)
+
+
+### Bug Fixes
+
+* for publish-pypi to work on prod pypi ([#413](https://github.com/chanzuckerberg/cz-benchmarks/issues/413)) ([329ac2f](https://github.com/chanzuckerberg/cz-benchmarks/commit/329ac2f23813ee927bb182d092e8ed7cf3b28e1e))
+
 ## [0.11.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.0...v0.11.1) (2025-09-17)
 
 
