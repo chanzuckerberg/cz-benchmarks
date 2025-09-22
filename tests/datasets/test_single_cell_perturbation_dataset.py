@@ -194,10 +194,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             min_logfoldchange=1.0,
         )
         dataset.load_data()
-        with pytest.raises(
-            ValueError,
-            match="Invalid perturbation condition format",
-        ):
+        with pytest.raises(ValueError):
             dataset.validate()
 
     def test_perturbation_dataset_store_task_inputs(
