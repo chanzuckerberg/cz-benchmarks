@@ -77,7 +77,6 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        metric: Literal["wilcoxon", "t-test"] = "wilcoxon",
         control_name: str = "non-targeting",
         condition_key: str = "condition",
         *,
@@ -86,17 +85,11 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Args:
             control_name (str): Prefix for control conditions.
+            condition_key (str): Key for the column in `adata.obs` specifying conditions.
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
-        assert metric in ["wilcoxon", "t-test"]
-
-        if metric == "wilcoxon":
-            self.metric_column = "logfoldchange"
-        elif metric == "t-test":
-            self.metric_column = "standardized_mean_diff"
-        else:
-            raise ValueError(f"Metric {metric} not supported")
+        self.metric_column = "logfoldchange"
         self.control_name = control_name
         self.condition_key = condition_key
 

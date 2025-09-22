@@ -113,17 +113,6 @@ def run_notebook_code(args):
             "ensembl_id",
         )
 
-    elif args.metric == "t-test":
-        df = df[np.abs(df["smd"]) >= args.min_smd]
-        df = df[df["pval_adj"] < args.pval_threshold]
-        target_gene_dict = sample_genes(
-            df,
-            args.percent_genes_to_mask,
-            args.min_de_genes_to_mask,
-            "condition",
-            "gene",
-        )
-
     else:
         raise ValueError(f"Metric {args.metric} not supported")
 
@@ -186,7 +175,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric",
         type=str,
-        default="wilcoxon",  # wilcoxon or t-test, do not use t_test
+        default="wilcoxon",
         help="Metric to use for DE analysis",
     )
     parser.add_argument(
@@ -211,7 +200,7 @@ if __name__ == "__main__":
         "--min_smd",
         type=float,
         default=0.55,
-        help="Minimum standardized mean difference for DE filtering (used when --metric=t-test)",
+        help="Minimum standardized mean difference for DE filtering (not used with wilcoxon)",
     )
     parser.add_argument(
         "--control_cells_ids_path",
@@ -225,15 +214,11 @@ if __name__ == "__main__":
         help="Run notebook code",
     )
     args = parser.parse_args()
-    # metric is either wilcoxon or t-test
-    if args.metric not in {"wilcoxon", "t-test"}:
-        raise ValueError(
-            f"Unsupported --metric value: {args.metric}. Use 'wilcoxon' or 't-test'."
-        )
-    # metric_normalized is either wilcoxon or t_test
-    metric_normalized = args.metric.strip().lower().replace("-", "_")
-    if metric_normalized in {"t-test", "ttest"}:
-        metric_normalized = "t_test"
+    # metric is wilcoxon only
+    if args.metric != "wilcoxon":
+        raise ValueError(f"Unsupported --metric value: {args.metric}. Use 'wilcoxon'.")
+    # metric_normalized is wilcoxon
+    metric_normalized = "wilcoxon"
 
     args.de_results_path = args.de_results_path.format(metric_type=args.metric)
 
@@ -301,32 +286,18 @@ if __name__ == "__main__":
         "Comparing DE results CSV to dataset.de_results with column name mapping"
     )
     df_csv = pd.read_csv(args.de_results_path)
-    if args.metric == "wilcoxon":
-        col_map = {
-            "names": "gene_id",
-            "target_gene": "condition_name",
-            "scores": "score",
-            "logfoldchanges": "logfoldchange",
-            "pvals": "pval",
-            "pvals_adj": "pval_adj",
-        }
-    elif args.metric == "t-test":
-        col_map = {
-            "gene": "gene_id",
-            "condition": "condition_name",
-            "score": "score",
-            "logfoldchange": "logfoldchange",
-            "pval": "pval",
-            "pval_adj": "pval_adj",
-            "smd": "standardized_mean_diff",
-        }
+    col_map = {
+        "names": "gene_id",
+        "target_gene": "condition_name",
+        "scores": "score",
+        "logfoldchanges": "logfoldchange",
+        "pvals": "pval",
+        "pvals_adj": "pval_adj",
+    }
 
     df_csv = df_csv.rename(columns=col_map)
     filter = df_csv["pval_adj"] <= args.pval_threshold
-    if metric_normalized == "wilcoxon":
-        filter &= df_csv["logfoldchange"].abs() >= args.min_logfoldchange
-    elif metric_normalized == "t_test":
-        filter &= df_csv["standardized_mean_diff"].abs() >= args.min_smd
+    filter &= df_csv["logfoldchange"].abs() >= args.min_logfoldchange
 
     df_csv = df_csv[filter]
     assert_de_results_equivalent(df_csv, new_dataset.de_results, col_map)

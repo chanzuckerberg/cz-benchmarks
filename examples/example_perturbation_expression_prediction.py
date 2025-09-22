@@ -48,7 +48,7 @@ if __name__ == "__main__":
     As input, this uses a SingleCellPerturbationDataset. Currently, this assumes 
     data from the Replogle et al. 2022 dataset. Addtionally, this contains 
     differentially expressed genes for each perturbation. The extent of the 
-    perturbation is merged with the willcoxon test or t-test.
+    perturbation is merged with the wilcoxon test.
     
     The dataset is filtered based on the type of statistical test, along with the minimum 
     number of differentially expressed genes, maximum p-value, and the minimum 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         "--metric",
         type=str,
         default="wilcoxon",  # Set this to correspond to the type of statistical test used to determine differentially expressed genes
-        help="Metric to use for DE analysis should be one of ['wilcoxon', 't-test']",
+        help="Metric to use for DE analysis (wilcoxon only)",
     )
     parser.add_argument(
         "--percent_genes_to_mask",
@@ -104,12 +104,6 @@ if __name__ == "__main__":
         type=int,
         default=5,
         help="Minimum number of DE genes required to mask a condition",
-    )
-    parser.add_argument(
-        "--min_smd",
-        type=float,
-        default=0.55,
-        help="Minimum standardized mean difference for DE filtering (used when --metric=t-test)",
     )
 
     args = parser.parse_args()
@@ -169,6 +163,6 @@ if __name__ == "__main__":
     # Convert model adata to cell representation
     model_output = model_adata.X
     # Run task
-    task = PerturbationExpressionPredictionTask(metric=args.metric)
+    task = PerturbationExpressionPredictionTask()
     metrics_dict = task.run(model_output, task_input)
     print_metrics_summary(metrics_dict)

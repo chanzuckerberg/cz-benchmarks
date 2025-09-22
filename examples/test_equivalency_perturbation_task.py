@@ -57,14 +57,6 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
             np.abs(de_results["logfoldchanges"]) >= args.min_logfoldchanges
         ]
         de_results = de_results[de_results["pvals_adj"] < args.pval_threshold]
-    elif args.metric_type == "t-test":
-        de_results = de_results[de_results["pval_adj"] < args.pval_threshold]
-        de_results = de_results[
-            de_results["smd"].abs() >= args.min_standard_mean_deviation
-        ]
-        de_results["target_gene"] = de_results["condition"]
-        de_results["ensembl_id"] = de_results["gene"]
-        de_results["names"] = de_results["gene"]
 
     print("DE results filtered. Loading predictions and grouping by sample...")
     # The original code is per model name. But here, we just have one model.
@@ -98,7 +90,7 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
     # Iterate over all conditions
     for condition in masked_notebook_adata.obs["gene"].unique():
         # Select appropriate DE results. For model predicting log1p counts/binary class probabilities we use wilcoxon test results and logFC.
-        # For model predicting z-scale expression we use t-test results and SMD.
+        # For model predicting z-scale expression we use wilcoxon results and log fold change.
 
         if condition == "non-targeting":
             continue
@@ -167,7 +159,7 @@ def run_notebook_code(args, sample_ids, target_genes, predictions):
                 axis=0
             )
             # Select column for true log fold change
-            col = "smd" if args.metric_type == "t-test" else "logfoldchanges"
+            col = "logfoldchanges"
             # Align true log fold change to masked genes
             true_log_fc = (
                 condition_de_df.set_index("names").reindex(masked_genes)[col].values
@@ -338,9 +330,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metric_type",
         type=str,
-        choices=["wilcoxon", "t-test"],
+        choices=["wilcoxon"],
         default="wilcoxon",
-        help="Metric type to use for DE gene filtering: 'wilcoxon' or 't_test'",
+        help="Metric type to use for DE gene filtering: 'wilcoxon' only",
     )
     parser.add_argument(
         "--percent_genes_to_mask",
