@@ -13,7 +13,7 @@ from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ..task import Task, TaskInput, TaskOutput
-from ..utils import binarize_values, guess_is_lognorm
+from ..utils import binarize_values, looks_like_lognorm
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def load_perturbation_task_input_from_saved_files(
     # Load DE results from Parquet
     de_results_file = task_inputs_dir / "de_results.parquet"
     de_results = pd.read_parquet(de_results_file, engine="pyarrow")
-
+    assert "cell_barcode_condition_index" in task_adata.uns
     return PerturbationExpressionPredictionTaskInput(
         adata=task_adata,
         target_conditions_dict=target_conditions_dict,
@@ -355,7 +355,7 @@ class PerturbationExpressionPredictionTask(Task):
         task_input: PerturbationExpressionPredictionTaskInput,
         cell_representation: CellRepresentation,
     ) -> None:
-        if not guess_is_lognorm(cell_representation, n_cells=500):
+        if not looks_like_lognorm(cell_representation, sample_size=500):
             raise ValueError(
                 "Task input likelihood contains non-log-normalized data. Please provide a log-normalized cell representation."
             )

@@ -1,17 +1,17 @@
 import numpy as np
 import scipy.sparse as sp
-from czbenchmarks.tasks.utils import guess_is_lognorm
+from czbenchmarks.tasks.utils import looks_like_lognorm
 
 
-class TestGuessIsLognorm:
-    """Test suite for the guess_is_lognorm function."""
+class TestLooksLikeLognorm:
+    """Test suite for the looks_like_lognorm function."""
 
     def test_raw_count_data_returns_false(self):
         """Test that raw count data (integers) returns False."""
         # Create mock raw count data (integers)
         raw_data = np.random.randint(0, 1000, size=(100, 50))
 
-        result = guess_is_lognorm(raw_data)
+        result = looks_like_lognorm(raw_data)
 
         assert result is False
 
@@ -20,7 +20,7 @@ class TestGuessIsLognorm:
         # Create mock log-normalized data with fractional values
         log_data = np.random.lognormal(0, 1, size=(100, 50))
 
-        result = guess_is_lognorm(log_data)
+        result = looks_like_lognorm(log_data)
 
         assert result is True
 
@@ -29,7 +29,7 @@ class TestGuessIsLognorm:
         # Create data with fractional values (simulating normalized but not necessarily log-transformed)
         normalized_data = np.random.rand(100, 50) * 10  # Random floats between 0-10
 
-        result = guess_is_lognorm(normalized_data)
+        result = looks_like_lognorm(normalized_data)
 
         assert result is True
 
@@ -39,7 +39,7 @@ class TestGuessIsLognorm:
         raw_data = np.random.randint(0, 100, size=(100, 50))
         sparse_data = sp.csr_matrix(raw_data)
 
-        result = guess_is_lognorm(sparse_data)
+        result = looks_like_lognorm(sparse_data)
 
         assert result is False
 
@@ -49,7 +49,7 @@ class TestGuessIsLognorm:
         log_data = np.random.lognormal(0, 1, size=(100, 50))
         sparse_log_data = sp.csr_matrix(log_data)
 
-        result = guess_is_lognorm(sparse_log_data)
+        result = looks_like_lognorm(sparse_log_data)
 
         assert result is True
 
@@ -59,8 +59,8 @@ class TestGuessIsLognorm:
         log_data = np.random.lognormal(0, 1, size=(1000, 50))
 
         # Test with different n_cells values
-        result_50 = guess_is_lognorm(log_data, n_cells=50)
-        result_100 = guess_is_lognorm(log_data, n_cells=100)
+        result_50 = looks_like_lognorm(log_data, sample_size=50)
+        result_100 = looks_like_lognorm(log_data, sample_size=100)
 
         # Both should return True for log-normalized data
         assert result_50 is True
@@ -72,7 +72,7 @@ class TestGuessIsLognorm:
         log_data = np.random.lognormal(0, 1, size=(10, 50))
 
         # Request more cells than available
-        result = guess_is_lognorm(log_data, n_cells=100)
+        result = looks_like_lognorm(log_data, sample_size=100)
 
         # Should still work by using all available cells
         assert result is True
@@ -83,18 +83,18 @@ class TestGuessIsLognorm:
         almost_integer_data = np.random.randint(0, 100, size=(100, 50)) + 1e-4
 
         # With default epsilon (1e-2), should return False
-        result_default = guess_is_lognorm(almost_integer_data)
+        result_default = looks_like_lognorm(almost_integer_data)
         assert result_default is False
 
-        # With very small epsilon (1e-5), should return True
-        result_small_epsilon = guess_is_lognorm(almost_integer_data, epsilon=1e-5)
-        assert result_small_epsilon is True
+        # With very small tol (1e-5), should return True
+        result_small_tol = looks_like_lognorm(almost_integer_data, tol=1e-5)
+        assert result_small_tol is True
 
     def test_all_zero_data(self):
         """Test behavior with all-zero data."""
         zero_data = np.zeros((100, 50))
 
-        result = guess_is_lognorm(zero_data)
+        result = looks_like_lognorm(zero_data)
 
         # All zeros should be considered as integer data (raw counts)
         assert result is False
@@ -106,7 +106,7 @@ class TestGuessIsLognorm:
         # Add a fractional value to ensure the sum is not an integer
         mixed_data[0, 0] += 0.3  # Make first cell have fractional sum
 
-        result = guess_is_lognorm(mixed_data)
+        result = looks_like_lognorm(mixed_data)
 
         # Should return True since some cells have fractional sums
         assert result is True
@@ -115,12 +115,12 @@ class TestGuessIsLognorm:
         """Test behavior with single cell data."""
         # Single cell with integer values
         single_cell_int = np.array([[1, 2, 3, 4, 5]])
-        result_int = guess_is_lognorm(single_cell_int)
+        result_int = looks_like_lognorm(single_cell_int)
         assert result_int is False
 
         # Single cell with fractional values
         single_cell_float = np.array([[1.1, 2.2, 3.3, 4.4, 5.5]])
-        result_float = guess_is_lognorm(single_cell_float)
+        result_float = looks_like_lognorm(single_cell_float)
         assert result_float is True
 
     def test_deterministic_behavior_with_seed(self):
@@ -130,10 +130,10 @@ class TestGuessIsLognorm:
 
         # Set seed for reproducible sampling
         np.random.seed(42)
-        result1 = guess_is_lognorm(log_data, n_cells=100)
+        result1 = looks_like_lognorm(log_data, sample_size=100)
 
         np.random.seed(42)
-        result2 = guess_is_lognorm(log_data, n_cells=100)
+        result2 = looks_like_lognorm(log_data, sample_size=100)
 
         # Results should be the same with same seed
         assert result1 == result2
@@ -145,8 +145,8 @@ class TestGuessIsLognorm:
             [[1.3, 2.5], [3.2, 4.1]]
         )  # 2 cells, 2 genes (sums: 3.8, 7.3)
 
-        result = guess_is_lognorm(
-            tiny_data, n_cells=500
+        result = looks_like_lognorm(
+            tiny_data, sample_size=500
         )  # Request more cells than available
 
         # Should still work and return True for fractional data
@@ -158,7 +158,7 @@ class TestGuessIsLognorm:
         # For example: [0.5, 0.5] sums to 1.0 (integer)
         data_with_integer_sums = np.array([[0.5, 0.5], [1.5, 2.5]])  # sums: [1.0, 4.0]
 
-        result = guess_is_lognorm(data_with_integer_sums)
+        result = looks_like_lognorm(data_with_integer_sums)
 
         # Should return False because cell sums are integers (within epsilon)
         assert result is False
@@ -174,7 +174,7 @@ class TestGuessIsLognorm:
             ]
         )
 
-        result_integer_sums = guess_is_lognorm(integer_sum_data)
+        result_integer_sums = looks_like_lognorm(integer_sum_data)
         assert result_integer_sums is False  # Integer sums
 
         # Create data where cell sums are fractional
@@ -186,5 +186,5 @@ class TestGuessIsLognorm:
             ]
         )
 
-        result_fractional_sums = guess_is_lognorm(fractional_sum_data)
+        result_fractional_sums = looks_like_lognorm(fractional_sum_data)
         assert result_fractional_sums is True  # Fractional sums

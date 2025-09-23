@@ -4,15 +4,14 @@ import argparse
 import tempfile
 import yaml
 from pathlib import Path
-
 import anndata as ad
 import numpy as np
-
-from czbenchmarks.datasets import load_dataset, SingleCellPerturbationDataset
+from czbenchmarks.datasets import SingleCellPerturbationDataset, load_dataset
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
+
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     load_perturbation_task_input_from_saved_files,
 )
@@ -64,6 +63,9 @@ if __name__ == "__main__":
     differentially expressed genes between perturbed and non-targeting groups.
     It then calculates the correlation between ground truth and predicted log 
     fold change for each condition using a variety of metrics.    
+
+    Before running this example, make sure the replogle_k562_essential_perturbpredict_path 
+    is set to the path where the replogle_k562_essential_perturbpredict.h5ad file is saved.
     """
 
     # Parse command line arguments
@@ -76,22 +78,16 @@ if __name__ == "__main__":
         help="Save dataset task inputs to disk and load them back (demonstrates save/load functionality)",
     )
     parser.add_argument(
-        "--metric",
-        type=str,
-        default="wilcoxon",  # Set this to correspond to the type of statistical test used to determine differentially expressed genes
-        help="Metric to use for DE analysis (wilcoxon only)",
-    )
-    parser.add_argument(
         "--percent_genes_to_mask",
         type=float,
-        default=1.0,
+        default=0.5,
         help="Percentage of genes to mask",
     )
     parser.add_argument(
         "--min_logfoldchange",
         type=float,
         default=1.0,
-        help="Minimum absolute log-fold change for DE filtering (used when --metric=wilcoxon)",
+        help="Minimum absolute log-fold change for DE filtering",
     )
     parser.add_argument(
         "--pval_threshold",
@@ -105,7 +101,6 @@ if __name__ == "__main__":
         default=5,
         help="Minimum number of DE genes required to mask a condition",
     )
-
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -123,13 +118,17 @@ if __name__ == "__main__":
         }
     }
 
-    with tempfile.TemporaryDirectory() as d:
-        cfg_path = Path(d) / "config.yaml"
-        cfg_path.write_text(yaml.safe_dump(cfg))
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_cfg:
+        yaml.dump(cfg, tmp_cfg)
+        tmp_cfg_path = tmp_cfg.name
+
         dataset: SingleCellPerturbationDataset = load_dataset(
-            "replogle_k562_essential_perturbpredict", config_path=str(cfg_path)
+            "replogle_k562_essential_perturbpredict",
+            config_path=Path(tmp_cfg_path),
         )
 
+    # Optional: validate the dataset
+    dataset.validate()
     # This generates a sample model anndata file. In applications, this should be
     # provided by the user.
     model_adata = generate_random_model_predictions(

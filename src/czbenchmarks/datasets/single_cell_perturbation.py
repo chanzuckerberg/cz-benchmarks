@@ -104,7 +104,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key (str): Key for the column in `adata.obs` specifying
                 conditions. Defaults to "condition".
             control_name (str): Name of the control condition. Defaults to
-                "ctrl".
+                "non-targeting".
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
@@ -402,7 +402,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Condition format must be one of:
-          - ``{control_name}_{perturb}`` for matched control samples.
+          - ``{control_name}`` or ``{control_name}_{perturb}`` for unmatched or matched control samples.
           - ``{perturb}`` for single perturbations.
         - Combinatorial perturbations are not currently supported.
 
@@ -411,21 +411,43 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         super()._validate()
 
-        # Validate condition format by checking the ORIGINAL conditions before processing
-        original_conditions = set(self.adata.obs[self.condition_key])
-        target_conditions = set(self.target_conditions_dict.keys())
+        if self.condition_key not in self.adata.obs.columns:
+            raise ValueError(
+                f"Condition key '{self.condition_key}' not found in adata.obs"
+            )
+        if self.condition_key not in self.control_matched_adata.obs.columns:
+            raise ValueError(
+                f"Condition key '{self.condition_key}' not found in control_matched_adata.obs"
+            )
 
+        # Validate matched_adata condition format by checking the ORIGINAL conditions before processing
+        original_conditions = set(self.control_matched_adata.obs[self.condition_key])
+        target_conditions = set(self.target_conditions_dict.keys())
         for condition in original_conditions:
+            # Check if it's a valid perturbation condition (just the perturbation name)
             if condition in target_conditions:
-                # This is a valid perturbation condition
                 continue
-            elif condition.startswith(self.control_name):
-                # This is a control condition - can be just control_name or control_name_*
+            # Check if it's a control condition: just control_name
+            elif condition == self.control_name:
                 continue
+            # Check if it's a matched control condition: control_name_perturb
+            elif condition.startswith(f"{self.control_name}_"):
+                # Extract the perturbation part after control_name_
+                perturb_part = condition[len(f"{self.control_name}_") :]
+                if perturb_part in target_conditions:
+                    continue
+                else:
+                    raise ValueError(
+                        f"Invalid matched control condition format: {condition}. "
+                        f"The perturbation part '{perturb_part}' is not a valid target condition. "
+                        f"Valid target conditions: {list(target_conditions)}"
+                    )
             else:
-                # Invalid condition format - not a known perturbation and doesn't start with control_name
+                # Invalid condition format
                 raise ValueError(
                     f"Invalid condition format: {condition}. "
-                    f"Must be ``{self.control_name}`` or ``{self.control_name}_*`` for control samples "
-                    f"or one of {list(target_conditions)} for perturbations."
+                    f"Must be one of:\n"
+                    f"  - ``{self.control_name}`` for unmatched control samples\n"
+                    f"  - ``{self.control_name}_{{perturb}}`` for matched control samples\n"
+                    f"  - ``{{perturb}}`` for single perturbations (where perturb is one of {list(target_conditions)})"
                 )

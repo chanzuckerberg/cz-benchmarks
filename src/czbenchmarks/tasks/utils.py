@@ -315,34 +315,29 @@ def run_standard_scrna_workflow(
     return adata.obsm[obsm_key]
 
 
-def guess_is_lognorm(
-    input_data: CellRepresentation,
-    n_cells: int | float = 500,
-    epsilon: float = 1e-2,
+def looks_like_lognorm(
+    matrix: CellRepresentation,
+    sample_size: int | float = 1_000,
+    tol: float = 1e-2,
 ) -> bool:
     """
-    Heuristically determine if the input AnnData.X is log-normalized (i.e., not integer counts).
+    Guess if a matrix contains log-normalized (non-integer) values by inspecting random cell sums.
 
-    This function samples a subset of cells and checks if the sum of their expression values
-    has a significant fractional component, which would suggest the data is not raw counts.
-
-    Note:
-        This method cannot distinguish between normalized (but not log-transformed) and log-normalized data.
-        It only attempts to detect if the data is not integer counts.
+    This function randomly picks a subset of rows (cells), sums their values, and checks if any
+    of those sums are not close to integers, which would indicate the data is not raw counts.
 
     Args:
-        adata: AnnData object.
-        n_cells: Number of cells to sample for the check (default: 500 or all if fewer).
-        epsilon: Tolerance for detecting non-integer sums (default: 1e-2).
+        matrix: Expression matrix (cells x genes).
+        sample_size: How many cells to check (default: 500 or all if fewer).
+        tol: Allowed deviation from integer for sum to be considered integer-like.
 
     Returns:
-        bool: True if the data appears to be log-normalized (non-integer), False if likely raw counts.
+        bool: True if at least one sampled cell sum is non-integer (suggesting log-normalized data).
     """
-    n_cells = int(min(input_data.shape[0], n_cells))
-    # Randomly sample cell indices
-    sampled_indices = np.random.choice(input_data.shape[0], n_cells, replace=False)
-    # Compute sum of expression values for each sampled cell
-    cell_sums = input_data[sampled_indices].sum(axis=1)
-    # If any cell sum is not (within epsilon) an integer, likely not raw counts
-    has_fractional = np.any(np.abs(cell_sums - np.round(cell_sums)) > epsilon)
-    return bool(has_fractional)
+    total_cells = matrix.shape[0]
+    n = int(min(sample_size, total_cells))
+    indices = np.random.choice(total_cells, n, replace=False)
+    row_totals = matrix[indices].sum(axis=1)
+    if np.any(np.abs(row_totals - np.round(row_totals)) > tol):
+        return True
+    return False
