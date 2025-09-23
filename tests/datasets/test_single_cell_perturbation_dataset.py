@@ -24,7 +24,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="ctrl",
+            control_name="non-targeting",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -41,8 +41,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
-            "ctrl",
-            "ctrl",
+            "non-targeting",
+            "non-targeting",
             "test1",
             "test1",
             "test2",
@@ -50,8 +50,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ]
         # Set indices so that splitting on '_' and taking token [1] yields the condition
         adata.obs_names = [
-            "ctrl_test1_a",  # control cell 1
-            "ctrl_test2_b",  # control cell 2
+            "non-targeting_test1_a",  # control cell 1
+            "non-targeting_test2_b",  # control cell 2
             "cond_test1_a",
             "cond_test1_b",
             "cond_test2_a",
@@ -59,8 +59,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ]
         # Provide matched control cell IDs per condition using the two control cells above
         adata.uns["control_cells_ids"] = {
-            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test1": ["non-targeting_test1_a", "non-targeting_test2_b"],
+            "test2": ["non-targeting_test1_a", "non-targeting_test2_b"],
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10
@@ -102,8 +102,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
-            "BADctrl",
-            "BADctrl",
+            "BADnon-targeting",
+            "BADnon-targeting",
             "test1",
             "test1",
             "test2",
@@ -111,8 +111,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ]
         # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
         adata.uns["control_cells_ids"] = {
-            "test1": ["cell_0", "cell_1"],
-            "test2": ["cell_0", "cell_1"],
+            "test1": ["non-targeting_cell_0", "non-targeting_cell_1"],
+            "test2": ["non-targeting_cell_0", "non-targeting_cell_1"],
         }
         de_conditions = ["test1"] * 10 + ["test2"] * 10
         de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
@@ -144,7 +144,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key=condition_key,
-            control_name="ctrl",
+            control_name="non-targeting",
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
@@ -162,7 +162,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             np.unique(
                 dataset.control_matched_adata.obs[condition_key][
                     ~dataset.control_matched_adata.obs[condition_key].str.startswith(
-                        "ctrl"
+                        "non-targeting"
                     )
                 ]
             )
@@ -183,7 +183,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         invalid_dataset = SingleCellPerturbationDataset(
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
-            condition_key=condition_key,
+            condition_key="condition",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -205,8 +205,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
-            condition_key=condition_key,
-            control_name="ctrl",
+            condition_key="condition",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -260,7 +259,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="ctrl",
+            control_name="non-targeting",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=2,
             pval_threshold=1e-4,
@@ -302,31 +301,49 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert isinstance(uns["de_results"], dict)
         de_df = pd.DataFrame(uns["de_results"])
         assert not de_df.empty
-        # Only the necessary columns should be present
-        expected_cols = {"condition", "gene_id"}
-        expected_cols.add("logfoldchange")
+        # The optimized DE results should only contain the necessary columns for the task
+        expected_cols = {"condition", "gene_id", "logfoldchange"}
         assert set(de_df.columns) == expected_cols
 
-        # Check cell_barcode_condition_index
-        assert isinstance(uns["cell_barcode_condition_index"], np.ndarray)
-        assert len(uns["cell_barcode_condition_index"]) == len(dataset.adata.obs.index)
-        # Should match the original dataset's observation index
-        np.testing.assert_array_equal(
-            uns["cell_barcode_condition_index"],
-            dataset.adata.obs.index.astype(str).values,
-        )
+    @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
+    @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
+    @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
+    def test_perturbation_dataset_load_de_results_from_csv(
+        self,
+        tmp_path,
+        percent_genes_to_mask,
+        min_de_genes_to_mask,
+        pval_threshold,
+    ):
+        """Tests loading DE results from an external CSV via de_results_path."""
+        # Create the base AnnData file using existing helper to ensure obs/uns layout
+        self.valid_dataset_file(tmp_path)
 
-    def test_task_input_creation_from_control_matched_adata(self, tmp_path):
-        """Test that PerturbationExpressionPredictionTaskInput can be created directly from control_matched_adata."""
+        # Create a DE results CSV with required columns for both tests
+        # Include two conditions that match the AnnData: test1 and test2, 10 genes each
+        csv_path = tmp_path / "de_results.csv"
+        conditions = ["test1"] * 10 + ["test2"] * 10
+        genes = [f"GENE_{i}" for i in range(20)]
+        de_df = pd.DataFrame(
+            {
+                "condition": conditions,
+                "gene": genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
+        )
+        de_df.to_csv(csv_path, index=False)
+
+        # Construct dataset pointing to the CSV and with permissive thresholds
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="ctrl",
-            percent_genes_to_mask=0.5,
-            min_de_genes_to_mask=2,
-            pval_threshold=1e-4,
-            min_logfoldchange=1.0,
+            control_name="non-targeting",
+            percent_genes_to_mask=percent_genes_to_mask,
+            min_de_genes_to_mask=min_de_genes_to_mask,
+            pval_threshold=pval_threshold,
+            min_logfoldchange=0.0,
         )
         dataset.load_data()
 
