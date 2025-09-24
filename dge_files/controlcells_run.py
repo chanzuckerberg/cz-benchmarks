@@ -67,7 +67,7 @@ if __name__ == "__main__":
             pbar.update(1)
 
     print("Saving new control cells ids to json")
-    with open("control_cells_ids_replogle_k562_essential_perturbpredict_validate.json", "w") as f:
+    with open("/data2/czbenchmarks/control_cells_ids_replogle_k562_essential_perturbpredict_validate.json", "w") as f:
         json.dump(control_cells_ids_new, f)
 
 
