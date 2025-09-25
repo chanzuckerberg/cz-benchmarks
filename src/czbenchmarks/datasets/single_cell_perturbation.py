@@ -214,6 +214,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Experimental ids -> integer row positions per condition and preserves order
         # FIXME MICHELLE can use experimental ids from target_condition_dict bc these
         # are the only cells that data is needed for?
+        breakpoint()
         condition_to_indices = {
             cond: obs_index.get_indexer_for(list(mapping.keys()))
             for cond, mapping in self.control_cells_ids.items()
