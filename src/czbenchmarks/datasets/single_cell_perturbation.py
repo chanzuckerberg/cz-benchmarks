@@ -179,6 +179,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         de_results = de_results[combined_mask]
+        if len(de_results) == 0:
+            raise ValueError(
+                "No differential expression results remain after filtering. "
+                "Please check de data and filtering parameters."
+            )
         return de_results
 
     def _create_adata(self) -> Tuple[ad.AnnData, dict]:
@@ -299,10 +304,15 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Load control_cells_ids from adata.uns
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
+        # with open(
+        #     "/data2/czbenchmarks/control_cells_ids_replogle_k562_essential_perturbpredict.json",
+        #     "r",
+        # ) as f:
+        #     self.control_cells_ids = json.load(f)
 
         # Loading from h5ad file converts lists to numpy arrays
-        for key in self.control_cells_ids.keys():
-            self.control_cells_ids[key] = list(self.control_cells_ids[key])
+        # for key in self.control_cells_ids.keys():
+        #     self.control_cells_ids[key] = list(self.control_cells_ids[key])
 
         # Load and filter differential expression results
         logger.info(
@@ -316,13 +326,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         unique_conditions_control_cells_ids = set(self.control_cells_ids.keys())
         unique_conditions_de_results = set(self.de_results[self.condition_key])
 
-        if self.control_name not in unique_conditions_adata:
-            raise ValueError(
-                f"Control condition '{self.control_name}' not found in adata.obs[{self.condition_key}]. "
-                "This will cause errors in the creation of the control-matched adata."
-            )
-        else:
-            # Remove control condition for comparisons
+        if self.control_name in unique_conditions_adata:
             unique_conditions_adata.remove(self.control_name)
 
         if not unique_conditions_de_results.issubset(unique_conditions_adata):
