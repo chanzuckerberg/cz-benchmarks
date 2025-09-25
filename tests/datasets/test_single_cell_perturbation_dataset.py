@@ -57,7 +57,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "cond_test2_a",
             "cond_test2_b",
         ]
-        # Provide matched control cell IDs per condition using the two control cells above
+        # Provide matched control cell IDs per condition as a mapping of
+        # treatment cell ids -> matched control cell id
         adata.uns["control_cells_ids"] = {
             "test1": ["non-targeting_test1_a", "non-targeting_test2_b"],
             "test2": ["non-targeting_test1_a", "non-targeting_test2_b"],
@@ -110,6 +111,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
         ]
         # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
+        # Map treatment cells to control cells using default obs_names from create_dummy_anndata
+        # BADctrl cells correspond to cell_0 and cell_1; test1 -> cell_2, cell_3; test2 -> cell_4, cell_5
         adata.uns["control_cells_ids"] = {
             "test1": ["non-targeting_cell_0", "non-targeting_cell_1"],
             "test2": ["non-targeting_cell_0", "non-targeting_cell_1"],
