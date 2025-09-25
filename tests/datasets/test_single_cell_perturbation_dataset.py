@@ -19,7 +19,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -52,10 +51,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "cond_test2_a",
             "cond_test2_b",
         ]
-        # Provide matched control cell IDs per condition using the two control cells above
+        # Provide matched control cell IDs per condition as a mapping of
+        # treatment cell ids -> matched control cell id
         adata.uns["control_cells_ids"] = {
-            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test1": {
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
+            },
+            "test2": {
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
+            },
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10
@@ -114,9 +120,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
         ]
         # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
+        # Map treatment cells to control cells using default obs_names from create_dummy_anndata
+        # BADctrl cells correspond to cell_0 and cell_1; test1 -> cell_2, cell_3; test2 -> cell_4, cell_5
         adata.uns["control_cells_ids"] = {
-            "test1": ["cell_0", "cell_1"],
-            "test2": ["cell_0", "cell_1"],
+            "test1": {
+                "cell_2": "cell_0",
+                "cell_3": "cell_1",
+            },
+            "test2": {
+                "cell_4": "cell_0",
+                "cell_5": "cell_1",
+            },
         }
         de_conditions = ["test1"] * 10 + ["test2"] * 10
         de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
@@ -141,7 +155,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         return file_path
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
@@ -160,7 +174,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
@@ -190,7 +203,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -211,17 +223,16 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_invalid_condition_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
-            deg_test_name="wilcoxon",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
             min_logfoldchange=1.0,
         )
         dataset.load_data()
-        with pytest.raises(ValueError, match=""):
+        with pytest.raises(ValueError):
             dataset.validate()
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon"])
     def test_perturbation_dataset_store_task_inputs(
         self,
         tmp_path,
@@ -233,7 +244,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -260,7 +270,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         else:
             assert "standardized_mean_diff" in de_df.columns
 
-    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon"])
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
@@ -298,12 +308,10 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            deg_test_name=deg_test_name,
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
             min_logfoldchange=0.0,
-            de_results_path=csv_path,
         )
 
         dataset.load_data()

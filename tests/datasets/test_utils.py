@@ -64,7 +64,7 @@ def test_list_available_datasets():
     expected_datasets = {
         "replogle_k562_essential_perturbpredict": {
             "organism": "homo_sapiens",
-            "url": "s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad",
+            "url": "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
         },
         "tsv2_bladder": {
             "organism": "homo_sapiens",

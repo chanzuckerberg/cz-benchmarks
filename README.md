@@ -19,7 +19,6 @@ We're working to get the alpha version of cz-benchmarks stable to build with the
 - [Add a Custom Dataset](docs/source/how_to_guides/add_custom_dataset.md)
 - [Add a New Metric](docs/source/how_to_guides/add_new_metric.md)
 - [Add a New Task](docs/source/how_to_guides/add_new_task.md)
-- [Interactive Mode](docs/source/how_to_guides/interactive_mode.md)
 - [Visualize Results](docs/source/how_to_guides/visualize_results.md)
 
 ### Developer Guides

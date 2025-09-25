@@ -75,7 +75,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
-        control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
+        control_cells_ids (dict): Dictionary mapping each condition to a dictionary
+            of treatment cell barcodes (keys) to matched control cell barcodes (values).
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
         target_conditions_to_save (dict): Dictionary of target conditions for each cell.
     """
@@ -92,13 +93,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         condition_key: str = "condition",
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
-        deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
         min_de_genes_to_mask: int = 5,
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
-        min_smd: float = 0.55,
-        de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -114,8 +112,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
-            deg_test_name (str): Name of the differential expression test
-                condition. Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask.
                 Default is 0.5.
             min_de_genes_to_mask (int): Minimum number of differentially
@@ -125,26 +121,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is 1e-4.
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
-            min_smd (float): Minimum standardized mean difference for differential
-                expression. Default is 0.55.
-            de_results_path (Optional[Path]): Path to load differential expression
-                results from csv file. If not provided, the deg data are used from
-                adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific
                 inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
         self.control_name = control_name
-        self.deg_test_name = deg_test_name
-        self.normalized_deg_test_name = deg_test_name.replace("-", "_")
+        self.deg_test_name = "wilcoxon"  # TODO: will allow other tests in the future
+        self.normalized_deg_test_name = self.deg_test_name.replace("-", "_")
         self.de_gene_col = de_gene_col
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
-        self.min_smd = min_smd
-        self.de_results_path = de_results_path
+        self.min_smd = 0.55
+        self.de_results_path = None
 
     def load_and_filter_deg_results(self):
         """
@@ -152,8 +143,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         if self.de_results_path:
             logger.info(f"Loading de_results from {self.de_results_path}")
+            # FIXME MICHELLE: update to ensure proper handling of float precision
             de_results = pd.read_csv(self.de_results_path)
         else:
+            # FIXME MICHELLE: update to ensure proper handling of float precision
+            de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
+            # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
+
             logger.info("Loading de_results from adata.uns")
             de_results = pd.DataFrame(
                 self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
@@ -206,6 +202,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         de_results = de_results[combined_mask]
+        if len(de_results) == 0:
+            raise ValueError(
+                "No differential expression results remain after filtering. "
+                "Please check de data and filtering parameters."
+            )
         return de_results
 
     def _create_adata(self) -> Tuple[ad.AnnData, dict]:
@@ -236,13 +237,20 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if not isinstance(obs[self.condition_key], pd.CategoricalDtype):
             obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
 
-        # Fast: condition -> integer row positions
-        condition_to_indices = obs.groupby(self.condition_key, observed=True).indices
+        # FIXME MICHELLE validate existence of ids from control_cells_ids in adata.obs
 
-        # Fast: control ids -> integer row positions per condition (preserves order)
+        # Experimental ids -> integer row positions per condition and preserves order
+        # FIXME MICHELLE can use experimental ids from target_condition_dict bc these
+        # are the only cells that data is needed for?
+        condition_to_indices = {
+            cond: obs_index.get_indexer_for(list(mapping.keys()))
+            for cond, mapping in self.control_cells_ids.items()
+        }
+
+        # Control ids -> integer row positions per condition and preserves order
         control_to_indices = {
-            cond: obs_index.get_indexer_for(ids)
-            for cond, ids in self.control_cells_ids.items()
+            cond: obs_index.get_indexer_for(list(mapping.values()))
+            for cond, mapping in self.control_cells_ids.items()
         }
 
         all_merged_data = []
@@ -331,10 +339,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Load control_cells_ids from adata.uns
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
 
-        # Loading from h5ad file converts lists to numpy arrays
-        for key in self.control_cells_ids.keys():
-            self.control_cells_ids[key] = list(self.control_cells_ids[key])
-
         # Load and filter differential expression results
         logger.info(
             f"Loading and filtering differential expression results using {self.deg_test_name} test"
@@ -347,9 +351,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         unique_conditions_control_cells_ids = set(self.control_cells_ids.keys())
         unique_conditions_de_results = set(self.de_results[self.condition_key])
 
+        if self.control_name in unique_conditions_adata:
+            unique_conditions_adata.remove(self.control_name)
+
         if not unique_conditions_de_results.issubset(unique_conditions_adata):
             raise ValueError(
-                f"de_results[{self.condition_key}] contains conditions not in adata.obs[{self.condition_key}]. This will cause errors in the creation of the control-matched adata."
+                f"de_results[{self.condition_key}] contains conditions not in adata.obs[{self.condition_key}]. "
+                "This will cause errors in the creation of the control-matched adata."
             )
 
         if not unique_conditions_de_results.issubset(
