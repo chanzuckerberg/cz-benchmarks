@@ -141,9 +141,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info("Loading de_results from adata.uns")
 
         # FIXME MICHELLE: update to ensure proper handling of float precision
-        de_results = pd.DataFrame(
-            self.adata.uns[f"de_results_{self.deg_test_name}"]
-        )
+        de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
         # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
@@ -217,7 +215,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # FIXME MICHELLE validate existence of ids from control_cells_ids in adata.obs
 
         # Experimental ids -> integer row positions per condition and preserves order
-        # FIXME MICHELLE can use experimental ids from target_condition_dict bc these 
+        # FIXME MICHELLE can use experimental ids from target_condition_dict bc these
         # are the only cells that data is needed for?
         condition_to_indices = {
             cond: obs_index.get_indexer_for(list(mapping.keys()))
@@ -291,10 +289,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
 
-        if (
-            f"de_results_{self.deg_test_name}"
-            not in self.adata.uns.keys()
-        ):
+        if f"de_results_{self.deg_test_name}" not in self.adata.uns.keys():
             raise ValueError(
                 f"Key 'de_results_{self.deg_test_name}' not found in adata.uns"
             )
