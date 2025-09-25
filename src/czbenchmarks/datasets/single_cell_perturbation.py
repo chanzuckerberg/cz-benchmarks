@@ -299,15 +299,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Load control_cells_ids from adata.uns
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
-        # with open(
-        #     "/data2/czbenchmarks/control_cells_ids_replogle_k562_essential_perturbpredict.json",
-        #     "r",
-        # ) as f:
-        #     self.control_cells_ids = json.load(f)
-
-        # Loading from h5ad file converts lists to numpy arrays
-        # for key in self.control_cells_ids.keys():
-        #     self.control_cells_ids[key] = list(self.control_cells_ids[key])
 
         # Load and filter differential expression results
         logger.info(
