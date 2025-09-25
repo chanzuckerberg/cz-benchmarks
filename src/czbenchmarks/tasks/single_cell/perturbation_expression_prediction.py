@@ -123,7 +123,6 @@ class PerturbationExpressionPredictionTask(Task):
             task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
                 - de_results (pd.DataFrame): DataFrame with differential expression results,
                   including log fold changes/standard mean deviation and gene names.
-                - control_cells_ids (Dict[str, np.ndarray]): Dictionary of control cell IDs for each perturbation condition.
 
         Returns:
             PerturbationExpressionPredictionOutput: Output object containing dictionaries of predicted and true log fold changes
