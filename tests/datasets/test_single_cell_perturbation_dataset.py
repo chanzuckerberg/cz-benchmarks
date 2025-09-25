@@ -51,10 +51,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "cond_test2_a",
             "cond_test2_b",
         ]
-        # Provide matched control cell IDs per condition using the two control cells above
+        # Provide matched control cell IDs per condition as a mapping of
+        # treatment cell ids -> matched control cell id
         adata.uns["control_cells_ids"] = {
-            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test1": {
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
+            },
+            "test2": {
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
+            },
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10
@@ -104,9 +111,17 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
         ]
         # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
+        # Map treatment cells to control cells using default obs_names from create_dummy_anndata
+        # BADctrl cells correspond to cell_0 and cell_1; test1 -> cell_2, cell_3; test2 -> cell_4, cell_5
         adata.uns["control_cells_ids"] = {
-            "test1": ["cell_0", "cell_1"],
-            "test2": ["cell_0", "cell_1"],
+            "test1": {
+                "cell_2": "cell_0",
+                "cell_3": "cell_1",
+            },
+            "test2": {
+                "cell_4": "cell_0",
+                "cell_5": "cell_1",
+            },
         }
         de_conditions = ["test1"] * 10 + ["test2"] * 10
         de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
