@@ -335,9 +335,6 @@ def run_multicondition_dge_analysis(
                 rows_cond=condition_to_indices[selected_condition],
                 rows_ctrl=control_to_indices[selected_condition],
             )
-            # FIXME MICHELLE: how to save unprocessed adata_merged?
-            # if return_merged_adata:
-            #     adata_merged.raw = adata_merged.copy()
 
             # Add simple comparison group label for rank_genes_groups
             comparison_group_col = "comparison_group"
@@ -349,6 +346,10 @@ def run_multicondition_dge_analysis(
 
             # Normalize and filter
             # FIXME MICHELLE: should this be done before the condition loop?
+            # ALso investigate why the filtering is done after normalization and log transformation
+            # in Jasleen's version of the function. NB however for us this doesn't matter since the filtering
+            # threshold is set to 0.
+            # In Gitlab master : blob/jgrewal-deg/notebooks/deg/shared_deg_utils.py#L266-269
             if deg_test_name == "wilcoxon":
                 logger.info(
                     "Normalizing total counts and log transforming for Wilcoxon test"

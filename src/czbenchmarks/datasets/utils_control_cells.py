@@ -197,21 +197,9 @@ def get_matched_controls(adata, perturbation, min_cells=50, matchtype='GEM', ver
     
     return pert_cells.obs_names, matched_controls
 
-# # Can probably accelerate by inverting loop order
-# # Will run fewer pairwise distance calculations, albeit with memory increase
-# for gem_group, treatment_gem_group in treatment_cells.groupby(group_key):
-#     control_ = control_cells_gem[gem_group][dist_keys]
-#     treatment_ = treatment_gem_group[dist_keys]
-#     dist_matrix = pairwise_distances(treatment_, control_)
-    
-#     for condition, treatment_gem_condition in treatment_gem_group.groupby(condition_key):
-#         treatment_indices, control_indices = linear_sum_assignment(dist_matrix[treatment_gem_condition.indexes])
 
-#         treatment_ids = treatment_.index[treatment_indices]
-#         control_ids = control_.index[control_indices]
-#         control_cells_ids[condition].update(dict(zip(treatment_ids, control_ids)))
-
-def get_matched_controls_2(obs_metadata: pd.DataFrame, 
+# TODO name is temporary
+def get_matched_controls_v2(obs_metadata: pd.DataFrame, 
                            dist_keys: List[str], 
                            condition_key: str = 'condition', 
                            control_condition: str = 'non-targeting', 
@@ -233,9 +221,22 @@ def get_matched_controls_2(obs_metadata: pd.DataFrame,
 
     Returns:
     --------
-    Tuple[Dict[dict]]
-        A tuple containing the filtered control cells ids using the linear sum assignment and the argmin assignment
+    Dict[str, Dict[str, str]]
+        A dictionary containing conditions as keys and then paired condition / control cell barcodes
     """
+    # # Can probably accelerate by inverting loop order
+    # # Will run fewer pairwise distance calculations, albeit with memory increase
+    # for gem_group, treatment_gem_group in treatment_cells.groupby(group_key):
+    #     control_ = control_cells_gem[gem_group][dist_keys]
+    #     treatment_ = treatment_gem_group[dist_keys]
+    #     dist_matrix = pairwise_distances(treatment_, control_)
+        
+    #     for condition, treatment_gem_condition in treatment_gem_group.groupby(condition_key):
+    #         treatment_indices, control_indices = linear_sum_assignment(dist_matrix[treatment_gem_condition.indexes])
+
+    #         treatment_ids = treatment_.index[treatment_indices]
+    #         control_ids = control_.index[control_indices]
+    #         control_cells_ids[condition].update(dict(zip(treatment_ids, control_ids)))
 
     # FIXME MICHELLE for debugging
     precision = 3
@@ -297,6 +298,7 @@ def get_matched_controls_2(obs_metadata: pd.DataFrame,
             control_ids = control_.index[control_indices]
             control_ids_arg = control_.index[control_indices_arg]
             control_cells_ids_filtered_lsum[condition].update(dict(zip(treatment_ids, control_ids)))
+            # This is just for debugging
             control_cells_ids_filtered_argm[condition].update(dict(zip(treatment_.index, control_ids_arg)))
     
     return control_cells_ids_filtered_lsum

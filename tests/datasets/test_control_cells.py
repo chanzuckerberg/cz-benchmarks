@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from czbenchmarks.datasets.utils_control_cells import get_matched_controls_2
+from czbenchmarks.datasets.utils_control_cells import get_matched_controls_v2
 
 
 def _make_obs(control_values, treatment_values, condition="pertA", group="gem1"):
@@ -51,7 +51,7 @@ def _make_obs(control_values, treatment_values, condition="pertA", group="gem1")
 def test_more_controls(control_values, treatment_values, allowed_assignments, unassigned_allowed, unassigned_size):
     obs = _make_obs(control_values=control_values, treatment_values=treatment_values)
 
-    result = get_matched_controls_2(obs, ["metric"])
+    result = get_matched_controls_v2(obs, ["metric"])
     assignments = dict(result["pertA"])
 
     assert set(assignments.keys()) == set(allowed_assignments)
@@ -85,7 +85,7 @@ def test_more_controls(control_values, treatment_values, allowed_assignments, un
 def test_equal_counts(control_values, treatment_values, allowed_assignments):
     obs = _make_obs(control_values=control_values, treatment_values=treatment_values)
 
-    result = get_matched_controls_2(obs, ["metric"])
+    result = get_matched_controls_v2(obs, ["metric"])
     assignments = dict(result["pertA"])
 
     assert set(assignments.keys()) == set(allowed_assignments)
@@ -118,7 +118,7 @@ def test_equal_counts(control_values, treatment_values, allowed_assignments):
 def test_more_treatments(control_values, treatment_values, expected_assignments, allowed_surplus):
     obs = _make_obs(control_values=control_values, treatment_values=treatment_values)
 
-    result = get_matched_controls_2(obs, ["metric"])
+    result = get_matched_controls_v2(obs, ["metric"])
     assignments = dict(result["pertA"])
 
     assert len(assignments) == len(control_values)
