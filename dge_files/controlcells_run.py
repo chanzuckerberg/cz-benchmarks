@@ -32,18 +32,9 @@ if __name__ == "__main__":
     # adata_cr4.var.rename(columns={"gene_name": "gene"}, inplace=True)
     # adata_cr4.obs.rename(columns={"gene_id": "condition"}, inplace=True)
 
-    # num_conditions = 10
-    # control_cells_ids_input = adata_filtered.uns["control_cells_ids"]
-    # condition_list = np.asarray([x for x in control_cells_ids_input.keys() if x != 'non-targeting'])
-    # condition_list = np.random.choice(
-    #     condition_list, size=num_conditions, replace=False
-    # )
-    # condition_list = list(condition_list)
-    # new_control_cells_ids = {k: control_cells_ids_input[k] for k in condition_list}
-    # control_cells_ids = new_control_cells_ids
     condition_list = np.asarray([x for x in adata_filtered.obs.condition.unique() if x != 'non-targeting'])
 
-    control_cells_ids_new = {}
+    control_cells_ids = {}
     total_conditions = len(condition_list)
     with tqdm(
             total=total_conditions, desc="Processing conditions", unit="item"
@@ -64,15 +55,15 @@ if __name__ == "__main__":
                 libsize_column='UMI_count',
             )
             if matched_controls:
-                control_cells_ids_new[condition] = matched_controls
+                control_cells_ids[condition] = matched_controls
                 print(f"Found {len(matched_controls)} matched controls for {condition}")
                 
             pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
             pbar.update(1)
 
     print("Saving new control cells ids to json")
-    with open("/data2/czbenchmarks/control_cells_ids_replogle_k562_essential_perturbpredict_new.json", "w") as f:
-        json.dump(control_cells_ids_new, f)
+    with open("/data2/czbenchmarks/control_cells_ids_replogle_k562_essential_perturbpredict_v2.json", "w") as f:
+        json.dump(control_cells_ids, f)
 
 
 
