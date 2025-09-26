@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         print(f"Running {deg_test_name} DE analysis")
         start_time = time.time()
-        results, skip_conditions = scp.run_multicondition_dge_analysis(
+        results = scp.run_multicondition_dge_analysis(
             adata=adata_filtered,
             condition_key="condition",
             control_name="non-targeting",

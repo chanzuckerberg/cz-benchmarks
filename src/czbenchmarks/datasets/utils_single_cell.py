@@ -300,7 +300,7 @@ def run_multicondition_dge_analysis(
 
     # control ids -> integer row positions per condition (preserves order)
     control_to_indices = {
-        cond: obs_index.get_indexer_for(ids) for cond, ids in control_cells_ids.items()
+        cond: obs_index.get_indexer_for(list(ids.values())) for cond, ids in control_cells_ids.items()
     }
 
     # FIXME MICHELLE: should this be done before the condition loop
