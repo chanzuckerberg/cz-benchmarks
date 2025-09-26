@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    # filtered_data_path = f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad"
-    filtered_data_path = "/data2/czbenchmarks/replogle2022/K562_essential_raw_singlecell_01.h5ad"
+    filtered_data_path = f"{os.environ['HOME']}/.cz-benchmarks/datasets/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad"
+    # filtered_data_path = "/data2/czbenchmarks/replogle2022/K562_essential_raw_singlecell_01.h5ad"
     adata_filtered = ad.read_h5ad(filtered_data_path, backed=None)
     adata_filtered.obs = adata_filtered.obs.rename(columns={'gene_id':'condition', 'gene':'condition_name'})
     adata_filtered.var = adata_filtered.var.rename(columns={'gene_name':'gene'})

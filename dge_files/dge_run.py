@@ -57,10 +57,10 @@ if __name__ == "__main__":
 
     # for deg_test_name in ["wilcoxon", "t-test"]:
     for deg_test_name in [deg_name]:
-        if deg_test_name == "t-test":
-            z_scale_group_col = "gem_group"
-        else:
-            z_scale_group_col = None
+        # if deg_test_name == "t-test":
+        #     z_scale_group_col = "gem_group"
+        # else:
+        z_scale_group_col = None
 
         print(f"Running {deg_test_name} DE analysis")
         start_time = time.time()
@@ -83,8 +83,8 @@ if __name__ == "__main__":
         # if results.shape[0] != (adata_filtered.obs.condition.nunique() - 1) * adata_filtered.n_vars:
         #     print("Warning: Unexpected number of results returned")
         
-        # start_time = time.time()
-        # results.to_parquet(f"/data2/czbenchmarks/replogle_k562_essentials_de_results_{deg_test_name}.arrow")
+        start_time = time.time()
+        results.to_parquet(f"/data2/czbenchmarks/replogle_k562_essentials_de_results_{deg_test_name}.arrow")
         
-        # end_time = time.time()
-        # print(f"Time taken to save results: {end_time - start_time} seconds")
+        end_time = time.time()
+        print(f"Time taken to save results: {end_time - start_time} seconds")
