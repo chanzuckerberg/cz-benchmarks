@@ -1,4 +1,13 @@
 import numpy as np
+import pandas as pd
+from typing import Dict, Tuple, List
+from collections import defaultdict
+from scipy.optimize import linear_sum_assignment
+from sklearn.metrics.pairwise import pairwise_distances
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def histogram_subsample(A, B, bins='auto', subsample_size=None):
     """
@@ -187,3 +196,107 @@ def get_matched_controls(adata, perturbation, min_cells=50, matchtype='GEM', ver
                 print(f"Controls matched within same GEM: {gem_matches}/{len(matched_controls)}")
     
     return pert_cells.obs_names, matched_controls
+
+# # Can probably accelerate by inverting loop order
+# # Will run fewer pairwise distance calculations, albeit with memory increase
+# for gem_group, treatment_gem_group in treatment_cells.groupby(group_key):
+#     control_ = control_cells_gem[gem_group][dist_keys]
+#     treatment_ = treatment_gem_group[dist_keys]
+#     dist_matrix = pairwise_distances(treatment_, control_)
+    
+#     for condition, treatment_gem_condition in treatment_gem_group.groupby(condition_key):
+#         treatment_indices, control_indices = linear_sum_assignment(dist_matrix[treatment_gem_condition.indexes])
+
+#         treatment_ids = treatment_.index[treatment_indices]
+#         control_ids = control_.index[control_indices]
+#         control_cells_ids[condition].update(dict(zip(treatment_ids, control_ids)))
+
+def get_matched_controls_2(obs_metadata: pd.DataFrame, 
+                           dist_keys: List[str], 
+                           condition_key: str = 'condition', 
+                           control_condition: str = 'non-targeting', 
+                           group_key='gem_group') -> Dict[str, Dict[str, str]]:
+    """
+    Get matched control cells for a given perturbation in an experiment.
+    Parameters:
+    -----------
+    obs_metadata: pd.DataFrame
+        The metadata DataFrame containing the data
+    dist_keys: List[str]
+        The keys to use for the distance matrix
+    condition_key: str
+        The key to use for the condition
+    control_condition: str
+        The value to use for the control condition
+    group_key: str
+        The key to use for the group
+
+    Returns:
+    --------
+    Tuple[Dict[dict]]
+        A tuple containing the filtered control cells ids using the linear sum assignment and the argmin assignment
+    """
+
+    # FIXME MICHELLE for debugging
+    precision = 3
+    np.set_printoptions(precision=precision)
+
+    df_columns = [condition_key, group_key] + dist_keys
+    obs_metadata = obs_metadata[df_columns]
+    
+    # Setup control and treatment cells
+    control_mask = obs_metadata[condition_key] == control_condition
+    control_cells = obs_metadata.loc[control_mask]
+    treatment_cells = obs_metadata.loc[~control_mask]
+    
+    # Group control cells by gem group
+    control_cells_gem = {gem_group:df for gem_group,df in control_cells.groupby(group_key)}
+
+
+    control_cells_ids_filtered_lsum = defaultdict(dict)
+    control_cells_ids_filtered_argm = defaultdict(dict)
+    
+    for condition, treatment_cells_cond in treatment_cells.groupby(condition_key):
+        for gem_group, treatment_cells_cond_group in treatment_cells_cond.groupby(group_key):
+
+            control_ = control_cells_gem[gem_group][dist_keys]
+            treatment_ = treatment_cells_cond_group[dist_keys]
+            
+            if len(treatment_) > len(control_):
+                logger.info(f"Warning: {condition}, {gem_group} num treatment cells exceeds num control cells. "
+                f"{len(treatment_)} > {len(control_)}. This edge case has not been well tested."
+                )
+            elif len(treatment_) == len(control_):
+                logger.info(f"Condition{condition}, gem group{gem_group} num treatment cells equals num control cells. "
+                f"{len(treatment_)} = {len(control_)}"
+                )
+            
+            dist_matrix = pairwise_distances(treatment_, control_)
+            treatment_indices, control_indices = linear_sum_assignment(dist_matrix)
+            
+            if max(treatment_indices) >= len(treatment_): 
+                raise AssertionError("Treatment indices out of range")
+            if max(control_indices) >= len(control_): 
+                raise AssertionError("Control indices out of range")
+
+            control_indices_arg = dist_matrix.argmin(axis=1)
+    
+            # FIXME MICHELLE for debugging
+            if len(control_indices) == len(control_indices_arg) and not np.allclose(
+                control_indices[treatment_indices], control_indices_arg
+            ):
+                lsum_dist_values = dist_matrix[treatment_indices, control_indices]
+                arg1_dist_values = dist_matrix[list(range(dist_matrix.shape[0])), control_indices_arg]
+                logger.info(
+                    f'Condition {condition}, gem_group {gem_group} :\n'
+                    f'     lsum indices {control_indices[treatment_indices]} distances {lsum_dist_values} {sum(lsum_dist_values):.{precision}f}\n'
+                    f'     arg1 indices {control_indices_arg} distances {arg1_dist_values} {sum(arg1_dist_values):.{precision}f}\n'
+                )
+            
+            treatment_ids = treatment_.index[treatment_indices]
+            control_ids = control_.index[control_indices]
+            control_ids_arg = control_.index[control_indices_arg]
+            control_cells_ids_filtered_lsum[condition].update(dict(zip(treatment_ids, control_ids)))
+            control_cells_ids_filtered_argm[condition].update(dict(zip(treatment_.index, control_ids_arg)))
+    
+    return control_cells_ids_filtered_lsum
