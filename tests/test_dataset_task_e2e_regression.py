@@ -16,7 +16,7 @@ from czbenchmarks.tasks.integration import (
     BatchIntegrationTask,
     BatchIntegrationTaskInput,
 )
-from czbenchmarks.tasks.single_cell.cross_species import (
+from czbenchmarks.tasks.single_cell.cross_species_integration import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
 )
