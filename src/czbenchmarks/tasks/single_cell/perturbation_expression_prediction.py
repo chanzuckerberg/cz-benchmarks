@@ -87,14 +87,16 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        control_name: str = "non-targeting",
         condition_key: str = "condition",
+        control_name: str = "non-targeting",
         *,
         random_seed: int = RANDOM_SEED,
     ):
         """
         Args:
-            control_prefix (str): Prefix for control conditions.
+            condition_key (str): Key for the column in `adata.obs` specifying
+                conditions. Defaults to "condition".
+            control_name (str): Prefix for control conditions. Defaults to "non-targeting".
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
