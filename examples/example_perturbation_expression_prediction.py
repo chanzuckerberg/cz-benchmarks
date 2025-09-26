@@ -129,8 +129,8 @@ if __name__ == "__main__":
 
     # Optional: validate the dataset
     dataset.validate()
-    # This generates a sample model anndata file. In applications, this should be
-    # provided by the user.
+    # This generates a sample model anndata file. In applications, 
+    # this should contain the model predictions and should be provided by the user.
     model_adata = generate_random_model_predictions(
         dataset.adata.shape[0], dataset.adata.shape[1]
     )

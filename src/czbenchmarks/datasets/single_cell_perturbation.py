@@ -214,7 +214,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Experimental ids -> integer row positions per condition and preserves order
         # FIXME MICHELLE can use experimental ids from target_condition_dict bc these
         # are the only cells that data is needed for?
-        breakpoint()
         condition_to_indices = {
             cond: obs_index.get_indexer_for(list(mapping.keys()))
             for cond, mapping in self.control_cells_ids.items()
@@ -247,7 +246,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Combine all adata objects
         logger.info(
-            f"Collected {len(all_merged_data)} datasets for the sampled control-matched conditions."
+            f"Merged datasets for {len(all_merged_data)} control-matched conditions."
         )
         adata_final = ad.concat(all_merged_data, index_unique=None)
         adata_final.obs[self.condition_key] = pd.Categorical(
