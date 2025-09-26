@@ -1,0 +1,961 @@
+diff --git a/docs/source/assets.md b/docs/source/assets.md
+index 904e668..c91f815 100644
+--- a/docs/source/assets.md
++++ b/docs/source/assets.md
+@@ -8,9 +8,10 @@
+     - [Cell Clustering (in embedding space)](#cell-clustering-in-embedding-space)
+     - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
+     - [Cross-Species Batch Integration](#cross-species-batch-integration)
++    - [Sequential Organization](#sequential-organization)
+     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
+ - [Guidelines for Included Assets](#guidelines-for-included-assets)
+-    
++
+ 
+ 
+ ## Task Descriptions
+@@ -20,6 +21,7 @@
+ | [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                                                       |
+ | [Metadata label prediction - Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
+ | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                                                  |
++| [Sequential Organization](#sequential-organization)                                | Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics                               |
+ | [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context, under CRISPRi perturbation |
+ 
+ 
+@@ -36,7 +38,7 @@
+ | Human Kidney Disease | Contains single-cell (sc) and single-nucleus (sn) RNA sequencing data generated from 304,652 cells that were collected from healthy reference kidneys (45 donors) and kidneys from 48 patients with acute kidney failure or chronic kidney disease. Data were generated across distinct kidney tissue sources including cortex, renal medulla, and renal papilla. The dataset captures a wide spectrum of kidney cell types and states, including rare and novel populations, as well as cellular programs altered in injury such as cycling, repair, transitioning, and degenerative states. |  |
+ | Mouse Kidney | Contains single-nucleus (sn) RNA sequencing data generated from 309,666 cells from 24 mouse kidneys across two fibrosis models. It captures 50 cell types and states spanning epithelial, endothelial, immune, and stromal populations, and reveals shared and unique epithelial injury responses, including early proximal tubule states with dysregulated lipid and amino acid metabolism, as well as heterogeneous stromal populations contributing to fibrogenesis through epithelial–stromal crosstalk. Two dataset versions are provided including the full mouse kidney dataset and a version mapped to human orthologs. |  |
+ 
+-  
++
+ 
+ ## Task Details
+ 
+@@ -52,7 +54,7 @@ This task evaluates how well the model's embedding space separates different cel
+ | NMI             | Normalized Mutual Information of biological labels and leiden clusters. Described in [Luecken et al.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) and implemented in [scib-metrics.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) |                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+ | Embedding Task  | Silhouette score                                                                                                                                                                                                                                                                                                                                           | Measures cluster separation based on within-cluster and between-cluster distances to evaluate the quality of clusters with respect to biological labels. Described in [Luecken et al.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) and implemented in [scib-metrics.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) |
+ 
+-  
++
+ ### Metadata label prediction - Cell type classification
+ 
+ This task evaluates how well model embeddings capture information relevant to cell identity. This is achieved by a forward pass of the data through each model to retrieve embeddings, and then using the embeddings to train different classifiers, in this case we are using Logistic Regression, KNN, and RandomForest,to predict the cell type. To ensure a reliable evaluation, a 5-fold cross-validation strategy is employed. For each split, the classifier's predictions on the held-out data, along with the true cell type labels, are used to compute a range of classification metrics. The final benchmark output for each metric is the average across the 5 cross-validation folds.
+@@ -67,7 +69,7 @@ This task evaluates how well model embeddings capture information relevant to ce
+ | Recall    | Measures the proportion of actual positive instances that were correctly identified;<br><br>tp / (tp + fn) where tp = true positives, fn = false negatives. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L118).                        |
+ | AUROC     | Measures the probability that the model will rank a randomly chosen data point belonging to that category higher than a randomly chosen data point not belonging to that category. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L126). |
+ 
+-  
++
+ ### Cross-Species Batch Integration
+ 
+ This task evaluates the model's ability to learn representations that are consistent across different species. There is a forward pass of the data (each species is treated as an individual dataset) through the model. Once embeddings are generated for each species, they are concatenated into a single embedding matrix to enable cross-species comparison. Finally, the concatenated embeddings, along with the corresponding species labels, are used to compute evaluation metrics. 
+@@ -80,6 +82,18 @@ This task evaluates the model's ability to learn representations that are consis
+ | Batch silhouette | A modified silhouette score to measure the extent of batch mixing within biological labels. Described by [Luecken et al](https://www.nature.com/articles/s41592-021-01336-8).                                                                           |
+ 
+ 
++### Sequential Organization
++
++This task evaluates sequential consistency in embeddings using time point labels and k-NN based metrics. It assesses how well embeddings preserve the sequential organization between cells, which is important for time-series or developmental trajectory data.
++
++#### Task: Sequential Organization
++
++| Metrics            | Description                                                                                                                                                                                                                                                                                |
++| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| Silhouette score   | Measures cluster separation based on within-cluster and between-cluster distances using sequential labels to evaluate embedding quality with respect to sequential organization.                                                                                                           |
++| Sequential alignment | A k-NN based metric that evaluates how well the embedding preserves sequential relationships by measuring the consistency of sequential neighbors in the embedding space compared to the original sequential ordering.                                                                       |
++
++
+ ### Genetic Perturbation Prediction
+ Warning: This task is still in progress. Results are subject to further validation.
+ 
+diff --git a/docs/source/developer_guides/tasks.md b/docs/source/developer_guides/tasks.md
+index 42ba8de..3459dfd 100644
+--- a/docs/source/developer_guides/tasks.md
++++ b/docs/source/developer_guides/tasks.md
+@@ -22,9 +22,9 @@ Tasks in the `czbenchmarks.tasks` module are organized based on their scope and
+ 
+ - **Generic Tasks**: Tasks that can be applied across multiple modalities (e.g., embedding evaluation, clustering, label prediction) are placed directly in the `tasks/` directory. Each task is implemented in its own file (e.g., `embedding.py`, `clustering.py`).
+ - **Specialized Tasks**: Tasks designed for specific modalities are placed in dedicated subdirectories (e.g., `single_cell/`). For example:
+-    
++
+     - `single_cell/` for single-cell-specific tasks like perturbation prediction or cross-species integration.
+-        
++
+     New subdirectories can be created as needed for other modalities.
+ 
+ ### Available Tasks
+@@ -38,4 +38,7 @@ Each task class implements a specific evaluation goal. All tasks are located und
+ - [`CrossSpeciesIntegrationTask`](../autoapi/czbenchmarks/tasks/single_cell/cross_species/index): A multi-dataset task that evaluates how well models embed cells from different species into a shared space, using metrics like entropy per cell and species-aware silhouette scores.
+ - [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index): Designed for perturbation models. Compares the model's ability to predict masked gene expression levels relative to ground truth using metrics like Spearman correlation, accuracy, F1, precision, and recall.
+ 
++- [`SequentialOrganizationTask`](../autoapi/czbenchmarks/tasks/sequential/index): Evaluates sequential consistency in embeddings using time point labels. Computes metrics like silhouette score and sequential alignment to assess how well embeddings preserve sequential organization between cells.
++
+ For instructions on **adding a new custom task**, see [How to Add a Custom Task](../how_to_guides/add_new_task.md).
++
+diff --git a/src/czbenchmarks/conf/datasets.yaml b/src/czbenchmarks/conf/datasets.yaml
+index 0a3a1f9..a5fe51a 100644
+--- a/src/czbenchmarks/conf/datasets.yaml
++++ b/src/czbenchmarks/conf/datasets.yaml
+@@ -185,3 +185,15 @@ datasets:
+     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+     organism: ${organism:HUMAN}
+     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
++
++  allen_soundlife_immune_variation:
++    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
++    organism: ${organism:HUMAN}
++    path: s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_immune_variation.h5ad
++    label_column_key: subject__ageAtFirstDraw
++
++  allen_soundlife_flu_vax_response:
++    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
++    organism: ${organism:HUMAN}
++    path: s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_flu_response.h5ad
++    label_column_key: sample__visitName
+diff --git a/src/czbenchmarks/metrics/implementations.py b/src/czbenchmarks/metrics/implementations.py
+index aff81fd..86c3c7d 100644
+--- a/src/czbenchmarks/metrics/implementations.py
++++ b/src/czbenchmarks/metrics/implementations.py
+@@ -31,7 +31,11 @@ from sklearn.metrics import (
+ )
+ 
+ from .types import MetricRegistry, MetricType
+-from .utils import compute_entropy_per_cell, mean_fold_metric
++from .utils import (
++    compute_entropy_per_cell,
++    mean_fold_metric,
++    sequential_alignment,
++)
+ 
+ 
+ def spearman_correlation(a, b):
+@@ -91,8 +95,7 @@ metrics_registry.register(
+     func=compute_entropy_per_cell,
+     required_args={"X", "labels"},
+     description=(
+-        "Computes entropy of batch labels in local neighborhoods. "
+-        "Higher values indicate better batch mixing."
++        "Computes entropy of batch labels in local neighborhoods. Higher values indicate better batch mixing."
+     ),
+     tags={"integration"},
+ )
+@@ -102,8 +105,7 @@ metrics_registry.register(
+     func=silhouette_batch,
+     required_args={"X", "labels", "batch"},
+     description=(
+-        "Batch-aware silhouette score that measures how well cells "
+-        "cluster across batches."
++        "Batch-aware silhouette score that measures how well cells cluster across batches."
+     ),
+     tags={"integration"},
+ )
+@@ -192,6 +194,14 @@ metrics_registry.register(
+     tags={"label_prediction", "perturbation"},
+ )
+ 
++metrics_registry.register(
++    MetricType.SEQUENTIAL_ALIGNMENT,
++    func=sequential_alignment,
++    required_args={"X", "labels"},
++    description="Sequential alignment score measuring consistency in embeddings",
++    tags={"sequential"},
++)
++
+ metrics_registry.register(
+     MetricType.SPEARMAN_CORRELATION_CALCULATION,
+     func=spearman_correlation,
+diff --git a/src/czbenchmarks/metrics/types.py b/src/czbenchmarks/metrics/types.py
+index fc33bd2..6cbc83e 100644
+--- a/src/czbenchmarks/metrics/types.py
++++ b/src/czbenchmarks/metrics/types.py
+@@ -45,6 +45,9 @@ class MetricType(Enum):
+     F1_CALCULATION = "f1_calculation"
+     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
+ 
++    # Sequential metrics
++    SEQUENTIAL_ALIGNMENT = "sequential_alignment"
++
+ 
+ class MetricInfo(BaseModel):
+     """Stores metadata about a metric.
+diff --git a/src/czbenchmarks/metrics/utils.py b/src/czbenchmarks/metrics/utils.py
+index b447e55..c814375 100644
+--- a/src/czbenchmarks/metrics/utils.py
++++ b/src/czbenchmarks/metrics/utils.py
+@@ -5,6 +5,7 @@ from typing import Iterable, Union
+ 
+ import numpy as np
+ import pandas as pd
++from sklearn.neighbors import NearestNeighbors
+ 
+ from ..constants import RANDOM_SEED
+ from .types import AggregatedMetricResult, MetricResult
+@@ -78,7 +79,7 @@ def compute_entropy_per_cell(
+     batch label distribution in that neighborhood.
+ 
+     Args:
+-        X: Cell embedding matrix of shape (n_cells, n_features)
++        X: Cell Embedding matrix of shape (n_cells, n_features)
+         labels: Series containing batch labels for each cell
+         n_neighbors: Number of nearest neighbors to consider
+         random_seed: Random seed for reproducibility
+@@ -174,3 +175,181 @@ def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricR
+             )
+         )
+     return aggregated
++
++
++def _normalize_sequential_labels(labels: np.ndarray) -> np.ndarray:
++    """
++    Validate that labels are numeric or can be converted to numeric.
++    Raises error for string/character labels that can't be ordered.
++    """
++    labels = np.asarray(labels)
++
++    # Check if labels are strings/characters
++    if labels.dtype.kind in ["U", "S", "O"]:  # Unicode, byte string, or object
++        # Try to convert to numeric
++        try:
++            labels = labels.astype(float)
++        except (ValueError, TypeError):
++            raise ValueError(
++                "Labels must be numeric or convertible to numeric. "
++                "String/character labels are not supported as they don't have inherent ordering. "
++                f"Got labels with dtype: {labels.dtype}"
++            )
++
++    # Ensure numeric type
++    if not np.issubdtype(labels.dtype, np.number):
++        try:
++            labels = labels.astype(float)
++        except (ValueError, TypeError):
++            raise ValueError(
++                f"Cannot convert labels to numeric type. Got dtype: {labels.dtype}"
++            )
++
++    return labels
++
++
++def sequential_alignment(
++    X: np.ndarray,
++    labels: np.ndarray,
++    k: int = 10,
++    normalize: bool = True,
++    adaptive_k: bool = False,
++) -> float:
++    """
++    Measure how sequentially close neighbors are in embedding space.
++
++    Works with UNSORTED data - does not assume X and labels are pre-sorted.
++
++    Parameters:
++    -----------
++    X : np.ndarray
++        Embedding matrix of shape (n_samples, n_features) (can be unsorted)
++    labels : np.ndarray
++        Sequential labels of shape (n_samples,) (can be unsorted)
++        Must be numeric or convertible to numeric. String labels will raise error.
++    k : int
++        Number of neighbors to consider
++    normalize : bool
++        Whether to normalize score to [0,1] range
++    adaptive_k : bool
++        Use adaptive k based on local density
++
++    Returns:
++    --------
++    float: Sequential alignment score (higher = better sequential consistency)
++    """
++    X = np.asarray(X)
++    labels = _normalize_sequential_labels(labels)
++
++    if len(X) != len(labels):
++        raise ValueError("X and labels must have same length")
++
++    if len(X) < k + 1:
++        raise ValueError(f"Need at least {k + 1} samples for k={k}")
++
++    # Handle edge case: all labels the same
++    if len(np.unique(labels)) == 1:
++        return 1.0 if normalize else 0.0
++
++    if adaptive_k:
++        k_values = _compute_adaptive_k(X, k)
++    else:
++        k_values = np.array([k] * len(X))
++
++    # Find neighbors for each point
++    max_k = max(k_values)
++    nn = NearestNeighbors(n_neighbors=max_k + 1).fit(X)
++    distances, indices = nn.kneighbors(X)
++
++    # Calculate sequential distances for each point's neighborhood
++    sequential_distances = []
++    for i in range(len(X)):
++        k_i = k_values[i]
++        # Skip self (index 0)
++        neighbor_indices = indices[i, 1 : k_i + 1]
++        neighbor_labels = labels[neighbor_indices]
++
++        # Mean absolute sequential distance to k nearest neighbors
++        sequential_dist = np.mean(np.abs(labels[i] - neighbor_labels))
++        sequential_distances.append(sequential_dist)
++
++    mean_sequential_distance = np.mean(sequential_distances)
++
++    if not normalize:
++        return mean_sequential_distance
++
++    # Compare against expected random sequential distance
++    baseline = _compute_random_baseline(labels, k)
++
++    # Normalize: 1 = perfect sequential consistency, 0 = random
++    if baseline > 0:
++        normalized_score = 1 - (mean_sequential_distance / baseline)
++        normalized_score = float(np.clip(normalized_score, 0, 1))
++    else:
++        normalized_score = 1.0
++
++    return normalized_score
++
++
++def _compute_adaptive_k(X: np.ndarray, base_k: int) -> np.ndarray:
++    """Compute adaptive k values based on local density."""
++    # Choose a neighborhood size for density estimation
++    # We want a neighborhood larger than base_k (so density reflects a wider local area),
++    # avoid n_neighbors==1 (which returns self-distance==0) and ensure we don't exceed
++    # the available samples.
++    suggested = max(2, base_k * 3, len(X) // 4)
++    max_allowed = max(1, len(X) - 1)
++    density_k = int(min(30, suggested, max_allowed))
++    # Fall back to at least 2 neighbors if dataset is very small
++    density_k = max(2, density_k)
++    nn_density = NearestNeighbors(n_neighbors=density_k).fit(X)
++    distances, _ = nn_density.kneighbors(X)
++
++    mean_distances = distances[:, -1]
++    densities = 1 / (mean_distances + 1e-10)
++
++    min_density, max_density = np.percentile(densities, [10, 90])
++    normalized_densities = np.clip(
++        (densities - min_density) / (max_density - min_density + 1e-10), 0, 1
++    )
++
++    k_scale = 0.5 + 1.5 * (1 - normalized_densities)
++    k_values = np.round(base_k * k_scale).astype(int)
++    upper_bound = min(50, len(X) // 2)
++    lower_bound = 3
++    if upper_bound < lower_bound:
++        k_values = np.full_like(k_values, lower_bound)
++    else:
++        k_values = np.clip(k_values, lower_bound, upper_bound)
++
++    return k_values
++
++
++def _compute_random_baseline(labels: np.ndarray, k: int) -> float:
++    """Compute expected sequential distance for random neighbors."""
++    unique_labels = np.unique(labels)
++
++    if len(unique_labels) == 1:
++        return 0.0
++
++    n = len(labels)
++    # ensure k does not exceed available neighbors and is at least 1
++    k = max(1, min(k, n - 1))
++    n_samples = min(10000, n * 10)
++
++    random_diffs = []
++    for _ in range(n_samples):
++        # pick a random reference index
++        i = np.random.randint(0, n)
++        # sample k distinct neighbor indices excluding i
++        if k == n - 1:
++            neighbors = np.delete(np.arange(n), i)
++        else:
++            # sample from range [0, n-2] then map to [0, n-1] skipping i
++            choices = np.random.choice(n - 1, size=k, replace=False)
++            neighbors = choices + (choices >= i).astype(int)
++
++        # mean absolute difference between label[i] and its k random neighbors
++        random_diffs.append(np.mean(np.abs(labels[i] - labels[neighbors])))
++
++    return float(np.mean(random_diffs))
+diff --git a/src/czbenchmarks/tasks/__init__.py b/src/czbenchmarks/tasks/__init__.py
+index cb1aada..11601e6 100644
+--- a/src/czbenchmarks/tasks/__init__.py
++++ b/src/czbenchmarks/tasks/__init__.py
+@@ -10,6 +10,11 @@ from .label_prediction import (
+     MetadataLabelPredictionTask,
+     MetadataLabelPredictionTaskInput,
+ )
++from .sequential import (
++    SequentialOrganizationOutput,
++    SequentialOrganizationTask,
++    SequentialOrganizationTaskInput,
++)
+ from .single_cell import (
+     CrossSpeciesIntegrationOutput,
+     CrossSpeciesIntegrationTask,
+@@ -45,5 +50,8 @@ __all__ = [
+     "PerturbationExpressionPredictionTaskInput",
+     "PerturbationExpressionPredictionOutput",
+     "PerturbationExpressionPredictionTask",
++    "SequentialOrganizationTaskInput",
++    "SequentialOrganizationOutput",
++    "SequentialOrganizationTask",
+     "TASK_REGISTRY",
+ ]
+diff --git a/src/czbenchmarks/tasks/sequential.py b/src/czbenchmarks/tasks/sequential.py
+new file mode 100644
+index 0000000..6d6593c
+--- /dev/null
++++ b/src/czbenchmarks/tasks/sequential.py
+@@ -0,0 +1,119 @@
++import logging
++from typing import List
++
++import pandas as pd
++
++from czbenchmarks.types import ListLike
++
++from ..constants import RANDOM_SEED
++from ..metrics.types import MetricResult, MetricType
++from .task import Task, TaskInput, TaskOutput
++from .types import CellRepresentation
++
++logger = logging.getLogger(__name__)
++
++
++class SequentialOrganizationTaskInput(TaskInput):
++    """Pydantic model for Sequential Organization inputs."""
++
++    obs: pd.DataFrame
++    input_labels: ListLike
++    k: int = 15
++    normalize: bool = True
++    adaptive_k: bool = False
++
++
++class SequentialOrganizationOutput(TaskOutput):
++    """Output for sequential organization task."""
++
++    # Sequential organization doesn't produce predicted labels like clustering,
++    # but we store the embedding for metric computation
++    embedding: CellRepresentation
++
++
++class SequentialOrganizationTask(Task):
++    """Task for evaluating sequential consistency in embeddings.
++
++    This task computes sequential quality metrics for embeddings using time point labels.
++    Evaluates how well embeddings preserve sequential organization between cells.
++
++    Args:
++        random_seed (int): Random seed for reproducibility
++    """
++
++    display_name = "Sequential Organization"
++    description = "Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics."
++    input_model = SequentialOrganizationTaskInput
++
++    def __init__(self, *, random_seed: int = RANDOM_SEED):
++        super().__init__(random_seed=random_seed)
++
++    def _run_task(
++        self,
++        cell_representation: CellRepresentation,
++        task_input: SequentialOrganizationTaskInput,
++    ) -> SequentialOrganizationOutput:
++        """Runs the sequential evaluation task.
++
++        Gets embedding coordinates for metric computation.
++
++        Args:
++            cell_representation: gene expression data or embedding for task
++            task_input: Pydantic model with inputs for the task
++
++        Returns:
++            SequentialOrganizationOutput: Pydantic model with embedding data
++        """
++        # Store the cell representation (embedding) for metric computation
++        return SequentialOrganizationOutput(embedding=cell_representation)
++
++    def _compute_metrics(
++        self,
++        task_input: SequentialOrganizationTaskInput,
++        task_output: SequentialOrganizationOutput,
++    ) -> List[MetricResult]:
++        """Computes sequential consistency metrics.
++
++        Args:
++            task_input: Pydantic model with inputs for the task
++            task_output: Pydantic model with outputs from _run_task
++
++        Returns:
++            List of MetricResult objects containing sequential metrics
++        """
++        from ..metrics import metrics_registry
++
++        results = []
++        embedding = task_output.embedding
++        labels = task_input.input_labels
++
++        # Embedding Silhouette Score with sequential labels
++        results.append(
++            MetricResult(
++                metric_type=MetricType.SILHOUETTE_SCORE,
++                value=metrics_registry.compute(
++                    MetricType.SILHOUETTE_SCORE,
++                    X=embedding,
++                    labels=labels,
++                ),
++                params={},
++            )
++        )
++
++        # Sequential alignment
++        results.append(
++            MetricResult(
++                metric_type=MetricType.SEQUENTIAL_ALIGNMENT,
++                value=metrics_registry.compute(
++                    MetricType.SEQUENTIAL_ALIGNMENT,
++                    X=embedding,
++                    labels=labels,
++                    k=task_input.k,
++                    normalize=task_input.normalize,
++                    adaptive_k=task_input.adaptive_k,
++                ),
++                params={},
++            )
++        )
++
++        return results
+diff --git a/src/czbenchmarks/tasks/utils.py b/src/czbenchmarks/tasks/utils.py
+index 196009a..9cd0b81 100644
+--- a/src/czbenchmarks/tasks/utils.py
++++ b/src/czbenchmarks/tasks/utils.py
+@@ -18,6 +18,7 @@ TASK_NAMES = frozenset(
+     {
+         "clustering",
+         "embedding",
++        "sequential",
+         "label_prediction",
+         "integration",
+         "perturbation",
+@@ -257,8 +258,7 @@ def filter_minimum_class(
+ 
+     filtered_counts = class_counts[class_counts >= min_class_size]
+     logger.info(
+-        f"Total classes after filtering "
+-        f"(min_class_size={min_class_size}): {len(filtered_counts)}"
++        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
+     )
+ 
+     labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
+diff --git a/tests/metrics/test_metrics.py b/tests/metrics/test_metrics.py
+index 3fc4dc5..ab4fd9c 100644
+--- a/tests/metrics/test_metrics.py
++++ b/tests/metrics/test_metrics.py
+@@ -1,9 +1,17 @@
+-import pytest
+-import numpy as np
+ from enum import Enum
+-from czbenchmarks.metrics.types import MetricType, MetricResult
+-from czbenchmarks.metrics.utils import aggregate_results
++
++import numpy as np
++import pytest
++
+ from czbenchmarks.metrics import metrics_registry
++from czbenchmarks.metrics.types import MetricResult, MetricType
++from czbenchmarks.metrics.utils import (
++    _compute_adaptive_k,
++    _compute_random_baseline,
++    _normalize_sequential_labels,
++    aggregate_results,
++    sequential_alignment,
++)
+ 
+ 
+ def test_register_metric_valid(dummy_metric_registry, dummy_metric_function):
+@@ -424,3 +432,118 @@ def test_metrics_with_different_data_types():
+     )
+ 
+     assert isinstance(correlation, (float, np.floating))
++
++
++def test_sequential_alignment_perfect():
++    """Test sequential alignment with perfectly ordered data."""
++    np.random.seed(42)
++    n_samples = 100
++    X = np.array([[i + 0.01 * np.random.randn()] for i in range(n_samples)])
++    labels = np.arange(n_samples)
++
++    score = sequential_alignment(X, labels, k=5)
++    assert score > 0.8
++
++
++def test_sequential_alignment_random():
++    """Test sequential alignment with random data."""
++    np.random.seed(42)
++    X = np.random.randn(50, 2)
++    labels = np.arange(50)
++
++    score = sequential_alignment(X, labels, k=5)
++    assert 0 <= score <= 1  # Should be normalized
++
++
++def test_sequential_alignment_invalid_inputs():
++    """Test sequential alignment error handling."""
++    X = np.array([[1, 2], [3, 4]])
++    labels = np.array([1, 2, 3])  # Wrong length
++
++    with pytest.raises(ValueError, match="same length"):
++        sequential_alignment(X, labels, k=5)
++
++    # Test k too large
++    X = np.array([[1, 2], [3, 4]])
++    labels = np.array([1, 2])
++
++    with pytest.raises(ValueError, match="Need at least"):
++        sequential_alignment(X, labels, k=5)
++
++
++def test_sequential_alignment_adaptive_k():
++    """Test sequential alignment with adaptive k."""
++    X = np.array([[i, 0] for i in range(20)])
++    labels = np.arange(20)
++
++    score = sequential_alignment(X, labels, k=5, adaptive_k=True)
++    assert 0 <= score <= 1
++
++
++def test_normalize_sequential_labels_valid():
++    """Test label validation with valid inputs."""
++
++    # Numeric labels
++    labels = np.array([1, 2, 3, 4])
++    result = _normalize_sequential_labels(labels)
++    assert np.array_equal(result, labels)
++
++    # String numbers
++    labels = np.array(["1", "2", "3"])
++    result = _normalize_sequential_labels(labels)
++    assert np.array_equal(result, [1.0, 2.0, 3.0])
++
++
++def test_normalize_sequential_labels_invalid():
++    """Test label validation with invalid inputs."""
++
++    # Non-numeric strings
++    labels = np.array(["a", "b", "c"])
++    with pytest.raises(ValueError, match="must be numeric"):
++        _normalize_sequential_labels(labels)
++
++
++def test_compute_adaptive_k():
++    """Test adaptive k computation."""
++
++    # Dense cluster
++    X = np.array([[0, 0], [0.1, 0.1], [0.2, 0.2], [10, 10], [10.1, 10.1]])
++    k_values = _compute_adaptive_k(X, base_k=3)
++
++    assert len(k_values) == len(X)
++    assert all(k >= 3 for k in k_values)  # Should respect lower bound
++
++
++def test_compute_random_baseline():
++    """Test random baseline computation."""
++
++    # Sequential labels
++    labels = np.arange(10)
++    baseline = _compute_random_baseline(labels, k=3)
++    assert baseline > 0
++
++    # All same labels
++    labels = np.array([1, 1, 1, 1])
++    baseline = _compute_random_baseline(labels, k=2)
++    assert baseline == 0.0
++
++
++def test_sequential_alignment_metric_registry():
++    """Test that sequential alignment is properly registered."""
++    from czbenchmarks.metrics import metrics_registry
++    from czbenchmarks.metrics.types import MetricType
++
++    # Test metric is registered
++    info = metrics_registry.get_info(MetricType.SEQUENTIAL_ALIGNMENT)
++    assert info.required_args == {"X", "labels"}
++    assert "sequential" in info.tags
++
++    n_samples = 20
++    X = np.array([[i, 0] for i in range(n_samples)])
++    labels = np.arange(n_samples)
++
++    score = metrics_registry.compute(
++        MetricType.SEQUENTIAL_ALIGNMENT, X=X, labels=labels
++    )
++    assert isinstance(score, float)
++    assert 0 <= score <= 1
+diff --git a/tests/tasks/test_tasks.py b/tests/tasks/test_tasks.py
+index e632526..927400b 100644
+--- a/tests/tasks/test_tasks.py
++++ b/tests/tasks/test_tasks.py
+@@ -13,6 +13,10 @@ from czbenchmarks.tasks import (
+     MetadataLabelPredictionTask,
+     MetadataLabelPredictionTaskInput,
+ )
++from czbenchmarks.tasks.sequential import (
++    SequentialOrganizationTask,
++    SequentialOrganizationTaskInput,
++)
+ from czbenchmarks.tasks.single_cell import (
+     CrossSpeciesIntegrationTask,
+     CrossSpeciesIntegrationTaskInput,
+@@ -659,3 +663,25 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
+     assert task_input.de_results.shape[0] > 0
+     assert task_input.masked_adata_obs.shape[0] > 0
+     assert len(task_input.var_index) > 0
++
++
++def test_sequential_organization_task(embedding_matrix, obs):
++    """Test that SequentialOrganizationTask executes without errors."""
++    task = SequentialOrganizationTask()
++    labels = np.arange(obs.shape[0])  # must be numeric labels as numpy 1d array
++    task_input = SequentialOrganizationTaskInput(obs=obs, input_labels=labels)
++
++    # Test regular task execution
++    results = task.run(
++        cell_representation=embedding_matrix,
++        task_input=task_input,
++    )
++
++    # Verify results structure
++    assert isinstance(results, list)
++    assert all(isinstance(r, MetricResult) for r in results)
++
++    # Test baseline (this is just exercising the Task base class baseline implementation)
++    baseline_results = task.compute_baseline(expression_data=embedding_matrix)
++    assert isinstance(baseline_results, CellRepresentation)
++    assert baseline_results.shape[0] == embedding_matrix.shape[0]
+diff --git a/tests/test_dataset_task_e2e_regression.py b/tests/test_dataset_task_e2e_regression.py
+index 27db359..67b0244 100644
+--- a/tests/test_dataset_task_e2e_regression.py
++++ b/tests/test_dataset_task_e2e_regression.py
+@@ -16,6 +16,7 @@ from czbenchmarks.tasks.integration import (
+     BatchIntegrationTask,
+     BatchIntegrationTaskInput,
+ )
++from czbenchmarks.tasks.sequential import SequentialOrganizationTask
+ from czbenchmarks.tasks.single_cell.cross_species import (
+     CrossSpeciesIntegrationTask,
+     CrossSpeciesIntegrationTaskInput,
+@@ -437,3 +438,74 @@ def test_perturbation_expression_prediction_task_integration():
+     # This test is skipped because the perturbation task does not yet
+     # have sample output for test implementation
+     pass
++
++
++@pytest.mark.skip(
++    reason="Sequential organization task regression test needs sample output for test implementation"
++)
++@pytest.mark.integration
++def test_sequential_organization_task_regression(dataset):
++    """Regression test for sequential organization task using fixture embeddings and expected results."""
++    # Load fixture embedding
++    # TODO: Generate this and upload to s3
++    model_output: CellRepresentation = load_embedding_fixture(
++        "allen_soundlife_immune_variation"
++    )
++
++    # TODO: Update Expected results
++    # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
++    # TODO: THESE RESULTS NEED TO BE VALIDATED BY A COMPUTATIONAL BIOLOGIST
++    expected_metrics = [
++        {"metric_type": "sequential_alignment", "value": 0},
++        {"metric_type": "batch_silhouette", "value": 0},
++    ]
++
++    # Initialize sequential organization task
++    sequential_organization_task = SequentialOrganizationTask(random_seed=RANDOM_SEED)
++
++    # Get raw expression data for baseline computation
++    expression_data = dataset.adata.X
++
++    # Compute baseline embedding
++    sequential_organization_baseline = sequential_organization_task.compute_baseline(
++        expression_data
++    )
++    assert sequential_organization_baseline is not None
++
++    # Create batch labels from dataset metadata
++    batch_columns = ["dataset_id", "assay", "suspension_type", "donor_id"]
++    batch_labels = functools.reduce(
++        lambda a, b: a + b, [dataset.adata.obs[c].astype(str) for c in batch_columns]
++    )
++
++    # Run batch integration task with fixture embedding
++    sequential_organization_task_input = BatchIntegrationTaskInput(
++        labels=dataset.labels,
++        batch_labels=batch_labels,
++    )
++    sequential_organization_results = sequential_organization_baseline.run(
++        cell_representation=model_output,
++        task_input=sequential_organization_task_input,
++    )
++    sequential_organization_baseline_results = sequential_organization_task.run(
++        cell_representation=sequential_organization_baseline,
++        task_input=sequential_organization_task_input,
++    )
++
++    # Validate results structure
++    assert isinstance(sequential_organization_results, list)
++    assert len(sequential_organization_results) > 0
++    assert isinstance(sequential_organization_baseline_results, list)
++    assert len(sequential_organization_baseline_results) > 0
++
++    # Test specific expectations for batch integration
++    sequential_organization_model_metrics = [
++        r.metric_type.value for r in sequential_organization_results
++    ]
++    assert "entropy_per_cell" in sequential_organization_model_metrics
++    assert "batch_silhouette" in sequential_organization_model_metrics
++
++    # Regression test: Compare against expected results
++    assert_metrics_match_expected(
++        sequential_organization_results, expected_metrics, tolerance=0.01
++    )
+diff --git a/tests/test_integration_end_to_end.py b/tests/test_integration_end_to_end.py
+index 2b36316..741569a 100644
+--- a/tests/test_integration_end_to_end.py
++++ b/tests/test_integration_end_to_end.py
+@@ -1,26 +1,29 @@
+ import json
++
+ import numpy as np
+ import pytest
+ 
+ from czbenchmarks.constants import RANDOM_SEED
+-from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+ from czbenchmarks.datasets import SingleCellPerturbationDataset
++from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
+ from czbenchmarks.datasets.utils import load_dataset
+-from czbenchmarks.tasks.clustering import ClusteringTaskInput
+-from czbenchmarks.tasks.embedding import EmbeddingTaskInput
+-from czbenchmarks.tasks.label_prediction import (
+-    MetadataLabelPredictionTaskInput,
+-)
+-from czbenchmarks.tasks.types import CellRepresentation
+ from czbenchmarks.tasks import (
+     ClusteringTask,
+     EmbeddingTask,
+     MetadataLabelPredictionTask,
++    SequentialOrganizationTask,
++)
++from czbenchmarks.tasks.clustering import ClusteringTaskInput
++from czbenchmarks.tasks.embedding import EmbeddingTaskInput
++from czbenchmarks.tasks.label_prediction import (
++    MetadataLabelPredictionTaskInput,
+ )
++from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
+ from czbenchmarks.tasks.single_cell import (
+     PerturbationExpressionPredictionTask,
+     PerturbationExpressionPredictionTaskInput,
+ )
++from czbenchmarks.tasks.types import CellRepresentation
+ 
+ 
+ @pytest.mark.integration
+@@ -38,7 +41,7 @@ def test_end_to_end_task_execution_predictive_tasks():
+     # Create random model output as a stand-in for real model results
+     model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
+ 
+-    # Initialize all tasks
++    # Initialize all tasks (except sequential which uses different dataset)
+     clustering_task = ClusteringTask(random_seed=RANDOM_SEED)
+     embedding_task = EmbeddingTask(random_seed=RANDOM_SEED)
+     prediction_task = MetadataLabelPredictionTask(random_seed=RANDOM_SEED)
+@@ -185,6 +188,82 @@ def test_end_to_end_task_execution_predictive_tasks():
+     assert "mean_fold_auroc" in prediction_model_metrics
+ 
+ 
++@pytest.mark.integration
++def test_end_to_end_sequential_organization_task():
++    """Integration test for sequential organization task.
++
++    This test uses the allen_soundlife_immune_variation dataset which contains
++    time point labels required for sequential organization evaluation.
++    """
++
++    # Create a temp config as a workaround to use for a small dataset
++    from pathlib import Path
++    from tempfile import NamedTemporaryFile
++
++    import yaml
++
++    with NamedTemporaryFile(mode="w+", suffix=".yaml", delete=False) as temp_config:
++        config_data = {
++            "defaults": ["_self_"],
++            "datasets": {
++                "allen_soundlife_immune_variation_subsampled": {
++                    "_target_": "czbenchmarks.datasets.SingleCellLabeledDataset",
++                    "organism": "${organism:HUMAN}",
++                    "label_column_key": "subject__ageAtFirstDraw",
++                    "path": "s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_immune_variation_subsampled.h5ad",
++                }
++            },
++        }
++        yaml.dump(config_data, temp_config)
++        temp_config_path = Path(temp_config.name)
++
++    dataset: SingleCellLabeledDataset = load_dataset(
++        "allen_soundlife_immune_variation_subsampled", temp_config_path
++    )
++
++    # Create random model output as a stand-in for real model results
++    model_output: CellRepresentation = np.random.rand(dataset.adata.shape[0], 10)
++
++    # Initialize sequential organization task
++    sequential_task = SequentialOrganizationTask(random_seed=RANDOM_SEED)
++
++    # Compute baseline embedding
++    expression_data = dataset.adata.X
++    sequential_baseline = sequential_task.compute_baseline(expression_data)
++
++    # Verify baseline is returned
++    assert sequential_baseline is not None
++
++    # Run sequential organization task with both model output and baseline
++    sequential_task_input = SequentialOrganizationTaskInput(
++        obs=dataset.adata.obs,
++        input_labels=dataset.labels,
++        k=15,
++        normalize=True,
++        adaptive_k=False,
++    )
++    sequential_results = sequential_task.run(
++        cell_representation=model_output,
++        task_input=sequential_task_input,
++    )
++    sequential_baseline_results = sequential_task.run(
++        cell_representation=sequential_baseline,
++        task_input=sequential_task_input,
++    )
++
++    # Verify results are not empty
++    assert len(sequential_results) > 0
++    assert len(sequential_baseline_results) > 0
++
++    # Expect presence of required metric types in model results
++    model_metric_types = {r.metric_type.value for r in sequential_results}
++    for required_metric in {
++        "silhouette_score",
++        "sequential_alignment",
++    }:
++        assert required_metric in model_metric_types
++
++
+ @pytest.mark.integration
+ def test_end_to_end_perturbation_expression_prediction():
+     """Integration test for perturbation expression prediction task.

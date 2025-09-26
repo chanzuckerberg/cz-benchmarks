@@ -671,7 +671,7 @@ wheels = [
 
 [[package]]
 name = "cz-benchmarks"
-version = "0.10.0"
+version = "0.10.2"
 source = { editable = "." }
 dependencies = [
     { name = "anndata" },
@@ -694,7 +694,6 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "tomli" },
-    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -711,6 +710,7 @@ build = [
 ]
 dev = [
     { name = "boto3-stubs" },
+    { name = "boto3-stubs-lite", extra = ["s3"] },
     { name = "botocore-stubs" },
     { name = "mypy" },
     { name = "pandas-stubs" },
@@ -720,6 +720,7 @@ dev = [
     { name = "pytest-mock" },
     { name = "ruff" },
     { name = "types-pyyaml" },
+    { name = "typing-extensions" },
 ]
 docs = [
     { name = "linkify-it-py" },
@@ -757,7 +758,6 @@ requires-dist = [
     { name = "scikit-misc", specifier = ">=0.5.1" },
     { name = "scipy", specifier = ">=1.15.3" },
     { name = "tomli", specifier = ">=2.2.1" },
-    { name = "typing-extensions", specifier = ">=4.13.0" },
 ]
 provides-extras = ["interactive"]
 
@@ -770,6 +770,7 @@ build = [
 ]
 dev = [
     { name = "boto3-stubs", specifier = ">=1.37.26" },
+    { name = "boto3-stubs-lite", extras = ["s3"], specifier = ">=1.38.0" },
     { name = "botocore-stubs", specifier = ">=1.37.26" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pandas-stubs", specifier = ">=2.2.3.250308" },
@@ -779,6 +780,7 @@ dev = [
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "ruff", specifier = ">=0.11.2" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20250402" },
+    { name = "typing-extensions", specifier = ">=4.13.0" },
 ]
 docs = [
     { name = "linkify-it-py" },
