@@ -60,8 +60,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Provide matched control cell IDs per condition as a mapping of
         # treatment cell ids -> matched control cell id
         adata.uns["control_cells_ids"] = {
-            "test1": ["non-targeting_test1_a", "non-targeting_test2_b"],
-            "test2": ["non-targeting_test1_a", "non-targeting_test2_b"],
+            "test1": {
+                "cell_2": "cell_0",
+                "cell_3": "cell_1",
+            },
+            "test2": {
+                "cell_4": "cell_0",
+                "cell_5": "cell_1",
+            },
         }
         # Provide sufficient DE results to pass internal filtering and sampling
         de_conditions = ["test1"] * 10 + ["test2"] * 10

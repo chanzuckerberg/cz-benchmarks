@@ -315,11 +315,11 @@ if __name__ == "__main__":
     """
     logger.info("Comparing target genes")
     dataset_target_genes = {}
-    for k in new_dataset.target_conditions_to_save.keys():
+    for k in new_dataset.target_conditions_dict.keys():
         s = k.split("_")
         try:
             dataset_target_genes[s[0] + "_" + gene_map[s[1]]] = (
-                new_dataset.target_conditions_to_save[k]
+                new_dataset.target_conditions_dict[k]
             )
         except KeyError:
             print(f"KeyError: {k}")

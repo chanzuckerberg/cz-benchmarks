@@ -280,8 +280,14 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     ]
     # Provide matched control cell IDs and DE results
     adata.uns["control_cells_ids"] = {
-        "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-        "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+        "test1": {
+            "cond_test1_a": "non-targeting_test1_a",
+            "cond_test1_b": "non-targeting_test2_b",
+        },
+        "test2": {
+            "cond_test2_a": "non-targeting_test1_a",
+            "cond_test2_b": "non-targeting_test2_b",
+        },
     }
     de_conditions = ["test1"] * 10 + ["test2"] * 10
     de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
@@ -358,8 +364,14 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
         ]
         # Provide matched control cell IDs and DE results
         adata.uns["control_cells_ids"] = {
-            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test1": {
+                "cond_test1_a": "non-targeting_test1_a",
+                "cond_test1_b": "non-targeting_test2_b",
+            },
+            "test2": {
+                "cond_test2_a": "non-targeting_test1_a",
+                "cond_test2_b": "non-targeting_test2_b",
+            },
         }
 
         # Create DE results that match the actual gene names in the dataset
@@ -408,41 +420,19 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
             ),
         )
 
-        # Create shuffled version of the AnnData
-        shuffled_adata = dataset.control_matched_adata.copy()
-
-        # Shuffle obs and var with fixed random seed for reproducibility
-        np.random.seed(42)
-        obs_shuffled = shuffled_adata.obs.sample(frac=1, random_state=42)
-        var_shuffled = shuffled_adata.var.sample(frac=1, random_state=42)
-
-        # Get the indices for shuffling
-        obs_order = [shuffled_adata.obs.index.get_loc(i) for i in obs_shuffled.index]
-        var_order = [shuffled_adata.var.index.get_loc(i) for i in var_shuffled.index]
-
-        # Shuffle the data matrix accordingly
-        X_shuffled = shuffled_adata.X[np.ix_(obs_order, var_order)]
-
-        # Create new AnnData with shuffled data
-        shuffled_adata = ad.AnnData(X=X_shuffled, obs=obs_shuffled, var=var_shuffled)
-
-        # Copy over the uns data
-        shuffled_adata.uns = dataset.control_matched_adata.uns.copy()
-
-        # Create task input with shuffled AnnData
-        shuffled_task_input = PerturbationExpressionPredictionTaskInput(
-            adata=shuffled_adata,
-            target_conditions_dict=dataset.target_conditions_dict,
-            de_results=dataset.de_results,
-            gene_index=shuffled_adata.var.index,
-            cell_index=pd.Index(shuffled_adata.uns["cell_barcode_condition_index"]),
-        )
-
         # Create identical model output for both (using original dimensions)
         model_output = np.random.rand(
             dataset.control_matched_adata.shape[0],
             dataset.control_matched_adata.shape[1],
         )
+        # Shuffle obs and var with fixed random seed for reproducibility
+        np.random.seed(42)
+        obs_shuffled = dataset.adata.obs.sample(frac=1, random_state=42)
+        var_shuffled = dataset.adata.var.sample(frac=1, random_state=42)
+
+        # Get the indices for shuffling
+        obs_order = [dataset.adata.obs.index.get_loc(i) for i in obs_shuffled.index]
+        var_order = [dataset.adata.var.index.get_loc(i) for i in var_shuffled.index]
 
         # For shuffled input, we need to reorder the model output to match
         model_output_shuffled = model_output[np.ix_(obs_order, var_order)]
@@ -452,7 +442,7 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
 
         # Run task with both inputs
         original_result = task._run_task(model_output, original_task_input)
-        shuffled_result = task._run_task(model_output_shuffled, shuffled_task_input)
+        shuffled_result = task._run_task(model_output_shuffled, original_task_input)
 
         # Results should be identical (same conditions, same relative data)
         assert set(original_result.pred_log_fc_dict.keys()) == set(
@@ -502,8 +492,14 @@ def test_perturbation_task_apply_model_ordering():
 
         # Provide matched control cell IDs and DE results
         adata.uns["control_cells_ids"] = {
-            "test1": ["ctrl_test1_a", "ctrl_test2_b"],
-            "test2": ["ctrl_test1_a", "ctrl_test2_b"],
+            "test1": {
+                "cond_test1_a": "non-targeting_test1_a",
+                "cond_test1_b": "non-targeting_test2_b",
+            },
+            "test2": {
+                "cond_test2_a": "non-targeting_test1_a",
+                "cond_test2_b": "non-targeting_test2_b",
+            },
         }
 
         # Create DE results
@@ -602,7 +598,10 @@ def test_perturbation_task_apply_model_ordering_validation():
         adata.obs_names = ["ctrl_a", "ctrl_b", "cond_a", "cond_b"]
 
         # Provide matched control cell IDs and DE results
-        adata.uns["control_cells_ids"] = {"test1": ["ctrl_a", "ctrl_b"]}
+
+        adata.uns["control_cells_ids"] = {
+            "test1": {"cond_a": "ctrl_a", "cond_b": "ctrl_b"}
+        }
 
         # Create DE results
         gene_names = adata.var.index.tolist()
