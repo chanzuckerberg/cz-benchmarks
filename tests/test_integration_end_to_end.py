@@ -1,7 +1,10 @@
 import json
 import numpy as np
+import os
+import pandas as pd
 import pytest
-
+import tempfile
+import anndata as ad
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets import SingleCellPerturbationDataset
@@ -199,12 +202,16 @@ def test_end_to_end_perturbation_expression_prediction():
     )
 
     # Build task input directly from dataset
+    # Create AnnData with required data in uns
+    adata = dataset.control_matched_adata.copy()
+    adata.uns["cell_barcode_index"] = dataset.control_matched_adata.obs.index.astype(
+        str
+    ).values
+
     task_input = PerturbationExpressionPredictionTaskInput(
+        adata=adata,
+        target_conditions_dict=dataset.target_conditions_dict,
         de_results=dataset.de_results,
-        var_index=dataset.control_matched_adata.var.index,
-        masked_adata_obs=dataset.control_matched_adata.obs,
-        target_conditions_to_save=dataset.target_conditions_to_save,
-        row_index=dataset.adata.obs.index,
     )
 
     # Create random model output matching dataset dimensions
@@ -278,3 +285,113 @@ def test_end_to_end_perturbation_expression_prediction():
     assert "perturbation" in parsed
     assert "model" in parsed["perturbation"]
     assert "baseline" in parsed["perturbation"]
+
+
+@pytest.mark.integration
+def test_end_to_end_perturbation_with_model_anndata_file():
+    """Integration test for perturbation task with model data from AnnData file.
+
+    This test demonstrates the workflow where a user provides model predictions
+    in an AnnData file and uses apply_model_ordering to align the data.
+    """
+
+    # Load dataset (requires cloud access)
+    dataset: SingleCellPerturbationDataset = load_dataset(
+        "replogle_k562_essential_perturbpredict"
+    )
+
+    # Create task input from dataset
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=dataset.control_matched_adata,
+        target_conditions_dict=dataset.target_conditions_dict,
+        de_results=dataset.de_results,
+    )
+
+    # Simulate a model AnnData file with different ordering
+    # This mimics the case where a user has predictions from a model in AnnData format
+    model_adata = dataset.control_matched_adata.copy()
+
+    # Shuffle the ordering to simulate different gene/cell order from model
+
+    np.random.seed(123)  # For reproducible test
+
+    # Shuffle gene order
+    gene_order = np.random.permutation(model_adata.var.index)
+    model_adata = model_adata[:, gene_order]
+
+    # Shuffle cell order
+    cell_order = np.random.permutation(model_adata.obs.index)
+    model_adata = model_adata[cell_order, :]
+
+    # Save model data to temporary file (simulating user providing model file)
+    with tempfile.NamedTemporaryFile(suffix=".h5ad", delete=False) as tmp_file:
+        model_file_path = tmp_file.name
+        model_adata.write_h5ad(model_file_path)
+
+    try:
+        # Load model data from file (as user would do)
+        loaded_model_adata = ad.read_h5ad(model_file_path)
+
+        # Apply model ordering to align task input with model data
+        # This is the key functionality we're testing
+        task_input.apply_model_ordering(loaded_model_adata)
+
+        # Verify that task input now matches model ordering
+        pd.testing.assert_index_equal(
+            task_input.adata.var.index, loaded_model_adata.var.index
+        )
+        np.testing.assert_array_equal(
+            task_input.adata.uns["cell_barcode_index"],
+            loaded_model_adata.obs.index.astype(str).values,
+        )
+
+        # Create model output matching the new ordering
+        aligned_model_output = np.random.rand(
+            task_input.adata.shape[0], task_input.adata.shape[1]
+        )
+
+        # Initialize and run task
+        task = PerturbationExpressionPredictionTask()
+        results = task.run(aligned_model_output, task_input)
+
+        # Validate results structure
+        assert isinstance(results, list)
+        assert len(results) > 0
+
+        for result in results:
+            assert hasattr(result, "metric_type")
+            assert hasattr(result, "value")
+            assert hasattr(result, "params")
+            assert not np.isnan(result.value), f"Got NaN for {result.metric_type}"
+
+        # Verify we have the expected metric types
+        metric_types = {r.metric_type.value for r in results}
+        expected_metrics = {
+            "accuracy_calculation",
+            "precision_calculation",
+            "recall_calculation",
+            "f1_calculation",
+            "spearman_correlation_calculation",
+        }
+        assert expected_metrics.issubset(metric_types)
+
+        # Test JSON serialization
+        results_dict = [
+            {
+                "metric_type": result.metric_type.value,
+                "value": float(result.value),
+                "params": result.params,
+            }
+            for result in results
+        ]
+
+        json_output = json.dumps(results_dict, indent=2)
+        assert isinstance(json_output, str)
+        parsed = json.loads(json_output)
+        assert len(parsed) == len(results)
+
+    finally:
+        # Clean up temporary file
+
+        if os.path.exists(model_file_path):
+            os.unlink(model_file_path)

@@ -52,10 +52,10 @@ This task evaluates perturbation-induced expression predictions against their gr
 The following parameters are used by the task, via the `PerturbationExpressionPredictionTask` class:  
 
 - `de_results`: DE results used by the dataset class (`SingleCellPerturbationDataset`).
-- `masked_data_obs`: The `obs` column from the control-matched and masked data.
-- `row_index`: Sequence of cell barcodes vertically aligned with `cell_representation` matrix.
-- `var_index`: Sequence of gene names horizontally aligned with `cell_representation` matrix.
-- `target_conditions_to_save`: Dictionary of target conditions whose genes were randomly selected for masking.
+- `adata`: The complete AnnData object containing control-matched and masked data.
+- `cell_index`: Sequence of cell barcodes vertically aligned with `cell_representation` matrix.
+- `gene_index`: Sequence of gene names horizontally aligned with `cell_representation` matrix.
+- `target_conditions_dict`: Dictionary of target conditions whose genes were randomly selected for masking.
 
 ## Metrics
 
