@@ -18,6 +18,9 @@ from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
 from czbenchmarks.tasks.utils import print_metrics_summary
 from czbenchmarks.tasks.types import CellRepresentation
 
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+logger = logging.getLogger(__name__)
+
 
 def generate_random_model_predictions(n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
@@ -103,8 +106,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    logger = logging.getLogger(__name__)
+
 
     # Instantiate a config and load the input data
     cfg = {
@@ -159,7 +161,21 @@ if __name__ == "__main__":
         )
     # Convert model adata to cell representation
     model_output = model_adata.X
+
     # Run task
-    task = PerturbationExpressionPredictionTask()
-    metrics_dict = task.run(model_output, task_input)
+    task = PerturbationExpressionPredictionTask(
+        condition_key=dataset.condition_key, control_name=dataset.control_name
+    )
+    metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
+    logger.info("Model metrics:")
     print_metrics_summary(metrics_dict)
+
+    # # Compute baseline -- pseudocode -- this throws an error because of non-log-normalized data
+    # baseline_model = task.compute_baseline(
+    #     cell_representation=dataset.adata.X, baseline_type="median"
+    # )
+    # baseline_metrics_dict = task.run(
+    #     cell_representation=baseline_model, task_input=task_input
+    # )
+    # logger.info("Baseline metrics:")
+    # print_metrics_summary(baseline_metrics_dict)
