@@ -198,29 +198,32 @@ def test_end_to_end_perturbation_expression_prediction():
         "replogle_k562_essential_perturbpredict"
     )
 
-    # Build task input directly from dataset
-    task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=dataset.de_results,
-        var_index=dataset.control_matched_adata.var.index,
-        masked_adata_obs=dataset.control_matched_adata.obs,
-        target_conditions_to_save=dataset.target_conditions_to_save,
-        row_index=dataset.adata.obs.index,
-    )
-
     # Create random model output matching dataset dimensions
     model_output: CellRepresentation = np.random.rand(
         dataset.adata.shape[0], dataset.adata.shape[1]
+    )
+
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=dataset.control_matched_adata,
+        target_condition_dict=dataset.target_condition_dict,
+        de_results=dataset.de_results,
+        gene_index=dataset.control_matched_adata.var.index,
+        cell_index=dataset.control_matched_adata.obs.index,
     )
 
     # Initialize task
     task = PerturbationExpressionPredictionTask()
 
     # Run task with model output
-    model_results = task.run(model_output, task_input)
+    model_results = task.run(cell_representation=model_output, task_input=task_input)
 
     # Compute and run baseline
-    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
-    baseline_results = task.run(baseline_embedding, task_input)
+    baseline_embedding = task.compute_baseline(
+        cell_representation=dataset.adata.X, baseline_type="median"
+    )
+    baseline_results = task.run(
+        cell_representation=baseline_embedding, task_input=task_input
+    )
 
     # Validate results structure
     for results in [model_results, baseline_results]:
