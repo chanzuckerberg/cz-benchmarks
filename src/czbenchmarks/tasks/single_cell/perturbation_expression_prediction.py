@@ -81,24 +81,36 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 class PerturbationExpressionPredictionTask(Task):
     display_name = "Perturbation Expression Prediction"
-    description = "Evaluate the quality of predicted changes in expression levels for genes that are differentially expressed under perturbation(s) using multiple classification and correlation metrics."
+    description = (
+        "Evaluate the quality of predicted changes in expression levels for genes "
+        "that are differentially expressed under perturbation(s) using multiple "
+        "classification and correlation metrics."
+    )
     input_model = PerturbationExpressionPredictionTaskInput
 
     def __init__(
         self,
-        control_prefix: str = "non-targeting", # FIXME MICHELLE
+        condition_column: str = "condition",
+        control_prefix: str = "ctrl",
+        de_gene_col: str = "gene_id",
         *,
         random_seed: int = RANDOM_SEED,
     ):
         """
         Args:
+            condition_column (str): Column name for the condition.
             control_prefix (str): Prefix for control conditions.
+            de_gene_col (str): Column name for the names of genes which are
+                differentially expressed in the differential expression results.
+                Defaults to "gene_id".
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
         self.metric_column = "logfoldchange" # TODO: logfoldchange only for now
+        self.condition_column = condition_column
         self.control_prefix = control_prefix
-
+        self.de_gene_col = de_gene_col
+    
     def _run_task(
         self,
         cell_representation: CellRepresentation,
@@ -128,19 +140,25 @@ class PerturbationExpressionPredictionTask(Task):
         true_log_fc_dict = {}
         de_results = task_input.de_results
 
-        condition_series = task_input.masked_adata_obs["condition"].astype(str)
+        condition_series = task_input.masked_adata_obs[
+            self.condition_column
+        ].astype(str)
+        # Consider only non-control conditions using the configured control prefix
+        control_prefix_with_sep = f"{self.control_prefix}_"
         condition_list = np.unique(
-            condition_series[~condition_series.str.startswith(self.control_prefix)]
+            condition_series[
+                ~condition_series.str.startswith(control_prefix_with_sep)
+            ]
         )
         row_index = task_input.row_index.str.split("_").str[0]
 
         for condition in condition_list:
-            condition_de_df = de_results[de_results["condition"] == condition]
+            condition_de_df = de_results[de_results[self.condition_column] == condition]
 
             masked_genes = np.array(
                 task_input.target_conditions_to_save[
                     task_input.masked_adata_obs.index[
-                        task_input.masked_adata_obs["condition"] == condition
+                        task_input.masked_adata_obs[self.condition_column] == condition
                     ][0]
                 ]
             )
@@ -153,7 +171,7 @@ class PerturbationExpressionPredictionTask(Task):
                 print("Skipping condition because it has no masked genes.")
                 continue
             true_log_fc = (
-                condition_de_df.set_index("gene_id")
+                condition_de_df.set_index(self.de_gene_col)
                 .reindex(masked_genes)[self.metric_column]
                 .values
             )
@@ -162,12 +180,12 @@ class PerturbationExpressionPredictionTask(Task):
             true_log_fc = true_log_fc[valid]
             col_indices = task_input.var_index.get_indexer(masked_genes)
             condition_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"] == condition
+                task_input.masked_adata_obs[self.condition_column] == condition
             ].index
             condition_col_ids = condition_adata.to_series().str.split("_").str[0]
             condition_idx = np.where(row_index.isin(condition_col_ids))[0]
             control_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"]
+                    task_input.masked_adata_obs[self.condition_column]
                 == f"{self.control_prefix}_{condition}"
             ].index
             control_col_ids = control_adata.to_series().str.split("_").str[0]
@@ -244,7 +262,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=precision_metric,
                     value=precision_value,
-                    params={"condition": condition},
+                    params={self.condition_column: condition},
                 )
             )
 
@@ -257,7 +275,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=recall_metric,
                     value=recall_value,
-                    params={"condition": condition},
+                    params={self.condition_column: condition},
                 )
             )
 
@@ -270,7 +288,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=f1_metric,
                     value=f1_value,
-                    params={"condition": condition},
+                    params={self.condition_column: condition},
                 )
             )
 
@@ -286,7 +304,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=spearman_correlation_metric,
                     value=spearman_corr_value,
-                    params={"condition": condition},
+                    params={self.condition_column: condition},
                 )
             )
 
@@ -299,7 +317,7 @@ class PerturbationExpressionPredictionTask(Task):
                 MetricResult(
                     metric_type=accuracy_metric,
                     value=accuracy_value,
-                    params={"condition": condition},
+                    params={self.condition_column: condition},
                 )
             )
         return metric_results

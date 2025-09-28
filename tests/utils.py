@@ -67,8 +67,10 @@ def create_dummy_perturbation_anndata(
     n_genes=200,
     organism: Organism = Organism.HUMAN,
     condition_column="condition",
+    control_name="ctrl",
     split_column="split",
 ):
+    # FIXME: update for compatibility with new perturbation dataset format
     # Create dummy data with control and perturbed cells
     n_genes = 200
     n_ctrl = n_cells // 2
@@ -84,15 +86,15 @@ def create_dummy_perturbation_anndata(
     )
 
     # Create perturbed cells
-    gene_pert = f"{str(organism.prefix)}{str(123456).zfill(11)}+ctrl"
-    adata.obs[condition_column] = ["ctrl"] * n_ctrl + [gene_pert] * n_pert
+    gene_pert = f"{str(organism.prefix)}{str(123456).zfill(11)}+{control_name}"
+    adata.obs[condition_column] = [control_name] * n_ctrl + [gene_pert] * n_pert
     adata.obs[split_column] = ["train"] * n_ctrl + ["test"] * n_pert
 
     # Create and set predicted perturbation effect
     pert_pred = pd.DataFrame(
         data=np.random.normal(size=(n_ctrl, n_genes)),
         columns=adata.var_names,
-        index=adata[adata.obs[condition_column] == "ctrl"].obs_names,
+        index=adata[adata.obs[condition_column] == control_name].obs_names,
     )
 
     conditions = np.array(list(adata.obs[condition_column]))
