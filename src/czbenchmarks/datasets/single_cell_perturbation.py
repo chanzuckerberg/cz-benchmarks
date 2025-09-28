@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell import SingleCellDataset
+from czbenchmarks.datasets.utils_single_cell import create_adata_for_condition
 from czbenchmarks.datasets.types import Organism
 
 logger = logging.getLogger(__name__)
@@ -206,51 +207,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         and adds target genes to the dictionary for each cell.
         """
 
-        def _create_adata_for_condition(
-            selected_condition: str,
-            target_condition_dict: dict,
-            rows_cond: np.ndarray,
-            rows_ctrl: np.ndarray,
-            adata: ad.AnnData = self.adata,
-            condition_key: str = self.condition_key,
-            control_name: str = self.control_name,
-        ):
-            """
-            Create an AnnData object for a single condition.
-            Setup as a private function to allow for multiprocessing if needed.
-            """
-
-            adata_condition = adata[rows_cond].to_memory()
-            adata_control = adata[rows_ctrl].to_memory()
-
-            if len(adata_condition) != len(adata_control):
-                logger.warning(
-                    f"Condition and control data for {selected_condition} have different lengths."
-                )
-
-            # Concatenate condition and control data
-            adata_merged = ad.concat(
-                [adata_condition, adata_control], index_unique=None
-            ).copy()
-
-            label_cond = [selected_condition] * len(adata_condition)
-            label_ctrl = [f"{control_name}_{selected_condition}"] * len(adata_control)
-            adata_merged.obs[condition_key] = label_cond + label_ctrl
-
-            # Add condition to cell_barcode_gene column and set as index
-            adata_merged.obs_names = (
-                adata_merged.obs_names.astype(str) + "_" + selected_condition
-            )
-
-            # Add target genes to the dictionary for each cell
-            target_conditions_to_save = {}
-            for idx in adata_merged.obs.index:
-                target_conditions_to_save[idx] = target_condition_dict[
-                    selected_condition
-                ]
-
-            return adata_merged, target_conditions_to_save
-
         target_condition_dict = sample_de_genes(
             de_results=self.de_results,
             percent_genes_to_mask=self.percent_genes_to_mask,
@@ -271,10 +227,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if not isinstance(obs[self.condition_key], pd.CategoricalDtype):
             obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
 
-        # Fast: condition -> integer row positions
+        # Condition -> integer row positions
         condition_to_indices = obs.groupby(self.condition_key, observed=True).indices
 
-        # Fast: control ids -> integer row positions per condition (preserves order)
+        # Control ids -> integer row positions per condition (preserves order)
         control_to_indices = {
             cond: obs_index.get_indexer_for(ids)
             for cond, ids in self.control_cells_ids.items()
@@ -287,18 +243,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             total=total_conditions, desc="Processing conditions", unit="item"
         ) as pbar:
             for selected_condition in target_conditions:
-                result = _create_adata_for_condition(
-                    selected_condition=selected_condition,
-                    target_condition_dict=target_condition_dict,
-                    rows_cond=condition_to_indices[selected_condition],
-                    rows_ctrl=control_to_indices[selected_condition],
+                adata_merged = create_adata_for_condition(
                     adata=self.adata,
+                    condition=selected_condition,
                     condition_key=self.condition_key,
                     control_name=self.control_name,
+                    rows_cond=condition_to_indices[selected_condition],
+                    rows_ctrl=control_to_indices[selected_condition],
                 )
 
-                all_merged_data.append(result[0])
-                target_conditions_to_save.update(result[1])
+                all_merged_data.append(adata_merged)
+                # Add target genes to the dictionary for each cell
+                for idx in adata_merged.obs.index:
+                    target_conditions_to_save[idx] = target_condition_dict[
+                        selected_condition
+                    ]
                 pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
                 pbar.update(1)
 
