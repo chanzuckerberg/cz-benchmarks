@@ -90,8 +90,8 @@ labels_series = dataset.labels      # Labels from the specified obs column
 #### For `SingleCellPerturbationDataset`:
 
 ```python
-control_cells_ids = dataset.control_cells_ids                  # List of control cell IDs
-target_conditions_dict = dataset.target_conditions_dict        # Conditions to be saved for benchmarking
+control_cells_ids = dataset.control_cells_ids                  # Dictionary mapping each condition to a dictionary of treatment cell barcodes to matched control cell barcodes
+target_conditions_dict = dataset.target_conditions_dict        # Dictionary of masked genes for each condition
 de_results = dataset.de_results                                # Differential expression results
 control_matched_adata = dataset.control_matched_adata          # AnnData object for matched controls
 ```
