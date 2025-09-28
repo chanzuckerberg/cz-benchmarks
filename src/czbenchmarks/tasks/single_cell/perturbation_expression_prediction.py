@@ -93,6 +93,7 @@ class PerturbationExpressionPredictionTask(Task):
         condition_column: str = "condition",
         control_prefix: str = "ctrl",
         de_gene_col: str = "gene_id",
+        condition_control_sep: str = "_",
         *,
         random_seed: int = RANDOM_SEED,
     ):
@@ -103,6 +104,7 @@ class PerturbationExpressionPredictionTask(Task):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene_id".
+            condition_control_sep (str): Separator for condition and control prefix.
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
@@ -110,7 +112,8 @@ class PerturbationExpressionPredictionTask(Task):
         self.condition_column = condition_column
         self.control_prefix = control_prefix
         self.de_gene_col = de_gene_col
-    
+        self.condition_control_sep = condition_control_sep
+
     def _run_task(
         self,
         cell_representation: CellRepresentation,
@@ -144,13 +147,13 @@ class PerturbationExpressionPredictionTask(Task):
             self.condition_column
         ].astype(str)
         # Consider only non-control conditions using the configured control prefix
-        control_prefix_with_sep = f"{self.control_prefix}_"
+        control_prefix_with_sep = self.control_prefix + self.condition_control_sep
         condition_list = np.unique(
             condition_series[
                 ~condition_series.str.startswith(control_prefix_with_sep)
             ]
         )
-        row_index = task_input.row_index.str.split("_").str[0]
+        row_index = task_input.row_index.str.split(self.condition_control_sep).str[0]
 
         for condition in condition_list:
             condition_de_df = de_results[de_results[self.condition_column] == condition]
@@ -182,13 +185,13 @@ class PerturbationExpressionPredictionTask(Task):
             condition_adata = task_input.masked_adata_obs[
                 task_input.masked_adata_obs[self.condition_column] == condition
             ].index
-            condition_col_ids = condition_adata.to_series().str.split("_").str[0]
+            condition_col_ids = condition_adata.to_series().str.split(self.condition_control_sep).str[0]
             condition_idx = np.where(row_index.isin(condition_col_ids))[0]
             control_adata = task_input.masked_adata_obs[
                     task_input.masked_adata_obs[self.condition_column]
-                == f"{self.control_prefix}_{condition}"
+                == f"{self.control_prefix}{self.condition_control_sep}{condition}"
             ].index
-            control_col_ids = control_adata.to_series().str.split("_").str[0]
+            control_col_ids = control_adata.to_series().str.split(self.condition_control_sep).str[0]
 
             control_idx = np.where(row_index.isin(control_col_ids))[0]
             condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
@@ -198,6 +201,7 @@ class PerturbationExpressionPredictionTask(Task):
             pred_log_fc = cond_mean - ctrl_mean
             pred_log_fc_dict[condition] = pred_log_fc
             true_log_fc_dict[condition] = true_log_fc
+            
         return PerturbationExpressionPredictionOutput(
             pred_log_fc_dict=pred_log_fc_dict,
             true_log_fc_dict=true_log_fc_dict,

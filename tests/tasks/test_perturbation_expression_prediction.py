@@ -26,7 +26,7 @@ from tests.utils import (
 @pytest.mark.parametrize("control_name", ["ctrl", "control"])
 @pytest.mark.parametrize("de_gene_col", ["gene_id", "gene_name"])
 def test_perturbation_task(
-    condition_column: str, control_name: str, de_gene_col: str
+    condition_column: str, control_name: str, de_gene_col: str, condition_control_sep: str = "_"
 ):
     """Test that PerturbationExpressionPredictionTask executes without errors."""
     # Create dummy perturbation data
@@ -48,6 +48,7 @@ def test_perturbation_task(
         control_prefix=control_name,
         condition_column=condition_column,
         de_gene_col=de_gene_col,
+        condition_control_sep=condition_control_sep,
     )
 
     # Create DE results DataFrame matching expected structure
@@ -92,7 +93,7 @@ def test_perturbation_task(
     # Determine number of non-control conditions dynamically
     cond_series = masked_adata_obs[condition_column].astype(str)
     non_control_conditions = [
-        c for c in cond_series.unique() if not c.startswith(f"{control_name}_")
+        c for c in cond_series.unique() if not c.startswith(control_name + condition_control_sep)
     ]
     num_metrics = 5 * len(non_control_conditions)
 
@@ -127,7 +128,7 @@ def test_perturbation_task(
 @pytest.mark.parametrize("control_name", ["ctrl", "control"])
 @pytest.mark.parametrize("de_gene_col", ["gene_id", "gene_name"])
 def test_perturbation_expression_prediction_task_wilcoxon(
-    condition_column: str, control_name: str, de_gene_col: str
+    condition_column: str, control_name: str, de_gene_col: str, condition_control_sep: str = "_"
 ):
     """Test Wilcoxon path computes correct vectors and metrics."""
     # Deterministic gene set and per-condition true/predicted effects
@@ -164,14 +165,14 @@ def test_perturbation_expression_prediction_task_wilcoxon(
     n_per_group = 4
     conditions = (
         ["gene_A"] * n_per_group
-        + [f"{control_name}_gene_A"] * n_per_group
+        + [condition_control_sep.join([control_name, "gene_A"])] * n_per_group
         + ["gene_B"] * n_per_group
-        + [f"{control_name}_gene_B"] * n_per_group
+        + [condition_control_sep.join([control_name, "gene_B"])] * n_per_group
     )
     # Create base cell names without underscores
     base_cell_names = [f"cellbarcode{i}" for i in range(len(conditions))]
-    # Create extended obs names like real dataset: base + "_" + condition
-    obs_names = [f"{base_name}_{cond}" for base_name, cond in zip(base_cell_names, conditions)]
+    # Create extended obs names like real dataset: base + condition_control_sep + condition
+    obs_names = [condition_control_sep.join([base_name, cond]) for base_name, cond in zip(base_cell_names, conditions)]
 
     X = np.zeros((len(conditions), len(gene_names)), dtype=float)
     # Set group means so that pred_log_fc equals the designed true_lfc
@@ -192,6 +193,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         control_prefix=control_name,
         condition_column=condition_column,
         de_gene_col=de_gene_col,
+        condition_control_sep=condition_control_sep,
     )
     task_input = PerturbationExpressionPredictionTaskInput(
         de_results=de_res_wilcoxon_df,
@@ -203,7 +205,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
 
     # First, check that true/pred vectors produced by _run_task match expectations
     task_output = task._run_task(cell_representation, task_input)
-    expected_conditions = {c for c in conditions if not c.startswith(f"{control_name}_")}
+    expected_conditions = {c for c in conditions if not c.startswith(control_name + condition_control_sep)}
     assert set(task_output.pred_log_fc_dict.keys()) == expected_conditions
     assert set(task_output.true_log_fc_dict.keys()) == expected_conditions
     assert np.allclose(
@@ -251,7 +253,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
 @pytest.mark.parametrize("control_name", ["ctrl", "control"])
 @pytest.mark.parametrize("de_gene_col", ["gene_id", "gene_name"])
 def test_perturbation_expression_prediction_task_load_from_task_inputs(
-    tmp_path, condition_column: str, control_name: str, de_gene_col: str
+    tmp_path, condition_column: str, control_name: str, de_gene_col: str, condition_control_sep: str = "_"
 ):
     """Test that the task can load inputs from stored task files."""
     # Create a dummy dataset and store its task inputs
@@ -271,8 +273,8 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(
         "test2",
     ]
     adata.obs_names = [
-        f"{control_name}_test1_a",
-        f"{control_name}_test2_b",
+        condition_control_sep.join([control_name, "test1_a"]),
+        condition_control_sep.join([control_name, "test2_b"]),
         "cond_test1_a",
         "cond_test1_b",
         "cond_test2_a",
@@ -280,8 +282,8 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(
     ]
     # Provide matched control cell IDs and DE results
     adata.uns["control_cells_ids"] = {
-        "test1": [f"{control_name}_test1_a", f"{control_name}_test2_b"],
-        "test2": [f"{control_name}_test1_a", f"{control_name}_test2_b"],
+        "test1": [condition_control_sep.join([control_name, "test1_a"]), condition_control_sep.join([control_name, "test2_b"])],
+        "test2": [condition_control_sep.join([control_name, "test1_a"]), condition_control_sep.join([control_name, "test2_b"])],
     }
     de_conditions = ["test1"] * 10 + ["test2"] * 10
     de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]

@@ -7,6 +7,7 @@ datasets:
     organism: ${organism:HUMAN}
     condition_key: condition
     control_name: non-targeting
+    condition_control_sep: _
     de_gene_col: gene_id
     path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
 

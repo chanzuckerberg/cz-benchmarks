@@ -55,6 +55,7 @@ class TestCreateAdataForCondition:
         # condition = "A"
         condition_key = "condition"
         control_name = "NC"
+        condition_control_sep = "_"
 
         rows_cond = np.where(adata_obj.obs[condition_key] == condition)[0]
         rows_ctrl = adata_obj.obs.index.get_indexer_for(control_map[condition])
@@ -64,6 +65,7 @@ class TestCreateAdataForCondition:
             condition=condition,
             condition_key=condition_key,
             control_name=control_name,
+            condition_control_sep=condition_control_sep,
             rows_cond=rows_cond,
             rows_ctrl=rows_ctrl,
         )
@@ -74,7 +76,7 @@ class TestCreateAdataForCondition:
 
         labels = merged.obs[condition_key].tolist()
         assert labels == [condition] * len(rows_cond) + [
-            f"{control_name}_{condition}"
+            f"{control_name}{condition_control_sep}{condition}"
         ] * len(rows_ctrl)
 
         assert np.allclose(merged.X[: len(rows_cond), signal_gene_idx], signal_value)
@@ -86,6 +88,7 @@ class TestCreateAdataForCondition:
         condition = "A_small"  # 2 condition cells vs 3 controls
         condition_key = "condition"
         control_name = "NC"
+        condition_control_sep = "_"
         rows_cond = np.where(adata_obj.obs[condition_key] == condition)[0]
         rows_ctrl = adata_obj.obs.index.get_indexer_for(control_map[condition])
 
@@ -95,6 +98,7 @@ class TestCreateAdataForCondition:
                 condition=condition,
                 condition_key=condition_key,
                 control_name=control_name,
+                condition_control_sep=condition_control_sep,
                 rows_cond=rows_cond,
                 rows_ctrl=rows_ctrl,
             )

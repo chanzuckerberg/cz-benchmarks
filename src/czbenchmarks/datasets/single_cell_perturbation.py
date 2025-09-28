@@ -91,7 +91,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         organism: Organism,
         condition_key: str = "condition",
         control_name: str = "ctrl",
+        condition_control_sep: str = "_",
         de_gene_col: str = "gene",
+        # FIXME MICHELLE should these be moved to load_data?
         percent_genes_to_mask: float = 0.5,
         min_de_genes_to_mask: int = 5,
         pval_threshold: float = 1e-4,
@@ -111,6 +113,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
+            condition_control_sep (str): Separator for condition and control prefix.
+                Defaults to "_".
             percent_genes_to_mask (float): Percentage of genes to mask.
                 Default is 0.5.
             min_de_genes_to_mask (int): Minimum number of differentially
@@ -128,6 +132,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.control_name = control_name
         self.deg_test_name = "wilcoxon"  # TODO: consider additional statistical methods for deg
         self.de_gene_col = de_gene_col
+        self.condition_control_sep = condition_control_sep
+        # FIXME MICHELLE should these be moved to load_data?
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
@@ -143,8 +149,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         # Validate structure of deg data
-        error_str = ""
-        warning_str = ""
+        error_str, warning_str = "", ""
         for col in ["pval_adj", "logfoldchange"]:
             if col not in de_results.columns:
                 error_str += f"{col} column not found in de_results and required for {self.deg_test_name} test. "
@@ -232,6 +237,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     condition=selected_condition,
                     condition_key=self.condition_key,
                     control_name=self.control_name,
+                    condition_control_sep=self.condition_control_sep,
                     rows_cond=condition_to_indices[selected_condition],
                     rows_ctrl=control_to_indices[selected_condition],
                 )
@@ -421,14 +427,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         # Validate condition format
         conditions = set(self.control_matched_adata.obs[self.condition_key])
         target_conditions = set(
-            x.split("_")[1] for x in self.target_conditions_to_save.keys()
+            x.split(self.condition_control_sep)[1] for x in self.target_conditions_to_save.keys()
         )  # Update for multiple perturbations
 
         for condition in conditions:
             if condition in target_conditions:
                 continue
             elif condition.startswith(self.control_name):
-                control_matched_condition = condition.split("_")[1]
+                control_matched_condition = condition.split(self.condition_control_sep)[1]
                 if control_matched_condition not in target_conditions:
                     raise ValueError(
                         f"Invalid control matched condition format: {condition}. "

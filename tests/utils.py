@@ -69,6 +69,7 @@ def create_dummy_perturbation_anndata(
     condition_column="condition",
     control_name="ctrl",
     split_column="split",
+    condition_control_sep="_",
 ):
     # FIXME: update for compatibility with new perturbation dataset format
     # Create dummy data with control and perturbed cells
@@ -86,7 +87,9 @@ def create_dummy_perturbation_anndata(
     )
 
     # Create perturbed cells
-    gene_pert = f"{str(organism.prefix)}{str(123456).zfill(11)}+{control_name}"
+    # FIXME MICHELLE this is backwards from what we expect
+    ensembl_id = f"{str(organism.prefix)}{str(123456).zfill(11)}"
+    gene_pert = condition_control_sep.join([ensembl_id, control_name])
     adata.obs[condition_column] = [control_name] * n_ctrl + [gene_pert] * n_pert
     adata.obs[split_column] = ["train"] * n_ctrl + ["test"] * n_pert
 
