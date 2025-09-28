@@ -7,6 +7,7 @@ import hydra
 from hydra.utils import instantiate
 import numpy as np
 import anndata as ad
+import scanpy as sc
 
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
@@ -95,7 +96,9 @@ def generate_random_model_predictions(n_cells, n_genes):
     model predictions.
     """
 
-    model_predictions: CellRepresentation = np.random.rand(n_cells, n_genes)
+    model_predictions: CellRepresentation = np.random.randint(
+        0, 100, (n_cells, n_genes)
+    ).astype(float)
     # Put the predictions in an anndata object
     model_adata = ad.AnnData(X=model_predictions)
 
@@ -106,6 +109,11 @@ def generate_random_model_predictions(n_cells, n_genes):
     model_adata.var.index = (
         dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
     )
+
+    # Log normalize the data -- in real applications, additional preprocessing
+    # Steps may be applied
+    sc.pp.log1p(model_adata)
+
     return model_adata
 
 
@@ -173,7 +181,7 @@ if __name__ == "__main__":
         task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
         logging.info("Task inputs loaded from saved files")
 
-        # FIXME MICHELLE why is this necessary?
+        # FIXME MICHELLE flow doesn't make sense yet
         # Update with the model ordering of the genes and of the cells
         task_input.gene_index = model_adata.var.index
         task_input.cell_index = model_adata.obs.index
@@ -202,12 +210,12 @@ if __name__ == "__main__":
     print_metrics_summary(metrics_dict)
 
     # FIXME MICHELLE this throws an error because of non-log-normalized data
-    # # Compute baseline -- pseudocode -- this throws an error because of non-log-normalized data
-    # baseline_model = task.compute_baseline(
-    #     cell_representation=dataset.adata.X, baseline_type="median"
-    # )
-    # baseline_metrics_dict = task.run(
-    #     cell_representation=baseline_model, task_input=task_input
-    # )
-    # logger.info("Baseline metrics:")
-    # print_metrics_summary(baseline_metrics_dict)
+    # Compute baselines
+    baseline_model = task.compute_baseline(
+        cell_representation=dataset.adata.X, baseline_type="median"
+    )
+    baseline_metrics_dict = task.run(
+        cell_representation=baseline_model, task_input=task_input
+    )
+    logging.info("Baseline metrics:")
+    print_metrics_summary(baseline_metrics_dict)
