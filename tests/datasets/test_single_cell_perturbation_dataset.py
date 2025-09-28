@@ -259,4 +259,3 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             assert "logfoldchange" in de_df.columns
         else:
             assert "standardized_mean_diff" in de_df.columns
-
