@@ -23,7 +23,7 @@ The data loading method accomplishes the following:
 The following parameters are used in loading the data:
 
 - `condition_key`: The name of the column in `adata.obs` and the DE results containing condition labels for perturbations and controls. Default is "condition".
-- `control_name`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "ctrl".
+- `control_name`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "non-targeting".
 - `de_gene_col`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene".
 - `de_results_path`: CSV path for external DE results. If not provided, DE results are read from the dataset.
   
