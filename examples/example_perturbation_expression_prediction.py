@@ -7,13 +7,15 @@ from pathlib import Path
 import anndata as ad
 import numpy as np
 from czbenchmarks.datasets import SingleCellPerturbationDataset, load_dataset
+from czbenchmarks.datasets.types import Organism
+from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
     PerturbationExpressionPredictionTaskInput,
 )
 
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-    load_perturbation_task_input_from_saved_files,
+    PerturbationExpressionPredictionTaskInput,
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
 from czbenchmarks.tasks.types import CellRepresentation
@@ -30,16 +32,17 @@ def generate_random_model_predictions(n_cells, n_genes):
     model predictions.
     """
 
-    model_predictions: CellRepresentation = np.random.rand(n_cells, n_genes)
+    rng = np.random.default_rng(RANDOM_SEED)
+    model_predictions: CellRepresentation = rng.random((n_cells, n_genes))
     # Put the predictions in an anndata object
     model_adata = ad.AnnData(X=model_predictions)
 
     # The same genes and cells (or a subset of them) should be in the model adata.
     model_adata.obs.index = (
-        dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
+        dataset.adata.obs.index.to_series().sample(frac=1, random_state=RANDOM_SEED).values
     )
     model_adata.var.index = (
-        dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+        dataset.adata.var.index.to_series().sample(frac=1, random_state=RANDOM_SEED).values
     )
     return model_adata
 
@@ -76,9 +79,29 @@ if __name__ == "__main__":
         description="Run perturbation expression prediction task"
     )
     parser.add_argument(
-        "--save-inputs",
-        action="store_true",
-        help="Save dataset task inputs to disk and load them back (demonstrates save/load functionality)",
+        "--dataset_path",
+        type=Path,
+        default=None,
+        help="Path to a prepared .h5ad dataset (e.g., a subset created for fast testing)",
+    )
+    parser.add_argument(
+        "--organism",
+        type=str,
+        default="human",
+        choices=["human", "mouse"],
+        help="Organism for the dataset file when using --dataset_path",
+    )
+    parser.add_argument(
+        "--condition_key",
+        type=str,
+        default="condition",
+        help="Condition column name in adata.obs (when using --dataset_path)",
+    )
+    parser.add_argument(
+        "--control_name",
+        type=str,
+        default="non-targeting",
+        help="Control name/prefix in adata.obs (when using --dataset_path)",
     )
     parser.add_argument(
         "--percent_genes_to_mask",
@@ -120,14 +143,28 @@ if __name__ == "__main__":
         }
     }
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_cfg:
-        yaml.dump(cfg, tmp_cfg)
-        tmp_cfg_path = tmp_cfg.name
-
-        dataset: SingleCellPerturbationDataset = load_dataset(
-            "replogle_k562_essential_perturbpredict",
-            config_path=Path(tmp_cfg_path),
+    if args.dataset_path is not None:
+        org = Organism.HUMAN if args.organism.lower() == "human" else Organism.MOUSE
+        dataset: SingleCellPerturbationDataset = SingleCellPerturbationDataset(
+            path=Path(args.dataset_path).expanduser(),
+            organism=org,
+            condition_key=args.condition_key,
+            control_name=args.control_name,
+            percent_genes_to_mask=args.percent_genes_to_mask,
+            min_de_genes_to_mask=args.min_de_genes_to_mask,
+            pval_threshold=args.pval_threshold,
+            min_logfoldchange=args.min_logfoldchange,
         )
+        dataset.load_data()
+    else:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_cfg:
+            yaml.dump(cfg, tmp_cfg)
+            tmp_cfg_path = tmp_cfg.name
+
+            dataset: SingleCellPerturbationDataset = load_dataset(
+                "replogle_k562_essential_perturbpredict",
+                config_path=Path(tmp_cfg_path),
+            )
 
     # Optional: validate the dataset
     dataset.validate()
@@ -136,29 +173,11 @@ if __name__ == "__main__":
     model_adata = generate_random_model_predictions(
         dataset.adata.shape[0], dataset.adata.shape[1]
     )
-
-    # Choose approach based on flag
-    if args.save_inputs:
-        logger.info("Using save/load approach...")
-        # Save and load dataset task inputs
-        task_inputs_dir = dataset.store_task_inputs()
-        logger.info(f"Task inputs saved to: {task_inputs_dir}")
-        task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
-        logger.info("Task inputs loaded from saved files")
-
-        # Update with the model ordering of the genes and of the cells
-        task_input.gene_index = model_adata.var.index
-        task_input.cell_index = model_adata.obs.index
-    else:
-        logger.info("Creating task input directly from dataset...")
-        # Create task input directly from dataset with separate fields
-        task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata,
-            target_conditions_dict=dataset.target_conditions_dict,
-            de_results=dataset.de_results,
-            gene_index=model_adata.var.index,
-            cell_index=model_adata.obs.index,
-        )
+    logger.info("Creating task input directly from dataset...")
+    # Create task input directly from dataset with predictions' ordering
+    task_input = PerturbationExpressionPredictionTaskInput(
+        adata=dataset.adata,
+    )
     # Convert model adata to cell representation
     model_output = model_adata.X
 
@@ -169,13 +188,3 @@ if __name__ == "__main__":
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
     logger.info("Model metrics:")
     print_metrics_summary(metrics_dict)
-
-    # # Compute baseline -- pseudocode -- this throws an error because of non-log-normalized data
-    # baseline_model = task.compute_baseline(
-    #     cell_representation=dataset.adata.X, baseline_type="median"
-    # )
-    # baseline_metrics_dict = task.run(
-    #     cell_representation=baseline_model, task_input=task_input
-    # )
-    # logger.info("Baseline metrics:")
-    # print_metrics_summary(baseline_metrics_dict)
