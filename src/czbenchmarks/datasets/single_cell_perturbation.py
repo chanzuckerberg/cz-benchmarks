@@ -97,6 +97,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
         min_smd: float = 0.55,
+        de_results_path: Optional[Path] = None,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -125,6 +126,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 expression. Default is 1.0.
             min_smd (float): Minimum standardized mean difference for differential
                 expression. Default is 0.55.
+            de_results_path (Optional[Path]): Path to load differential expression
+                results from csv file. If not provided, the deg data are used from
+                adata.uns['de_results_{deg_test_name}'].
             task_inputs_dir (Optional[Path]): Directory for storing task-specific
                 inputs.
         """
@@ -139,15 +143,20 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
         self.min_smd = min_smd
+        self.de_results_path = de_results_path
 
     def load_and_filter_deg_results(self):
         """
         Load and filter differential expression results.
         """
-        logger.info("Loading de_results from adata.uns")
-        de_results = pd.DataFrame(
-            self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
-        )
+        if self.de_results_path:
+            logger.info(f"Loading de_results from {self.de_results_path}")
+            de_results = pd.read_csv(self.de_results_path)
+        else:
+            logger.info("Loading de_results from adata.uns")
+            de_results = pd.DataFrame(
+                self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
+            )
 
         # Validate structure of deg data
         # TODO move column names to standardized location when utility function added
@@ -344,13 +353,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 "Options are 'wilcoxon' or 't-test'."
             )
 
-        if (
-            f"de_results_{self.normalized_deg_test_name}"
-            not in self.adata.uns.keys()
-        ):
-            raise ValueError(
-                f"Key 'de_results_{self.normalized_deg_test_name}' not found in adata.uns"
+        if self.de_results_path and not Path(self.de_results_path).exists():
+            raise FileNotFoundError(
+                f"Differential expression results path '{self.de_results_path}' not found"
             )
+        else:
+            if (
+                f"de_results_{self.normalized_deg_test_name}"
+                not in self.adata.uns.keys()
+            ):
+                raise ValueError(
+                    f"Key 'de_results_{self.normalized_deg_test_name}' not found in adata.uns"
+                )
 
         if "control_cells_ids" not in self.adata.uns.keys():
             raise ValueError("Key 'control_cells_ids' not found in adata.uns")
