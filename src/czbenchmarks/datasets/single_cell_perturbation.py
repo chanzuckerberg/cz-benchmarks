@@ -77,13 +77,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_dict (dict): Dictionary of target conditions for each cell.
+        target_condition_dict (dict): Dictionary of target conditions for each cell.
     """
 
     control_matched_adata: ad.AnnData
     control_cells_ids: dict
     de_results: pd.DataFrame
-    target_conditions_dict: dict
+    target_condition_dict: dict
 
     def __init__(
         self,
@@ -130,7 +130,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
         self.control_name = control_name
-        self.deg_test_name = "wilcoxon"  # TODO: consider additional statistical methods for deg
+        self.deg_test_name = (
+            "wilcoxon"  # TODO: consider additional statistical methods for deg
+        )
         self.de_gene_col = de_gene_col
         self.condition_control_sep = condition_control_sep
         self.percent_genes_to_mask = percent_genes_to_mask
@@ -144,9 +146,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         logger.info("Loading de_results from adata.uns")
         # FIXME MICHELLE: update to ensure proper handling of float precision
-        de_results = pd.DataFrame(
-            self.adata.uns[f"de_results_{self.deg_test_name}"]
-        )
+        de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
         # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
@@ -217,8 +217,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if not isinstance(obs[self.condition_key], pd.CategoricalDtype):
             obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
 
-        # FIXME MICHELLE validate existence of ids from control_cells_ids in adata.obs
-
         # Experimental ids -> integer row positions per condition and preserves order
         condition_to_indices = {
             cond: obs_index.get_indexer_for(list(mapping.keys()))
@@ -259,11 +257,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
         )
-        adata_final.obs = adata_final.obs[[self.condition_key]] # Only key used in task
+        adata_final.obs = adata_final.obs[[self.condition_key]]  # Only key used in task
 
         # FIXME MICHELLE: is this necessary?
         # Add task-related data to uns for easy access
-        adata_final.uns["target_conditions_dict"] = target_condition_dict
+        adata_final.uns["target_condition_dict"] = target_condition_dict
         adata_final.uns["de_results"] = {
             col: self.de_results[col].values for col in self.de_results.columns
         }
@@ -297,7 +295,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if validate_input_data:
             logger.info("Validating input data")
             self._validate_input_data()
-        
+
         # Load control_cells_ids from adata.uns
         self.control_cells_ids = self.adata.uns["control_cells_ids"]
 
@@ -334,10 +332,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(
             f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
         )
-        adata_final, target_conditions_dict = self._create_adata()
+        adata_final, target_condition_dict = self._create_adata()
 
         self.control_matched_adata = adata_final
-        self.target_conditions_dict = target_conditions_dict
+        self.target_condition_dict = target_condition_dict
 
         if validate_input_data:
             logger.info("Validating control-matched adata")
@@ -348,8 +346,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Store all task inputs as separate files.
 
         This method saves all task-related data as separate files:
-        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_condition_index, control_cells_ids, target_conditions_dict, and de_results in uns)
-        - target_conditions_dict.json: Target conditions dictionary
+        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_condition_index, control_cells_ids, target_condition_dict, and de_results in uns)
+        - target_condition_dict.json: Target conditions dictionary
         - de_results.parquet: Differential expression results
 
         Returns:
@@ -367,9 +365,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_to_save.write_h5ad(adata_file)
 
         # Save target conditions dict as JSON
-        target_conditions_file = self.task_inputs_dir / "target_conditions_dict.json"
+        target_conditions_file = self.task_inputs_dir / "target_condition_dict.json"
         with open(target_conditions_file, "w") as f:
-            json.dump(self.target_conditions_dict, f)
+            json.dump(self.target_condition_dict, f)
 
         # Save DE results as Parquet using PyArrow
         de_results_file = self.task_inputs_dir / "de_results.parquet"
@@ -398,10 +396,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
 
-        if (
-            f"de_results_{self.deg_test_name}"
-            not in self.adata.uns.keys()
-        ):
+        if f"de_results_{self.deg_test_name}" not in self.adata.uns.keys():
             raise ValueError(
                 f"Key 'de_results_{self.deg_test_name}' not found in adata.uns"
             )
@@ -472,16 +467,20 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         # NB will need to update for multiple perturbations
         # TODO add additional checks -- e.g. ensure even number of controls and treatment cells
-        valid_control_matched_condition_format = f"``{self.control_name}{self.condition_control_sep}{{perturb}}``"
-        
+        valid_control_matched_condition_format = (
+            f"``{self.control_name}{self.condition_control_sep}{{perturb}}``"
+        )
+
         conditions = set(self.control_matched_adata.obs[self.condition_key])
-        target_conditions = set(self.target_conditions_dict.keys())
+        target_conditions = set(self.target_condition_dict.keys())
 
         for condition in conditions:
             if condition in target_conditions:
                 continue
             elif condition.startswith(self.control_name):
-                control_matched_condition_list = condition.split(self.condition_control_sep)
+                control_matched_condition_list = condition.split(
+                    self.condition_control_sep
+                )
 
                 if len(control_matched_condition_list) > 2:
                     raise ValueError(
@@ -510,23 +509,25 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     "for control samples, or ``{{perturb}}`` for perturbations."
                 )
 
-
     def _validate(self) -> None:
-
         super()._validate()
         logger.info("Validating input data")
         self._validate_input_data()
 
-        if hasattr(self, "control_cells_ids") and hasattr(self, "de_results") and hasattr(self, "adata"):
+        if (
+            hasattr(self, "control_cells_ids")
+            and hasattr(self, "de_results")
+            and hasattr(self, "adata")
+        ):
             logger.info("Validating conditions in input data")
             self._validate_input_data_conditions()
         else:
             logger.info("No input data to validate conditions")
 
-        if hasattr(self, "control_matched_adata") and hasattr(self, "target_conditions_dict"):
+        if hasattr(self, "control_matched_adata") and hasattr(
+            self, "target_condition_dict"
+        ):
             logger.info("Validating control-matched adata")
             self._validate_control_matched_adata()
         else:
             logger.info("No control-matched adata to validate")
-
-

@@ -315,7 +315,7 @@ def run_standard_scrna_workflow(
     return adata.obsm[obsm_key]
 
 
-def guess_not_raw_counts(
+def guess_is_not_counts(
     matrix: CellRepresentation,
     sample_size: int | float = 1_000,
     tol: float = 1e-2,

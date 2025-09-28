@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
-from czbenchmarks.tasks.utils import guess_not_raw_counts
+from czbenchmarks.tasks.utils import guess_is_not_counts
 
 
 class TestLooksLikeLognorm:
@@ -10,21 +10,21 @@ class TestLooksLikeLognorm:
         """Test that raw count data (integers) returns False."""
         # Create mock raw count data (integers)
         raw_data = np.random.randint(0, 1000, size=(100, 50))
-        result = guess_not_raw_counts(raw_data)
+        result = guess_is_not_counts(raw_data)
         assert result is False
 
     def test_log_normalized_data_returns_true(self):
         """Test that log-normalized data (with fractional values) returns True."""
         # Create mock log-normalized data with fractional values
         log_data = np.random.lognormal(0, 1, size=(100, 50))
-        result = guess_not_raw_counts(log_data)
+        result = guess_is_not_counts(log_data)
         assert result is True
 
     def test_normalized_non_integer_data_returns_true(self):
         """Test that any non-integer data returns True."""
         # Create data with fractional values (simulating normalized but not necessarily log-transformed)
         normalized_data = np.random.rand(100, 50) * 10  # Random floats between 0-10
-        result = guess_not_raw_counts(normalized_data)
+        result = guess_is_not_counts(normalized_data)
         assert result is True
 
     def test_sparse_raw_count_data_returns_false(self):
@@ -32,7 +32,7 @@ class TestLooksLikeLognorm:
         # Create sparse raw count data
         raw_data = np.random.randint(0, 100, size=(100, 50))
         sparse_data = sp.csr_matrix(raw_data)
-        result = guess_not_raw_counts(sparse_data)
+        result = guess_is_not_counts(sparse_data)
         assert result is False
 
     def test_sparse_log_normalized_data_returns_true(self):
@@ -40,7 +40,7 @@ class TestLooksLikeLognorm:
         # Create sparse log-normalized data
         log_data = np.random.lognormal(0, 1, size=(100, 50))
         sparse_log_data = sp.csr_matrix(log_data)
-        result = guess_not_raw_counts(sparse_log_data)
+        result = guess_is_not_counts(sparse_log_data)
         assert result is True
 
     def test_custom_n_cells_parameter(self):
@@ -49,8 +49,8 @@ class TestLooksLikeLognorm:
         log_data = np.random.lognormal(0, 1, size=(1000, 50))
 
         # Test with different n_cells values
-        result_50 = guess_not_raw_counts(log_data, sample_size=50)
-        result_100 = guess_not_raw_counts(log_data, sample_size=100)
+        result_50 = guess_is_not_counts(log_data, sample_size=50)
+        result_100 = guess_is_not_counts(log_data, sample_size=100)
 
         # Both should return True for log-normalized data
         assert result_50 is True
@@ -62,7 +62,7 @@ class TestLooksLikeLognorm:
         log_data = np.random.lognormal(0, 1, size=(10, 50))
 
         # Request more cells than available
-        result = guess_not_raw_counts(log_data, sample_size=100)
+        result = guess_is_not_counts(log_data, sample_size=100)
 
         # Should still work by using all available cells
         assert result is True
@@ -73,18 +73,18 @@ class TestLooksLikeLognorm:
         almost_integer_data = np.random.randint(0, 100, size=(100, 50)) + 1e-4
 
         # With default epsilon (1e-2), should return False
-        result_default = guess_not_raw_counts(almost_integer_data)
+        result_default = guess_is_not_counts(almost_integer_data)
         assert result_default is False
 
         # With very small tol (1e-5), should return True
-        result_small_tol = guess_not_raw_counts(almost_integer_data, tol=1e-5)
+        result_small_tol = guess_is_not_counts(almost_integer_data, tol=1e-5)
         assert result_small_tol is True
 
     def test_all_zero_data(self):
         """Test behavior with all-zero data."""
         zero_data = np.zeros((100, 50))
 
-        result = guess_not_raw_counts(zero_data)
+        result = guess_is_not_counts(zero_data)
 
         # All zeros should be considered as integer data (raw counts)
         assert result is False
@@ -96,7 +96,7 @@ class TestLooksLikeLognorm:
         # Add a fractional value to ensure the sum is not an integer
         mixed_data[0, 0] += 0.3  # Make first cell have fractional sum
 
-        result = guess_not_raw_counts(mixed_data)
+        result = guess_is_not_counts(mixed_data)
 
         # Should return True since some cells have fractional sums
         assert result is True
@@ -105,12 +105,12 @@ class TestLooksLikeLognorm:
         """Test behavior with single cell data."""
         # Single cell with integer values
         single_cell_int = np.array([[1, 2, 3, 4, 5]])
-        result_int = guess_not_raw_counts(single_cell_int)
+        result_int = guess_is_not_counts(single_cell_int)
         assert result_int is False
 
         # Single cell with fractional values
         single_cell_float = np.array([[1.1, 2.2, 3.3, 4.4, 5.5]])
-        result_float = guess_not_raw_counts(single_cell_float)
+        result_float = guess_is_not_counts(single_cell_float)
         assert result_float is True
 
     def test_deterministic_behavior_with_seed(self):
@@ -120,10 +120,10 @@ class TestLooksLikeLognorm:
 
         # Set seed for reproducible sampling
         np.random.seed(42)
-        result1 = guess_not_raw_counts(log_data, sample_size=100)
+        result1 = guess_is_not_counts(log_data, sample_size=100)
 
         np.random.seed(42)
-        result2 = guess_not_raw_counts(log_data, sample_size=100)
+        result2 = guess_is_not_counts(log_data, sample_size=100)
 
         # Results should be the same with same seed
         assert result1 == result2
@@ -135,7 +135,7 @@ class TestLooksLikeLognorm:
             [[1.3, 2.5], [3.2, 4.1]]
         )  # 2 cells, 2 genes (sums: 3.8, 7.3)
 
-        result = guess_not_raw_counts(
+        result = guess_is_not_counts(
             tiny_data, sample_size=500
         )  # Request more cells than available
 
@@ -147,7 +147,7 @@ class TestLooksLikeLognorm:
         # Create data where individual values are fractional but sums are integers
         # For example: [0.5, 0.5] sums to 1.0 (integer)
         data_with_integer_sums = np.array([[0.5, 0.5], [1.5, 2.5]])  # sums: [1.0, 4.0]
-        result = guess_not_raw_counts(data_with_integer_sums)
+        result = guess_is_not_counts(data_with_integer_sums)
         # Should return False because cell sums are integers (within epsilon)
         assert result is False
 
@@ -161,7 +161,7 @@ class TestLooksLikeLognorm:
                 [1.1, 1.9, 2.0, 3.0],  # sum = 8.0
             ]
         )
-        result_integer_sums = guess_not_raw_counts(integer_sum_data)
+        result_integer_sums = guess_is_not_counts(integer_sum_data)
         assert result_integer_sums is False  # Integer sums
 
         # Create data where cell sums are fractional
@@ -172,5 +172,5 @@ class TestLooksLikeLognorm:
                 [0.9, 1.5],  # sum = 2.4
             ]
         )
-        result_fractional_sums = guess_not_raw_counts(fractional_sum_data)
+        result_fractional_sums = guess_is_not_counts(fractional_sum_data)
         assert result_fractional_sums is True  # Fractional sums

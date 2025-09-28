@@ -155,10 +155,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ]
         # Ensure required uns keys exist so load_data() succeeds, and failure occurs at validate()
         adata.uns["control_cells_ids"] = {
-            "test1": {"cell0": "BADctrl0", 
-                      "cell1": "BADctrl1"},
-            "test2": {"cell0": "BADctrl0", 
-                      "cell1": "BADctrl1"},
+            "test1": {"cell0": "BADctrl0", "cell1": "BADctrl1"},
+            "test2": {"cell0": "BADctrl0", "cell1": "BADctrl1"},
         }
         de_conditions = ["test1"] * 10 + ["test2"] * 10
         de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
@@ -223,27 +221,27 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert dataset.control_matched_adata.shape == (8, 3)
         assert condition_key in dataset.control_matched_adata.obs.columns
         # assert de_gene_col in dataset.control_matched_adata.var.columns
-        assert dataset.control_matched_adata.obs[condition_key].str.contains(control_name).any()
+        assert (
+            dataset.control_matched_adata.obs[condition_key]
+            .str.contains(control_name)
+            .any()
+        )
         # Control labels are formatted as "{control_name}{condition_control_sep}{condition}"
         assert (
             dataset.control_matched_adata.obs[condition_key]
             .astype(str)
-            .str.contains(
-                f"{control_name}{condition_control_sep}test1", regex=False
-            )
+            .str.contains(f"{control_name}{condition_control_sep}test1", regex=False)
             .any()
         )
         assert (
             dataset.control_matched_adata.obs[condition_key]
             .astype(str)
-            .str.contains(
-                f"{control_name}{condition_control_sep}test2", regex=False
-            )
+            .str.contains(f"{control_name}{condition_control_sep}test2", regex=False)
             .any()
         )
 
         # Target genes should be stored per cell (for each unique cell index)
-        assert hasattr(dataset, "target_conditions_dict")
+        assert hasattr(dataset, "target_condition_dict")
         unique_condition_count = len(
             np.unique(
                 dataset.control_matched_adata.obs[condition_key][
@@ -254,11 +252,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             )
         )
 
-        assert len(dataset.target_conditions_dict) == unique_condition_count
+        assert len(dataset.target_condition_dict) == unique_condition_count
 
         # With 10 DE genes per condition in fixtures
         expected_sampled = int(10 * percent_genes_to_mask)
-        sampled_lengths = {len(v) for v in dataset.target_conditions_dict.values()}
+        sampled_lengths = {len(v) for v in dataset.target_condition_dict.values()}
         assert sampled_lengths == {expected_sampled}
 
     def test_perturbation_dataset_load_data_missing_condition_key(
@@ -312,7 +310,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         with pytest.raises(ValueError, match=""):
             dataset.validate()
 
-
     def test_custom_input_tasks_dir_is_used(self, tmp_path, valid_dataset):
         """Test that custom task inputs directory is used if provided"""
         custom_task_inputs_dir = tmp_path / "custom_task_inputs"
@@ -326,7 +323,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         assert custom_task_inputs_dir.exists()
         assert len(list(custom_task_inputs_dir.iterdir())) > 0
-
 
     def test_perturbation_dataset_store_task_inputs(
         self,
@@ -357,7 +353,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         out_dir = dataset.store_task_inputs()
         adata_file = out_dir / "control_matched_adata.h5ad"
-        target_conditions_file = out_dir / "target_conditions_dict.json"
+        target_conditions_file = out_dir / "target_condition_dict.json"
         de_results_file = out_dir / "de_results.parquet"
 
         assert adata_file.exists()
