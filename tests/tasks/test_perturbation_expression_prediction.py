@@ -281,12 +281,12 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     # Provide matched control cell IDs and DE results
     adata.uns["control_cells_ids"] = {
         "test1": {
-            "cond_test1_a": "non-targeting_test1_a",
-            "cond_test1_b": "non-targeting_test2_b",
+            "cond_test1_a": "ctrl_test1_a",
+            "cond_test1_b": "ctrl_test2_b",
         },
         "test2": {
-            "cond_test2_a": "non-targeting_test1_a",
-            "cond_test2_b": "non-targeting_test2_b",
+            "cond_test2_a": "ctrl_test1_a",
+            "cond_test2_b": "ctrl_test2_b",
         },
     }
     de_conditions = ["test1"] * 10 + ["test2"] * 10
@@ -365,12 +365,12 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
         # Provide matched control cell IDs and DE results
         adata.uns["control_cells_ids"] = {
             "test1": {
-                "cond_test1_a": "non-targeting_test1_a",
-                "cond_test1_b": "non-targeting_test2_b",
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
             },
             "test2": {
-                "cond_test2_a": "non-targeting_test1_a",
-                "cond_test2_b": "non-targeting_test2_b",
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
             },
         }
 
@@ -493,12 +493,12 @@ def test_perturbation_task_apply_model_ordering():
         # Provide matched control cell IDs and DE results
         adata.uns["control_cells_ids"] = {
             "test1": {
-                "cond_test1_a": "non-targeting_test1_a",
-                "cond_test1_b": "non-targeting_test2_b",
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
             },
             "test2": {
-                "cond_test2_a": "non-targeting_test1_a",
-                "cond_test2_b": "non-targeting_test2_b",
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
             },
         }
 
