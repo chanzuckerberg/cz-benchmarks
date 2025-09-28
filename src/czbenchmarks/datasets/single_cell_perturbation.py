@@ -69,7 +69,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Must have a column ``condition_key`` in ``adata.obs`` specifying control and perturbed conditions.
     - Condition format must be one of:
 
-      - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
+      - ``{control_name}`` or ``{control_name}{condition_control_sep}{perturb}`` for control samples.
       - ``{perturb}`` for a single perturbation.
 
     - Combinatorial (multiple) perturbations are not currently supported.
@@ -77,13 +77,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary of control cell IDs matched to each condition.
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_to_save (dict): Dictionary of target conditions for each cell.
+        target_conditions_dict (dict): Dictionary of target conditions for each cell.
     """
 
     control_matched_adata: ad.AnnData
     control_cells_ids: dict
     de_results: pd.DataFrame
-    target_conditions_to_save: dict
+    target_conditions_dict: dict
 
     def __init__(
         self,
@@ -133,7 +133,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.deg_test_name = "wilcoxon"  # TODO: consider additional statistical methods for deg
         self.de_gene_col = de_gene_col
         self.condition_control_sep = condition_control_sep
-        # FIXME MICHELLE should these be moved to load_data?
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
@@ -144,13 +143,15 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Load and filter differential expression results.
         """
         logger.info("Loading de_results from adata.uns")
+        # FIXME MICHELLE: update to ensure proper handling of float precision
         de_results = pd.DataFrame(
             self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
+        # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
         error_str, warning_str = "", ""
-        for col in ["pval_adj", "logfoldchange"]:
+        for col in [self.condition_key, self.de_gene_col, "pval_adj", "logfoldchange"]:
             if col not in de_results.columns:
                 error_str += f"{col} column not found in de_results and required for {self.deg_test_name} test. "
             else:
@@ -216,17 +217,21 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if not isinstance(obs[self.condition_key], pd.CategoricalDtype):
             obs[self.condition_key] = pd.Categorical(obs[self.condition_key])
 
-        # Condition -> integer row positions
-        condition_to_indices = obs.groupby(self.condition_key, observed=True).indices
+        # FIXME MICHELLE validate existence of ids from control_cells_ids in adata.obs
+
+        # Experimental ids -> integer row positions per condition and preserves order
+        condition_to_indices = {
+            cond: obs_index.get_indexer_for(list(mapping.keys()))
+            for cond, mapping in self.control_cells_ids.items()
+        }
 
         # Control ids -> integer row positions per condition (preserves order)
         control_to_indices = {
-            cond: obs_index.get_indexer_for(ids)
-            for cond, ids in self.control_cells_ids.items()
+            cond: obs_index.get_indexer_for(list(mapping.values()))
+            for cond, mapping in self.control_cells_ids.items()
         }
 
         all_merged_data = []
-        target_conditions_to_save = {}
 
         with tqdm(
             total=total_conditions, desc="Processing conditions", unit="item"
@@ -243,11 +248,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
 
                 all_merged_data.append(adata_merged)
-                # Add target genes to the dictionary for each cell
-                for idx in adata_merged.obs.index:
-                    target_conditions_to_save[idx] = target_condition_dict[
-                        selected_condition
-                    ]
                 pbar.set_postfix_str(f"Completed {pbar.n + 1}/{total_conditions}")
                 pbar.update(1)
 
@@ -259,11 +259,24 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         adata_final.obs[self.condition_key] = pd.Categorical(
             adata_final.obs[self.condition_key]
         )
+        adata_final.obs = adata_final.obs[[self.condition_key]] # Only key used in task
 
-        return adata_final, target_conditions_to_save
+        # FIXME MICHELLE: is this necessary?
+        # Add task-related data to uns for easy access
+        adata_final.uns["target_conditions_dict"] = target_condition_dict
+        adata_final.uns["de_results"] = {
+            col: self.de_results[col].values for col in self.de_results.columns
+        }
+        adata_final.uns["cell_barcode_condition_index"] = self.adata.obs.index.astype(
+            str
+        ).values
+        adata_final.uns["control_cells_ids"] = self.control_cells_ids
+
+        return adata_final, target_condition_dict
 
     def load_data(
         self,
+        validate_input_data: bool = False,
     ) -> None:
         """
         Load the dataset and populate perturbation truth data.
@@ -272,10 +285,108 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         `adata.obs`, and extracts control data for each condition into the
         `perturbation_truth` attribute.
 
+        Args:
+            validate_input_data (bool): Whether to validate input data.
+                Default is False.
+
         Raises:
             ValueErrors or FileNotFoundErrors based on required data structure.
         """
         super().load_data()
+
+        if validate_input_data:
+            logger.info("Validating input data")
+            self._validate_input_data()
+        
+        # Load control_cells_ids from adata.uns
+        self.control_cells_ids = self.adata.uns["control_cells_ids"]
+
+        # Load and filter differential expression results
+        logger.info(
+            f"Loading and filtering differential expression results using {self.deg_test_name} test"
+        )
+        self.de_results = self.load_and_filter_deg_results()
+        logger.info(f"Using {len(self.de_results)} differential expression values")
+
+        # FIXME MICHELLE: debugging
+        # # Optimize: Keep only necessary columns in de_results
+        # # Task only uses: condition_key, "gene_id", and metric_column (logfoldchange or standardized_mean_diff)
+        # metric_column = (
+        #     "logfoldchange"
+        #     if self.deg_test_name == "wilcoxon"
+        #     else "standardized_mean_diff"
+        # )
+        # necessary_columns = [self.condition_key, self.de_gene_col, metric_column]
+
+        # # Ensure we have gene_id column for compatibility with task
+        # if self.de_gene_col != "gene_id":
+        #     self.de_results = self.de_results.rename(
+        #         columns={self.de_gene_col: "gene_id"}
+        #     )
+        #     necessary_columns = [self.condition_key, "gene_id", metric_column]
+
+        # self.de_results = self.de_results[necessary_columns]
+
+        if validate_input_data:
+            logger.info("Validating input data conditions")
+            self._validate_input_data_conditions()
+
+        logger.info(
+            f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
+        )
+        adata_final, target_conditions_dict = self._create_adata()
+
+        self.control_matched_adata = adata_final
+        self.target_conditions_dict = target_conditions_dict
+
+        if validate_input_data:
+            logger.info("Validating control-matched adata")
+            self._validate_control_matched_adata()
+
+    def store_task_inputs(self) -> Path:
+        """
+        Store all task inputs as separate files.
+
+        This method saves all task-related data as separate files:
+        - control_matched_adata.h5ad: The main AnnData object (includes cell_barcode_condition_index, control_cells_ids, target_conditions_dict, and de_results in uns)
+        - target_conditions_dict.json: Target conditions dictionary
+        - de_results.parquet: Differential expression results
+
+        Returns:
+            Path: Path to the task inputs directory.
+        """
+        # Ensure the task inputs directory exists
+        self.task_inputs_dir.mkdir(parents=True, exist_ok=True)
+        adata_to_save = self.control_matched_adata.copy()
+        adata_to_save.uns["cell_barcode_condition_index"] = self.adata.obs.index.astype(
+            str
+        ).values
+
+        # Save the main AnnData object
+        adata_file = self.task_inputs_dir / "control_matched_adata.h5ad"
+        adata_to_save.write_h5ad(adata_file)
+
+        # Save target conditions dict as JSON
+        target_conditions_file = self.task_inputs_dir / "target_conditions_dict.json"
+        with open(target_conditions_file, "w") as f:
+            json.dump(self.target_conditions_dict, f)
+
+        # Save DE results as Parquet using PyArrow
+        de_results_file = self.task_inputs_dir / "de_results.parquet"
+        self.de_results.to_parquet(de_results_file, engine="pyarrow", index=False)
+
+        return self.task_inputs_dir
+
+    def _validate_input_data(self) -> None:
+        """
+        Validate input data.
+
+        Validates the following:
+        - Condition key exists in adata.obs.
+        - Control condition exists in condition key column.
+        - DE results exist in adata.uns.
+        - Control cells ids exist in adata.uns.
+        """
 
         if self.condition_key not in self.adata.obs.columns:
             raise ValueError(
@@ -298,28 +409,24 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if "control_cells_ids" not in self.adata.uns.keys():
             raise ValueError("Key 'control_cells_ids' not found in adata.uns")
 
-        # Load control_cells_ids from adata.uns
-        self.control_cells_ids = self.adata.uns["control_cells_ids"]
-
-        # Loading from h5ad file converts lists to numpy arrays
-        for key in self.control_cells_ids.keys():
-            self.control_cells_ids[key] = list(self.control_cells_ids[key])
-
-        # Load and filter differential expression results
-        logger.info(
-            f"Loading and filtering differential expression results using {self.deg_test_name} test"
-        )
-        self.de_results = self.load_and_filter_deg_results()
-        logger.info(f"Using {len(self.de_results)} differential expression values")
-
+    def _validate_input_data_conditions(self) -> None:
+        """
+        Validate conditions in control_cells_ids, de_results, and adata.obs.
+        This must be done after all three are loaded.
+        """
         # Compare conditions and throw warning or error for unmatched conditions
         unique_conditions_adata = set(self.adata.obs[self.condition_key])
         unique_conditions_control_cells_ids = set(self.control_cells_ids.keys())
         unique_conditions_de_results = set(self.de_results[self.condition_key])
 
+        # Ensure comparison does not include control condition
+        if self.control_name in unique_conditions_adata:
+            unique_conditions_adata.remove(self.control_name)
+
         if not unique_conditions_de_results.issubset(unique_conditions_adata):
             raise ValueError(
-                f"de_results[{self.condition_key}] contains conditions not in adata.obs[{self.condition_key}]. This will cause errors in the creation of the control-matched adata."
+                f"de_results[{self.condition_key}] contains treatment conditions not in adata.obs[{self.condition_key}]. "
+                "This will cause errors in the creation of the control-matched adata."
             )
 
         if not unique_conditions_de_results.issubset(
@@ -337,7 +444,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"are not identical"
             )
             if unique_conditions_control_cells_ids.issubset(unique_conditions_adata):
-                logger.warning(
+                logger.info(
                     msg + f", but control_cells_ids keys are a subset of "
                     f"adata.obs[{self.condition_key}]. This should allow for "
                     f"creation of control-matched data but will ignore some of "
@@ -350,100 +457,76 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     f"the creation of control-matched adata."
                 )
 
-        logger.info(
-            f"Creating control-matched adata for {len(self.control_cells_ids)} conditions"
-        )
-        adata_final, target_conditions_to_save = self._create_adata()
-
-        self.control_matched_adata = adata_final
-        self.target_conditions_to_save = target_conditions_to_save
-
-    def store_task_inputs(self) -> Path:
+    def _validate_control_matched_adata(self) -> None:
         """
-        Store auxiliary data files.
-
-        This method saves the IDs of the control cells and the target conditions dictionary
-            to JSON files.
-
-        Returns:
-            Path: Path to the directory storing the task input files.
-        """
-        # TODO: Might be better as a single adata, pending future design on how
-        # Task instantiation is performed by benchmarking pipelines
-        inputs_to_store = {
-            "control_cells_ids": self.control_cells_ids,
-            "target_conditions_to_save": self.target_conditions_to_save,
-            "de_results": self.de_results,
-            "control_matched_adata/obs": self.control_matched_adata.obs,
-            "control_matched_adata/var": self.control_matched_adata.var,
-            "control_matched_adata/X": self.control_matched_adata.X,
-            "original_adata/obs/index": self.adata.obs.index.astype(str).to_numpy(),
-        }
-
-        for key, item in inputs_to_store.items():
-            if hasattr(item, "to_json"):
-                # For pandas DataFrames. Preserve index for obs/var by using orient="split".
-                buffer = io.StringIO()
-                if key in {"control_matched_adata/obs", "control_matched_adata/var"}:
-                    item.to_json(buffer, orient="split")
-                else:
-                    item.to_json(buffer)
-                self._store_task_input(f"{key}.json", buffer.getvalue())
-
-            elif isinstance(item, np.ndarray):
-                output_dir = self.task_inputs_dir / Path(key).parent
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_file = self.task_inputs_dir / (key + ".npy")
-                np.save(output_file, item)
-
-            elif isinstance(item, sparse.csr_matrix):
-                output_dir = self.task_inputs_dir / Path(key).parent
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_file = self.task_inputs_dir / (key + ".npz")
-                sparse.save_npz(output_file, item)
-
-            else:
-                # For dictionaries and other JSON-serializable objects
-                json_string = json.dumps(item)
-                self._store_task_input(f"{key}.json", json_string)
-
-        return self.task_inputs_dir
-
-    def _validate(self) -> None:
-        """
-        Perform dataset-specific validation.
+        Perform validations on the control-matched adata.
 
         Validates the following:
         - Condition format must be one of:
-          - ``{control_name}`` or ``{control_name}_{perturb}`` for matched control samples.
           - ``{perturb}`` for single perturbations.
+          - ``{control_name}{condition_control_sep}{perturb}`` for matched control samples.
         - Combinatorial perturbations are not currently supported.
 
         Raises:
             ValueError: If invalid condition formats are found.
         """
-        super()._validate()
-
-        # Validate condition format
+        # NB will need to update for multiple perturbations
+        # TODO add additional checks -- e.g. ensure even number of controls and treatment cells
+        valid_control_matched_condition_format = f"``{self.control_name}{self.condition_control_sep}{{perturb}}``"
+        
         conditions = set(self.control_matched_adata.obs[self.condition_key])
-        target_conditions = set(
-            x.split(self.condition_control_sep)[1] for x in self.target_conditions_to_save.keys()
-        )  # Update for multiple perturbations
+        target_conditions = set(self.target_conditions_dict.keys())
 
         for condition in conditions:
             if condition in target_conditions:
                 continue
             elif condition.startswith(self.control_name):
-                control_matched_condition = condition.split(self.condition_control_sep)[1]
-                if control_matched_condition not in target_conditions:
+                control_matched_condition_list = condition.split(self.condition_control_sep)
+
+                if len(control_matched_condition_list) > 2:
                     raise ValueError(
                         f"Invalid control matched condition format: {condition}. "
-                        f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}``"
+                        f"Ensure the format does not contain more than one delimiter ({self.condition_control_sep})."
+                        f"Must be {valid_control_matched_condition_format}"
+                    )
+                if len(control_matched_condition_list) < 2:
+                    raise ValueError(
+                        f"Invalid control matched condition format: {condition}. "
+                        f"Ensure the format contains the delimiter ({self.condition_control_sep})."
+                        f"Format must be {valid_control_matched_condition_format}"
+                    )
+
+                control_matched_condition = control_matched_condition_list[1]
+                if control_matched_condition not in target_conditions:
+                    raise ValueError(
+                        f"Control matched condition {control_matched_condition} does not contain a valid perturbation."
+                        f"Format must be {valid_control_matched_condition_format}"
                     )
             else:
                 # Update for multiple perturbations
                 raise ValueError(
                     f"Invalid perturbation condition format: {condition}. "
-                    f"Must be ``{self.control_name}`` or ``{self.control_name}_{{perturb}}`` for control samples,"
-                    "or ``{perturb}`` for perturbations."
+                    f"Must be ``{self.control_name}`` or ``{self.control_name}{self.condition_control_sep}{{perturb}}`` "
+                    "for control samples, or ``{{perturb}}`` for perturbations."
                 )
+
+
+    def _validate(self) -> None:
+
+        super()._validate()
+        logger.info("Validating input data")
+        self._validate_input_data()
+
+        if hasattr(self, "control_cells_ids") and hasattr(self, "de_results") and hasattr(self, "adata"):
+            logger.info("Validating conditions in input data")
+            self._validate_input_data_conditions()
+        else:
+            logger.info("No input data to validate conditions")
+
+        if hasattr(self, "control_matched_adata") and hasattr(self, "target_conditions_dict"):
+            logger.info("Validating control-matched adata")
+            self._validate_control_matched_adata()
+        else:
+            logger.info("No control-matched adata to validate")
+
+
