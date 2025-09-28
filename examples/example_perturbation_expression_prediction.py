@@ -6,6 +6,7 @@ import omegaconf
 import hydra
 from hydra.utils import instantiate
 import numpy as np
+import anndata as ad
 
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
@@ -86,6 +87,28 @@ def load_dataset_config(
     return dataset_cfg
 
 
+def generate_random_model_predictions(n_cells, n_genes):
+    """This demonstrates the expected format for the model predictions.
+    This should be an anndata file where the obs.index contains the cell
+    barcodes and the var.index contains the genes. These should be the same or a
+    subset of the genes and cells in the dataset. The X matrix should be the
+    model predictions.
+    """
+
+    model_predictions: CellRepresentation = np.random.rand(n_cells, n_genes)
+    # Put the predictions in an anndata object
+    model_adata = ad.AnnData(X=model_predictions)
+
+    # The same genes and cells (or a subset of them) should be in the model adata.
+    model_adata.obs.index = (
+        dataset.adata.obs.index.to_series().sample(frac=1, random_state=42).values
+    )
+    model_adata.var.index = (
+        dataset.adata.var.index.to_series().sample(frac=1, random_state=42).values
+    )
+    return model_adata
+
+
 if __name__ == "__main__":
     """Runs a task to calculate perturbation metrics. 
 
@@ -125,8 +148,19 @@ if __name__ == "__main__":
         dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
     )
     dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
+
     dataset: SingleCellPerturbationDataset = instantiate(dataset_cfg)
-    dataset.load_data()
+
+    # Load data -- the dataset class has an optional validation method that
+    # can be run while loading and/or afterwards
+    dataset.load_data()  # Add validate_input_data=True to validate while loading
+    dataset.validate()
+
+    # This generates a sample model anndata file. In applications,
+    # this should contain the model predictions and should be provided by the user.
+    model_adata = generate_random_model_predictions(
+        dataset.adata.shape[0], dataset.adata.shape[1]
+    )
 
     # Choose approach based on flag
     if args.save_task_inputs:
@@ -138,26 +172,42 @@ if __name__ == "__main__":
 
         task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
         logging.info("Task inputs loaded from saved files")
+
+        # FIXME MICHELLE why is this necessary?
+        # Update with the model ordering of the genes and of the cells
+        task_input.gene_index = model_adata.var.index
+        task_input.cell_index = model_adata.obs.index
     else:
         logging.info("Creating task input directly from dataset...")
 
-        # Create task input directly from dataset
         task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.control_matched_adata,
+            target_condition_dict=dataset.target_condition_dict,
             de_results=dataset.de_results,
-            var_index=dataset.control_matched_adata.var.index,
-            masked_adata_obs=dataset.control_matched_adata.obs,
-            target_conditions_to_save=dataset.target_conditions_to_save,
-            row_index=dataset.adata.obs.index,
+            gene_index=model_adata.var.index,
+            cell_index=model_adata.obs.index,
         )
-
-    # Generate random model output
-    model_output: CellRepresentation = np.random.rand(
-        dataset.adata.shape[0], dataset.adata.shape[1]
-    )
 
     # Run task
     task = PerturbationExpressionPredictionTask(
-        control_prefix=dataset_cfg["control_name"]
+        condition_key=dataset_cfg["condition_key"],
+        control_name=dataset_cfg["control_name"],
+        condition_control_sep=dataset_cfg["condition_control_sep"],
+        de_gene_col=dataset_cfg["de_gene_col"],
     )
-    metrics_dict = task.run(model_output, task_input)
+
+    # Convert model adata to cell representation
+    model_output = model_adata.X
+    metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
     print_metrics_summary(metrics_dict)
+
+    # FIXME MICHELLE this throws an error because of non-log-normalized data
+    # # Compute baseline -- pseudocode -- this throws an error because of non-log-normalized data
+    # baseline_model = task.compute_baseline(
+    #     cell_representation=dataset.adata.X, baseline_type="median"
+    # )
+    # baseline_metrics_dict = task.run(
+    #     cell_representation=baseline_model, task_input=task_input
+    # )
+    # logger.info("Baseline metrics:")
+    # print_metrics_summary(baseline_metrics_dict)
