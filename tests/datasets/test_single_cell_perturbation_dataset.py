@@ -259,3 +259,64 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             assert "logfoldchange" in de_df.columns
         else:
             assert "standardized_mean_diff" in de_df.columns
+
+    @pytest.mark.parametrize("deg_test_name", ["wilcoxon", "t-test"])
+    @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
+    @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
+    @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
+    def test_perturbation_dataset_load_de_results_from_csv(
+        self,
+        tmp_path,
+        deg_test_name,
+        percent_genes_to_mask,
+        min_de_genes_to_mask,
+        pval_threshold,
+    ):
+        """Tests loading DE results from an external CSV via de_results_path."""
+        # Create the base AnnData file using existing helper to ensure obs/uns layout
+        h5ad_path = self.valid_dataset_file(tmp_path)
+
+        # Create a DE results CSV with required columns for both tests
+        # Include two conditions that match the AnnData: test1 and test2, 10 genes each
+        csv_path = tmp_path / "de_results.csv"
+        conditions = ["test1"] * 10 + ["test2"] * 10
+        genes = [f"GENE_{i}" for i in range(20)]
+        de_df = pd.DataFrame(
+            {
+                "condition": conditions,
+                "gene": genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+                "standardized_mean_diff": [2.0] * 20,
+            }
+        )
+        de_df.to_csv(csv_path, index=False)
+
+        # Construct dataset pointing to the CSV and with permissive thresholds
+        dataset = SingleCellPerturbationDataset(
+            path=h5ad_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            deg_test_name=deg_test_name,
+            percent_genes_to_mask=percent_genes_to_mask,
+            min_de_genes_to_mask=min_de_genes_to_mask,
+            pval_threshold=pval_threshold,
+            min_logfoldchange=0.0,
+            de_results_path=csv_path,
+        )
+
+        dataset.load_data()
+
+        # Expect 2 conditions (test1, test2), each with 2 perturbed + 2 control cells -> 8 total
+        assert dataset.control_matched_adata.shape == (8, 3)
+
+        # Target genes should be stored per cell (for each unique cell index)
+        assert hasattr(dataset, "target_conditions_to_save")
+        unique_obs_count = len(set(dataset.control_matched_adata.obs.index.tolist()))
+        assert len(dataset.target_conditions_to_save) == unique_obs_count
+
+        # With 10 genes per condition and percent as parameter
+        expected_sampled = int(10 * percent_genes_to_mask)
+        sampled_lengths = {len(v) for v in dataset.target_conditions_to_save.values()}
+        assert sampled_lengths == {expected_sampled}
