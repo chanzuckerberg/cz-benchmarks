@@ -92,12 +92,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         condition_key: str = "condition",
         control_name: str = "ctrl",
         de_gene_col: str = "gene",
-        deg_test_name: str = "wilcoxon",
         percent_genes_to_mask: float = 0.5,
         min_de_genes_to_mask: int = 5,
         pval_threshold: float = 1e-4,
         min_logfoldchange: float = 1.0,
-        min_smd: float = 0.55,
         task_inputs_dir: Optional[Path] = None,
     ):
         """
@@ -113,8 +111,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
-            deg_test_name (str): Name of the differential expression test
-                condition. Options are "wilcoxon" or "t-test". Defaults to "wilcoxon".
             percent_genes_to_mask (float): Percentage of genes to mask.
                 Default is 0.5.
             min_de_genes_to_mask (int): Minimum number of differentially
@@ -124,22 +120,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is 1e-4.
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
-            min_smd (float): Minimum standardized mean difference for differential
-                expression. Default is 0.55.
             task_inputs_dir (Optional[Path]): Directory for storing task-specific
                 inputs.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
         self.control_name = control_name
-        self.deg_test_name = deg_test_name
-        self.normalized_deg_test_name = deg_test_name.replace("-", "_")
+        self.deg_test_name = "wilcoxon"  # TODO: consider additional statistical methods for deg
         self.de_gene_col = de_gene_col
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
-        self.min_smd = min_smd
 
     def load_and_filter_deg_results(self):
         """
@@ -147,20 +139,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """
         logger.info("Loading de_results from adata.uns")
         de_results = pd.DataFrame(
-            self.adata.uns[f"de_results_{self.normalized_deg_test_name}"]
+            self.adata.uns[f"de_results_{self.deg_test_name}"]
         )
 
         # Validate structure of deg data
-        # TODO move column names to standardized location when utility function added
-        filter_columns = ["pval_adj"]
-        if self.deg_test_name == "wilcoxon":
-            filter_columns.append("logfoldchange")
-        else:
-            filter_columns.append("standardized_mean_diff")
-
         error_str = ""
         warning_str = ""
-        for col in filter_columns:
+        for col in ["pval_adj", "logfoldchange"]:
             if col not in de_results.columns:
                 error_str += f"{col} column not found in de_results and required for {self.deg_test_name} test. "
             else:
@@ -179,14 +164,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             f"Removed {filtered_rows_pval_threshold} rows of {len(de_results)} total rows using pval_adj <= {self.pval_threshold}"
         )
 
-        if self.deg_test_name == "wilcoxon":
-            filter_column = "logfoldchange"
-            filter_criteria = self.min_logfoldchange
-
-        elif self.deg_test_name == "t-test":
-            filter_column = "standardized_mean_diff"
-            filter_criteria = self.min_smd
-
+        filter_column = "logfoldchange"
+        filter_criteria = self.min_logfoldchange
         effect_mask = de_results[filter_column].abs() >= filter_criteria
         combined_mask = pval_mask & effect_mask
         filtered_rows_additional = (~combined_mask).sum() - filtered_rows_pval_threshold
@@ -197,6 +176,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         )
 
         de_results = de_results[combined_mask]
+        if len(de_results) == 0:
+            raise ValueError(
+                "No differential expression results remain after filtering. "
+                "Please check de data and filtering parameters."
+            )
         return de_results
 
     def _create_adata(self) -> Tuple[ad.AnnData, dict]:
@@ -297,18 +281,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
 
-        if self.deg_test_name not in ["wilcoxon", "t-test"]:
-            raise ValueError(
-                f"Differential expression test name '{self.deg_test_name}' not supported. "
-                "Options are 'wilcoxon' or 't-test'."
-            )
-
         if (
-            f"de_results_{self.normalized_deg_test_name}"
+            f"de_results_{self.deg_test_name}"
             not in self.adata.uns.keys()
         ):
             raise ValueError(
-                f"Key 'de_results_{self.normalized_deg_test_name}' not found in adata.uns"
+                f"Key 'de_results_{self.deg_test_name}' not found in adata.uns"
             )
 
         if "control_cells_ids" not in self.adata.uns.keys():

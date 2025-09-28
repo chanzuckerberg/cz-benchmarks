@@ -86,8 +86,7 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        metric: str = "wilcoxon",
-        control_prefix: str = "non-targeting",
+        control_prefix: str = "non-targeting", # FIXME MICHELLE
         *,
         random_seed: int = RANDOM_SEED,
     ):
@@ -97,12 +96,7 @@ class PerturbationExpressionPredictionTask(Task):
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
-        if metric == "wilcoxon":
-            self.metric_column = "logfoldchange"
-        elif metric == "t-test":
-            self.metric_column = "standardized_mean_diff"
-        else:
-            raise ValueError(f"Metric {metric} not supported")
+        self.metric_column = "logfoldchange" # TODO: logfoldchange only for now
         self.control_prefix = control_prefix
 
     def _run_task(
