@@ -8,6 +8,8 @@ This task evaluates a model's ability to predict expression for masked genes usi
 - The differential expression results are also stored in the unstructured portion of the AnnData in the keys `de_results_wilcoxon` for analysis that utilized the Wilcoxon signed-rank test. This is the only metric that is currently supported. 
 - The gene expression values have not been further processed and should be processed as required for the respective model during inference.
 
+This benchmark is designed for model-agnostic evaluation: any model that outputs a cell × gene prediction matrix (aligned with the provided adata) can be plugged into the task. The task ensures alignment by validating gene and cell indices against the dataset.
+
 ## Dataset Functionality and Parameters
 
 The data loading method accomplishes the following:
@@ -25,8 +27,6 @@ The following parameters are used in loading the data:
 - `condition_key`: The name of the column in `adata.obs` and the DE results containing condition labels for perturbations and controls. Default is "condition".
 - `control_name`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "non-targeting".
 - `de_gene_col`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene".
-- `de_results_path`: CSV path for external DE results. If not provided, DE results are read from the dataset.
-  
 
 ### Masking Parameters
 
@@ -42,7 +42,7 @@ The following parameters control masking of the DE genes:
 Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `task_inputs_dir`) are also required but not listed here.
 
 ### Saving the Dataset
-The outputs of the dataset processing can be saved with 
+To reload and reuse datasets without re-running preprocessing, the outputs of the dataset can be saved with:
 ```python
 task_inputs_dir = dataset.store_task_inputs()
 ```
@@ -50,7 +50,9 @@ task_inputs_dir = dataset.store_task_inputs()
 
 ## Task Functionality and Parameters 
 
-This task evaluates perturbation-induced expression predictions against their ground truth values by calculating predicted and experimental log fold change (LFC) values. The class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either `median` (default) or `mean`, that calculates the median or mean expression values, respectively, across all cells in the dataset.
+This task evaluates perturbation-induced expression predictions against their ground truth values by calculating predicted and experimental log fold change (LFC) values. Predicted log fold changes are computed per condition as the difference in mean expression between perturbed and matched control cells, for the subset of masked genes.
+
+The class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either `median` (default) or `mean`, that calculates the median or mean expression values, respectively, across all cells in the dataset.
 
 The following parameters are used by the task, via the `PerturbationExpressionPredictionTaskInput` class:  
 
@@ -66,9 +68,10 @@ task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
 ```
 
 ### Notes on loading model predictions. 
+
 When a user loads in model predictions, the genes that are predicted on should be a subset of the genes in the replogle dataset, and the cells that are predicted on should be a subset of the cells. At the start of the task, there is a valiation step that ensures that these criteria are met. 
 
-To ensure that the correct values are predicted on, in the PerturbationExpressionPredictionTaskInput set the gene_index and cell_index to the genes and cells that were predicted on.  
+To ensure that the correct values are predicted on, in the PerturbationExpressionPredictionTaskInput set the `gene_index` and `cell_index` to the genes and cells that were predicted on.  
 
 ## Metrics
 
@@ -81,5 +84,10 @@ The task produces per-condition metrics by comparing predicted and ground-truth 
 - **F1 score (binarized)**: Harmonic mean of precision and recall of the binarized labels.
 
 Results are generated for each perturbation condition separately. Downstream reporting may aggregate scores across conditions (e.g., mean and standard deviation).
+
+For large-scale benchmarks, metrics can be exported to CSV/JSON via the provided `czbenchmarks.tasks.utils.print_metrics_summary helper`, or integrated into custom logging frameworks.
+
+## Example Usage
+For example use cases, see examples/example_perturbation_expression_prediction.py. 
 
 [^replogle-k562-essentials]: Replogle, J. M., Elgamal, R. M., Abbas, A. et al. Mapping information-rich genotype–phenotype landscapes with genome-scale Perturb-seq. Cell, 185(14):2559–2575.e28 (2022). [DOI](https://doi.org/10.1016/j.cell.2022.05.013)
