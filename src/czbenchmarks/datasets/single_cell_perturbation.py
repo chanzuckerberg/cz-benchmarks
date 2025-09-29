@@ -126,8 +126,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is 1e-4.
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
-            task_inputs_dir (Optional[Path]): Directory for storing task-specific
-                inputs.
+            random_seed (int): Random seed for reproducibility.
+            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary of target conditions whose genes were randomly selected for masking.
+                Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
