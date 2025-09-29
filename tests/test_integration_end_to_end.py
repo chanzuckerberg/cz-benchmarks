@@ -1,7 +1,6 @@
 import json
 import numpy as np
 import pytest
-
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
 from czbenchmarks.datasets import SingleCellPerturbationDataset
@@ -199,12 +198,16 @@ def test_end_to_end_perturbation_expression_prediction():
     )
 
     # Build task input directly from dataset
+    # Create AnnData with required data in uns
+    adata = dataset.control_matched_adata.copy()
+    adata.uns["cell_barcode_index"] = dataset.control_matched_adata.obs.index.astype(
+        str
+    ).values
+
     task_input = PerturbationExpressionPredictionTaskInput(
+        adata=adata,
+        target_conditions_dict=dataset.target_conditions_dict,
         de_results=dataset.de_results,
-        var_index=dataset.control_matched_adata.var.index,
-        masked_adata_obs=dataset.control_matched_adata.obs,
-        target_conditions_to_save=dataset.target_conditions_to_save,
-        row_index=dataset.adata.obs.index,
     )
 
     # Create random model output matching dataset dimensions
