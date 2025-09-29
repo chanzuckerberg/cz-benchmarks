@@ -403,10 +403,10 @@ def test_perturbation_task_apply_model_ordering():
             cell_index=dataset.adata.obs.index[obs_order],
         )
         out_shuf = task._run_task(shuffled, shuffled_input)
-        assert set(out_orig.pred_log_fc_dict.keys()) == set(
+        assert out_orig.pred_log_fc_dict.keys() == out_shuf.pred_log_fc_dict.keys()
             out_shuf.pred_log_fc_dict.keys()
         )
-        assert set(out_orig.true_log_fc_dict.keys()) == set(
+        assert out_orig.true_log_fc_dict.keys() == out_shuf.true_log_fc_dict.keys()
             out_shuf.true_log_fc_dict.keys()
         )
         for k in out_orig.pred_log_fc_dict.keys():

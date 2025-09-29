@@ -121,7 +121,7 @@ class TestLooksLikeLognorm:
         # Single cell with fractional values
         single_cell_float = np.array([[1.1, 2.2, 3.3, 4.4, 5.5]])
         result_float = looks_like_lognorm(single_cell_float)
-        assert result_float is True
+        assert result_float
 
     def test_deterministic_behavior_with_seed(self):
         """Test that results are consistent when sampling the same data."""
@@ -150,7 +150,7 @@ class TestLooksLikeLognorm:
         )  # Request more cells than available
 
         # Should still work and return True for fractional data
-        assert result is True
+        assert result
 
     def test_fractional_values_integer_sums(self):
         """Test that fractional values with integer sums return False."""

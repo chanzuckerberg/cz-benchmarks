@@ -579,7 +579,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 continue
             else:
                 logger.warning(
-                    f"Unexpected condition label: {condition}."
+                    f"Unexpected condition label: {condition!r}."
                     f"not present in filtered DE results."
                 )
                 continue
