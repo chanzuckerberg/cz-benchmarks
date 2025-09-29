@@ -279,7 +279,3 @@ def test_end_to_end_perturbation_expression_prediction():
     assert "perturbation" in parsed
     assert "model" in parsed["perturbation"]
     assert "baseline" in parsed["perturbation"]
-
-
-if __name__ == "__main__":
-    test_end_to_end_perturbation_expression_prediction()
