@@ -172,27 +172,6 @@ def _print_simple_metrics(grouped_metrics):
             print(f"  {i + 1}: {result.value:.4f}{params_display}")
 
 
-def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):
-    """Convert continuous values to binary classification.
-
-    Filters out NaN and infinite values, then converts values to binary
-    using a threshold of 0 (positive values become 1, others become 0).
-
-    Args:
-        y_true: True continuous values
-        y_pred: Predicted continuous values
-
-    Returns:
-        tuple: (true_binary, pred_binary) - binary arrays for classification metrics
-    """
-    ids = np.where(~np.isnan(y_true) & ~np.isinf(y_true))[0]
-    y_true = y_true[ids]
-    y_pred = y_pred[ids]
-    pred_binary = (y_pred > 0).astype(int)
-    true_binary = (y_true > 0).astype(int)
-    return true_binary, pred_binary
-
-
 def cluster_embedding(
     adata: AnnData,
     n_iterations: int = 2,

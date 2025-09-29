@@ -3,6 +3,7 @@ import sys
 import argparse
 from typing import Optional
 import anndata as ad
+import pandas as pd
 import numpy as np
 import hydra
 from hydra.utils import instantiate
@@ -56,6 +57,11 @@ def parse_args():
         type=int,
         default=5,
         help="Minimum number of DE genes required to mask a condition",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Verbose metric output",
     )
     return parser.parse_args()
 
@@ -175,10 +181,13 @@ if __name__ == "__main__":
         dataset_adata=dataset.adata,
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
-
-    # Inspect metrics
-    logger.info("Model metrics:")
-    print_metrics_summary(metrics_dict)
+    metrics_values = np.asarray(
+        [
+            x.value
+            for x in metrics_dict
+            if x.metric_type.value == "spearman_correlation_calculation"
+        ]
+    )
 
     # Compute baselines
     baseline_model = task.compute_baseline(
@@ -187,5 +196,37 @@ if __name__ == "__main__":
     baseline_metrics_dict = task.run(
         cell_representation=baseline_model, task_input=task_input
     )
-    logging.info("Baseline metrics:")
-    print_metrics_summary(baseline_metrics_dict)
+    baseline_metrics_values = np.asarray(
+        [
+            x.value
+            for x in baseline_metrics_dict
+            if x.metric_type.value == "spearman_correlation_calculation"
+        ]
+    )
+
+    # Inspect metrics
+    metrics_df = pd.DataFrame(
+        {"Model": metrics_values, "Baseline": baseline_metrics_values}
+    )
+    summary_df = metrics_df.describe()
+
+    print("-------------------------------------")
+    print("Summary of Model and Baseline metrics:")
+    print("-------------------------------------\n")
+    print(
+        f"Description: Summary of Spearman correlations of fold changes of \n"
+        "model predictions for all differentially expressed genes."
+    )
+    with pd.option_context("display.precision", 4):
+        print(summary_df.to_string(index=False))
+
+    if args.verbose:
+        print("--------------------------------")
+        print("Model metrics:")
+        print("--------------------------------")
+        print_metrics_summary(metrics_dict)
+
+        print("--------------------------------")
+        print("Baseline metrics:")
+        print("--------------------------------")
+        print_metrics_summary(baseline_metrics_dict)
