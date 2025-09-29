@@ -165,8 +165,9 @@ def _compute_de_wilcoxon(
     if results_df is None or len(results_df) == 0:
         return pd.DataFrame(columns=["condition", "gene", "logfoldchange", "pval_adj"]).copy()
 
-    results_df = results_df.rename(columns={"gene_id": "gene"})
-    keep_cols = ["condition", "gene", "logfoldchange", "pval_adj"]
+    # results_df = results_df.rename(columns={"gene_id": "gene"})
+    # keep_cols = ["condition", "gene", "logfoldchange", "pval_adj"]
+    keep_cols = ["condition", "gene_id", "logfoldchange", "pval_adj"]
     available = [c for c in keep_cols if c in results_df.columns]
     return results_df[available].copy()
 
