@@ -1,7 +1,6 @@
 import logging
 import sys
 import argparse
-from pathlib import Path
 from typing import Optional
 import anndata as ad
 import numpy as np
@@ -34,31 +33,6 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Run perturbation expression prediction task"
     )
-    # parser.add_argument(
-    #     "--dataset_path",
-    #     type=Path,
-    #     default=None,
-    #     help="Path to a prepared .h5ad dataset (e.g., a subset created for fast testing)",
-    # )
-    # parser.add_argument(
-    #     "--organism",
-    #     type=str,
-    #     default="human",
-    #     choices=["human", "mouse"],
-    #     help="Organism for the dataset file when using --dataset_path",
-    # )
-    # parser.add_argument(
-    #     "--condition_key",
-    #     type=str,
-    #     default="condition",
-    #     help="Condition column name in adata.obs (when using --dataset_path)",
-    # )
-    # parser.add_argument(
-    #     "--control_name",
-    #     type=str,
-    #     default="non-targeting",
-    #     help="Control name/prefix in adata.obs (when using --dataset_path)",
-    # )
     parser.add_argument(
         "--percent_genes_to_mask",
         type=float,
@@ -91,6 +65,7 @@ def load_dataset_config(
     config_name: str = "datasets",
     dataset_update_dict: Optional[dict] = None,
 ):
+    # TODO could be used to improve flexibility of current load_dataset function
     """Customize dataset class instantiation parameters using cli args
 
     Args:
@@ -110,7 +85,7 @@ def load_dataset_config(
     return dataset_cfg
 
 
-def generate_random_model_predictions(n_cells, n_genes):
+def generate_random_model_predictions(dataset, n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
     This should be an anndata file where the obs.index contains the cell
     barcodes and the var.index contains the genes. These should be the same or a
@@ -160,45 +135,6 @@ if __name__ == "__main__":
     It then calculates the correlation between ground truth and predicted log 
     fold change for each condition using a variety of metrics.    
     """
-    # Before running this example, make sure the `--dataset_path` flag is set to where
-    # the dataset input file is saved.
-    # """
-
-    # # Instantiate a config and load the input data
-    # # FIXME MICHELLE -- UPDATE DATASET PATH AND THIS SECTION
-    # cfg = {
-    #     "datasets": {
-    #         "replogle_k562_essential_perturbpredict": {
-    #             "percent_genes_to_mask": args.percent_genes_to_mask,
-    #             "min_logfoldchange": args.min_logfoldchange,
-    #             "pval_threshold": args.pval_threshold,
-    #             "min_de_genes_to_mask": args.min_de_genes_to_mask,
-    #         }
-    #     }
-    # }
-
-    # if args.dataset_path is not None:
-    #     org = Organism.HUMAN if args.organism.lower() == "human" else Organism.MOUSE
-    #     dataset: SingleCellPerturbationDataset = SingleCellPerturbationDataset(
-    #         path=Path(args.dataset_path).expanduser(),
-    #         organism=org,
-    #         condition_key=args.condition_key,
-    #         control_name=args.control_name,
-    #         percent_genes_to_mask=args.percent_genes_to_mask,
-    #         min_de_genes_to_mask=args.min_de_genes_to_mask,
-    #         pval_threshold=args.pval_threshold,
-    #         min_logfoldchange=args.min_logfoldchange,
-    #     )
-    #     dataset.load_data()
-    # else:
-    #     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_cfg:
-    #         yaml.dump(cfg, tmp_cfg)
-    #         tmp_cfg_path = tmp_cfg.name
-
-    #         dataset: SingleCellPerturbationDataset = load_dataset(
-    #             "replogle_k562_essential_perturbpredict",
-    #             config_path=Path(tmp_cfg_path),
-    #         )
 
     args = parse_args()
     dataset_name = "replogle_k562_essential_perturbpredict"
@@ -210,48 +146,46 @@ if __name__ == "__main__":
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
-    # TODO could be used to improve flexibility of current load_dataset function
+    
     dataset_cfg = load_dataset_config(
         dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
     )
     dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
 
+    # Instantiate dataset and load data
     dataset: SingleCellPerturbationDataset = instantiate(dataset_cfg)
-
-    # Load data -- the dataset class has an optional validation method that
-    # can be run while loading and/or afterwards
-    dataset.load_data()  # Add validate_input_data=True to validate while loading
+    dataset.load_data()
     dataset.validate()
 
-    # This generates a sample model anndata file. In applications,
-    # this should contain the model predictions and should be provided by the user.
+    # This generates sample model anndata. In applications,
+    # this should contain the model predictions and should be 
+    # provided by the user.
     model_adata = generate_random_model_predictions(
-        dataset.adata.shape[0], dataset.adata.shape[1]
+        dataset, dataset.adata.shape[0], dataset.adata.shape[1]
     )
+    model_output = model_adata.X
+
+    # Run task
     logger.info("Creating task input from predictions and dataset")
-    # Create task input using the helper function to preserve predictions' ordering
+    task = PerturbationExpressionPredictionTask(
+        condition_key=dataset.condition_key, control_name=dataset.control_name
+    )
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
     )
-    # Convert model adata to cell representation
-    model_output = model_adata.X
-
-    # Run task
-    task = PerturbationExpressionPredictionTask(
-        condition_key=dataset.condition_key, control_name=dataset.control_name
-    )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
+    
+    # Inspect metrics
     logger.info("Model metrics:")
     print_metrics_summary(metrics_dict)
 
-    # FIXME MICHELLE this throws an error because of non-log-normalized data
-    # # Compute baselines
-    # baseline_model = task.compute_baseline(
-    #     cell_representation=dataset.adata.X, baseline_type="median"
-    # )
-    # baseline_metrics_dict = task.run(
-    #     cell_representation=baseline_model, task_input=task_input
-    # )
-    # logging.info("Baseline metrics:")
-    # print_metrics_summary(baseline_metrics_dict)
+    # Compute baselines
+    baseline_model = task.compute_baseline(
+        cell_representation=dataset.adata.X, baseline_type="median"
+    )
+    baseline_metrics_dict = task.run(
+        cell_representation=baseline_model, task_input=task_input
+    )
+    logging.info("Baseline metrics:")
+    print_metrics_summary(baseline_metrics_dict)
