@@ -44,14 +44,13 @@ These errors originate from the content of your `.h5ad` file not meeting the req
 
     - **Solution**: Add the required column with the correct data to your `AnnData` object's `.obs` DataFrame and save the `.h5ad` file again.
 
-  - **Error**: `ValueError: Invalid split value(s): ...` or `ValueError: Invalid perturbation condition format: ...`
+  - **Error**: `ValueError: Invalid perturbation condition format: ...`
 
-    - **Cause**: The `split` or `condition` columns in a `SingleCellPerturbationDataset` contain incorrectly formatted values.
+    - **Cause**: The `condition` columns in a `SingleCellPerturbationDataset` contain incorrectly formatted values.
 
     - **Solution**:
 
-        - The `split` column must only contain `"train"`, `"test"`, and `"val"`.
-        - The `condition` column must follow the format `"ctrl"`, `"{gene}+ctrl"`, or `"{gene1}+{gene2}"`. Correct the values in your `adata.obs` and re-save the dataset.
+        - The `condition` column must follow the format ``{control_name}``, ``{control_name}_{perturbation}``, or ``{perturbation}``. Correct the values in your `adata.obs` and re-save the dataset.
 
 
 
