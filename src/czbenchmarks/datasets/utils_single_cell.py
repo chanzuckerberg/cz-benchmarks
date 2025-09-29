@@ -58,8 +58,8 @@ def create_adata_for_condition(
 def run_multicondition_dge_analysis(
     adata: ad.AnnData,
     condition_key: str,
+    de_gene_col: str,
     control_cells_ids: Dict[str, List[str]],
-    deg_test_name: Literal["wilcoxon", "t-test"] = "wilcoxon",
     filter_min_cells: int = 10,
     filter_min_genes: int = 1000,
     min_pert_cells: int = 50,
@@ -75,8 +75,8 @@ def run_multicondition_dge_analysis(
     ----------
     adata (AnnData): Annotated data matrix containing gene expression and metadata.
     condition_key (str): Column name for condition labels in `adata.obs`.
+    de_gene_col (str): Column name for gene labels in `adata.var`.
     control_cells_ids (Dict[str, List[str]]): Mapping from condition -> list of matched control cell ids.
-    deg_test_name (Literal["wilcoxon", "t-test"], optional): Statistical test name for differential expression. Defaults to 'wilcoxon'.
     filter_min_cells (int, optional): Minimum number of cells expressing a gene to include that gene. Defaults to 10.
     filter_min_genes (int, optional): Minimum number of genes detected per cell. Defaults to 1000.
     min_pert_cells (int, optional): Minimum number of perturbed cells required. Defaults to 50.
@@ -92,16 +92,12 @@ def run_multicondition_dge_analysis(
         - adata_merged: AnnData containing concatenated condition and control cells.
     """
 
-    if deg_test_name not in ["wilcoxon", "t-test"]:
-        raise ValueError(
-            f"Invalid deg_test_name: {deg_test_name}. Must be 'wilcoxon' or 't-test'."
-        )
-
     if return_merged_adata:
         logger.warning(
             "return_merged_adata is True, which can consume a large amount of memory."
         )
 
+    deg_test_name = "wilcoxon"
     obs = adata.obs
     obs_index = obs.index
 
@@ -186,7 +182,7 @@ def run_multicondition_dge_analysis(
             adata_merged, group=selected_condition, key="dge_results"
         )
         # Add condition name
-        results["condition"] = selected_condition
+        results[condition_key] = selected_condition
 
         # Option to remove zero expression genes
         if remove_avg_zeros:
@@ -228,17 +224,14 @@ def run_multicondition_dge_analysis(
 
     # Standardize column names
     col_mapper = {
-        "names": "gene_id",
+        "names": de_gene_col,
         "scores": "score",
         "logfoldchanges": "logfoldchange",
         "pvals": "pval",
         "pvals_adj": "pval_adj",
-        "smd": "standardized_mean_diff",
-        "group": "group",
-        "condition": "condition",
     }
     results = results.rename(columns=col_mapper)
-    cols = [x for x in col_mapper.values() if x in results.columns]
+    cols = [x for x in col_mapper.values() if x in results.columns] + [condition_key]
     results = results[cols]
 
     if store_dge_metadata:
