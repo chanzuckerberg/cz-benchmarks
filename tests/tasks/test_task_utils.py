@@ -13,7 +13,7 @@ class TestLooksLikeLognorm:
 
         result = looks_like_lognorm(raw_data)
 
-        assert result is False
+        assert not result
 
     def test_log_normalized_data_returns_true(self):
         """Test that log-normalized data (with fractional values) returns True."""
@@ -22,7 +22,7 @@ class TestLooksLikeLognorm:
 
         result = looks_like_lognorm(log_data)
 
-        assert result is True
+        assert result
 
     def test_normalized_non_integer_data_returns_true(self):
         """Test that any non-integer data returns True."""
@@ -31,7 +31,7 @@ class TestLooksLikeLognorm:
 
         result = looks_like_lognorm(normalized_data)
 
-        assert result is True
+        assert result
 
     def test_sparse_raw_count_data_returns_false(self):
         """Test that sparse raw count data returns False."""
@@ -41,7 +41,7 @@ class TestLooksLikeLognorm:
 
         result = looks_like_lognorm(sparse_data)
 
-        assert result is False
+        assert result
 
     def test_sparse_log_normalized_data_returns_true(self):
         """Test that sparse log-normalized data returns True."""
@@ -51,7 +51,7 @@ class TestLooksLikeLognorm:
 
         result = looks_like_lognorm(sparse_log_data)
 
-        assert result is True
+        assert result
 
     def test_custom_n_cells_parameter(self):
         """Test that the n_cells parameter works correctly."""
@@ -63,8 +63,8 @@ class TestLooksLikeLognorm:
         result_100 = looks_like_lognorm(log_data, sample_size=100)
 
         # Both should return True for log-normalized data
-        assert result_50 is True
-        assert result_100 is True
+        assert result_50
+        assert result_100
 
     def test_n_cells_larger_than_data_size(self):
         """Test behavior when n_cells is larger than the actual number of cells."""
@@ -75,7 +75,7 @@ class TestLooksLikeLognorm:
         result = looks_like_lognorm(log_data, sample_size=100)
 
         # Should still work by using all available cells
-        assert result is True
+        assert result
 
     def test_custom_epsilon_parameter(self):
         """Test that the epsilon parameter affects detection sensitivity."""
@@ -84,11 +84,11 @@ class TestLooksLikeLognorm:
 
         # With default epsilon (1e-2), should return False
         result_default = looks_like_lognorm(almost_integer_data)
-        assert result_default is False
+        assert not result_default
 
         # With very small tol (1e-5), should return True
         result_small_tol = looks_like_lognorm(almost_integer_data, tol=1e-5)
-        assert result_small_tol is True
+        assert result_small_tol
 
     def test_all_zero_data(self):
         """Test behavior with all-zero data."""
@@ -97,7 +97,7 @@ class TestLooksLikeLognorm:
         result = looks_like_lognorm(zero_data)
 
         # All zeros should be considered as integer data (raw counts)
-        assert result is False
+        assert not result
 
     def test_mixed_integer_and_float_data(self):
         """Test data that's mostly integer but has some fractional values."""
@@ -109,14 +109,14 @@ class TestLooksLikeLognorm:
         result = looks_like_lognorm(mixed_data)
 
         # Should return True since some cells have fractional sums
-        assert result is True
+        assert result
 
     def test_single_cell_data(self):
         """Test behavior with single cell data."""
         # Single cell with integer values
         single_cell_int = np.array([[1, 2, 3, 4, 5]])
         result_int = looks_like_lognorm(single_cell_int)
-        assert result_int is False
+        assert not result_int
 
         # Single cell with fractional values
         single_cell_float = np.array([[1.1, 2.2, 3.3, 4.4, 5.5]])
@@ -175,7 +175,7 @@ class TestLooksLikeLognorm:
         )
 
         result_integer_sums = looks_like_lognorm(integer_sum_data)
-        assert result_integer_sums is False  # Integer sums
+        assert not result_integer_sums
 
         # Create data where cell sums are fractional
         fractional_sum_data = np.array(
@@ -187,4 +187,4 @@ class TestLooksLikeLognorm:
         )
 
         result_fractional_sums = looks_like_lognorm(fractional_sum_data)
-        assert result_fractional_sums is True  # Fractional sums
+        assert result_fractional_sums
