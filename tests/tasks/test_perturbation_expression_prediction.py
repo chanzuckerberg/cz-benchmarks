@@ -257,24 +257,17 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
     )
 
-    # First, check that true/pred vectors produced by _run_task match expectations
-    task_output = task._run_task(
-        cell_representation=cell_representation, task_input=task_input
-    )
-    assert set(task_output.pred_log_fc_dict.keys()) == {"gene_A", "gene_B"}
-    assert set(task_output.true_log_fc_dict.keys()) == {"gene_A", "gene_B"}
-    assert np.allclose(task_output.pred_log_fc_dict["gene_A"], true_lfc_gene_A)
-    assert np.allclose(task_output.pred_log_fc_dict["gene_B"], true_lfc_gene_B)
-    assert np.allclose(task_output.true_log_fc_dict["gene_A"], true_lfc_gene_A)
-    assert np.allclose(task_output.true_log_fc_dict["gene_B"], true_lfc_gene_B)
-
-    # Then, run the full task and validate metrics are perfect
+    # Run the task via public API and validate metrics/conditions
     results = task.run(cell_representation=cell_representation, task_input=task_input)
 
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
     # Expect results for both conditions x 5 metric types = 10 total results
     assert len(results) == 10
+
+    # Ensure both conditions are present in results' params
+    result_conditions = {r.params.get(condition_key) for r in results}
+    assert {"gene_A", "gene_B"}.issubset(result_conditions)
 
     # Each result should have perfect scores
     for r in results:
@@ -508,9 +501,8 @@ def test_perturbation_expression_prediction_task_with_shuffled_input(
             de_gene_col=de_gene_col,
         )
 
-        # FIXME MICHELLE: why is this  using _run_task instead of run?
-        # Run task with both inputs, aligning indices to matrix ordering in the shuffled case
-        original_result = task._run_task(
+        # Run task with both inputs via public API, aligning indices to matrix ordering in the shuffled case
+        original_metrics = task.run(
             cell_representation=model_output, task_input=original_task_input
         )
         shuffled_task_input = PerturbationExpressionPredictionTaskInput(
@@ -520,30 +512,23 @@ def test_perturbation_expression_prediction_task_with_shuffled_input(
             gene_index=original_task_input.gene_index[col_perm],
             cell_index=original_task_input.cell_index[row_perm],
         )
-        shuffled_result = task._run_task(model_output_shuffled, shuffled_task_input)
+        shuffled_metrics = task.run(
+            cell_representation=model_output_shuffled, task_input=shuffled_task_input
+        )
 
         # Results should be identical (same conditions, same relative data)
-        assert set(original_result.pred_log_fc_dict.keys()) == set(
-            shuffled_result.pred_log_fc_dict.keys()
-        )
-        assert set(original_result.true_log_fc_dict.keys()) == set(
-            shuffled_result.true_log_fc_dict.keys()
-        )
+        def to_metric_map(results):
+            m = {}
+            for r in results:
+                cond = r.params.get(condition_key)
+                m[(r.metric_type, cond)] = r.value
+            return m
 
-        # The predicted values should be the same since we used correspondingly shuffled model output
-        for condition in original_result.pred_log_fc_dict.keys():
-            np.testing.assert_allclose(
-                original_result.pred_log_fc_dict[condition],
-                shuffled_result.pred_log_fc_dict[condition],
-                rtol=1e-10,
-                err_msg=f"Predicted log fold changes differ for condition {condition}",
-            )
-            np.testing.assert_allclose(
-                original_result.true_log_fc_dict[condition],
-                shuffled_result.true_log_fc_dict[condition],
-                rtol=1e-10,
-                err_msg=f"True log fold changes differ for condition {condition}",
-            )
+        orig_map = to_metric_map(original_metrics)
+        shuf_map = to_metric_map(shuffled_metrics)
+        assert set(orig_map.keys()) == set(shuf_map.keys())
+        for k in orig_map.keys():
+            assert np.isclose(orig_map[k], shuf_map[k])
 
 
 @pytest.mark.parametrize("condition_key", ["condition", "perturbation"])
@@ -781,9 +766,11 @@ def test_perturbation_task_apply_model_ordering_validation(
         ):
             task_input.gene_index = model_adata_bad_genes.var.index
             task_input.cell_index = model_adata_bad_genes.obs.index
-            task._run_task(
-                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
-                task_input,
+            task.run(
+                cell_representation=np.random.rand(
+                    len(task_input.cell_index), len(task_input.gene_index)
+                ),
+                task_input=task_input,
             )
 
         # Test with mismatched cells
@@ -798,7 +785,9 @@ def test_perturbation_task_apply_model_ordering_validation(
         with pytest.raises(
             ValueError, match="Model data contains genes that are not in the task input"
         ):
-            task._run_task(
-                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
-                task_input,
+            task.run(
+                cell_representation=np.random.rand(
+                    len(task_input.cell_index), len(task_input.gene_index)
+                ),
+                task_input=task_input,
             )
