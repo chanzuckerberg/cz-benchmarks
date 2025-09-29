@@ -149,7 +149,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Load and filter differential expression results.
         """
         logger.info("Loading de_results from adata.uns")
-
         # FIXME MICHELLE: check proper handling of float precision
         de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
         # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
@@ -187,7 +186,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(
             f"Removed {filtered_rows_additional} rows of {len(de_results)} total rows using {filter_column} >= {self.min_logfoldchange}"
         )
-
         de_results = de_results[combined_mask]
         if len(de_results) == 0:
             raise ValueError(
@@ -548,6 +546,20 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             )
         # Validate conditions found in the original adata
         original_conditions = set(self.adata.obs[self.condition_key])
+        mapped_conditions = set(self.control_mapping.keys())
+        for condition in original_conditions:
+            # Strict schema on format, but allow extra perturbations not in DE with a warning
+            if condition in mapped_conditions:
+                continue
+            elif condition == self.control_name:
+                continue
+            else:
+                logger.warning(
+                    f"Unexpected condition label: {condition}."
+                    f"not present in control mapping."
+                )
+                continue
+
         target_conditions = set(getattr(self, "target_conditions_dict", {}).keys())
         # Also allow any condition that appears in de_results (some datasets may include
         # conditions beyond the sampled target set)
@@ -571,15 +583,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             logger.warning("No differential expression results found in adata.uns")
             pass
 
-        for condition in original_conditions:
+        for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
-            if condition in target_conditions:
-                continue
-            elif condition == self.control_name:
-                continue
-            else:
+            if condition not in mapped_conditions:
                 logger.warning(
                     f"Unexpected condition label: {condition}."
-                    f"not present in filtered DE results."
+                    f"not present in control mapping."
                 )
                 continue

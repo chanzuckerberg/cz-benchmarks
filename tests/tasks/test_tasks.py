@@ -22,70 +22,76 @@ from tests.utils import (
 )
 
 
-@pytest.mark.parametrize(
-    "fixture_data",
-    [
-        ("expression_matrix", False),
-        (["expression_matrix", "expression_matrix"], True),
-    ],
-    indirect=True,
-)
-def test_embedding_valid_input_output(fixture_data):
+def test_embedding_valid_input_output(dummy_anndata):
     """Test that embedding is accepted and List[MetricResult] is returned."""
-    embedding, requires_multiple_datasets = fixture_data
-    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
+    expression_matrix = dummy_anndata["expression_matrix"]
+
+    # Test single dataset
+    task = DummyTask(requires_multiple_datasets=False)
     results = task.run(
-        cell_representation=embedding,
+        cell_representation=expression_matrix,
         task_input=DummyTaskInput(),
     )
+    assert isinstance(results, list)
+    assert all(isinstance(r, MetricResult) for r in results)
 
+    # Test multiple datasets
+    task = DummyTask(requires_multiple_datasets=True)
+    results = task.run(
+        cell_representation=[expression_matrix, expression_matrix],
+        task_input=DummyTaskInput(),
+    )
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
 
 
-@pytest.mark.parametrize(
-    "fixture_data",
-    [
-        (
-            "abcd",
-            [False, "This task requires a single cell representation for input"],
-        ),
-        (
-            ["embedding_matrix"],
-            [False, "This task requires a single cell representation for input"],
-        ),
-        (
-            ["embedding_matrix", "embedding_matrix"],
-            [False, "This task requires a single cell representation for input"],
-        ),
-        (
-            "embedding_matrix",
-            [True, "This task requires a list of cell representations"],
-        ),
-        (
-            ["abcd", "embedding_matrix"],
-            [True, "This task requires a list of cell representations"],
-        ),
-        (
-            ["embedding_matrix"],
-            [
-                True,
-                "This task requires a list of cell representations but only one "
-                "was provided",
-            ],
-        ),
-    ],
-    indirect=True,
-)
-def test_embedding_invalid_input(fixture_data):
+def test_embedding_invalid_input(dummy_anndata):
     """Test ValueError for mismatch with requires_multiple_datasets."""
-    embedding_list, (requires_multiple_datasets, error_message) = fixture_data
-    task = DummyTask(requires_multiple_datasets=requires_multiple_datasets)
-    with pytest.raises(ValueError, match=error_message):
+    embedding_matrix = dummy_anndata["embedding_matrix"]
+
+    # Test invalid string input for single dataset task
+    task = DummyTask(requires_multiple_datasets=False)
+    with pytest.raises(
+        ValueError, match="This task requires a single cell representation for input"
+    ):
+        task.run(cell_representation="abcd", task_input=DummyTaskInput())
+
+    # Test list input for single dataset task
+    with pytest.raises(
+        ValueError, match="This task requires a single cell representation for input"
+    ):
+        task.run(cell_representation=[embedding_matrix], task_input=DummyTaskInput())
+
+    # Test multiple datasets for single dataset task
+    with pytest.raises(
+        ValueError, match="This task requires a single cell representation for input"
+    ):
         task.run(
-            cell_representation=embedding_list,
+            cell_representation=[embedding_matrix, embedding_matrix],
             task_input=DummyTaskInput(),
         )
+
+    # Test single dataset for multiple dataset task
+    task = DummyTask(requires_multiple_datasets=True)
+    with pytest.raises(
+        ValueError, match="This task requires a list of cell representations"
+    ):
+        task.run(cell_representation=embedding_matrix, task_input=DummyTaskInput())
+
+    # Test invalid input in list for multiple dataset task
+    with pytest.raises(
+        ValueError, match="This task requires a list of cell representations"
+    ):
+        task.run(
+            cell_representation=["abcd", embedding_matrix], task_input=DummyTaskInput()
+        )
+
+    # Test single item list for multiple dataset task
+    with pytest.raises(
+        ValueError,
+        match="This task requires a list of cell representations but only one was provided",
+    ):
+        task.run(cell_representation=[embedding_matrix], task_input=DummyTaskInput())
 
 
 @pytest.mark.parametrize(
@@ -114,11 +120,13 @@ def test_embedding_invalid_input(fixture_data):
 def test_task_execution(
     task_class,
     task_input_builder,
-    embedding_matrix,
-    expression_matrix,
-    obs,
+    dummy_anndata,
 ):
     """Test that each task executes without errors on compatible data."""
+
+    embedding_matrix = dummy_anndata["embedding_matrix"]
+    expression_matrix = dummy_anndata["expression_matrix"]
+    obs = dummy_anndata["obs"]
 
     task_input = task_input_builder(obs)
 
@@ -154,9 +162,11 @@ def test_task_execution(
         pytest.fail(f"Task {task_class.__name__} failed unexpectedly: {e}")
 
 
-def test_cross_species_task(embedding_matrix, obs):
+def test_cross_species_task(dummy_anndata):
     """Test that CrossSpeciesIntegrationTask executes without errors."""
     task = CrossSpeciesIntegrationTask()
+    embedding_matrix = dummy_anndata["embedding_matrix"]
+    obs = dummy_anndata["obs"]
     embedding_list = [embedding_matrix, embedding_matrix]
     labels = obs["cell_type"]
     labels_list = [labels, labels]

@@ -19,7 +19,6 @@ from czbenchmarks.tasks import (
 )
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
-    PerturbationExpressionPredictionTaskInput,
 )
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     build_task_input_from_predictions,

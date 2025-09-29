@@ -1,8 +1,10 @@
 import pytest
 import pandas as pd
+import numpy as np
 import anndata as ad
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
+from czbenchmarks.metrics.types import MetricResult
 from tests.utils import create_dummy_anndata
 
 
@@ -38,40 +40,43 @@ def dummy_anndata():
 
 
 @pytest.fixture
-def expression_matrix(dummy_anndata):
-    return dummy_anndata["expression_matrix"]
+def adata_uns_setup():
+    """Helper function to setup common AnnData UNS structure."""
 
-
-@pytest.fixture
-def embedding_matrix(dummy_anndata):
-    return dummy_anndata["embedding_matrix"]
-
-
-@pytest.fixture
-def obs(dummy_anndata):
-    return dummy_anndata["obs"]
-
-
-@pytest.fixture
-def var(dummy_anndata):
-    return dummy_anndata["var"]
-
-
-@pytest.fixture
-def fixture_data(request):
-    # Enables lazy generation of fixture data so fixtures can be used as
-    # parameters
-    valid_fixture_names = ["expression_matrix", "embedding_matrix", "obs", "var"]
-    fixture_name, other_data = request.param
-    if isinstance(fixture_name, str):
-        fixture_data = (
-            request.getfixturevalue(fixture_name)
-            if fixture_name in valid_fixture_names
-            else fixture_name
+    def _setup_uns(adata, de_results, target_conditions_dict, control_cells_map):
+        adata.uns.update(
+            {
+                "control_cells_ids": {},
+                "de_results": de_results[["condition", "gene_id", "logfoldchange"]]
+                if "gene_id" in de_results.columns
+                else de_results,
+                "metric_column": "logfoldchange",
+                "target_conditions_dict": target_conditions_dict,
+                "control_cells_map": control_cells_map,
+            }
         )
-    else:
-        fixture_data = [
-            request.getfixturevalue(f) if f in valid_fixture_names else f
-            for f in fixture_name
-        ]
-    return fixture_data, other_data
+        return adata
+
+    return _setup_uns
+
+
+@pytest.fixture
+def assert_metric_results():
+    """Helper function for common metric result assertions."""
+
+    def _assert_results(
+        results, expected_count, expected_types=None, perfect_correlation=False
+    ):
+        assert isinstance(results, list) and all(
+            isinstance(r, MetricResult) for r in results
+        )
+        assert len(results) == expected_count
+
+        if perfect_correlation:
+            assert all(np.isclose(r.value, 1.0) for r in results)
+
+        if expected_types:
+            metric_types = {result.metric_type for result in results}
+            assert expected_types.issubset(metric_types)
+
+    return _assert_results

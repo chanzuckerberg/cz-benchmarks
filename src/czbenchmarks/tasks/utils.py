@@ -298,6 +298,7 @@ def looks_like_lognorm(
     matrix: CellRepresentation,
     sample_size: int | float = 1_000,
     tol: float = 1e-2,
+    random_seed: int = RANDOM_SEED,
 ) -> bool:
     """
     Guess if a matrix contains log-normalized (non-integer) values by inspecting random cell sums.
@@ -307,7 +308,7 @@ def looks_like_lognorm(
 
     Args:
         matrix: Expression matrix (cells x genes).
-        sample_size: How many cells to check (default: 500 or all if fewer).
+        sample_size: How many cells to check (default: 1000 or all if fewer).
         tol: Allowed deviation from integer for sum to be considered integer-like.
 
     Returns:
@@ -315,7 +316,7 @@ def looks_like_lognorm(
     """
     total_cells = matrix.shape[0]
     n = int(min(sample_size, total_cells))
-    indices = np.random.choice(total_cells, n, replace=False)
+    indices = np.random.default_rng(random_seed).choice(total_cells, n, replace=False)
     row_totals = matrix[indices].sum(axis=1)
     if np.any(np.abs(row_totals - np.round(row_totals)) > tol):
         return True
