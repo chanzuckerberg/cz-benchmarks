@@ -88,7 +88,7 @@ This task evaluates the model's ability to learn representations that are consis
 
 Warning: This task is still in progress. Results are subject to further validation.
 
-This task evaluates the performance of a model in predicting cellular responses to genetic perturbations. The process involves using the model to predict expression values from datasets with a subset of their differential expressed genes randomly masked. These predictions are then converted to log fold changes and compared to their respective ground-truth values.
+This task evaluates the performance of a model in predicting cellular responses to genetic perturbations. The process involves using the model to predict expression values from datasets with a subset of their differential expressed genes randomly masked. These predictions are then correlated with their respective ground-truth values for each condition.
 
 #### Task: Genetic Perturbation Prediction
 

@@ -19,6 +19,9 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    All dataset types must inherit from `Dataset`.
 
+- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
+   Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
+
 - [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
    An abstract implementation of `Dataset` for single-cell data.
 
@@ -27,9 +30,6 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - Loads AnnData object from H5AD files via `anndata.read_h5ad`.
    - Stores Anndata in `adata` instance variable.
    - Validates gene name prefixes and that expression values are raw counts.
-
-- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
-   Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
 - [SingleCellLabeledDataset](../autoapi/czbenchmarks/datasets/single_cell_labeled/index)  
    Subclass of `SingleCellDataset` designed for perturbation benchmarks.
@@ -49,7 +49,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - It also validates that a column with the value of the parameter `de_gene_col`, as well as columns with the names "logfoldchange" and "pval_adj" are present in the differential expression results. 
    - The value set by `control_name` must be present for the control cells in the data of condition column in `adata.obs`.
    - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
-   - Computes and stores `control_matched_adata` (anndata that is split into `X`, `obs`, and `var` for output), `control_cells_ids`, `de_results`, `target_conditions_dict`.
+   - Computes and stores control matched AnnData (stored as `dataset.adata`). Other outputs, `control_cells_ids`, `de_results`, `target_conditions_dict`, are stored in the unstructured portion of the AnnData (`adata.uns`).
 
    Example valid perturbation formats:
 
