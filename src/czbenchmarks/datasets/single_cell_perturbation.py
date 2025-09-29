@@ -92,7 +92,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         path: Path,
         organism: Organism,
         condition_key: str = "condition",
-        control_name: str = "non-targeting",
+        control_name: str = "ctrl",
         de_gene_col: str = "gene",
         de_metric_col: str = "logfoldchange",
         de_pval_col: str = "pval_adj",
@@ -113,7 +113,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             condition_key (str): Key for the column in `adata.obs` specifying
                 conditions. Defaults to "condition".
             control_name (str): Name of the control condition. Defaults to
-                "non-targeting".
+                "ctrl".
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".

@@ -24,7 +24,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="non-targeting",
+            control_name="ctrl",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -41,8 +41,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
-            "non-targeting",
-            "non-targeting",
+            "ctrl",
+            "ctrl",
             "test1",
             "test1",
             "test2",
@@ -50,8 +50,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         ]
         # Set indices so that splitting on '_' and taking token [1] yields the condition
         adata.obs_names = [
-            "non-targeting_test1_a",  # control cell 1
-            "non-targeting_test2_b",  # control cell 2
+            "ctrl_test1_a",  # control cell 1
+            "ctrl_test2_b",  # control cell 2
             "cond_test1_a",
             "cond_test1_b",
             "cond_test2_a",
@@ -60,12 +60,12 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         # Strict 1-1 control map: condition -> {treated_barcode -> control_barcode}
         adata.uns["control_cells_map"] = {
             "test1": {
-                "cond_test1_a": "non-targeting_test1_a",
-                "cond_test1_b": "non-targeting_test2_b",
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
             },
             "test2": {
-                "cond_test2_a": "non-targeting_test1_a",
-                "cond_test2_b": "non-targeting_test2_b",
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
             },
         }
         # Provide sufficient DE results to pass internal filtering and sampling
@@ -108,8 +108,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = [
-            "BADnon-targeting",
-            "BADnon-targeting",
+            "BADctrl",
+            "BADctrl",
             "test1",
             "test1",
             "test2",
@@ -151,7 +151,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key=condition_key,
-            control_name="non-targeting",
+            control_name="ctrl",
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
@@ -167,7 +167,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         unique_condition_count = len(
             np.unique(
                 dataset.adata.obs[condition_key][
-                    ~dataset.adata.obs[condition_key].str.startswith("non-targeting")
+                    ~dataset.adata.obs[condition_key].str.startswith("ctrl")
                 ]
             )
         )
@@ -188,6 +188,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             perturbation_missing_condition_column_h5ad,
             organism=Organism.HUMAN,
             condition_key="condition",
+            control_name="ctrl",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -210,6 +211,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
+            control_name="ctrl",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=5,
             pval_threshold=1e-4,
@@ -238,7 +240,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="non-targeting",
+            control_name="ctrl",
             percent_genes_to_mask=0.5,
             min_de_genes_to_mask=2,
             pval_threshold=1e-4,
@@ -313,7 +315,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
             condition_key="condition",
-            control_name="non-targeting",
+            control_name="ctrl",
             percent_genes_to_mask=percent_genes_to_mask,
             min_de_genes_to_mask=min_de_genes_to_mask,
             pval_threshold=pval_threshold,
