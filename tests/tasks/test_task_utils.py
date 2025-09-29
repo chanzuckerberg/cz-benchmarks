@@ -161,7 +161,7 @@ class TestLooksLikeLognorm:
         result = looks_like_lognorm(data_with_integer_sums)
 
         # Should return False because cell sums are integers (within epsilon)
-        assert result is False
+        assert not result
 
     def test_explains_function_behavior(self):
         """Test that demonstrates the function checks cell sums, not individual values."""
