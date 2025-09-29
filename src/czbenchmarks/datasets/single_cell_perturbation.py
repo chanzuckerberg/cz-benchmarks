@@ -36,7 +36,7 @@ def sample_de_genes(
     """
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
-    target_condition_dict = {}
+    target_conditions_dict = {}
     for target in target_conditions:
         gene_names = de_results[de_results[condition_col] == target][gene_col].values
         n_genes_to_sample = int(len(gene_names) * percent_genes_to_mask)
@@ -44,8 +44,8 @@ def sample_de_genes(
             sampled_genes = np.random.choice(
                 gene_names, size=n_genes_to_sample, replace=False
             ).tolist()
-            target_condition_dict[target] = sampled_genes
-    return target_condition_dict
+            target_conditions_dict[target] = sampled_genes
+    return target_conditions_dict
 
 
 class SingleCellPerturbationDataset(SingleCellDataset):
@@ -223,9 +223,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Determine target_conditions_dict: override, or sample deterministically
         if self.target_conditions_override is not None:
-            target_condition_dict = self.target_conditions_override
+            target_conditions_dict = self.target_conditions_override
         else:
-            target_condition_dict = sample_de_genes(
+            target_conditions_dict = sample_de_genes(
                 de_results=de_results_min,
                 percent_genes_to_mask=self.percent_genes_to_mask,
                 min_de_genes_to_mask=self.min_de_genes_to_mask,
@@ -233,8 +233,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 gene_col="gene_id",
                 seed=self.random_seed,
             )
-        self.target_conditions_dict = target_condition_dict
-        self.adata.uns[self.UNS_TARGET_GENES_KEY] = target_condition_dict
+        self.target_conditions_dict = target_conditions_dict
+        self.adata.uns[self.UNS_TARGET_GENES_KEY] = target_conditions_dict
 
         # Persist config and seed for provenance
         self.adata.uns[self.UNS_RANDOM_SEED_KEY] = int(self.random_seed)
