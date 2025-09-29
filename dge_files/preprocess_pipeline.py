@@ -153,7 +153,6 @@ def _compute_de_wilcoxon(
         adata=adata,
         condition_key=condition_col,
         control_cells_ids=control_cells_ids,
-        deg_test_name="wilcoxon",
         filter_min_cells=filter_min_cells,
         filter_min_genes=filter_min_genes,
         min_pert_cells=min_pert_cells,
