@@ -60,7 +60,7 @@ class PerturbationExpressionPredictionTask(Task):
     def __init__(
         self,
         condition_key: str = "condition",
-        control_name: str = "non-targeting",
+        control_name: str = "ctrl",
         *,
         pred_effect_operation: Literal["difference", "ratio"] = "ratio",
         random_seed: int = RANDOM_SEED,
@@ -69,7 +69,7 @@ class PerturbationExpressionPredictionTask(Task):
         Args:
             condition_key (str): Key for the column in `adata.obs` specifying
                 conditions. Defaults to "condition".
-            control_name (str): Prefix for control conditions. Defaults to "non-targeting".
+            control_name (str): Prefix for control conditions. Defaults to "ctrl".
             pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
                 effect between treated and control mean predictions over genes. "difference"
                 uses mean(treated) - mean(control) and is generally safe across scales

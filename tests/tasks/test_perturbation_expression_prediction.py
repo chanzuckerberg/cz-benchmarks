@@ -31,7 +31,6 @@ def test_perturbation_task():
         n_genes=200,
         organism=Organism.HUMAN,
         condition_column="condition",
-        split_column="split",
     )
     gene_pert = perturbation_data["gene_pert"]
     # Convert sparse matrix to dense array to avoid matrix object issues
@@ -59,7 +58,7 @@ def test_perturbation_task():
 
     # Fix condition naming to match task expectations
     # Task expects control cells to be named: {control_prefix}_{condition}
-    control_condition_name = f"non-targeting_{gene_pert}"
+    control_condition_name = f"ctrl_{gene_pert}"
     masked_adata_obs.loc[masked_adata_obs["condition"] == "ctrl", "condition"] = (
         control_condition_name
     )
@@ -69,7 +68,7 @@ def test_perturbation_task():
     # Map each perturbation condition to genes to mask
     unique_conditions = np.unique(
         masked_adata_obs["condition"][
-            ~masked_adata_obs["condition"].str.startswith("non-targeting")
+            ~masked_adata_obs["condition"].str.startswith("ctrl")
         ]
     )
     for condition in unique_conditions:
@@ -290,7 +289,7 @@ def test_task_uses_strict_pair_mapping_for_pred_lfc():
     )
     obs = pd.DataFrame(
         {
-            "condition": ["non-targeting", "non-targeting", "pertA", "pertA"],
+            "condition": ["ctrl", "ctrl", "pertA", "pertA"],
         },
         index=["NT1", "NT2", "T1", "T2"],
     )
@@ -315,7 +314,7 @@ def test_task_uses_strict_pair_mapping_for_pred_lfc():
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(
         condition_key="condition",
-        control_name="non-targeting",
+        control_name="ctrl",
     )
     task_input = build_task_input_from_predictions(
         predictions_adata=adata, dataset_adata=adata
