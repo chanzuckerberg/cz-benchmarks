@@ -593,12 +593,12 @@ def test_perturbation_expression_prediction_task_with_shuffled_input(monkeypatch
         # Provide matched control cell IDs and DE results
         adata.uns["control_cells_ids"] = {
             "test1": {
-                "cond_test1_a": "non-targeting_test1_a",
-                "cond_test1_b": "non-targeting_test2_b",
+                "cond_test1_a": "ctrl_test1_a",
+                "cond_test1_b": "ctrl_test2_b",
             },
             "test2": {
-                "cond_test2_a": "non-targeting_test1_a",
-                "cond_test2_b": "non-targeting_test2_b",
+                "cond_test2_a": "ctrl_test1_a",
+                "cond_test2_b": "ctrl_test2_b",
             },
         }
 

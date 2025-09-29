@@ -150,7 +150,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info("Loading de_results from adata.uns")
 
         # FIXME MICHELLE: update to ensure proper handling of float precision
-        de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
+        de_results = pd.DataFrame(
+            self.adata.uns[f"de_results_{self.deg_test_name}"]
+        )
         # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
