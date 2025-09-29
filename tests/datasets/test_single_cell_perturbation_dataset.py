@@ -337,7 +337,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
 
         # Verify that required data in uns is accessible
         required_uns_keys = {"control_cells_map"}
-        actual_uns_keys = set(task_input.adata.uns.keys())
+        actual_uns_keys = task_input.adata.uns.keys()
         assert required_uns_keys.issubset(actual_uns_keys)
 
         # Verify data integrity - the data should match the original dataset
