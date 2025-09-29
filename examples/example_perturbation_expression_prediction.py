@@ -11,11 +11,9 @@ from czbenchmarks.datasets.types import Organism
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
-    PerturbationExpressionPredictionTaskInput,
 )
 
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-    PerturbationExpressionPredictionTaskInput,
     build_task_input_from_predictions,
 )
 from czbenchmarks.tasks.utils import print_metrics_summary
@@ -25,15 +23,14 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 
-def generate_random_model_predictions(adata):
+def generate_random_model_predictions(n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
     This should be an anndata file where the obs.index contains the cell
     barcodes and the var.index contains the genes. These should be the same or a
     subset of the genes and cells in the dataset. The X matrix should be the
     model predictions.
     """
-    n_cells = adata.shape[0]
-    n_genes = adata.shape[1]
+
     rng = np.random.default_rng(RANDOM_SEED)
     model_predictions: CellRepresentation = rng.random((n_cells, n_genes))
     # Put the predictions in an anndata object
@@ -46,8 +43,6 @@ def generate_random_model_predictions(adata):
     model_adata.var.index = (
         dataset.adata.var.index.to_series().sample(frac=1, random_state=RANDOM_SEED).values
     )
-    model_adata.obs.index = adata.obs.index
-    model_adata.var.index = adata.var.index
     return model_adata
 
 
@@ -134,6 +129,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
+
     # Instantiate a config and load the input data
     cfg = {
         "datasets": {
@@ -174,11 +170,14 @@ if __name__ == "__main__":
     # This generates a sample model anndata file. In applications,
     # this should contain the model predictions and should be provided by the user.
     model_adata = generate_random_model_predictions(
-        dataset.adata
+        dataset.adata.shape[0], dataset.adata.shape[1]
     )
-    logger.info("Creating task input directly from dataset...")
-    # Create task input directly from dataset with predictions' ordering
-    task_input = build_task_input_from_predictions(model_adata, dataset.adata)
+    logger.info("Creating task input from predictions and dataset")
+    # Create task input using the helper function to preserve predictions' ordering
+    task_input = build_task_input_from_predictions(
+        predictions_adata=model_adata,
+        dataset_adata=dataset.adata,
+    )
     # Convert model adata to cell representation
     model_output = model_adata.X
 
