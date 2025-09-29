@@ -40,7 +40,7 @@ These errors originate from the content of your `.h5ad` file not meeting the req
     - **Cause**: A required metadata column is missing from `adata.obs`. This often happens with:
 
         - `SingleCellLabeledDataset`: The `label_column_key` (e.g., `"cell_type"`) is missing.
-        - `SingleCellPerturbationDataset`: The `condition_key` or `split_key` is missing.
+        - `SingleCellPerturbationDataset`: The `condition_key` is missing.
 
     - **Solution**: Add the required column with the correct data to your `AnnData` object's `.obs` DataFrame and save the `.h5ad` file again.
 
