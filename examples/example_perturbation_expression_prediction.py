@@ -146,7 +146,7 @@ if __name__ == "__main__":
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
-    
+
     dataset_cfg = load_dataset_config(
         dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
     )
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     dataset.validate()
 
     # This generates sample model anndata. In applications,
-    # this should contain the model predictions and should be 
+    # this should contain the model predictions and should be
     # provided by the user.
     model_adata = generate_random_model_predictions(
         dataset, dataset.adata.shape[0], dataset.adata.shape[1]
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         dataset_adata=dataset.adata,
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
-    
+
     # Inspect metrics
     logger.info("Model metrics:")
     print_metrics_summary(metrics_dict)
