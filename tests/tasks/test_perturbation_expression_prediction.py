@@ -9,7 +9,8 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTaskInput,
 )
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-    load_perturbation_task_input_from_saved_files,
+    PerturbationExpressionPredictionTaskInput,
+    build_task_input_from_predictions,
 )
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.single_cell_perturbation import (
@@ -79,19 +80,32 @@ def test_perturbation_task():
     test_adata = ad.AnnData(
         X=adata.X, obs=masked_adata_obs, var=pd.DataFrame(index=var_names)
     )
-    test_adata.uns["cell_barcode_condition_index"] = adata.obs.index.astype(str).values
+    # Populate UNS like dataset would
+    test_adata.uns["control_cells_ids"] = {}
+    test_adata.uns["de_results"] = de_results[["condition", "gene_id", "logfoldchange"]]
+    test_adata.uns["metric_column"] = "logfoldchange"
+    # Provide explicit target gene lists per condition
+    test_adata.uns["target_conditions_dict"] = target_conditions_dict
+
+    # Provide strict 1-1 control mapping for the single condition
+    treated_idx = masked_adata_obs.index[masked_adata_obs["condition"] == gene_pert]
+    control_idx = masked_adata_obs.index[
+        masked_adata_obs["condition"] == control_condition_name
+    ]
+    mapping = {}
+    if len(control_idx) > 0:
+        for i, tb in enumerate(treated_idx):
+            mapping[str(tb)] = str(control_idx[i % len(control_idx)])
+    test_adata.uns["control_cells_map"] = {gene_pert: mapping}
 
     task_input = PerturbationExpressionPredictionTaskInput(
         adata=test_adata,
-        target_conditions_dict=target_conditions_dict,
-        de_results=de_results,
         gene_index=test_adata.var.index,
-        cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
+        cell_index=test_adata.obs.index,
     )
 
-    # Five metrics per condition: accuracy, precision, recall, f1, correlation
-    # We have one perturbed condition, so 5 metrics total
-    num_metrics = 5
+    # Only one metric per condition (Spearman correlation)
+    num_metrics = 1
 
     try:
         # Test regular task execution
@@ -111,7 +125,6 @@ def test_perturbation_task():
                 cell_representation=cell_representation,
                 baseline_type=baseline_type,
             )
-            # Create a new task input with the baseline embedding
             baseline_results = task.run(baseline_embedding, task_input)
             assert isinstance(baseline_results, list)
             assert all(isinstance(r, MetricResult) for r in baseline_results)
@@ -213,16 +226,26 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     )
     # Create AnnData with required data
     test_adata = adata.copy()
-    test_adata.uns["cell_barcode_condition_index"] = (
-        pd.Index(base_cell_names).astype(str).values
-    )
+    # UNS required by task
+    dr = de_res_wilcoxon_df.copy()
+    dr["gene_id"] = dr["names"]
+    test_adata.uns["de_results"] = dr[["condition", "gene_id", "logfoldchange"]]
+    test_adata.uns["metric_column"] = "logfoldchange"
+    test_adata.uns["control_cells_ids"] = {}
+    test_adata.uns["target_conditions_dict"] = target_conditions_dict
+    # Build 1-1 mapping per condition using block structure
+    treated_A = obs_names[0:n_per_group]
+    ctrl_A = obs_names[n_per_group : 2 * n_per_group]
+    treated_B = obs_names[2 * n_per_group : 3 * n_per_group]
+    ctrl_B = obs_names[3 * n_per_group : 4 * n_per_group]
+    map_A = {t: c for t, c in zip(treated_A, ctrl_A)}
+    map_B = {t: c for t, c in zip(treated_B, ctrl_B)}
+    test_adata.uns["control_cells_map"] = {"gene_A": map_A, "gene_B": map_B}
 
     task_input = PerturbationExpressionPredictionTaskInput(
         adata=test_adata,
-        target_conditions_dict=target_conditions_dict,
-        de_results=de_res_wilcoxon_df,
         gene_index=test_adata.var.index,
-        cell_index=pd.Index(test_adata.uns["cell_barcode_condition_index"]),
+        cell_index=test_adata.obs.index,
     )
 
     # First, check that true/pred vectors produced by _run_task match expectations
@@ -239,23 +262,251 @@ def test_perturbation_expression_prediction_task_wilcoxon():
 
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
-    # Expect results for both conditions x 5 metric types = 10 total results
-    assert len(results) == 10
+    # Task returns an aggregate metric across conditions
+    assert len(results) == 1
 
-    # Each result should have perfect scores
+    # Each result should have perfect correlation
     for r in results:
         assert np.isclose(r.value, 1.0)
 
     # Verify metric types present
     metric_types = {result.metric_type for result in results}
-    expected_types = {
-        MetricType.ACCURACY_CALCULATION,
-        MetricType.PRECISION_CALCULATION,
-        MetricType.RECALL_CALCULATION,
-        MetricType.F1_CALCULATION,
-        MetricType.SPEARMAN_CORRELATION_CALCULATION,
-    }
+    expected_types = {MetricType.SPEARMAN_CORRELATION_CALCULATION}
     assert expected_types.issubset(metric_types)
+
+
+def test_task_uses_strict_pair_mapping_for_pred_lfc():
+    # Build toy dataset: 2 genes, 4 cells (2 control, 2 treated for pertA)
+    X = np.array(
+        [
+            [1.0, 2.0],  # NT1
+            [2.0, 1.0],  # NT2
+            [3.0, 4.0],  # T1
+            [5.0, 3.0],  # T2
+        ]
+    )
+    obs = pd.DataFrame(
+        {
+            "condition": ["non-targeting", "non-targeting", "pertA", "pertA"],
+        },
+        index=["NT1", "NT2", "T1", "T2"],
+    )
+    var = pd.DataFrame(index=["g1", "g2"])
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+
+    # Provide required UNS for the task
+    de = pd.DataFrame(
+        {
+            "condition": ["pertA", "pertA"],
+            "gene_id": ["g1", "g2"],
+            "logfoldchange": [1.0, 2.0],
+            "pval_adj": [1e-6, 1e-4],
+        }
+    )
+    adata.uns["de_results"] = de
+    adata.uns["metric_column"] = "logfoldchange"
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"]}
+
+    # Use log1p as prediction matrix to satisfy log-normalization check
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(
+        condition_key="condition",
+        control_name="non-targeting",
+    )
+    task_input = build_task_input_from_predictions(
+        predictions_adata=adata, dataset_adata=adata
+    )
+
+    output = task._run_task(preds, task_input)
+    assert "pertA" in output.pred_log_fc_dict
+    pred_lfc = output.pred_log_fc_dict["pertA"]
+    assert pred_lfc.shape == (2,)
+    assert np.all(np.isfinite(pred_lfc))
+    assert not np.allclose(pred_lfc, 0.0)
+
+
+def test_requires_control_map_error_when_missing():
+    X = np.array([[1.0, 2.0], [2.0, 1.0]])
+    obs = pd.DataFrame({"condition": ["pertA", "pertA"]}, index=["T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
+    )
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    with pytest.raises(ValueError):
+        task._run_task(preds, ti)
+
+
+def test_missing_condition_mapping_raises():
+    X = np.array([[1.0, 2.0], [2.0, 1.0]])
+    obs = pd.DataFrame({"condition": ["pertA", "pertA"]}, index=["T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
+    )
+    adata.uns["control_cells_map"] = {"pertB": {"T1": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    with pytest.raises(ValueError):
+        task._run_task(preds, ti)
+
+
+def test_invalid_mapping_type_raises():
+    X = np.array([[1.0]])
+    obs = pd.DataFrame({"condition": ["pertA"]}, index=["T1"]) 
+    var = pd.DataFrame(index=["g1"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [0.0], "pval_adj": [1e-6]}
+    )
+    adata.uns["control_cells_map"] = {"pertA": ["NT1"]}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    with pytest.raises(ValueError):
+        task._run_task(preds, ti)
+
+
+def test_custom_indices_subset_and_order():
+    X = np.array(
+        [
+            [1.0, 2.0],  # NT1
+            [2.0, 1.0],  # NT2
+            [3.0, 4.0],  # T1
+            [5.0, 3.0],  # T2
+        ]
+    )
+    obs = pd.DataFrame({"condition": ["non-targeting", "non-targeting", "pertA", "pertA"]}, index=["NT1", "NT2", "T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
+    )
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds_adata = ad.AnnData(X=np.log1p(X)[:, [0]], obs=obs.iloc[::-1].copy(), var=pd.DataFrame(index=["g1"]))
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(preds_adata, adata)
+    output = task._run_task(preds_adata.X, ti)
+    assert "pertA" in output.pred_log_fc_dict
+    assert output.pred_log_fc_dict["pertA"].shape == (1,)
+
+
+def test_ignores_pairs_not_in_index():
+    X = np.array([[1.0, 2.0], [2.0, 1.0], [3.0, 4.0]])
+    obs = pd.DataFrame({"condition": ["non-targeting", "pertA", "pertA"]}, index=["NT1", "T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
+    )
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT_MISSING", "T2": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    out = task._run_task(preds, ti)
+    assert "pertA" in out.pred_log_fc_dict
+
+
+def test_non_lognorm_predictions_are_supported():
+    X = np.array([[1.0, 2.0], [2.0, 1.0], [3.0, 4.0], [5.0, 3.0]])
+    obs = pd.DataFrame({"condition": ["non-targeting", "non-targeting", "pertA", "pertA"]}, index=["NT1", "NT2", "T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame(
+        {"condition": ["pertA", "pertA"], "gene_id": ["g1", "g2"], "logfoldchange": [1.0, 2.0], "pval_adj": [1e-6, 1e-5]}
+    )
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"]}
+    preds = X  # raw/non-log-normalized predictions supported
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    out = task._run_task(preds, ti)
+    assert "pertA" in out.pred_log_fc_dict and "pertA" in out.true_log_fc_dict
+    assert out.pred_log_fc_dict["pertA"].shape == out.true_log_fc_dict["pertA"].shape
+    assert np.all(np.isfinite(out.pred_log_fc_dict["pertA"]))
+
+
+def test_de_results_missing_columns_raises():
+    X = np.array([[1.0, 2.0], [2.0, 1.0], [3.0, 4.0]])
+    obs = pd.DataFrame({"condition": ["non-targeting", "pertA", "pertA"]}, index=["NT1", "T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    adata.uns["de_results"] = pd.DataFrame({"condition": ["pertA"], "gene_id": ["g1"]})
+    adata.uns["metric_column"] = "logfoldchange"
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    with pytest.raises(ValueError):
+        task._run_task(preds, ti)
+
+
+def test_nan_metric_skips_condition():
+    X = np.array([[1.0, 2.0], [2.0, 1.0], [3.0, 4.0], [5.0, 3.0]])
+    obs = pd.DataFrame({"condition": ["non-targeting", "non-targeting", "pertA", "pertB"]}, index=["NT1", "NT2", "T1", "T2"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    de = pd.DataFrame(
+        {
+            "condition": ["pertA", "pertB"],
+            "gene_id": ["g1", "g2"],
+            "logfoldchange": [np.nan, 1.0],
+            "pval_adj": [1e-6, 1e-6],
+        }
+    )
+    adata.uns["de_results"] = de
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1"}, "pertB": {"T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"], "pertB": ["g2"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    out = task._run_task(preds, ti)
+    assert "pertA" not in out.pred_log_fc_dict
+    assert "pertB" in out.pred_log_fc_dict
+
+
+def test_multiple_conditions_pair_mapping():
+    X = np.array(
+        [
+            [1.0, 2.0],  # NT1
+            [2.0, 1.0],  # NT2
+            [1.1, 1.9],  # NT3
+            [3.0, 4.0],  # T1 (A)
+            [5.0, 3.0],  # T2 (A)
+            [2.5, 2.5],  # T3 (B)
+        ]
+    )
+    obs = pd.DataFrame({"condition": ["non-targeting", "non-targeting", "non-targeting", "pertA", "pertA", "pertB"]}, index=["NT1", "NT2", "NT3", "T1", "T2", "T3"]) 
+    var = pd.DataFrame(index=["g1", "g2"]) 
+    adata = ad.AnnData(X=X, obs=obs, var=var)
+    de = pd.DataFrame(
+        {
+            "condition": ["pertA", "pertA", "pertB"],
+            "gene_id": ["g1", "g2", "g1"],
+            "logfoldchange": [1.0, 2.0, 0.5],
+            "pval_adj": [1e-6, 1e-6, 1e-6],
+        }
+    )
+    adata.uns["de_results"] = de
+    adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}, "pertB": {"T3": "NT3"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"], "pertB": ["g1"]}
+    preds = np.log1p(X)
+    task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
+    ti = build_task_input_from_predictions(adata, adata)
+    out = task._run_task(preds, ti)
+    assert set(out.pred_log_fc_dict.keys()) == {"pertA", "pertB"}
 
 
 def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path):
@@ -278,8 +529,8 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
         "cond_test2_a",
         "cond_test2_b",
     ]
-    # Provide matched control cell IDs and DE results
-    adata.uns["control_cells_ids"] = {
+    # Provide strict control map and DE results
+    adata.uns["control_cells_map"] = {
         "test1": {
             "cond_test1_a": "ctrl_test1_a",
             "cond_test1_b": "ctrl_test2_b",
@@ -311,37 +562,14 @@ def test_perturbation_expression_prediction_task_load_from_task_inputs(tmp_path)
     dataset.load_data()
     task_inputs_dir = dataset.store_task_inputs()
 
-    # Test loading task inputs using the standalone function
-
-    task_input = load_perturbation_task_input_from_saved_files(task_inputs_dir)
-
-    # Verify the loaded task input has the expected structure
-    assert isinstance(task_input, PerturbationExpressionPredictionTaskInput)
-    assert hasattr(task_input, "adata")
-    assert hasattr(task_input, "target_conditions_dict")
-    assert hasattr(task_input, "de_results")
-    assert isinstance(task_input.adata, ad.AnnData)
-    assert isinstance(task_input.target_conditions_dict, dict)
-    assert isinstance(task_input.de_results, pd.DataFrame)
-
-    # Verify AnnData contains required data in uns
-    assert "cell_barcode_condition_index" in task_input.adata.uns
-    assert "control_cells_ids" in task_input.adata.uns
-
-    # Verify data integrity
-    assert task_input.de_results.shape[0] > 0
-    assert task_input.adata.obs.shape[0] > 0
-    assert len(task_input.adata.var.index) > 0
-    assert len(task_input.target_conditions_dict) > 0
-
-    # Verify cell barcode index matches adata size
-    assert (
-        len(task_input.adata.uns["cell_barcode_condition_index"])
-        == dataset.adata.shape[0]
-    )
+    # Read h5ad directly and construct task input
+    loaded_adata = ad.read_h5ad(task_inputs_dir / "perturbation_task_inputs.h5ad")
+    assert isinstance(loaded_adata, ad.AnnData)
+    assert "de_results" in loaded_adata.uns
+    task_input = PerturbationExpressionPredictionTaskInput(adata=loaded_adata)
 
 
-def test_perturbation_expression_prediction_task_with_shuffled_input():
+def test_perturbation_expression_prediction_task_with_shuffled_input(monkeypatch):
     """Test that the perturbation task works with shuffled AnnData input."""
 
     # Create a dummy dataset
@@ -394,37 +622,90 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
                 )
 
         adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
+        # Build a strict control map on the base AnnData prior to dataset.load_data()
+        obs = adata.obs
+        ctrl_barcodes = obs.index[obs["condition"] == "ctrl"].tolist()
+        cm = {}
+        for c in ["test1", "test2"]:
+            treated = obs.index[obs["condition"] == c].tolist()
+            cm[c] = {str(t): str(ctrl_barcodes[i % len(ctrl_barcodes)]) for i, t in enumerate(treated)}
+        adata.uns["control_cells_map"] = cm
         adata.write_h5ad(file_path)
 
-        # Create dataset and load data with relaxed parameters
+        # Use the preprocessing pipeline to generate mappings and DE
+        from dge_files import preprocess_pipeline as pp
+
+        # Stub matching to produce strict 1-1 mapping using first two ctrl cells
+        def _stub_get_matched_controls(**kwargs):
+            adata_local = kwargs["adata"]
+            cond = kwargs.get("perturbation")
+            treated = adata_local.obs.index[adata_local.obs["condition"] == cond].tolist()
+            ctrls = adata_local.obs.index[adata_local.obs["condition"] == "ctrl"].tolist()
+            if len(treated) == 0 or len(ctrls) == 0:
+                return {}
+            mapping = {str(t): str(ctrls[i % len(ctrls)]) for i, t in enumerate(treated)}
+            return mapping
+
+        monkeypatch.setattr(
+            "dge_files.preprocess_pipeline.get_matched_controls",
+            _stub_get_matched_controls,
+        )
+
+        # Stub DE to return simple significance across all genes per condition
+        def _stub_run_multicondition_dge_analysis(**kwargs):
+            adata_local = kwargs["adata"]
+            gene_names_local = adata_local.var.index.tolist()
+            conditions_local = [c for c in adata_local.obs["condition"].unique() if str(c) != "ctrl"]
+            rows = []
+            for c in conditions_local:
+                for g in gene_names_local:
+                    rows.append({
+                        "condition": c,
+                        "gene_id": g,
+                        "logfoldchange": 1.0,
+                        "pval_adj": 1e-6,
+                    })
+            return pd.DataFrame(rows), None
+
+        monkeypatch.setattr(
+            "dge_files.preprocess_pipeline.run_multicondition_dge_analysis",
+            _stub_run_multicondition_dge_analysis,
+        )
+
+        processed = pp.run_pipeline(
+            str(file_path),
+            condition_col="condition",
+            control_name="ctrl",
+            filter_min_cells=0,
+            filter_min_genes=0,
+            min_pert_cells=1,
+        )
+
+        # Write processed adata and construct dataset from it
+        processed_path = Path(tmp_dir) / "dummy_perturbation_processed.h5ad"
+        processed.write_h5ad(processed_path)
+
         dataset = SingleCellPerturbationDataset(
-            path=file_path,
+            path=processed_path,
             organism=Organism.HUMAN,
             condition_key="condition",
             control_name="ctrl",
-            percent_genes_to_mask=1.0,  # Use all genes to avoid filtering
-            min_de_genes_to_mask=1,  # Minimum threshold
-            pval_threshold=1.0,  # Accept all p-values
-            min_logfoldchange=0.0,  # Accept all log fold changes
+            percent_genes_to_mask=1.0,
+            min_de_genes_to_mask=1,
+            pval_threshold=1.0,
+            min_logfoldchange=0.0,
         )
         dataset.load_data()
 
         # Create task input with original ordering
         original_task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata,
-            target_conditions_dict=dataset.target_conditions_dict,
-            de_results=dataset.de_results,
-            gene_index=dataset.control_matched_adata.var.index,
-            cell_index=pd.Index(
-                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
-            ),
+            adata=dataset.adata,
+            gene_index=dataset.adata.var.index,
+            cell_index=dataset.adata.obs.index,
         )
 
         # Create identical model output for both (using original dimensions)
-        model_output = np.random.rand(
-            dataset.control_matched_adata.shape[0],
-            dataset.control_matched_adata.shape[1],
-        )
+        model_output = np.random.rand(dataset.adata.shape[0], dataset.adata.shape[1])
         # Shuffle obs and var with fixed random seed for reproducibility
         np.random.seed(42)
         obs_shuffled = dataset.adata.obs.sample(frac=1, random_state=42)
@@ -440,9 +721,14 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
         # Initialize task
         task = PerturbationExpressionPredictionTask()
 
-        # Run task with both inputs
+        # Run task with both inputs (use matching indices for shuffled case)
         original_result = task._run_task(model_output, original_task_input)
-        shuffled_result = task._run_task(model_output_shuffled, original_task_input)
+        shuffled_task_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.adata,
+            gene_index=dataset.adata.var.index[var_order],
+            cell_index=dataset.adata.obs.index[obs_order],
+        )
+        shuffled_result = task._run_task(model_output_shuffled, shuffled_task_input)
 
         # Results should be identical (same conditions, same relative data)
         assert set(original_result.pred_log_fc_dict.keys()) == set(
@@ -469,9 +755,7 @@ def test_perturbation_expression_prediction_task_with_shuffled_input():
 
 
 def test_perturbation_task_apply_model_ordering():
-    """Test the apply_model_ordering method for PerturbationExpressionPredictionTaskInput."""
-
-    # Create a dummy dataset
+    """Ensure results are invariant to shuffled model ordering when indices are provided."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         file_path = Path(tmp_dir) / "dummy_perturbation.h5ad"
         adata = create_dummy_anndata(
@@ -481,206 +765,63 @@ def test_perturbation_task_apply_model_ordering():
             organism=Organism.HUMAN,
         )
         adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1", "test2", "test2"]
-        adata.obs_names = [
-            "ctrl_test1_a",
-            "ctrl_test2_b",
-            "cond_test1_a",
-            "cond_test1_b",
-            "cond_test2_a",
-            "cond_test2_b",
-        ]
+        adata.write_h5ad(file_path)
 
-        # Provide matched control cell IDs and DE results
-        adata.uns["control_cells_ids"] = {
-            "test1": {
-                "cond_test1_a": "ctrl_test1_a",
-                "cond_test1_b": "ctrl_test2_b",
-            },
-            "test2": {
-                "cond_test2_a": "ctrl_test1_a",
-                "cond_test2_b": "ctrl_test2_b",
-            },
-        }
-
-        # Create DE results
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            percent_genes_to_mask=1.0,
+            min_de_genes_to_mask=1,
+            pval_threshold=1.0,
+            min_logfoldchange=0.0,
+        )
+        # Provide minimal DE results to uns before loading
+        # Use all genes for both conditions
         gene_names = adata.var.index.tolist()
-        de_data = []
+        de_rows = []
         for condition in ["test1", "test2"]:
-            for gene in gene_names:
-                de_data.append(
-                    {
-                        "condition": condition,
-                        "gene_id": gene,
-                        "pval_adj": 1e-6,
-                        "logfoldchange": 2.0,
-                    }
-                )
-
-        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
+            for g in gene_names:
+                de_rows.append({"condition": condition, "gene_id": g, "logfoldchange": 1.0, "pval_adj": 1e-6})
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_rows)
+        # Build and persist a strict control map on the base AnnData prior to dataset.load_data()
+        obs_base = adata.obs
+        ctrl_barcodes_base = obs_base.index[obs_base["condition"] == "ctrl"].tolist()
+        cm_base = {}
+        for c in ["test1", "test2"]:
+            treated_base = obs_base.index[obs_base["condition"] == c].tolist()
+            cm_base[c] = {str(t): str(ctrl_barcodes_base[i % len(ctrl_barcodes_base)]) for i, t in enumerate(treated_base)}
+        adata.uns["control_cells_map"] = cm_base
         adata.write_h5ad(file_path)
 
-        # Create dataset and get task input
-        dataset = SingleCellPerturbationDataset(
-            path=file_path,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            control_name="ctrl",
-            min_de_genes_to_mask=1,  # Lower threshold so genes get sampled
-            percent_genes_to_mask=1.0,  # Use all genes
-        )
         dataset.load_data()
 
-        # Create task input
         task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata,
-            target_conditions_dict=dataset.target_conditions_dict,
-            de_results=dataset.de_results,
-            gene_index=dataset.control_matched_adata.var.index,
-            cell_index=pd.Index(
-                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
-            ),
+            adata=dataset.adata,
+            gene_index=dataset.adata.var.index,
+            cell_index=dataset.adata.obs.index,
         )
 
-        # Create model data with shuffled ordering (same content, different order)
-        # We need to create model data that has the same cells as in cell_barcode_condition_index
-        np.random.seed(42)  # For reproducible test
+        model_output = np.random.rand(dataset.adata.shape[0], dataset.adata.shape[1])
+        # Shuffle
+        np.random.seed(0)
+        obs_order = np.random.permutation(dataset.adata.n_obs)
+        var_order = np.random.permutation(dataset.adata.n_vars)
+        shuffled = model_output[np.ix_(obs_order, var_order)]
 
-        # Get the cell barcodes that should match between model and task input
-        task_cell_barcodes = task_input.adata.uns["cell_barcode_condition_index"]
-        task_genes = task_input.adata.var.index
-
-        # Create model AnnData with the same cells and genes but in shuffled order
-        gene_order = np.random.permutation(task_genes)
-        cell_order = np.random.permutation(task_cell_barcodes)
-
-        # Create a model AnnData with the shuffled ordering
-        model_adata = ad.AnnData(
-            X=np.random.rand(len(cell_order), len(gene_order)),
-            obs=pd.DataFrame(index=cell_order),
-            var=pd.DataFrame(index=gene_order),
+        task = PerturbationExpressionPredictionTask(control_name="ctrl")
+        out_orig = task._run_task(model_output, task_input)
+        # supply indices to align to shuffled
+        shuffled_input = PerturbationExpressionPredictionTaskInput(
+            adata=dataset.adata,
+            gene_index=dataset.adata.var.index[var_order],
+            cell_index=dataset.adata.obs.index[obs_order],
         )
+        out_shuf = task._run_task(shuffled, shuffled_input)
+        assert set(out_orig.pred_log_fc_dict.keys()) == set(out_shuf.pred_log_fc_dict.keys())
+        assert set(out_orig.true_log_fc_dict.keys()) == set(out_shuf.true_log_fc_dict.keys())
+        for k in out_orig.pred_log_fc_dict.keys():
+            np.testing.assert_allclose(out_orig.pred_log_fc_dict[k], out_shuf.pred_log_fc_dict[k])
+            np.testing.assert_allclose(out_orig.true_log_fc_dict[k], out_shuf.true_log_fc_dict[k])
 
-        # Store original orderings
-        original_gene_order = task_input.adata.var.index.copy()
-        original_cell_barcode_index = task_input.adata.uns[
-            "cell_barcode_condition_index"
-        ].copy()
-
-        # Apply model ordering
-        task_input.gene_index = model_adata.var.index
-        task_input.cell_index = model_adata.obs.index
-
-        # Verify that orderings have changed to match model data
-        pd.testing.assert_index_equal(task_input.gene_index, model_adata.var.index)
-        np.testing.assert_array_equal(
-            task_input.cell_index,
-            model_adata.obs.index.astype(str).values,
-        )
-
-        # Verify orderings are different from original (unless by chance they're the same)
-        assert not task_input.gene_index.equals(original_gene_order)
-        assert not np.array_equal(task_input.cell_index, original_cell_barcode_index)
-
-
-def test_perturbation_task_apply_model_ordering_validation():
-    """Test that apply_model_ordering validates matching gene and cell sets."""
-
-    # Create a dummy dataset
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        file_path = Path(tmp_dir) / "dummy_perturbation.h5ad"
-        adata = create_dummy_anndata(
-            n_cells=4,
-            n_genes=3,
-            obs_columns=["condition"],
-            organism=Organism.HUMAN,
-        )
-        adata.obs["condition"] = ["ctrl", "ctrl", "test1", "test1"]
-        adata.obs_names = ["ctrl_a", "ctrl_b", "cond_a", "cond_b"]
-
-        # Provide matched control cell IDs and DE results
-
-        adata.uns["control_cells_ids"] = {
-            "test1": {"cond_a": "ctrl_a", "cond_b": "ctrl_b"}
-        }
-
-        # Create DE results
-        gene_names = adata.var.index.tolist()
-        de_data = []
-        for gene in gene_names:
-            de_data.append(
-                {
-                    "condition": "test1",
-                    "gene_id": gene,
-                    "pval_adj": 1e-6,
-                    "logfoldchange": 2.0,
-                }
-            )
-
-        adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_data)
-        adata.write_h5ad(file_path)
-
-        # Create dataset and get task input
-        dataset = SingleCellPerturbationDataset(
-            path=file_path,
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            control_name="ctrl",
-            min_de_genes_to_mask=1,  # Lower threshold so genes get sampled
-            percent_genes_to_mask=1.0,  # Use all genes
-        )
-        dataset.load_data()
-
-        # Create task input
-        task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.control_matched_adata,
-            target_conditions_dict=dataset.target_conditions_dict,
-            de_results=dataset.de_results,
-            gene_index=dataset.control_matched_adata.var.index,
-            cell_index=pd.Index(
-                dataset.control_matched_adata.uns["cell_barcode_condition_index"]
-            ),
-        )
-
-        # Test with mismatched genes
-        model_adata_bad_genes = create_dummy_anndata(
-            n_cells=4,
-            n_genes=3,
-            obs_columns=["condition"],
-            organism=Organism.HUMAN,
-        )
-        model_adata_bad_genes.obs_names = task_input.adata.obs.index  # Same cells
-        model_adata_bad_genes.var_names = [
-            "different_gene1",
-            "different_gene2",
-            "different_gene3",
-        ]  # Different genes
-        task = PerturbationExpressionPredictionTask(
-            control_name="ctrl",
-        )
-
-        with pytest.raises(
-            ValueError, match="Model data contains genes that are not in the task input"
-        ):
-            task_input.gene_index = model_adata_bad_genes.var.index
-            task_input.cell_index = model_adata_bad_genes.obs.index
-            task._run_task(
-                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
-                task_input,
-            )
-
-        # Test with mismatched cells
-        model_adata_bad_cells = task_input.adata.copy()
-        model_adata_bad_cells.obs_names = [
-            "different_cell1",
-            "different_cell2",
-            "different_cell3",
-            "different_cell4",
-        ]  # Different cells
-        task_input.cell_index = model_adata_bad_cells.obs.index
-        with pytest.raises(
-            ValueError, match="Model data contains genes that are not in the task input"
-        ):
-            task._run_task(
-                np.random.rand(len(task_input.cell_index), len(task_input.gene_index)),
-                task_input,
-            )
