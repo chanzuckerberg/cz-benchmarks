@@ -84,6 +84,8 @@ def test_perturbation_task():
     test_adata.uns["control_cells_ids"] = {}
     test_adata.uns["de_results"] = de_results[["condition", "gene_id", "logfoldchange"]]
     test_adata.uns["metric_column"] = "logfoldchange"
+    # Provide explicit target gene lists per condition
+    test_adata.uns["target_conditions_dict"] = target_conditions_dict
 
     # Provide strict 1-1 control mapping for the single condition
     treated_idx = masked_adata_obs.index[masked_adata_obs["condition"] == gene_pert]
@@ -230,6 +232,7 @@ def test_perturbation_expression_prediction_task_wilcoxon():
     test_adata.uns["de_results"] = dr[["condition", "gene_id", "logfoldchange"]]
     test_adata.uns["metric_column"] = "logfoldchange"
     test_adata.uns["control_cells_ids"] = {}
+    test_adata.uns["target_conditions_dict"] = target_conditions_dict
     # Build 1-1 mapping per condition using block structure
     treated_A = obs_names[0:n_per_group]
     ctrl_A = obs_names[n_per_group : 2 * n_per_group]
@@ -259,8 +262,8 @@ def test_perturbation_expression_prediction_task_wilcoxon():
 
     assert isinstance(results, list)
     assert all(isinstance(r, MetricResult) for r in results)
-    # Expect results for both conditions x 5 metric types = 10 total results
-    assert len(results) == 2
+    # Task returns an aggregate metric across conditions
+    assert len(results) == 1
 
     # Each result should have perfect correlation
     for r in results:
@@ -303,6 +306,7 @@ def test_task_uses_strict_pair_mapping_for_pred_lfc():
     adata.uns["de_results"] = de
     adata.uns["metric_column"] = "logfoldchange"
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"]}
 
     # Use log1p as prediction matrix to satisfy log-normalization check
     preds = np.log1p(X)
@@ -330,6 +334,7 @@ def test_requires_control_map_error_when_missing():
     adata.uns["de_results"] = pd.DataFrame(
         {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
     )
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -346,6 +351,7 @@ def test_missing_condition_mapping_raises():
         {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
     )
     adata.uns["control_cells_map"] = {"pertB": {"T1": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -362,6 +368,7 @@ def test_invalid_mapping_type_raises():
         {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [0.0], "pval_adj": [1e-6]}
     )
     adata.uns["control_cells_map"] = {"pertA": ["NT1"]}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -385,6 +392,7 @@ def test_custom_indices_subset_and_order():
         {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
     )
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds_adata = ad.AnnData(X=np.log1p(X)[:, [0]], obs=obs.iloc[::-1].copy(), var=pd.DataFrame(index=["g1"]))
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(preds_adata, adata)
@@ -402,6 +410,7 @@ def test_ignores_pairs_not_in_index():
         {"condition": ["pertA"], "gene_id": ["g1"], "logfoldchange": [1.0], "pval_adj": [1e-6]}
     )
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT_MISSING", "T2": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -418,6 +427,7 @@ def test_non_lognorm_predictions_are_supported():
         {"condition": ["pertA", "pertA"], "gene_id": ["g1", "g2"], "logfoldchange": [1.0, 2.0], "pval_adj": [1e-6, 1e-5]}
     )
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"]}
     preds = X  # raw/non-log-normalized predictions supported
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -435,6 +445,7 @@ def test_de_results_missing_columns_raises():
     adata.uns["de_results"] = pd.DataFrame({"condition": ["pertA"], "gene_id": ["g1"]})
     adata.uns["metric_column"] = "logfoldchange"
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -457,6 +468,7 @@ def test_nan_metric_skips_condition():
     )
     adata.uns["de_results"] = de
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1"}, "pertB": {"T2": "NT2"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1"], "pertB": ["g2"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)
@@ -489,6 +501,7 @@ def test_multiple_conditions_pair_mapping():
     )
     adata.uns["de_results"] = de
     adata.uns["control_cells_map"] = {"pertA": {"T1": "NT1", "T2": "NT2"}, "pertB": {"T3": "NT3"}}
+    adata.uns["target_conditions_dict"] = {"pertA": ["g1", "g2"], "pertB": ["g1"]}
     preds = np.log1p(X)
     task = PerturbationExpressionPredictionTask(condition_key="condition", control_name="non-targeting")
     ti = build_task_input_from_predictions(adata, adata)

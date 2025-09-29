@@ -130,14 +130,13 @@ class PerturbationExpressionPredictionTask(Task):
         for condition in perturbation_conditions:
             # Select genes for this condition
             condition_de = de_results[de_results[self.condition_key] == condition]
+            candidate_genes = []
             if condition in target_conditions_dict and target_conditions_dict[condition]:
                 candidate_genes = [
                     g
                     for g in target_conditions_dict[condition]
                     if g in set(condition_de["gene_id"].values)
                 ]
-            else:
-                candidate_genes = condition_de["gene_id"].values.tolist()
 
             if len(candidate_genes) == 0:
                 continue
@@ -233,30 +232,44 @@ class PerturbationExpressionPredictionTask(Task):
         task_output: PerturbationExpressionPredictionOutput,
     ) -> List[MetricResult]:
         """
-        Compute perturbation prediction quality using Spearman rank correlation
-        between predicted and true log fold changes for each condition.
+        Compute perturbation prediction quality as the average Spearman rank
+        correlation across all conditions between predicted and true log fold
+        changes.
         """
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
-
-        metric_results: List[MetricResult] = []
+        # Compute per-condition correlations and then average
+        per_condition_values: List[float] = []
         for condition in task_output.pred_log_fc_dict.keys():
             pred_log_fc = task_output.pred_log_fc_dict[condition]
             true_log_fc = task_output.true_log_fc_dict[condition]
 
-            spearman_corr = metrics_registry.compute(
+            corr_value = metrics_registry.compute(
                 spearman_correlation_metric,
                 a=true_log_fc,
                 b=pred_log_fc,
             )
-            spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
-            metric_results.append(
-                MetricResult(
-                    metric_type=spearman_correlation_metric,
-                    value=spearman_corr_value,
-                    params={"condition": condition},
-                )
+            # Ensure numeric float and drop NaNs
+            try:
+                corr_float = float(getattr(corr_value, "correlation", corr_value))
+            except Exception:
+                continue
+            if not np.isnan(corr_float):
+                per_condition_values.append(corr_float)
+
+        if len(per_condition_values) == 0:
+            return []
+
+        mean_corr = float(np.mean(per_condition_values))
+        return [
+            MetricResult(
+                metric_type=spearman_correlation_metric,
+                value=mean_corr,
+                params={
+                    "aggregation": "mean_across_conditions",
+                    "n_conditions": len(per_condition_values),
+                },
             )
-        return metric_results
+        ]
 
     @staticmethod
     def compute_baseline(

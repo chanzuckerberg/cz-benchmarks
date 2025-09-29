@@ -171,7 +171,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         logger.info(
             f"Filtering de_results with {self.de_pval_col} <= {self.pval_threshold}"
         )
-        pval_mask = de_results[self.de_pval_col] <= self.pval_threshold
+        pval_mask = de_results[self.de_pval_col] < self.pval_threshold
         filtered_rows_pval_threshold = (~pval_mask).sum()
         logger.info(
             f"Removed {filtered_rows_pval_threshold} rows of {len(de_results)} total rows using pval_adj <= {self.pval_threshold}"
