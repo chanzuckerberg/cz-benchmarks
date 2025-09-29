@@ -118,7 +118,9 @@ def run_multicondition_dge_analysis(
     results_df = []
 
     # Condition loop starts here
-    for selected_condition in tqdm(target_conditions, desc="Analyzing conditions", unit="cond"):
+    for selected_condition in tqdm(
+        target_conditions, desc="Analyzing conditions", unit="cond"
+    ):
         rows_cond = condition_to_indices.get(
             selected_condition, np.array([], dtype=int)
         )
@@ -160,7 +162,7 @@ def run_multicondition_dge_analysis(
         sc.pp.filter_genes(adata_merged, min_cells=filter_min_cells)
         sc.pp.normalize_total(adata_merged, target_sum=1e4)
         sc.pp.log1p(adata_merged)
-        
+
         comparison_group_counts = adata_merged.obs["comparison_group"].value_counts()
         if len(comparison_group_counts) < 2 or comparison_group_counts.min() < 1:
             logger.warning(
@@ -192,8 +194,16 @@ def run_multicondition_dge_analysis(
             cond_mean = cond_view.X.mean(axis=0)
             ctrl_mean = ctrl_view.X.mean(axis=0)
             # handle sparse vs dense
-            cond_mean = cond_mean.A1 if hasattr(cond_mean, "A1") else np.asarray(cond_mean).ravel()
-            ctrl_mean = ctrl_mean.A1 if hasattr(ctrl_mean, "A1") else np.asarray(ctrl_mean).ravel()
+            cond_mean = (
+                cond_mean.A1
+                if hasattr(cond_mean, "A1")
+                else np.asarray(cond_mean).ravel()
+            )
+            ctrl_mean = (
+                ctrl_mean.A1
+                if hasattr(ctrl_mean, "A1")
+                else np.asarray(ctrl_mean).ravel()
+            )
             indexes = np.where((cond_mean > 0) & (ctrl_mean > 0))[0]
             logger.info(
                 f"remove_avg_zeros is True.Removing {len(results) - len(indexes)} genes with zero expression"
@@ -206,7 +216,7 @@ def run_multicondition_dge_analysis(
 
     if not results_df:
         return pd.DataFrame(), None
-    
+
     results = pd.concat(results_df, ignore_index=True)
     del results_df
 
@@ -215,7 +225,7 @@ def run_multicondition_dge_analysis(
         dge_params = adata_merged.uns["dge_results"]["params"]  # type: ignore[name-defined]
     except Exception:
         dge_params = {}
-        
+
     if return_merged_adata:
         adata_merged = ad.concat(adata_results, index_unique=None)
         del adata_results

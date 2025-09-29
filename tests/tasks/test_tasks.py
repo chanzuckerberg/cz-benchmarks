@@ -182,4 +182,3 @@ def test_cross_species_task(embedding_matrix, obs):
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
-

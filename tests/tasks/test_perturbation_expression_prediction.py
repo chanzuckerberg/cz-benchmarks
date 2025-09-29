@@ -358,7 +358,14 @@ def test_perturbation_task_apply_model_ordering():
         de_rows = []
         for condition in ["test1", "test2"]:
             for g in gene_names:
-                de_rows.append({"condition": condition, "gene_id": g, "logfoldchange": 1.0, "pval_adj": 1e-6})
+                de_rows.append(
+                    {
+                        "condition": condition,
+                        "gene_id": g,
+                        "logfoldchange": 1.0,
+                        "pval_adj": 1e-6,
+                    }
+                )
         adata.uns["de_results_wilcoxon"] = pd.DataFrame(de_rows)
         # Build and persist a strict control map on the base AnnData prior to dataset.load_data()
         obs_base = adata.obs
@@ -366,7 +373,10 @@ def test_perturbation_task_apply_model_ordering():
         cm_base = {}
         for c in ["test1", "test2"]:
             treated_base = obs_base.index[obs_base["condition"] == c].tolist()
-            cm_base[c] = {str(t): str(ctrl_barcodes_base[i % len(ctrl_barcodes_base)]) for i, t in enumerate(treated_base)}
+            cm_base[c] = {
+                str(t): str(ctrl_barcodes_base[i % len(ctrl_barcodes_base)])
+                for i, t in enumerate(treated_base)
+            }
         adata.uns["control_cells_map"] = cm_base
         adata.write_h5ad(file_path)
 
@@ -394,9 +404,16 @@ def test_perturbation_task_apply_model_ordering():
             cell_index=dataset.adata.obs.index[obs_order],
         )
         out_shuf = task._run_task(shuffled, shuffled_input)
-        assert set(out_orig.pred_log_fc_dict.keys()) == set(out_shuf.pred_log_fc_dict.keys())
-        assert set(out_orig.true_log_fc_dict.keys()) == set(out_shuf.true_log_fc_dict.keys())
+        assert set(out_orig.pred_log_fc_dict.keys()) == set(
+            out_shuf.pred_log_fc_dict.keys()
+        )
+        assert set(out_orig.true_log_fc_dict.keys()) == set(
+            out_shuf.true_log_fc_dict.keys()
+        )
         for k in out_orig.pred_log_fc_dict.keys():
-            np.testing.assert_allclose(out_orig.pred_log_fc_dict[k], out_shuf.pred_log_fc_dict[k])
-            np.testing.assert_allclose(out_orig.true_log_fc_dict[k], out_shuf.true_log_fc_dict[k])
-
+            np.testing.assert_allclose(
+                out_orig.pred_log_fc_dict[k], out_shuf.pred_log_fc_dict[k]
+            )
+            np.testing.assert_allclose(
+                out_orig.true_log_fc_dict[k], out_shuf.true_log_fc_dict[k]
+            )

@@ -253,10 +253,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     def _validate_uns_for_task(self, adata: ad.AnnData) -> None:
         """Validate presence and format of required keys in adata.uns for the task."""
         if self.UNS_DE_RESULTS_KEY not in adata.uns:
-            raise ValueError(f"Missing adata.uns['{self.UNS_DE_RESULTS_KEY}'] for perturbation task")
+            raise ValueError(
+                f"Missing adata.uns['{self.UNS_DE_RESULTS_KEY}'] for perturbation task"
+            )
         de_results = adata.uns[self.UNS_DE_RESULTS_KEY]
         if not isinstance(de_results, pd.DataFrame):
-            raise ValueError(f"adata.uns['{self.UNS_DE_RESULTS_KEY}'] must be a pandas DataFrame")
+            raise ValueError(
+                f"adata.uns['{self.UNS_DE_RESULTS_KEY}'] must be a pandas DataFrame"
+            )
         metric_col = self.adata.uns.get(self.UNS_METRIC_COL_KEY, self.de_metric_col)
         for col in [self.condition_key, "gene_id", metric_col]:
             if col not in de_results.columns:
@@ -266,7 +270,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Control mapping is REQUIRED at dataset level and must be strict 1-1
         if self.UNS_CONTROL_MAP_KEY not in adata.uns:
-            raise ValueError(f"Missing adata.uns['{self.UNS_CONTROL_MAP_KEY}'] for perturbation task")
+            raise ValueError(
+                f"Missing adata.uns['{self.UNS_CONTROL_MAP_KEY}'] for perturbation task"
+            )
         cm = adata.uns[self.UNS_CONTROL_MAP_KEY]
         if not isinstance(cm, dict):
             raise ValueError(f"adata.uns['{self.UNS_CONTROL_MAP_KEY}'] must be a dict")
@@ -312,9 +318,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Control mapping is REQUIRED: strict 1-1 map produced by preprocessing pipeline.
         if self.UNS_CONTROL_MAP_KEY not in self.adata.uns:
-            raise ValueError(
-                f"Key '{self.UNS_CONTROL_MAP_KEY}' not found in adata.uns"
-            )
+            raise ValueError(f"Key '{self.UNS_CONTROL_MAP_KEY}' not found in adata.uns")
         self.control_cells_ids = self.adata.uns[self.UNS_CONTROL_MAP_KEY]
 
         # Load and filter differential expression results
@@ -331,9 +335,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         # Ensure we have gene_id column for compatibility with task
         if self.de_gene_col != "gene_id":
-            de_results_df = de_results_df.rename(
-                columns={self.de_gene_col: "gene_id"}
-            )
+            de_results_df = de_results_df.rename(columns={self.de_gene_col: "gene_id"})
             necessary_columns = [self.condition_key, "gene_id", metric_column]
         de_results_df = de_results_df[necessary_columns]
 
@@ -350,10 +352,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         if isinstance(self.control_cells_ids, dict) and len(self.control_cells_ids) > 0:
             unique_conditions_control_cells_ids = set(self.control_cells_ids.keys())
             if unique_conditions_control_cells_ids != unique_conditions_adata:
-                msg = (
-                    f"Conditions in control_cells_ids and adata.obs[{self.condition_key}] are not identical"
-                )
-                if unique_conditions_control_cells_ids.issubset(unique_conditions_adata):
+                msg = f"Conditions in control_cells_ids and adata.obs[{self.condition_key}] are not identical"
+                if unique_conditions_control_cells_ids.issubset(
+                    unique_conditions_adata
+                ):
                     logger.warning(
                         msg
                         + ", but control_cells_ids keys are a subset of adata.obs["
@@ -399,7 +401,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         canonical = self._normalize_control_mapping(raw_mapping)
         self.adata.uns[self.UNS_CONTROL_MAP_KEY] = canonical
 
-    def _normalize_control_mapping(self, raw_mapping: Dict) -> Dict[str, Dict[str, List[str]]]:
+    def _normalize_control_mapping(
+        self, raw_mapping: Dict
+    ) -> Dict[str, Dict[str, List[str]]]:
         canonical: Dict[str, Dict[str, List[str]]] = {}
         if not isinstance(raw_mapping, dict):
             return {}
@@ -417,7 +421,11 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 default_controls: List[str] = []
                 if "_default" in mapping:
                     default_val = mapping["_default"]
-                    default_controls = [default_val] if isinstance(default_val, str) else list(default_val)
+                    default_controls = (
+                        [default_val]
+                        if isinstance(default_val, str)
+                        else list(default_val)
+                    )
                     default_controls = [str(x) for x in default_controls]
 
                 for tb, controls in mapping.items():
@@ -433,8 +441,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                     if tb not in canonical_cond and default_controls:
                         canonical_cond[str(tb)] = list(default_controls)
 
-            elif isinstance(mapping, str) or isinstance(mapping, (list, tuple, np.ndarray)):
-                default_controls = [mapping] if isinstance(mapping, str) else list(mapping)
+            elif isinstance(mapping, str) or isinstance(
+                mapping, (list, tuple, np.ndarray)
+            ):
+                default_controls = (
+                    [mapping] if isinstance(mapping, str) else list(mapping)
+                )
                 default_controls = [str(x) for x in default_controls]
                 for tb in treated_barcodes:
                     canonical_cond[str(tb)] = list(default_controls)
@@ -443,13 +455,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
             for tb in list(canonical_cond.keys()):
                 vals = canonical_cond[tb]
-                canonical_cond[tb] = [str(x) for x in (vals if isinstance(vals, list) else [vals])]
+                canonical_cond[tb] = [
+                    str(x) for x in (vals if isinstance(vals, list) else [vals])
+                ]
 
             canonical[condition] = canonical_cond
 
         return canonical
 
-    def get_controls(self, condition: str, treated_barcode: Optional[str] = None) -> List[str]:
+    def get_controls(
+        self, condition: str, treated_barcode: Optional[str] = None
+    ) -> List[str]:
         mapping = self.control_mapping
         if condition in mapping:
             if treated_barcode is not None and treated_barcode in mapping[condition]:
@@ -462,10 +478,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         obs = self.adata.obs
         ctrl_global = obs.index[obs[self.condition_key] == self.control_name]
-        ctrl_matched = obs.index[obs[self.condition_key] == f"{self.control_name}_{condition}"]
+        ctrl_matched = obs.index[
+            obs[self.condition_key] == f"{self.control_name}_{condition}"
+        ]
         return pd.Index(ctrl_global).append(pd.Index(ctrl_matched)).unique().tolist()
 
-    def get_indices_for(self, condition: str, treated_barcodes: Optional[List[str]] = None) -> tuple[np.ndarray, np.ndarray]:
+    def get_indices_for(
+        self, condition: str, treated_barcodes: Optional[List[str]] = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         obs = self.adata.obs
         obs_index = obs.index
 
@@ -537,18 +557,19 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 de_res_obj = self.adata.uns.get(self.UNS_DE_RESULTS_KEY)
 
             de_res_df = (
-                pd.DataFrame(de_res_obj)
-                if isinstance(de_res_obj, dict)
-                else de_res_obj
+                pd.DataFrame(de_res_obj) if isinstance(de_res_obj, dict) else de_res_obj
             )
-            if isinstance(de_res_df, pd.DataFrame) and self.condition_key in de_res_df.columns:
+            if (
+                isinstance(de_res_df, pd.DataFrame)
+                and self.condition_key in de_res_df.columns
+            ):
                 target_conditions = target_conditions.union(
                     set(de_res_df[self.condition_key].astype(str).unique())
                 )
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
             pass
-        
+
         for condition in original_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition in target_conditions:

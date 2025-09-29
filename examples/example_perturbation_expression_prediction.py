@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-        # Parse command line arguments
+    # Parse command line arguments
     parser = argparse.ArgumentParser(
         description="Run perturbation expression prediction task"
     )
@@ -125,10 +125,14 @@ def generate_random_model_predictions(n_cells, n_genes):
 
     # The same genes and cells (or a subset of them) should be in the model adata.
     model_adata.obs.index = (
-        dataset.adata.obs.index.to_series().sample(frac=1, random_state=RANDOM_SEED).values
+        dataset.adata.obs.index.to_series()
+        .sample(frac=1, random_state=RANDOM_SEED)
+        .values
     )
     model_adata.var.index = (
-        dataset.adata.var.index.to_series().sample(frac=1, random_state=RANDOM_SEED).values
+        dataset.adata.var.index.to_series()
+        .sample(frac=1, random_state=RANDOM_SEED)
+        .values
     )
     return model_adata
 
@@ -159,10 +163,6 @@ if __name__ == "__main__":
     # Before running this example, make sure the `--dataset_path` flag is set to where
     # the dataset input file is saved.
     # """
-
-
-
-
 
     # # Instantiate a config and load the input data
     # # FIXME MICHELLE -- UPDATE DATASET PATH AND THIS SECTION

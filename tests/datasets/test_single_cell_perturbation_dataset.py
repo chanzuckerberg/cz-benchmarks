@@ -167,9 +167,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         unique_condition_count = len(
             np.unique(
                 dataset.adata.obs[condition_key][
-                    ~dataset.adata.obs[condition_key].str.startswith(
-                        "non-targeting"
-                    )
+                    ~dataset.adata.obs[condition_key].str.startswith("non-targeting")
                 ]
             )
         )

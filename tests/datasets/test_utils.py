@@ -2,7 +2,7 @@ import sys
 from czbenchmarks.datasets import utils
 import types
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.utils import load_dataset, load_local_dataset 
+from czbenchmarks.datasets.utils import load_dataset, load_local_dataset
 from unittest.mock import patch
 import pytest
 
@@ -98,4 +98,3 @@ class TestUtils:
         """Test that load_dataset raises ValueError for invalid dataset name."""
         with pytest.raises(ValueError):
             load_dataset("invalid_dataset")
-

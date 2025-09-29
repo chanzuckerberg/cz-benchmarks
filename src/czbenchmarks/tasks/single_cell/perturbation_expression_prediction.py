@@ -28,6 +28,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     gene_index: Optional[pd.Index] = None
     cell_index: Optional[pd.Index] = None
 
+
 def build_task_input_from_predictions(
     predictions_adata: ad.AnnData,
     dataset_adata: ad.AnnData,
@@ -120,7 +121,9 @@ class PerturbationExpressionPredictionTask(Task):
         # Strict 1-1 mapping is required
         control_map_1to1: Optional[Dict] = adata.uns.get("control_cells_map")
         if not isinstance(control_map_1to1, dict):
-            raise ValueError("adata.uns['control_cells_map'] is required and must be a dict of treated->control mappings per condition.")
+            raise ValueError(
+                "adata.uns['control_cells_map'] is required and must be a dict of treated->control mappings per condition."
+            )
         target_conditions_dict: Dict[str, List[str]] = adata.uns.get(
             "target_conditions_dict", {}
         )
@@ -130,7 +133,10 @@ class PerturbationExpressionPredictionTask(Task):
         for condition in perturbation_conditions:
             # Select genes for this condition
             condition_de = de_results[de_results[self.condition_key] == condition]
-            if condition in target_conditions_dict and target_conditions_dict[condition]:
+            if (
+                condition in target_conditions_dict
+                and target_conditions_dict[condition]
+            ):
                 candidate_genes = [
                     g
                     for g in target_conditions_dict[condition]
@@ -144,11 +150,9 @@ class PerturbationExpressionPredictionTask(Task):
                 continue
 
             # Ground truth vector
-            true_lfc_series = (
-                condition_de.set_index("gene_id").reindex(candidate_genes)[
-                    metric_column
-                ]
-            )
+            true_lfc_series = condition_de.set_index("gene_id").reindex(
+                candidate_genes
+            )[metric_column]
             true_lfc = true_lfc_series.values
             valid_mask = ~np.isnan(true_lfc)
             if not valid_mask.any():
@@ -170,7 +174,9 @@ class PerturbationExpressionPredictionTask(Task):
             control_barcodes: List[str] = []
 
             # Compute per-pair differences using the strict 1-1 map
-            if condition not in control_map_1to1 or not isinstance(control_map_1to1[condition], dict):
+            if condition not in control_map_1to1 or not isinstance(
+                control_map_1to1[condition], dict
+            ):
                 raise ValueError(
                     f"Missing 1-1 control mapping for condition '{condition}' in adata.uns['control_cells_map']"
                 )
@@ -219,7 +225,9 @@ class PerturbationExpressionPredictionTask(Task):
                     if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                         pred_lfc = np.asarray(treated_mean - control_mean).ravel()
                     else:
-                        pred_lfc = np.log((treated_mean + eps) / (control_mean + eps)).ravel()
+                        pred_lfc = np.log(
+                            (treated_mean + eps) / (control_mean + eps)
+                        ).ravel()
             pred_log_fc_dict[condition] = np.asarray(pred_lfc).ravel()
             true_log_fc_dict[condition] = np.asarray(true_lfc).ravel()
 
@@ -312,10 +320,18 @@ class PerturbationExpressionPredictionTask(Task):
                 )
         else:
             # Basic dimensionality checks when indices are supplied
-            if task_input.cell_index is not None and cell_representation.shape[0] != len(task_input.cell_index):
-                raise ValueError("Number of prediction rows must match length of provided cell_index.")
-            if task_input.gene_index is not None and cell_representation.shape[1] != len(task_input.gene_index):
-                raise ValueError("Number of prediction columns must match length of provided gene_index.")
+            if task_input.cell_index is not None and cell_representation.shape[
+                0
+            ] != len(task_input.cell_index):
+                raise ValueError(
+                    "Number of prediction rows must match length of provided cell_index."
+                )
+            if task_input.gene_index is not None and cell_representation.shape[
+                1
+            ] != len(task_input.gene_index):
+                raise ValueError(
+                    "Number of prediction columns must match length of provided gene_index."
+                )
 
         if "de_results" not in adata.uns:
             raise ValueError("adata.uns['de_results'] is required.")
@@ -330,4 +346,6 @@ class PerturbationExpressionPredictionTask(Task):
 
         cm = adata.uns.get("control_cells_map")
         if not isinstance(cm, dict):
-            raise ValueError("adata.uns['control_cells_map'] is required and must be a dict.")
+            raise ValueError(
+                "adata.uns['control_cells_map'] is required and must be a dict."
+            )
