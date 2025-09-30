@@ -33,7 +33,7 @@ def sample_de_genes(
         seed (int): Random seed.
     Returns:
         Dict[str, List[str]]: Dictionary that maps each condition to a list of 
-        genes to be maskedfor that condition.
+        genes to be masked for that condition.
     """
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
