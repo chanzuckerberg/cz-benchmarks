@@ -18,6 +18,7 @@ TASK_NAMES = frozenset(
     {
         "clustering",
         "embedding",
+        "sequential",
         "label_prediction",
         "integration",
         "perturbation",
@@ -172,27 +173,6 @@ def _print_simple_metrics(grouped_metrics):
             print(f"  {i + 1}: {result.value:.4f}{params_display}")
 
 
-def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):
-    """Convert continuous values to binary classification.
-
-    Filters out NaN and infinite values, then converts values to binary
-    using a threshold of 0 (positive values become 1, others become 0).
-
-    Args:
-        y_true: True continuous values
-        y_pred: Predicted continuous values
-
-    Returns:
-        tuple: (true_binary, pred_binary) - binary arrays for classification metrics
-    """
-    ids = np.where(~np.isnan(y_true) & ~np.isinf(y_true))[0]
-    y_true = y_true[ids]
-    y_pred = y_pred[ids]
-    pred_binary = (y_pred > 0).astype(int)
-    true_binary = (y_true > 0).astype(int)
-    return true_binary, pred_binary
-
-
 def cluster_embedding(
     adata: AnnData,
     n_iterations: int = 2,
@@ -257,8 +237,7 @@ def filter_minimum_class(
 
     filtered_counts = class_counts[class_counts >= min_class_size]
     logger.info(
-        f"Total classes after filtering "
-        f"(min_class_size={min_class_size}): {len(filtered_counts)}"
+        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
     )
 
     labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
@@ -319,6 +298,7 @@ def looks_like_lognorm(
     matrix: CellRepresentation,
     sample_size: int | float = 1_000,
     tol: float = 1e-2,
+    random_seed: int = RANDOM_SEED,
 ) -> bool:
     """
     Guess if a matrix contains log-normalized (non-integer) values by inspecting random cell sums.
@@ -328,7 +308,7 @@ def looks_like_lognorm(
 
     Args:
         matrix: Expression matrix (cells x genes).
-        sample_size: How many cells to check (default: 500 or all if fewer).
+        sample_size: How many cells to check (default: 1000 or all if fewer).
         tol: Allowed deviation from integer for sum to be considered integer-like.
 
     Returns:
@@ -336,7 +316,7 @@ def looks_like_lognorm(
     """
     total_cells = matrix.shape[0]
     n = int(min(sample_size, total_cells))
-    indices = np.random.choice(total_cells, n, replace=False)
+    indices = np.random.default_rng(random_seed).choice(total_cells, n, replace=False)
     row_totals = matrix[indices].sum(axis=1)
     if np.any(np.abs(row_totals - np.round(row_totals)) > tol):
         return True

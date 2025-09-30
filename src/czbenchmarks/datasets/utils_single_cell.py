@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, List, Literal
+from typing import Tuple, Dict, List
 import logging
 import anndata as ad
 import numpy as np
@@ -125,12 +125,10 @@ def run_multicondition_dge_analysis(
             selected_condition, np.array([], dtype=int)
         )
         rows_ctrl = control_to_indices.get(selected_condition, np.array([], dtype=int))
+
         # Filter out any missing indices (-1)
-        rows_ctrl = (
-            rows_ctrl[rows_ctrl >= 0]
-            if isinstance(rows_ctrl, np.ndarray)
-            else np.array(rows_ctrl, dtype=int)
-        )
+        rows_ctrl = np.asarray(rows_ctrl, dtype=int)
+        rows_ctrl = rows_ctrl[rows_ctrl >= 0]
 
         if len(rows_cond) < min_pert_cells or len(rows_ctrl) == 0:
             print(f"Insufficient cells for analysis of {selected_condition}")
@@ -206,7 +204,7 @@ def run_multicondition_dge_analysis(
             )
             indexes = np.where((cond_mean > 0) & (ctrl_mean > 0))[0]
             logger.info(
-                f"remove_avg_zeros is True.Removing {len(results) - len(indexes)} genes with zero expression"
+                f"remove_avg_zeros is True. Removing {len(results) - len(indexes)} genes with zero expression"
             )
             results = results.iloc[indexes]
 

@@ -60,7 +60,6 @@ class PerturbationExpressionPredictionTask(Task):
     def __init__(
         self,
         condition_key: str = "condition",
-        control_name: str = "ctrl",
         *,
         pred_effect_operation: Literal["difference", "ratio"] = "ratio",
         random_seed: int = RANDOM_SEED,
@@ -69,7 +68,6 @@ class PerturbationExpressionPredictionTask(Task):
         Args:
             condition_key (str): Key for the column in `adata.obs` specifying
                 conditions. Defaults to "condition".
-            control_name (str): Prefix for control conditions. Defaults to "ctrl".
             pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
                 effect between treated and control mean predictions over genes. "difference"
                 uses mean(treated) - mean(control) and is generally safe across scales
@@ -78,7 +76,6 @@ class PerturbationExpressionPredictionTask(Task):
             random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
-        self.control_name = control_name
         self.condition_key = condition_key
         self.pred_effect_operation = pred_effect_operation
 
@@ -140,7 +137,7 @@ class PerturbationExpressionPredictionTask(Task):
                 candidate_genes = [
                     g
                     for g in target_conditions_dict[condition]
-                    if g in set(condition_de["gene_id"].values)
+                    if g in condition_de["gene_id"].values
                 ]
             else:
                 # Skip conditions that don't have target conditions defined
@@ -168,10 +165,6 @@ class PerturbationExpressionPredictionTask(Task):
             genes = genes[keep]
             true_lfc = true_lfc[keep]
             gene_idx = gene_idx[keep]
-
-            # Resolve treated and control barcodes
-            treated_barcodes: List[str] = []
-            control_barcodes: List[str] = []
 
             # Compute per-pair differences using the strict 1-1 map
             if condition not in control_map_1to1 or not isinstance(
@@ -309,9 +302,8 @@ class PerturbationExpressionPredictionTask(Task):
         adata = task_input.adata
         # Allow callers to pass predictions with custom ordering/subsets via indices.
         # If indices are not provided, enforce exact shape equality with adata.
-        has_custom_ordering = (
-            getattr(task_input, "cell_index", None) is not None
-            or getattr(task_input, "gene_index", None) is not None
+        has_custom_ordering = hasattr(task_input, "cell_index") or hasattr(
+            task_input, "gene_index"
         )
         if not has_custom_ordering:
             if cell_representation.shape != (adata.n_obs, adata.n_vars):

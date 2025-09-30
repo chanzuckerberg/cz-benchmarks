@@ -13,10 +13,12 @@
       - [Task: Metadata label prediction - Cell type classification](#task-metadata-label-prediction---cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
       - [Task: Cross-Species Batch Integration](#task-cross-species-batch-integration)
-    - [Single Cell Perturbation Prediction](#single-cell-perturbation-prediction)
+    - [Sequential Organization](#sequential-organization)
+      - [Task: Sequential Organization](#task-sequential-organization)
+    - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
       - [Task: Genetic Perturbation Prediction](#task-genetic-perturbation-prediction)
   - [Guidelines for Included Assets](#guidelines-for-included-assets)
-    
+
 
 
 ## Task Descriptions
@@ -26,7 +28,8 @@
 | [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                                                       |
 | [Metadata label prediction - Cell type classification](#metadata-label-prediction-cell-type-classification)     | Use classifiers to predict cell type from embeddings                                                                                                      |
 | [Cross-Species Batch Integration](#cross-species-batch-integration)                 | Evaluate whether embeddings can align multiple species in a shared space                                                                                  |
-| [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context. Currently supports single CRISPRi perturbations |
+| [Sequential Organization](#sequential-organization)                                | Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics                               |
+| [Genetic perturbation prediction](#genetic-perturbation-prediction)                 | Evaluates a model’s ability to predict expression for masked genes, given the remaining (unmasked) genes in a cell as context, under CRISPRi perturbation |
 
 
 ## Dataset Descriptions
@@ -40,7 +43,7 @@
 | Human Kidney Disease | Contains single-cell (sc) and single-nucleus (sn) RNA sequencing data generated from 304,652 cells that were collected from healthy reference kidneys (45 donors) and kidneys from 48 patients with acute kidney failure or chronic kidney disease. Data were generated across distinct kidney tissue sources including cortex, renal medulla, and renal papilla. The dataset captures a wide spectrum of kidney cell types and states, including rare and novel populations, as well as cellular programs altered in injury such as cycling, repair, transitioning, and degenerative states. |  |
 | Mouse Kidney | Contains single-nucleus (sn) RNA sequencing data generated from 309,666 cells from 24 mouse kidneys across two fibrosis models. It captures 50 cell types and states spanning epithelial, endothelial, immune, and stromal populations, and reveals shared and unique epithelial injury responses, including early proximal tubule states with dysregulated lipid and amino acid metabolism, as well as heterogeneous stromal populations contributing to fibrogenesis through epithelial–stromal crosstalk. Two dataset versions are provided including the full mouse kidney dataset and a version mapped to human orthologs. |  |
 
-  
+
 
 ## Task Details
 
@@ -56,7 +59,7 @@ This task evaluates how well the model's embedding space separates different cel
 | NMI             | Normalized Mutual Information of biological labels and leiden clusters. Described in [Luecken et al.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) and implemented in [scib-metrics.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) |                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Embedding Task  | Silhouette score                                                                                                                                                                                                                                                                                                                                           | Measures cluster separation based on within-cluster and between-cluster distances to evaluate the quality of clusters with respect to biological labels. Described in [Luecken et al.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) and implemented in [scib-metrics.](https://scib-metrics.readthedocs.io/en/stable/generated/scib_metrics.nmi_ari_cluster_labels_leiden.html) |
 
-  
+
 ### Metadata label prediction - Cell type classification
 
 This task evaluates how well model embeddings capture information relevant to cell identity. This is achieved by a forward pass of the data through each model to retrieve embeddings, and then using the embeddings to train different classifiers, in this case we are using Logistic Regression, KNN, and RandomForest,to predict the cell type. To ensure a reliable evaluation, a 5-fold cross-validation strategy is employed. For each split, the classifier's predictions on the held-out data, along with the true cell type labels, are used to compute a range of classification metrics. The final benchmark output for each metric is the average across the 5 cross-validation folds.
@@ -71,7 +74,7 @@ This task evaluates how well model embeddings capture information relevant to ce
 | Recall    | Measures the proportion of actual positive instances that were correctly identified;<br><br>tp / (tp + fn) where tp = true positives, fn = false negatives. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L118).                        |
 | AUROC     | Measures the probability that the model will rank a randomly chosen data point belonging to that category higher than a randomly chosen data point not belonging to that category. Implemented [here](https://github.com/chanzuckerberg/cz-benchmarks/blob/7adf963a1bc7cb858e9d5895be9b8ad11633ecab/src/czbenchmarks/metrics/implementations.py#L126). |
 
-  
+
 ### Cross-Species Batch Integration
 
 This task evaluates the model's ability to learn representations that are consistent across different species. There is a forward pass of the data (each species is treated as an individual dataset) through the model. Once embeddings are generated for each species, they are concatenated into a single embedding matrix to enable cross-species comparison. Finally, the concatenated embeddings, along with the corresponding species labels, are used to compute evaluation metrics. 
@@ -84,8 +87,19 @@ This task evaluates the model's ability to learn representations that are consis
 | Batch silhouette | A modified silhouette score to measure the extent of batch mixing within biological labels. Described by [Luecken et al](https://www.nature.com/articles/s41592-021-01336-8).                                                                           |
 
 
-### Single Cell Perturbation Prediction
+### Sequential Organization
 
+This task evaluates sequential consistency in embeddings using time point labels and k-NN based metrics. It assesses how well embeddings preserve the sequential organization between cells, which is important for time-series or developmental trajectory data.
+
+#### Task: Sequential Organization
+
+| Metrics            | Description                                                                                                                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Silhouette score   | Measures cluster separation based on within-cluster and between-cluster distances using sequential labels to evaluate embedding quality with respect to sequential organization.                                                                                                           |
+| Sequential alignment | A k-NN based metric that evaluates how well the embedding preserves sequential relationships by measuring the consistency of sequential neighbors in the embedding space compared to the original sequential ordering.                                                                       |
+
+
+### Genetic Perturbation Prediction
 Warning: This task is still in progress. Results are subject to further validation.
 
 This task evaluates the performance of a model in predicting cellular responses to genetic perturbations. The process involves using the model to predict expression values from datasets with a subset of their differential expressed genes randomly masked. These predictions are then correlated with their respective ground-truth values for each condition.
