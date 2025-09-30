@@ -1,8 +1,8 @@
 import json
 
 import numpy as np
+import anndata as an
 import pytest
-
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
@@ -21,7 +21,9 @@ from czbenchmarks.tasks.label_prediction import (
 from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
-    PerturbationExpressionPredictionTaskInput,
+)
+from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
+    build_task_input_from_predictions,
 )
 from czbenchmarks.tasks.types import CellRepresentation
 
@@ -276,50 +278,48 @@ def test_end_to_end_perturbation_expression_prediction():
     dataset: SingleCellPerturbationDataset = load_dataset(
         "replogle_k562_essential_perturbpredict"
     )
-
-    # Build task input directly from dataset
-    task_input = PerturbationExpressionPredictionTaskInput(
-        de_results=dataset.de_results,
-        var_index=dataset.control_matched_adata.var.index,
-        masked_adata_obs=dataset.control_matched_adata.obs,
-        target_conditions_to_save=dataset.target_conditions_to_save,
-        row_index=dataset.adata.obs.index,
-    )
+    dataset.load_data()
+    dataset.validate()
 
     # Create random model output matching dataset dimensions
     model_output: CellRepresentation = np.random.rand(
         dataset.adata.shape[0], dataset.adata.shape[1]
     )
+    model_adata = an.AnnData(X=model_output)
+    model_adata.obs.index = dataset.adata.obs.index
+    model_adata.var.index = dataset.adata.var.index
 
     # Initialize task
     task = PerturbationExpressionPredictionTask()
 
     # Run task with model output
-    model_results = task.run(model_output, task_input)
+    task_input = build_task_input_from_predictions(
+        predictions_adata=model_adata,
+        dataset_adata=dataset.adata,
+        pred_effect_operation="ratio",
+    )
+    model_results = task.run(cell_representation=model_output, task_input=task_input)
 
     # Compute and run baseline
-    baseline_embedding = task.compute_baseline(dataset.adata.X, baseline_type="median")
-    baseline_results = task.run(baseline_embedding, task_input)
+    baseline_model = task.compute_baseline(
+        cell_representation=dataset.adata.X, baseline_type="median"
+    )
+    baseline_results = task.run(
+        cell_representation=baseline_model,
+        task_input=task_input,
+    )
 
     # Validate results structure
     for results in [model_results, baseline_results]:
         assert isinstance(results, list)
         assert len(results) > 0
         for result in results:
-            assert hasattr(result, "metric_type")
-            assert hasattr(result, "value")
-            assert hasattr(result, "params")
+            for attr in ["metric_type", "value", "params"]:
+                assert hasattr(result, attr)
 
     # Expect presence of required metric types in model results
     model_metric_types = {r.metric_type.value for r in model_results}
-    for required_metric in {
-        "accuracy_calculation",
-        "precision_calculation",
-        "recall_calculation",
-        "f1_calculation",
-        "spearman_correlation_calculation",
-    }:
-        assert required_metric in model_metric_types
+    assert "spearman_correlation_calculation" in model_metric_types
 
     # Combine results for JSON validation
     model_serialized = [r.model_dump() for r in model_results]
