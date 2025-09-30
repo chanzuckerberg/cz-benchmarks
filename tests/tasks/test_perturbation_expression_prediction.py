@@ -338,9 +338,7 @@ def test_perturbation_task_apply_model_ordering():
         assert set(out_orig.pred_log_fc_dict.keys()) == set(
             out_shuf.pred_log_fc_dict.keys()
         )
-        assert set(out_orig.true_log_fc_dict.keys()) == set(
-            out_shuf.true_log_fc_dict.keys()
-        )
+        assert out_orig.true_log_fc_dict.keys() == out_shuf.true_log_fc_dict.keys()
         for k in out_orig.pred_log_fc_dict.keys():
             np.testing.assert_allclose(
                 out_orig.pred_log_fc_dict[k], out_shuf.pred_log_fc_dict[k]

@@ -302,9 +302,8 @@ class PerturbationExpressionPredictionTask(Task):
         adata = task_input.adata
         # Allow callers to pass predictions with custom ordering/subsets via indices.
         # If indices are not provided, enforce exact shape equality with adata.
-        has_custom_ordering = (
-            getattr(task_input, "cell_index", None) is not None
-            or getattr(task_input, "gene_index", None) is not None
+        has_custom_ordering = hasattr(task_input, "cell_index") or hasattr(
+            task_input, "gene_index"
         )
         if not has_custom_ordering:
             if cell_representation.shape != (adata.n_obs, adata.n_vars):

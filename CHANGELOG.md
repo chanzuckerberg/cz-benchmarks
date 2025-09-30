@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.12.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.2...v0.12.0) (2025-09-29)
+
+
+### Features
+
+* Add Sequential Organization task, metric, and related datasets ([#422](https://github.com/chanzuckerberg/cz-benchmarks/issues/422)) ([f9aa098](https://github.com/chanzuckerberg/cz-benchmarks/commit/f9aa0982431dd133067097e9b70c8efa8062d86c))
+
+
+### Bug Fixes
+
+* broken links ([#415](https://github.com/chanzuckerberg/cz-benchmarks/issues/415)) ([339974a](https://github.com/chanzuckerberg/cz-benchmarks/commit/339974a109dbe137b7c2c0a4604521dfa7895812))
+* doc email link ([#417](https://github.com/chanzuckerberg/cz-benchmarks/issues/417)) ([1880e19](https://github.com/chanzuckerberg/cz-benchmarks/commit/1880e19cf6b3532a952565aa14a6a129b7a5b195))
+
+
+### Documentation
+
+* rename philosophy page to principles ([#421](https://github.com/chanzuckerberg/cz-benchmarks/issues/421)) ([bfab887](https://github.com/chanzuckerberg/cz-benchmarks/commit/bfab887dbddedceb88f47d2e5f251a4f214b5463))
+
 ## [0.11.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.1...v0.11.2) (2025-09-17)
 
 

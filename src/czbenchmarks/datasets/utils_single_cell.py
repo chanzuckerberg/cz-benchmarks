@@ -206,7 +206,7 @@ def run_multicondition_dge_analysis(
             )
             indexes = np.where((cond_mean > 0) & (ctrl_mean > 0))[0]
             logger.info(
-                f"remove_avg_zeros is True.Removing {len(results) - len(indexes)} genes with zero expression"
+                f"remove_avg_zeros is True. Removing {len(results) - len(indexes)} genes with zero expression"
             )
             results = results.iloc[indexes]
 
