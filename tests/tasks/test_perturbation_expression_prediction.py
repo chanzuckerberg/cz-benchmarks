@@ -25,14 +25,14 @@ def wilcoxon_test_data():
 
     n_per_group = 4
     gene_names = ["G0", "G1", "G2", "G3"]
-    true_lfc_gene_A = np.array([1.0, 0.5, -0.5, -1.0])
-    true_lfc_gene_B = np.array([2.0, 1.0, -1.0, -2.0])
+    true_mean_change_gene_A = np.array([1.0, 0.5, -0.5, -1.0])
+    true_mean_change_gene_B = np.array([2.0, 1.0, -1.0, -2.0])
 
     de_results = pd.DataFrame(
         {
             condition_key: ["gene_A"] * 4 + ["gene_B"] * 4,
             de_gene_col: gene_names * 2,
-            metric_column: np.concatenate([true_lfc_gene_A, true_lfc_gene_B]),
+            metric_column: np.concatenate([true_mean_change_gene_A, true_mean_change_gene_B]),
         }
     )
 
@@ -48,8 +48,8 @@ def wilcoxon_test_data():
     # Create cell representation that gives expected log fold changes
     eps = 0.003
     cell_representation = np.ones((len(conditions), len(gene_names)), dtype=float) + eps
-    cell_representation[0:n_per_group, :] += true_lfc_gene_A[None, :]
-    cell_representation[2 * n_per_group : 3 * n_per_group, :] += true_lfc_gene_B[
+    cell_representation[0:n_per_group, :] += true_mean_change_gene_A[None, :]
+    cell_representation[2 * n_per_group : 3 * n_per_group, :] += true_mean_change_gene_B[
         None, :
     ]
 
@@ -89,8 +89,8 @@ def wilcoxon_test_data():
         "adata": adata,
         "cell_representation": cell_representation,
         "de_results": de_results,
-        "true_lfc_gene_A": true_lfc_gene_A,
-        "true_lfc_gene_B": true_lfc_gene_B,
+        "true_mean_change_gene_A": true_mean_change_gene_A,
+        "true_mean_change_gene_B": true_mean_change_gene_B,
         "gene_names": gene_names,
     }
 
@@ -158,13 +158,12 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         adata=task_input_adata,
         gene_index=task_input_gene_index,
         cell_index=task_input_cell_index,
+        pred_effect_operation="difference"
     )
 
     # Verify internal task output matches expectations
-    condition_key = adata.uns["config"]["condition_key"]
-    task = PerturbationExpressionPredictionTask(
-        condition_key=condition_key, pred_effect_operation="difference"
-    )
+    condition_key = adata.uns["config"].get("condition_key", "condition")
+    task = PerturbationExpressionPredictionTask()
 
     # Validate metrics results
     results = task.run(cell_representation=matrix, task_input=task_input)

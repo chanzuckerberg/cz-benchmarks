@@ -298,6 +298,7 @@ def test_end_to_end_perturbation_expression_prediction():
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
+        pred_effect_operation="ratio",
     )
     model_results = task.run(cell_representation=model_output, task_input=task_input)
 
@@ -306,7 +307,8 @@ def test_end_to_end_perturbation_expression_prediction():
         cell_representation=dataset.adata.X, baseline_type="median"
     )
     baseline_results = task.run(
-        cell_representation=baseline_model, task_input=task_input
+        cell_representation=baseline_model,
+        task_input=task_input,
     )
 
     # Validate results structure
