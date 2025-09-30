@@ -19,7 +19,7 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
     Optionally carries the predictions' ordering via cell_index/gene_index so the
-    task can align a model matrix that is a subset or re-ordered relative to
+    task can align a model matrix that is a subset of or re-ordered relative to
     the dataset adata.
     """
 
