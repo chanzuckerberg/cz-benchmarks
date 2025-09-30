@@ -27,6 +27,8 @@ The following parameters are used in loading the data:
 - `condition_key`: The name of the column in `adata.obs` and in the DE results containing condition labels for perturbations and controls. Default is "condition".
 - `control_name`: The name used to denote control samples and to form control labels ``{control_name}_{perturb}``. Default is "ctrl".
 - `de_gene_col`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene_id".
+- `de_metric_col`: The name of the metric column in the differential expression data. Default is "logfoldchange".
+- `de_pval_col`: The name of the p-value column in the differential expression data. Default is "de_pval_col".
 
 ### Masking Parameters
 
@@ -36,12 +38,9 @@ The following parameters control masking of the DE genes:
 - `min_de_genes_to_mask`: Minimum number of sampled DE genes required for a condition to be eligible for masking. This threshold is applied after the genes are sampled. Default value is 5.
 - `pval_threshold`: Maximum adjusted p-value for DE filtering based on the output of the DE analysis. This data must be in the column `pval_adj`. Default value is 1e-4.
 - `min_logfoldchange`: Minimum absolute log-fold change to determine when a gene is considered differentially expressed. This data must be in the column `logfoldchange`. Only used when the DE analysis uses Wilcoxon rank-sum. Default value is 1.
-- `condition_key`: Key for the column in `adata.obs` specifying conditions (default value is "condition")
-- `control_name`: Name of the control condition (default value is "ctrl")
-- `random_seed`: Random seed for reproducible masking
 - `target_conditions_override`: An externally supplied list of target conditions for customized masking. This overrides the default sampling of genes for masking in `target_conditions_dict`. 
 
-Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `task_inputs_dir`) are also required but not described here.
+The parameters `condition_key` and `control_name` are as described above and used for masking. Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `task_inputs_dir`, `random_seed`) are also required but not described here.
 
 ### Saving the Dataset
 
@@ -64,9 +63,7 @@ The following parameters are used by the task input class, via the [`Perturbatio
 - `cell_index`: Sequence of user-provided cell is vertically aligned with `cell_representation` matrix, which contains the predictions from the model.
 - `gene_index`: Sequence of user-provided gene names horizontally aligned with `cell_representation` matrix, which contains the predictions from the model.
 
-The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires the following inputs:
-
-
+The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires only an optional random seed as input. The dataclass ([`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html)) and a matrix of model predictions is required to be provided to the `run` method which executes the task.
 
 The task returns a dataclass, [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html), which contains the following:
 
