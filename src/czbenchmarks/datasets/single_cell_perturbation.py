@@ -336,10 +336,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         metric_column = self.de_metric_col
         necessary_columns = [self.condition_key, self.de_gene_col, metric_column]
 
+        # TODO I think this is no longer needed. Verify using input data w/ different
+        # values for de_gene_col
         # Ensure we have gene_id column for compatibility with task
         if self.de_gene_col != "gene_id":
             de_results_df = de_results_df.rename(columns={self.de_gene_col: "gene_id"})
             necessary_columns = [self.condition_key, "gene_id", metric_column]
+            self.de_gene_col = "gene_id"
         de_results_df = de_results_df[necessary_columns]
 
         # Optional consistency checks only when mapping exists
