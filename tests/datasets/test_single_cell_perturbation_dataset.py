@@ -171,7 +171,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             )
         )
         assert len(dataset.target_conditions_dict) == unique_condition_count
-        
+
         # With 10 DE genes per condition in fixtures
         expected_sampled = int(10 * percent_genes_to_mask)
         sampled_lengths = {len(v) for v in dataset.target_conditions_dict.values()}
