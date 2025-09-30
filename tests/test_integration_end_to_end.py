@@ -291,7 +291,7 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Initialize task
     task = PerturbationExpressionPredictionTask(
-        condition_key=dataset.condition_key, control_name=dataset.control_name
+        condition_key=dataset.condition_key
     )
 
     # Run task with model output
