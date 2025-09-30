@@ -9,10 +9,6 @@ from czbenchmarks.tasks import (
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
 )
-from czbenchmarks.tasks.sequential import (
-    SequentialOrganizationTask,
-    SequentialOrganizationTaskInput,
-)
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,

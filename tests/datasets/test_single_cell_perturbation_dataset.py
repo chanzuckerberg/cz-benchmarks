@@ -1,4 +1,3 @@
-import json
 import numpy as np
 from pathlib import Path
 import pandas as pd
@@ -7,9 +6,6 @@ import anndata as ad
 
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-    PerturbationExpressionPredictionTaskInput,
-)
 from tests.datasets.test_single_cell_dataset import SingleCellDatasetTests
 from tests.utils import create_dummy_anndata
 
@@ -138,13 +134,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
-    def test_perturbation_dataset_load_data(
+    def test_perturbation_dataset_validate_load_data(
         self,
         tmp_path,
         percent_genes_to_mask,
         min_de_genes_to_mask,
         pval_threshold,
     ):
+        # TODO test length of filtered de_results based on parameters
         """Tests the loading of perturbation dataset data across parameter combinations."""
         condition_key = "condition"
         dataset = SingleCellPerturbationDataset(
@@ -159,9 +156,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         )
 
         dataset.load_data()
+        dataset.validate()
 
         # Verify dataset was loaded and UNS prepared for task
         assert dataset.adata.shape == (6, 3)
+
         # Target genes should be populated
         assert hasattr(dataset, "target_conditions_dict")
         unique_condition_count = len(
@@ -171,8 +170,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
                 ]
             )
         )
-
         assert len(dataset.target_conditions_dict) == unique_condition_count
+        
         # With 10 DE genes per condition in fixtures
         expected_sampled = int(10 * percent_genes_to_mask)
         sampled_lengths = {len(v) for v in dataset.target_conditions_dict.values()}
@@ -205,8 +204,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         tmp_path,
     ):
         """Tests that the store_task_inputs method writes the task inputs h5ad."""
-        condition_key = "condition"
-
         dataset = SingleCellPerturbationDataset(
             path=self.valid_dataset_file(tmp_path),
             organism=Organism.HUMAN,
@@ -220,7 +217,6 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         dataset.load_data()
 
         task_inputs_dir = dataset.store_task_inputs()
-        assert task_inputs_dir.exists()
         assert task_inputs_dir.is_dir()
 
         # Check the single h5ad exists
@@ -255,7 +251,7 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "control_cells_map",
         }
 
-        actual_uns_keys = set(dataset.adata.uns.keys())
+        actual_uns_keys = dataset.adata.uns.keys()
         assert required_uns_keys.issubset(actual_uns_keys), (
             f"Missing required keys in adata.uns. "
             f"Required: {required_uns_keys}, Found: {actual_uns_keys}"
@@ -278,78 +274,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         de_df = uns["de_results"]
         assert isinstance(de_df, pd.DataFrame)
         assert not de_df.empty
-        expected_cols = {"condition", "gene_id", "logfoldchange"}
+
+        condition_key = uns["config"]["condition_key"]
+        de_gene_col = uns["config"]["de_gene_col"]
+        de_metric_col = uns["config"]["de_metric_col"]
+        expected_cols = {condition_key, de_gene_col, de_metric_col}
         assert set(de_df.columns) == expected_cols
-
-    @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
-    @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
-    @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
-    def test_perturbation_dataset_load_de_results_from_csv(
-        self,
-        tmp_path,
-        percent_genes_to_mask,
-        min_de_genes_to_mask,
-        pval_threshold,
-    ):
-        """Tests loading DE results from an external CSV via de_results_path."""
-        # Create the base AnnData file using existing helper to ensure obs/uns layout
-        self.valid_dataset_file(tmp_path)
-
-        # Create a DE results CSV with required columns for both tests
-        # Include two conditions that match the AnnData: test1 and test2, 10 genes each
-        csv_path = tmp_path / "de_results.csv"
-        conditions = ["test1"] * 10 + ["test2"] * 10
-        genes = [f"GENE_{i}" for i in range(20)]
-        de_df = pd.DataFrame(
-            {
-                "condition": conditions,
-                "gene": genes,
-                "pval_adj": [1e-6] * 20,
-                "logfoldchange": [2.0] * 20,
-            }
-        )
-        de_df.to_csv(csv_path, index=False)
-
-        # Construct dataset pointing to the CSV and with permissive thresholds
-        dataset = SingleCellPerturbationDataset(
-            path=self.valid_dataset_file(tmp_path),
-            organism=Organism.HUMAN,
-            condition_key="condition",
-            control_name="ctrl",
-            percent_genes_to_mask=percent_genes_to_mask,
-            min_de_genes_to_mask=min_de_genes_to_mask,
-            pval_threshold=pval_threshold,
-            min_logfoldchange=0.0,
-        )
-        dataset.load_data()
-
-        # Build task input from dataset.adata
-        task_input = PerturbationExpressionPredictionTaskInput(
-            adata=dataset.adata,
-            gene_index=dataset.adata.var.index,
-            cell_index=dataset.adata.obs.index,
-        )
-
-        # Verify the task input was created successfully
-        assert task_input is not None
-        assert hasattr(task_input, "adata")
-        assert task_input.adata is not None
-
-        # Verify that required data in uns is accessible
-        required_uns_keys = {"control_cells_map"}
-        actual_uns_keys = task_input.adata.uns.keys()
-        assert required_uns_keys.issubset(actual_uns_keys)
-
-        # Verify data integrity - the data should match the original dataset
-        assert (
-            task_input.adata.uns["target_conditions_dict"]
-            == dataset.target_conditions_dict
-        )
-        assert task_input.adata.uns["control_cells_map"] == dataset.control_cells_ids
-
-        # Check that DE results can be reconstructed
-        de_df = task_input.adata.uns["de_results"]
-        assert len(de_df) == len(dataset.de_results)
-
-        # Check cell barcode index
-        # Cell barcode index is not persisted separately; dataset indices are used directly

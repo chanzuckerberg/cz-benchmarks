@@ -21,7 +21,6 @@ from czbenchmarks.tasks.label_prediction import (
 from czbenchmarks.tasks.sequential import SequentialOrganizationTaskInput
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
-    PerturbationExpressionPredictionTaskInput,
 )
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     build_task_input_from_predictions,
@@ -292,7 +291,7 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Initialize task
     task = PerturbationExpressionPredictionTask(
-        condition_key=dataset.condition_key, control_name=dataset.control_name
+        condition_key=dataset.condition_key
     )
 
     # Run task with model output

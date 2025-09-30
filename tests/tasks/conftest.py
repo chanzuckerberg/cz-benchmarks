@@ -1,8 +1,10 @@
 import pytest
 import pandas as pd
+import numpy as np
 import anndata as ad
 from czbenchmarks.tasks.types import CellRepresentation
 from czbenchmarks.datasets.types import Organism
+from czbenchmarks.metrics.types import MetricResult
 from tests.utils import create_dummy_anndata
 
 
@@ -50,11 +52,6 @@ def embedding_matrix(dummy_anndata):
 @pytest.fixture
 def obs(dummy_anndata):
     return dummy_anndata["obs"]
-
-
-@pytest.fixture
-def var(dummy_anndata):
-    return dummy_anndata["var"]
 
 
 @pytest.fixture

@@ -173,9 +173,7 @@ if __name__ == "__main__":
 
     # Run task
     logger.info("Creating task input from predictions and dataset")
-    task = PerturbationExpressionPredictionTask(
-        condition_key=dataset.condition_key, control_name=dataset.control_name
-    )
+    task = PerturbationExpressionPredictionTask(condition_key=dataset.condition_key)
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
@@ -214,7 +212,7 @@ if __name__ == "__main__":
     print("Summary of Model and Baseline metrics:")
     print("-------------------------------------\n")
     print(
-        f"Description: Summary of Spearman correlations of fold changes of \n"
+        "Description: Summary of Spearman correlations of fold changes of \n"
         "model predictions for all differentially expressed genes."
     )
     with pd.option_context("display.precision", 4):
