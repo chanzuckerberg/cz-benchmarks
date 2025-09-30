@@ -53,24 +53,25 @@ To cache and reuse dataset outputs without re-running preprocessing, the outputs
 
 ## Task Functionality and Parameters 
 
-This task evaluates predictions of perturbation-induced changes in gene expression against their ground truth values by correlating their values. The predictions provided to the task can be in any format that is monotonic with the differential expression results (Log2FC). Predicted changes are computed per condition as the difference in mean expression between perturbed and matched control cells, for the subset of masked genes.
+This task evaluates predictions of perturbation-induced changes in gene expression against their ground truth values by correlating their values. The predictions provided to the task can be in any format that is monotonic with the differential expression results. Predicted changes are computed per condition as the difference in mean expression between perturbed and matched control cells, for the subset of masked genes.
 
 The task class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either `median` (default) or `mean`, that calculates the median or mean expression values, respectively, across all masked values in the dataset.
 
 The following parameters are used by the task input class, via the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) class:  
 
 - `adata`: The AnnData object produced when the data are loaded by the dataset class ([`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html)), containing control-matched and masked data.
+- `pred_effect_operation`: This determines how to compute the effect of between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. The default is "ratio".
 - `cell_index`: Sequence of user-provided cell is vertically aligned with `cell_representation` matrix, which contains the predictions from the model.
 - `gene_index`: Sequence of user-provided gene names horizontally aligned with `cell_representation` matrix, which contains the predictions from the model.
 
 The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires the following inputs:
 
-- `pred_effect_operation`: This determines how to compute the effect of between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. If non-positive values are detected it falls back to "difference".
+
 
 The task returns a dataclass, [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html), which contains the following:
 
-- `pred_log_fc_dict`: The predicted fold change for the masked genes based on the model. # FIXME MICHELLE may change variable name
-- `true_log_fc_dict`: The ground truth log fold change (Log2FC) based on the differential expression results provided by the dataset.
+- `pred_mean_change_dict`: The predicted fold change for the masked genes based on the model.
+- `true_mean_change_dict`: The ground truth fold change based on the differential expression results provided by the dataset.
 
 These outputs are then provided to the metric for computation of the [Spearman correlation](../autoapi/czbenchmarks/metrics/implementations/index.html).
 
@@ -91,7 +92,7 @@ If the user has an AnnData (model_adata) with model predictions, and a [`SingleC
 
 The task produces a per-condition correlation by comparing predicted and ground-truth expression values for the masked genes. The comparison metric is:
 
-- **Spearman correlation (rank)**: Rank correlation between the raw predicted and ground truth values. As this is a rank metric, the predictions can be supplied in any units that are monotonic to the ground truth data (Log2FC).
+- **Spearman correlation (rank)**: Rank correlation between the raw predicted and ground truth values. As this is a rank metric, the predictions can be supplied in any units that are monotonic to the ground truth data, which uses log fold change (Log2FC).
 
 
 Results are generated for each perturbation condition separately. Downstream reporting may aggregate scores across conditions (e.g., mean and standard deviation).
