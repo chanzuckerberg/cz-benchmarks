@@ -6,9 +6,6 @@ import anndata as ad
 
 from czbenchmarks.datasets.single_cell_perturbation import SingleCellPerturbationDataset
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
-    PerturbationExpressionPredictionTaskInput,
-)
 from tests.datasets.test_single_cell_dataset import SingleCellDatasetTests
 from tests.utils import create_dummy_anndata
 

@@ -290,9 +290,7 @@ def test_end_to_end_perturbation_expression_prediction():
     model_adata.var.index = dataset.adata.var.index
 
     # Initialize task
-    task = PerturbationExpressionPredictionTask(
-        condition_key=dataset.condition_key
-    )
+    task = PerturbationExpressionPredictionTask()
 
     # Run task with model output
     task_input = build_task_input_from_predictions(
