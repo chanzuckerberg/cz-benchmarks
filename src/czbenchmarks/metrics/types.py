@@ -57,6 +57,9 @@ class MetricType(Enum):
 
     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
+    # Sequential metrics
+    SEQUENTIAL_ALIGNMENT = "sequential_alignment"
+
 
 class MetricInfo(BaseModel):
     """Stores metadata about a metric.

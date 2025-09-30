@@ -39,4 +39,7 @@ Each task class implements a specific evaluation goal. All tasks are located und
 - [`CrossSpeciesLabelPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/cross_species_label_prediction/index): A multi-dataset task that evaluates how well model embeddings can be used to determine cell properties across species.
 - [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index): Designed for perturbation models. Compares the model's ability to predict masked gene expression levels relative to ground truth using metrics like Spearman correlation, accuracy, F1, precision, and recall.
 
+- [`SequentialOrganizationTask`](../autoapi/czbenchmarks/tasks/sequential/index): Evaluates sequential consistency in embeddings using time point labels. Computes metrics like silhouette score and sequential alignment to assess how well embeddings preserve sequential organization between cells.
+
 For instructions on **adding a new custom task**, see [How to Add a Custom Task](../how_to_guides/add_new_task.md).
+
