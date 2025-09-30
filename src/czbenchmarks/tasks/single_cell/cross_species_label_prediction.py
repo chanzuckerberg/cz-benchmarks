@@ -489,16 +489,3 @@ class CrossSpeciesLabelPredictionTask(Task):
             metrics_list.extend(species_metrics)
 
         return metrics_list
-
-    def compute_baseline(self, **kwargs):
-        """Set a baseline for cross-species label prediction.
-
-        This method is not implemented for cross-species prediction tasks
-        as standard preprocessing workflows need to be applied per species.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
-        """
-        raise NotImplementedError(
-            "Baseline not implemented for cross-species label prediction"
-        )
