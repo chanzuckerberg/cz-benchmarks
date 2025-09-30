@@ -29,20 +29,32 @@ class MetricType(Enum):
     ENTROPY_PER_CELL = "entropy_per_cell"
     BATCH_SILHOUETTE = "batch_silhouette"
 
-    # Cross-validation prediction metrics
-    MEAN_FOLD_ACCURACY = "mean_fold_accuracy"
-    MEAN_FOLD_F1_SCORE = "mean_fold_f1"
-    MEAN_FOLD_PRECISION = "mean_fold_precision"
-    MEAN_FOLD_RECALL = "mean_fold_recall"
-    MEAN_FOLD_AUROC = "mean_fold_auroc"
-
+    # Regression metrics
     MEAN_SQUARED_ERROR = "mean_squared_error"
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
-    JACCARD = "jaccard"
+
+    # Classification metrics
+    ACCURACY = "accuracy"
     ACCURACY_CALCULATION = "accuracy_calculation"
-    PRECISION_CALCULATION = "precision_calculation"
-    RECALL_CALCULATION = "recall_calculation"
+    MEAN_FOLD_ACCURACY = "mean_fold_accuracy"
+
+    AUROC = "auroc"
+    MEAN_FOLD_AUROC = "mean_fold_auroc"
+
+    F1_SCORE = "f1"
     F1_CALCULATION = "f1_calculation"
+    MEAN_FOLD_F1_SCORE = "mean_fold_f1"
+
+    JACCARD = "jaccard"
+
+    PRECISION = "precision"
+    PRECISION_CALCULATION = "precision_calculation"
+    MEAN_FOLD_PRECISION = "mean_fold_precision"
+
+    RECALL = "recall"
+    RECALL_CALCULATION = "recall_calculation"
+    MEAN_FOLD_RECALL = "mean_fold_recall"
+
     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
     # Sequential metrics

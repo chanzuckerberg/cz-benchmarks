@@ -37,7 +37,6 @@ dependencies = [
     "scib-metrics>=0.5.1",
     "scipy>=1.15.3",
     "scikit-misc>=0.5.1",
-    "typing-extensions>=4.13.0",
     "pydantic>=2.0.0",
     "hnswlib>=0.8.0",
     "tomli>=2.2.1",
@@ -57,9 +56,9 @@ build = [
     "setuptools>=78.1.0",
     "twine>=6.1.0",
 ]
-
 dev = [
     "boto3-stubs>=1.37.26",
+    "boto3-stubs-lite[s3]>=1.38.0",
     "botocore-stubs>=1.37.26",
     "ruff>=0.11.2",
     "mypy>=1.15.0",
@@ -69,8 +68,8 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
     "types-pyyaml>=6.0.12.20250402",
+    "typing-extensions>=4.13.0",
 ]
-
 docs = [
     "toml",
     "sphinx==8.1.3",
