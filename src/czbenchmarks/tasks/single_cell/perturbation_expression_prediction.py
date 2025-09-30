@@ -137,7 +137,7 @@ class PerturbationExpressionPredictionTask(Task):
                 candidate_genes = [
                     g
                     for g in target_conditions_dict[condition]
-                    if g in set(condition_de["gene_id"].values)
+                    if g in condition_de["gene_id"].values
                 ]
             else:
                 # Skip conditions that don't have target conditions defined

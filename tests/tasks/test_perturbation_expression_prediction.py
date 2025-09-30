@@ -309,7 +309,6 @@ def test_perturbation_task_apply_model_ordering():
             min_logfoldchange=0.0,
         )
         dataset.load_data()
-
         model_output = np.random.rand(dataset.adata.shape[0], dataset.adata.shape[1])
         task_input = PerturbationExpressionPredictionTaskInput(
             adata=dataset.adata,

@@ -125,12 +125,10 @@ def run_multicondition_dge_analysis(
             selected_condition, np.array([], dtype=int)
         )
         rows_ctrl = control_to_indices.get(selected_condition, np.array([], dtype=int))
+
         # Filter out any missing indices (-1)
-        rows_ctrl = (
-            rows_ctrl[rows_ctrl >= 0]
-            if isinstance(rows_ctrl, np.ndarray)
-            else np.array(rows_ctrl, dtype=int)
-        )
+        rows_ctrl = np.asarray(rows_ctrl, dtype=int)
+        rows_ctrl = rows_ctrl[rows_ctrl >= 0]
 
         if len(rows_cond) < min_pert_cells or len(rows_ctrl) == 0:
             print(f"Insufficient cells for analysis of {selected_condition}")

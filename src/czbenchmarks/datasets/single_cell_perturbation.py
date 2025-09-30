@@ -32,7 +32,7 @@ def sample_de_genes(
         gene_col (str): Column name for the gene names.
         seed (int): Random seed.
     Returns:
-        Dict[str, List[str]]: Dictionary of target genes and their sampled genes.
+        Dict[str, List[str]]: Dictionary that maps each condition to a list of masked genes for that condition.
     """
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
@@ -72,7 +72,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         control_cells_ids (dict): Dictionary mapping each condition to a dictionary
             of treatment cell barcodes (keys) to matched control cell barcodes (values).
         de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_dict (dict): Dictionary of masked genes for each condition.
+        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each condition to a list of masked genes for that condition
     """
 
     control_cells_ids: dict
@@ -127,7 +127,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
             random_seed (int): Random seed for reproducibility.
-            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary of target conditions whose genes were randomly selected for masking.
+            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that maps a target condition to a list of genes that the user specified to be masked.
+            This overrides the default sampling of genes for masking.
                 Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
@@ -198,7 +199,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         """Populate self.adata.uns with the inputs required by the perturbation task.
 
         - Stores filtered differential expression results under uns['de_results']
-        - Optionally stores control mapping under uns['control_cells_ids'] if present
+        - Optionally stores control mapping under uns['control_cells_map'] if present
         - Stores (or computes) target_conditions_dict under uns['target_conditions_dict']
         - Writes uns['metric_column'] with the configured metric name
         """
@@ -452,7 +453,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             else:
                 continue
 
-            for tb in list(canonical_cond.keys()):
+            for tb in canonical_cond.keys():
                 vals = canonical_cond[tb]
                 canonical_cond[tb] = [
                     str(x) for x in (vals if isinstance(vals, list) else [vals])
@@ -581,7 +582,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 )
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
-            pass
 
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
