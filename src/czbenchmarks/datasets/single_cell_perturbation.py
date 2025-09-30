@@ -132,7 +132,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             random_seed (int): Random seed for reproducibility.
             target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that 
                 maps a target condition to a list of genes that the user specified to be masked.
-                This overrides the default sampling of genes for masking. Default is None.
+                This overrides the default sampling of genes for masking in target_conditions_dict. 
+                Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key

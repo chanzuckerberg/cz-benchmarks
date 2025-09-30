@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from scipy import sparse as sp_sparse
 
-from ...constants import RANDOM_SEED
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
@@ -62,7 +61,6 @@ class PerturbationExpressionPredictionTask(Task):
         condition_key: str = "condition",
         *,
         pred_effect_operation: Literal["difference", "ratio"] = "ratio",
-        random_seed: int = RANDOM_SEED,
     ):
         """
         Args:
@@ -73,7 +71,6 @@ class PerturbationExpressionPredictionTask(Task):
                 uses mean(treated) - mean(control) and is generally safe across scales
                 (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
                 when means are positive; if non-positive values are detected it falls back to "difference".
-            random_seed (int): Random seed for reproducibility.
         """
         super().__init__(random_seed=random_seed)
         self.condition_key = condition_key
