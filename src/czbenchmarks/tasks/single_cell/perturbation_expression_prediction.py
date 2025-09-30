@@ -366,7 +366,49 @@ class PerturbationExpressionPredictionTask(Task):
         task_input: PerturbationExpressionPredictionTaskInput,
         cell_representation: CellRepresentation,
     ) -> None:
+<<<<<<< Updated upstream
         if not looks_like_lognorm(cell_representation):
+=======
+        # Allow both log-normalized and raw predictions. Downstream computation adapts accordingly.
+
+        adata = task_input.adata
+        # Allow callers to pass predictions with custom ordering/subsets via indices.
+        # If indices are not provided, enforce exact shape equality with adata.
+        has_custom_ordering = hasattr(task_input, "cell_index") or hasattr(task_input, "gene_index")
+        if not has_custom_ordering:
+            if cell_representation.shape != (adata.n_obs, adata.n_vars):
+                raise ValueError(
+                    "Predictions must match adata shape (n_obs, n_vars) when no indices are provided."
+                )
+        else:
+            # Basic dimensionality checks when indices are supplied
+            if task_input.cell_index is not None and cell_representation.shape[
+                0
+            ] != len(task_input.cell_index):
+                raise ValueError(
+                    "Number of prediction rows must match length of provided cell_index."
+                )
+            if task_input.gene_index is not None and cell_representation.shape[
+                1
+            ] != len(task_input.gene_index):
+                raise ValueError(
+                    "Number of prediction columns must match length of provided gene_index."
+                )
+
+        if "de_results" not in adata.uns:
+            raise ValueError("adata.uns['de_results'] is required.")
+        de_results = adata.uns["de_results"]
+        if not isinstance(de_results, pd.DataFrame):
+            raise ValueError("adata.uns['de_results'] must be a pandas DataFrame.")
+
+        metric_column = adata.uns.get("metric_column", "logfoldchange")
+        for col in [self.condition_key, "gene_id", metric_column]:
+            if col not in de_results.columns:
+                raise ValueError(f"de_results missing required column '{col}'")
+
+        cm = adata.uns.get("control_cells_map")
+        if not isinstance(cm, dict):
+>>>>>>> Stashed changes
             raise ValueError(
                 "Task input likelihood contains non-log-normalized data. Please provide a log-normalized cell representation."
             )

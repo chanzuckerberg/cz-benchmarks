@@ -170,6 +170,7 @@ if __name__ == "__main__":
     logger.info("Model metrics:")
     print_metrics_summary(metrics_dict)
 
+<<<<<<< Updated upstream
     # # Compute baseline -- pseudocode -- this throws an error because of non-log-normalized data
     # baseline_model = task.compute_baseline(
     #     cell_representation=dataset.adata.X, baseline_type="median"
@@ -179,3 +180,47 @@ if __name__ == "__main__":
     # )
     # logger.info("Baseline metrics:")
     # print_metrics_summary(baseline_metrics_dict)
+=======
+    # Compute baselines
+    baseline_model = task.compute_baseline(
+        cell_representation=dataset.adata.X, baseline_type="median"
+    )
+    baseline_metrics_dict = task.run(
+        cell_representation=baseline_model, task_input=task_input
+    )
+    baseline_metrics_values = np.asarray(
+        [
+            x.value
+            for x in baseline_metrics_dict
+            if x.metric_type.value == "spearman_correlation_calculation"
+        ]
+    )
+
+    # Inspect metrics
+    metrics_df = pd.DataFrame(
+        {"Model": metrics_values, "Baseline": baseline_metrics_values}
+    )
+    summary_df = metrics_df.describe()
+
+    print("-------------------------------------")
+    print("Summary of Model and Baseline Metrics")
+    print("-------------------------------------\n")
+    print(
+        f"Description: Summary table for {len(metrics_values)} conditions of Spearman correlation \n"
+        "between fold changes model predictions relative to ground truth for masked differentially \n"
+        "expressed genes."
+    )
+    with pd.option_context("display.precision", 4):
+        print(summary_df.to_string())
+
+    if args.verbose:
+        print("--------------------------------")
+        print(f"Full table of Spearman correlation of fold changes between model predictions and ground truth for {len(metrics_values)} conditions")
+        print("--------------------------------")
+        print_metrics_summary(metrics_dict)
+
+        print("--------------------------------")
+        print("Baseline metrics:")
+        print("--------------------------------")
+        print_metrics_summary(baseline_metrics_dict)
+>>>>>>> Stashed changes
