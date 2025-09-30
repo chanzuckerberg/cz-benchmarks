@@ -7,7 +7,7 @@ from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTaskInput,
 )
 
-from czbenchmarks.metrics.types import MetricType, MetricResult
+from czbenchmarks.metrics.types import MetricType
 
 
 @pytest.fixture
@@ -99,37 +99,6 @@ def wilcoxon_test_data():
         "true_mean_change_gene_B": true_mean_change_gene_B,
         "gene_names": gene_names,
     }
-
-
-@pytest.fixture
-def assert_metric_results():
-    """Helper function for common metric result assertions."""
-
-    def _assert_results(
-        results,
-        expected_count,
-        expected_types=None,
-        perfect_correlation=False,
-        expected_conditions=None,
-        condition_key: str = "condition",
-    ):
-        assert isinstance(results, list) and all(
-            isinstance(r, MetricResult) for r in results
-        )
-        assert len(results) == expected_count
-
-        if perfect_correlation:
-            assert all(np.isclose(r.value, 1.0) for r in results)
-
-        if expected_types:
-            metric_types = {result.metric_type for result in results}
-            assert expected_types.issubset(metric_types)
-
-        if expected_conditions is not None:
-            result_conditions = {r.params.get(condition_key) for r in results}
-            assert result_conditions == set(expected_conditions)
-
-    return _assert_results
 
 
 @pytest.mark.parametrize("test_custom_ordering", [True, False])

@@ -44,7 +44,12 @@ def assert_metric_results():
     """Helper function for common metric result assertions."""
 
     def _assert_results(
-        results, expected_count, expected_types=None, perfect_correlation=False
+        results,
+        expected_count,
+        expected_types=None,
+        perfect_correlation=False,
+        expected_conditions=None,
+        condition_key: str = "condition",
     ):
         assert isinstance(results, list) and all(
             isinstance(r, MetricResult) for r in results
@@ -57,6 +62,10 @@ def assert_metric_results():
         if expected_types:
             metric_types = {result.metric_type for result in results}
             assert expected_types.issubset(metric_types)
+
+        if expected_conditions is not None:
+            result_conditions = {r.params.get(condition_key) for r in results}
+            assert result_conditions == set(expected_conditions)
 
     return _assert_results
 
