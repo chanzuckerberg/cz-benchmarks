@@ -120,6 +120,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
+            de_metric_col (str): Column name for the metric of the differential expression results.
+                Defaults to "logfoldchange".
+            de_pval_col (str): Column name for the p-value of the differential expression results.
+                Defaults to "pval_adj".
             percent_genes_to_mask (float): Percentage of genes to mask.
                 Default is 0.5.
             min_de_genes_to_mask (int): Minimum number of differentially
@@ -129,6 +133,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is 1e-4.
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
+            task_inputs_dir (Optional[Path]): Path to the directory containing the task inputs.
+                Default is None. If not provided, a default path will be used.
             random_seed (int): Random seed for reproducibility.
             target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that 
                 maps a target condition to a list of genes that the user specified to be masked.

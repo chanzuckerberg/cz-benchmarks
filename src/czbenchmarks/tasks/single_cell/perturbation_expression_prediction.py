@@ -10,6 +10,7 @@ from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ..task import Task, TaskInput, TaskOutput
+from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,7 @@ def build_task_input_from_predictions(
             effect between treated and control mean predictions over genes. "difference"
             uses mean(treated) - mean(control) and is generally safe across scales
             (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
-            when means are positive; if non-positive values are detected it falls back to "difference".
-            Default is "ratio".
+            when means are positive. Default is "ratio".
         gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
         cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
     """
@@ -72,20 +72,32 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        # *,
-        # pred_effect_operation: Literal["difference", "ratio"] = "ratio",
+        *,
+        random_seed: int = RANDOM_SEED,
     ):
-        # """
-        # Args:
-        #     pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
-        #         effect between treated and control mean predictions over genes. "difference"
-        #         uses mean(treated) - mean(control) and is generally safe across scales
-        #         (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
-        #         when means are positive; if non-positive values are detected it falls back to "difference".
-        # """
-        super().__init__()
+        """
+        Perturbation Expression Prediction Task.
+
+        The following arguments are required and must be supplied by the task input class 
+        (PerturbationExpressionPredictionTaskInput) when running the task. They are described
+        below for documentation purposes:
+
+            predictions_adata (ad.AnnData): The anndata containing model predictions.
+            dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
+            pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
+                effect between treated and control mean predictions over genes. "difference"
+                uses mean(treated) - mean(control) and is generally safe across scales
+                (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
+                when means are positive. Default is "ratio".
+            gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
+            cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
+
+        Args:
+            random_seed (int): Random seed for reproducibility.
+        """
+
+        super().__init__(random_seed=random_seed)
         self.condition_key = None
-        # self.pred_effect_operation = pred_effect_operation
 
     def _run_task(
         self,
