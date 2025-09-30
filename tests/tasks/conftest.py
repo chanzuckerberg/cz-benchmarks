@@ -40,49 +40,6 @@ def dummy_anndata():
 
 
 @pytest.fixture
-def adata_uns_setup():
-    """Helper function to setup common AnnData UNS structure."""
-
-    def _setup_uns(adata, de_results, target_conditions_dict, control_cells_map):
-        adata.uns.update(
-            {
-                "control_cells_ids": {},
-                "de_results": de_results[["condition", "gene_id", "logfoldchange"]]
-                if "gene_id" in de_results.columns
-                else de_results,
-                "metric_column": "logfoldchange",
-                "target_conditions_dict": target_conditions_dict,
-                "control_cells_map": control_cells_map,
-            }
-        )
-        return adata
-
-    return _setup_uns
-
-
-@pytest.fixture
-def assert_metric_results():
-    """Helper function for common metric result assertions."""
-
-    def _assert_results(
-        results, expected_count, expected_types=None, perfect_correlation=False
-    ):
-        assert isinstance(results, list) and all(
-            isinstance(r, MetricResult) for r in results
-        )
-        assert len(results) == expected_count
-
-        if perfect_correlation:
-            assert all(np.isclose(r.value, 1.0) for r in results)
-
-        if expected_types:
-            metric_types = {result.metric_type for result in results}
-            assert expected_types.issubset(metric_types)
-
-    return _assert_results
-
-
-@pytest.fixture
 def expression_matrix(dummy_anndata):
     return dummy_anndata["expression_matrix"]
 
