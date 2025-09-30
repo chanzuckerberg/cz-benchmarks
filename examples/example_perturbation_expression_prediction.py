@@ -66,6 +66,7 @@ def parse_args():
     return parser.parse_args()
 
 
+# TODO: Replace with `load_local_dataset()`
 def load_dataset_config(
     dataset_name: str,
     config_name: str = "datasets",
@@ -173,10 +174,11 @@ if __name__ == "__main__":
 
     # Run task
     logger.info("Creating task input from predictions and dataset")
-    task = PerturbationExpressionPredictionTask(condition_key=dataset.condition_key)
+    task = PerturbationExpressionPredictionTask()
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
+        pred_effect_operation="ratio"
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
     metrics_values = np.asarray(

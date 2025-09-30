@@ -134,13 +134,14 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
     @pytest.mark.parametrize("percent_genes_to_mask", [0.5, 1.0])
     @pytest.mark.parametrize("min_de_genes_to_mask", [1, 5])
     @pytest.mark.parametrize("pval_threshold", [1e-4, 1e-2])
-    def test_perturbation_dataset_load_data(
+    def test_perturbation_dataset_validate_load_data(
         self,
         tmp_path,
         percent_genes_to_mask,
         min_de_genes_to_mask,
         pval_threshold,
     ):
+        # TODO test length of filtered de_results based on parameters
         """Tests the loading of perturbation dataset data across parameter combinations."""
         condition_key = "condition"
         dataset = SingleCellPerturbationDataset(
@@ -155,9 +156,11 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         )
 
         dataset.load_data()
+        dataset.validate()
 
         # Verify dataset was loaded and UNS prepared for task
         assert dataset.adata.shape == (6, 3)
+
         # Target genes should be populated
         assert hasattr(dataset, "target_conditions_dict")
         unique_condition_count = len(
@@ -167,8 +170,8 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
                 ]
             )
         )
-
         assert len(dataset.target_conditions_dict) == unique_condition_count
+        
         # With 10 DE genes per condition in fixtures
         expected_sampled = int(10 * percent_genes_to_mask)
         sampled_lengths = {len(v) for v in dataset.target_conditions_dict.values()}
@@ -271,5 +274,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         de_df = uns["de_results"]
         assert isinstance(de_df, pd.DataFrame)
         assert not de_df.empty
-        expected_cols = {"condition", "gene_id", "logfoldchange"}
+
+        condition_key = uns["config"]["condition_key"]
+        de_gene_col = uns["config"]["de_gene_col"]
+        de_metric_col = uns["config"]["de_metric_col"]
+        expected_cols = {condition_key, de_gene_col, de_metric_col}
         assert set(de_df.columns) == expected_cols

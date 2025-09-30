@@ -32,7 +32,8 @@ def sample_de_genes(
         gene_col (str): Column name for the gene names.
         seed (int): Random seed.
     Returns:
-        Dict[str, List[str]]: Dictionary that maps each condition to a list of masked genes for that condition.
+        Dict[str, List[str]]: Dictionary that maps each condition to a list of 
+        genes to be masked for that condition.
     """
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
@@ -71,8 +72,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary mapping each condition to a dictionary
             of treatment cell barcodes (keys) to matched control cell barcodes (values).
-        de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each condition to a list of masked genes for that condition
+        de_results (pd.DataFrame): Differential expression results calculated on ground 
+            truth data using matched controls.
+        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each 
+            condition to a list of masked genes for that condition.
     """
 
     control_cells_ids: dict
@@ -117,6 +120,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             de_gene_col (str): Column name for the names of genes which are
                 differentially expressed in the differential expression results.
                 Defaults to "gene".
+            de_metric_col (str): Column name for the metric of the differential expression results.
+                Defaults to "logfoldchange".
+            de_pval_col (str): Column name for the p-value of the differential expression results.
+                Defaults to "pval_adj".
             percent_genes_to_mask (float): Percentage of genes to mask.
                 Default is 0.5.
             min_de_genes_to_mask (int): Minimum number of differentially
@@ -126,9 +133,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is 1e-4.
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
+            task_inputs_dir (Optional[Path]): Path to the directory containing the task inputs.
+                Default is None. If not provided, a default path will be used.
             random_seed (int): Random seed for reproducibility.
-            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that maps a target condition to a list of genes that the user specified to be masked.
-            This overrides the default sampling of genes for masking.
+            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that 
+                maps a target condition to a list of genes that the user specified to be masked.
+                This overrides the default sampling of genes for masking in target_conditions_dict. 
                 Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
@@ -333,10 +343,13 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         metric_column = self.de_metric_col
         necessary_columns = [self.condition_key, self.de_gene_col, metric_column]
 
+        # TODO I think this is no longer needed. Verify using input data w/ different
+        # values for de_gene_col
         # Ensure we have gene_id column for compatibility with task
         if self.de_gene_col != "gene_id":
             de_results_df = de_results_df.rename(columns={self.de_gene_col: "gene_id"})
             necessary_columns = [self.condition_key, "gene_id", metric_column]
+            self.de_gene_col = "gene_id"
         de_results_df = de_results_df[necessary_columns]
 
         # Optional consistency checks only when mapping exists
@@ -546,6 +559,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
         # Validate conditions found in the original adata
+        # FIXME MICHELLE: verify that I understand the implications of logic change
         original_conditions = set(self.adata.obs[self.condition_key])
         mapped_conditions = set(self.control_mapping.keys())
         for condition in original_conditions:
@@ -583,6 +597,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 
+        # FIXME MICHELLE: verify that I understand the implications of logic change
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition not in mapped_conditions:

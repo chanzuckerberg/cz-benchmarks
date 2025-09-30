@@ -6,12 +6,11 @@ import numpy as np
 import pandas as pd
 from scipy import sparse as sp_sparse
 
-from ...constants import RANDOM_SEED
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ..task import Task, TaskInput, TaskOutput
-from ..utils import looks_like_lognorm
+from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +19,12 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
     Optionally carries the predictions' ordering via cell_index/gene_index so the
-    task can align a model matrix that is a subset or re-ordered relative to
+    task can align a model matrix that is a subset of or re-ordered relative to
     the dataset adata.
     """
 
     adata: ad.AnnData
+    pred_effect_operation: Literal["difference", "ratio"] = "ratio",
     gene_index: Optional[pd.Index] = None
     cell_index: Optional[pd.Index] = None
 
@@ -32,14 +32,27 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
 def build_task_input_from_predictions(
     predictions_adata: ad.AnnData,
     dataset_adata: ad.AnnData,
+    pred_effect_operation: Literal["difference", "ratio"] = "ratio",
 ) -> PerturbationExpressionPredictionTaskInput:
     """Create a task input from a predictions AnnData and the dataset AnnData.
 
     This preserves the predictions' obs/var order so the task can align matrices
     without forcing the caller to reorder arrays.
+
+    Args:
+        predictions_adata (ad.AnnData): The anndata containing model predictions.
+        dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
+        pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
+            effect between treated and control mean predictions over genes. "difference"
+            uses mean(treated) - mean(control) and is generally safe across scales
+            (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
+            when means are positive. Default is "ratio".
+        gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
+        cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
     """
     return PerturbationExpressionPredictionTaskInput(
         adata=dataset_adata,
+        pred_effect_operation = pred_effect_operation,
         gene_index=predictions_adata.var.index,
         cell_index=predictions_adata.obs.index,
     )
@@ -48,8 +61,8 @@ def build_task_input_from_predictions(
 class PerturbationExpressionPredictionOutput(TaskOutput):
     """Output for perturbation task."""
 
-    pred_log_fc_dict: Dict[str, np.ndarray]
-    true_log_fc_dict: Dict[str, np.ndarray]
+    pred_mean_change_dict: Dict[str, np.ndarray]
+    true_mean_change_dict: Dict[str, np.ndarray]
 
 
 class PerturbationExpressionPredictionTask(Task):
@@ -59,25 +72,32 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        condition_key: str = "condition",
         *,
-        pred_effect_operation: Literal["difference", "ratio"] = "ratio",
         random_seed: int = RANDOM_SEED,
     ):
         """
-        Args:
-            condition_key (str): Key for the column in `adata.obs` specifying
-                conditions. Defaults to "condition".
+        Perturbation Expression Prediction Task.
+
+        The following arguments are required and must be supplied by the task input class 
+        (PerturbationExpressionPredictionTaskInput) when running the task. They are described
+        below for documentation purposes:
+
+            predictions_adata (ad.AnnData): The anndata containing model predictions.
+            dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
             pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
                 effect between treated and control mean predictions over genes. "difference"
                 uses mean(treated) - mean(control) and is generally safe across scales
                 (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
-                when means are positive; if non-positive values are detected it falls back to "difference".
+                when means are positive. Default is "ratio".
+            gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
+            cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
+
+        Args:
             random_seed (int): Random seed for reproducibility.
         """
+
         super().__init__(random_seed=random_seed)
-        self.condition_key = condition_key
-        self.pred_effect_operation = pred_effect_operation
+        self.condition_key = None
 
     def _run_task(
         self,
@@ -94,12 +114,13 @@ class PerturbationExpressionPredictionTask(Task):
         Returns:
             PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
-        self._validate(task_input, cell_representation)
-        # Detect if predictions are already log-normalized; computation will adapt accordingly
-        is_lognorm_predictions = looks_like_lognorm(cell_representation)
-        pred_log_fc_dict: Dict[str, np.ndarray] = {}
-        true_log_fc_dict: Dict[str, np.ndarray] = {}
         adata = task_input.adata
+        pred_effect_operation = task_input.pred_effect_operation
+        self.condition_key = adata.uns["config"].get("condition_key", "condition")
+        self._validate(task_input, cell_representation) # requires condition_key
+
+        pred_mean_change_dict: Dict[str, np.ndarray] = {}
+        true_mean_change_dict: Dict[str, np.ndarray] = {}
 
         obs = adata.obs
         obs_index = obs.index
@@ -112,7 +133,6 @@ class PerturbationExpressionPredictionTask(Task):
         pred_gene_index = (
             task_input.gene_index if task_input.gene_index is not None else var_index
         )
-
         de_results: pd.DataFrame = adata.uns["de_results"]
         metric_column: str = adata.uns.get("metric_column", "logfoldchange")
         # Strict 1-1 mapping is required
@@ -126,6 +146,12 @@ class PerturbationExpressionPredictionTask(Task):
         )
 
         perturbation_conditions = de_results[self.condition_key].unique().tolist()
+
+        # Let user know which is being used
+        if pred_effect_operation == "difference":
+            logger.info(f"Using mean difference to compute difference between treated and control means")
+        else:  # "ratio"
+            logger.info(f"Using log ratio to compute ratio between treated and control means")
 
         for condition in perturbation_conditions:
             # Select genes for this condition
@@ -147,15 +173,15 @@ class PerturbationExpressionPredictionTask(Task):
                 continue
 
             # Ground truth vector
-            true_lfc_series = condition_de.set_index("gene_id").reindex(
+            true_mean_change_data = condition_de.set_index("gene_id").reindex(
                 candidate_genes
             )[metric_column]
-            true_lfc = true_lfc_series.values
-            valid_mask = ~np.isnan(true_lfc)
+            true_mean_change = true_mean_change_data.values
+            valid_mask = ~np.isnan(true_mean_change)
             if not valid_mask.any():
                 continue
             genes = np.asarray(candidate_genes)[valid_mask]
-            true_lfc = true_lfc[valid_mask]
+            true_mean_change = true_mean_change[valid_mask]
 
             # Map genes to predictions' columns
             gene_idx = pred_gene_index.get_indexer(genes)
@@ -163,7 +189,7 @@ class PerturbationExpressionPredictionTask(Task):
             if not keep.any():
                 continue
             genes = genes[keep]
-            true_lfc = true_lfc[keep]
+            true_mean_change = true_mean_change[keep]
             gene_idx = gene_idx[keep]
 
             # Compute per-pair differences using the strict 1-1 map
@@ -206,27 +232,25 @@ class PerturbationExpressionPredictionTask(Task):
 
             # Compute predicted log fold-change depending on configuration and scale
             eps = 1e-8
-            if self.pred_effect_operation == "difference":
+            if pred_effect_operation == "difference":
+                logger.info(f"Using mean difference to compute difference between treated and control means for condition {condition}")
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
-                pred_lfc = np.asarray(treated_mean - control_mean).ravel()
+                pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
-                if is_lognorm_predictions:
-                    # If already log scale, ratio corresponds to difference
-                    pred_lfc = np.asarray(treated_mean - control_mean).ravel()
+                logger.info(f"Using log ratio to compute ratio between treated and control means for condition {condition}")
+                # Raw scale ratio; guard against non-positive means by falling back to difference
+                if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
+                    pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
-                    # Raw scale ratio; guard against non-positive means by falling back to difference
-                    if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
-                        pred_lfc = np.asarray(treated_mean - control_mean).ravel()
-                    else:
-                        pred_lfc = np.log(
-                            (treated_mean + eps) / (control_mean + eps)
-                        ).ravel()
-            pred_log_fc_dict[condition] = np.asarray(pred_lfc).ravel()
-            true_log_fc_dict[condition] = np.asarray(true_lfc).ravel()
+                    pred_mean_change = np.log(
+                        (treated_mean + eps) / (control_mean + eps)
+                    ).ravel()
+            pred_mean_change_dict[condition] = np.asarray(pred_mean_change).ravel()
+            true_mean_change_dict[condition] = np.asarray(true_mean_change).ravel()
 
         return PerturbationExpressionPredictionOutput(
-            pred_log_fc_dict=pred_log_fc_dict,
-            true_log_fc_dict=true_log_fc_dict,
+            pred_mean_change_dict=pred_mean_change_dict,
+            true_mean_change_dict=true_mean_change_dict,
         )
 
     def _compute_metrics(
@@ -241,14 +265,14 @@ class PerturbationExpressionPredictionTask(Task):
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
         metric_results: List[MetricResult] = []
-        for condition in task_output.pred_log_fc_dict.keys():
-            pred_log_fc = task_output.pred_log_fc_dict[condition]
-            true_log_fc = task_output.true_log_fc_dict[condition]
+        for condition in task_output.pred_mean_change_dict.keys():
+            pred_mean_change = task_output.pred_mean_change_dict[condition]
+            true_mean_change = task_output.true_mean_change_dict[condition]
 
             spearman_corr = metrics_registry.compute(
                 spearman_correlation_metric,
-                a=true_log_fc,
-                b=pred_log_fc,
+                a=true_mean_change,
+                b=pred_mean_change,
             )
             spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
             metric_results.append(
