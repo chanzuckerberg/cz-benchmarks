@@ -161,9 +161,9 @@ def test_perturbation_expression_prediction_task_wilcoxon(
     )
 
     # Verify internal task output matches expectations
-    condition_key = adata.uns["config"]["condition_key"]
+    condition_key = adata.uns["config"].get("condition_key", "condition")
     task = PerturbationExpressionPredictionTask(
-        condition_key=condition_key, pred_effect_operation="difference"
+        pred_effect_operation="difference"
     )
 
     # Validate metrics results

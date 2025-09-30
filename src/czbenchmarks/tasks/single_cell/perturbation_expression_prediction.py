@@ -58,22 +58,19 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        condition_key: str = "condition",
         *,
         pred_effect_operation: Literal["difference", "ratio"] = "ratio",
     ):
         """
         Args:
-            condition_key (str): Key for the column in `adata.obs` specifying
-                conditions. Defaults to "condition".
             pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
                 effect between treated and control mean predictions over genes. "difference"
                 uses mean(treated) - mean(control) and is generally safe across scales
                 (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
                 when means are positive; if non-positive values are detected it falls back to "difference".
         """
-        super().__init__(random_seed=random_seed)
-        self.condition_key = condition_key
+        super().__init__()
+        self.condition_key = None
         self.pred_effect_operation = pred_effect_operation
 
     def _run_task(
@@ -91,12 +88,14 @@ class PerturbationExpressionPredictionTask(Task):
         Returns:
             PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
-        self._validate(task_input, cell_representation)
+        adata = task_input.adata
+        self.condition_key = adata.uns["config"].get("condition_key", "condition")
+        self._validate(task_input, cell_representation) # requires condition_key
+
         # Detect if predictions are already log-normalized; computation will adapt accordingly
         is_lognorm_predictions = looks_like_lognorm(cell_representation)
         pred_log_fc_dict: Dict[str, np.ndarray] = {}
         true_log_fc_dict: Dict[str, np.ndarray] = {}
-        adata = task_input.adata
 
         obs = adata.obs
         obs_index = obs.index
@@ -109,7 +108,6 @@ class PerturbationExpressionPredictionTask(Task):
         pred_gene_index = (
             task_input.gene_index if task_input.gene_index is not None else var_index
         )
-
         de_results: pd.DataFrame = adata.uns["de_results"]
         metric_column: str = adata.uns.get("metric_column", "logfoldchange")
         # Strict 1-1 mapping is required
@@ -204,13 +202,16 @@ class PerturbationExpressionPredictionTask(Task):
             # Compute predicted log fold-change depending on configuration and scale
             eps = 1e-8
             if self.pred_effect_operation == "difference":
+                logger.info(f"Using mean difference to compute difference between treated and control means for condition {condition}")
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
                 pred_lfc = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
                 if is_lognorm_predictions:
+                    # FIXME MICHELLE: I think this may be a bug in determing if the predictions are log-normalized
                     # If already log scale, ratio corresponds to difference
                     pred_lfc = np.asarray(treated_mean - control_mean).ravel()
                 else:
+                    logger.info(f"Using log ratio to compute ratio between treated and control means for condition {condition}")
                     # Raw scale ratio; guard against non-positive means by falling back to difference
                     if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                         pred_lfc = np.asarray(treated_mean - control_mean).ravel()
