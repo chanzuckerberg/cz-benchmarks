@@ -49,7 +49,7 @@ def create_adata_for_condition(
     label_ctrl = [f"{control_name}_{condition}"] * len(adata_control)
     adata_merged.obs[condition_key] = label_cond + label_ctrl
 
-    # Add condition to cell_barcode_gene column and set as index
+    # Add condition to `condition_key` column and set as index
     adata_merged.obs_names = adata_merged.obs_names.astype(str) + "_" + condition
 
     return adata_merged, len(adata_condition)
