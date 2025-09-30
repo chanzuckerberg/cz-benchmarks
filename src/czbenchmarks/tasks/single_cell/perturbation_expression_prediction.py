@@ -18,16 +18,20 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    Optionally carries the predictions' ordering via cell_index/gene_index so the
-    task can align a model matrix that is a subset of or re-ordered relative to
-    the dataset adata.
+    The parameters cell_index gene_index are optional and used to describe the
+    ordering of cell ids and gene names in the model predictions to ensure the
+    task can align them relative to the dataset adata.
     """
+
+    adata: ad.AnnData
+    pred_effect_operation: Literal["difference", "ratio"] = ("ratio",)
+    gene_index: Optional[pd.Index] = None
+    cell_index: Optional[pd.Index] = None
 
     adata: ad.AnnData
     pred_effect_operation: Literal["difference", "ratio"] = "ratio",
     gene_index: Optional[pd.Index] = None
     cell_index: Optional[pd.Index] = None
-
 
 def build_task_input_from_predictions(
     predictions_adata: ad.AnnData,
@@ -52,7 +56,7 @@ def build_task_input_from_predictions(
     """
     return PerturbationExpressionPredictionTaskInput(
         adata=dataset_adata,
-        pred_effect_operation = pred_effect_operation,
+        pred_effect_operation=pred_effect_operation,
         gene_index=predictions_adata.var.index,
         cell_index=predictions_adata.obs.index,
     )
@@ -78,7 +82,7 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Perturbation Expression Prediction Task.
 
-        The following arguments are required and must be supplied by the task input class 
+        The following arguments are required and must be supplied by the task input class
         (PerturbationExpressionPredictionTaskInput) when running the task. They are described
         below for documentation purposes:
 
@@ -117,7 +121,7 @@ class PerturbationExpressionPredictionTask(Task):
         adata = task_input.adata
         pred_effect_operation = task_input.pred_effect_operation
         self.condition_key = adata.uns["config"].get("condition_key", "condition")
-        self._validate(task_input, cell_representation) # requires condition_key
+        self._validate(task_input, cell_representation)  # requires condition_key
 
         pred_mean_change_dict: Dict[str, np.ndarray] = {}
         true_mean_change_dict: Dict[str, np.ndarray] = {}
@@ -149,9 +153,13 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Let user know which is being used
         if pred_effect_operation == "difference":
-            logger.info(f"Using mean difference to compute difference between treated and control means")
+            logger.info(
+                "Using mean difference to compute difference between treated and control means"
+            )
         else:  # "ratio"
-            logger.info(f"Using log ratio to compute ratio between treated and control means")
+            logger.info(
+                "Using log ratio to compute ratio between treated and control means"
+            )
 
         for condition in perturbation_conditions:
             # Select genes for this condition
@@ -233,11 +241,15 @@ class PerturbationExpressionPredictionTask(Task):
             # Compute predicted log fold-change depending on configuration and scale
             eps = 1e-8
             if pred_effect_operation == "difference":
-                logger.info(f"Using mean difference to compute difference between treated and control means for condition {condition}")
+                logger.info(
+                    f"Using mean difference to compute difference between treated and control means for condition {condition}"
+                )
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
                 pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
-                logger.info(f"Using log ratio to compute ratio between treated and control means for condition {condition}")
+                logger.info(
+                    f"Using log ratio to compute ratio between treated and control means for condition {condition}"
+                )
                 # Raw scale ratio; guard against non-positive means by falling back to difference
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
@@ -269,12 +281,12 @@ class PerturbationExpressionPredictionTask(Task):
             pred_mean_change = task_output.pred_mean_change_dict[condition]
             true_mean_change = task_output.true_mean_change_dict[condition]
 
-            spearman_corr = metrics_registry.compute(
+            spearman_corr_value = metrics_registry.compute(
                 spearman_correlation_metric,
                 a=true_mean_change,
                 b=pred_mean_change,
             )
-            spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
+
             metric_results.append(
                 MetricResult(
                     metric_type=spearman_correlation_metric,
@@ -326,27 +338,21 @@ class PerturbationExpressionPredictionTask(Task):
         adata = task_input.adata
         # Allow callers to pass predictions with custom ordering/subsets via indices.
         # If indices are not provided, enforce exact shape equality with adata.
-        has_custom_ordering = hasattr(task_input, "cell_index") or hasattr(
-            task_input, "gene_index"
-        )
-        if not has_custom_ordering:
-            if cell_representation.shape != (adata.n_obs, adata.n_vars):
-                raise ValueError(
-                    "Predictions must match adata shape (n_obs, n_vars) when no indices are provided."
-                )
-        else:
-            # Basic dimensionality checks when indices are supplied
-            if task_input.cell_index is not None and cell_representation.shape[
-                0
-            ] != len(task_input.cell_index):
+
+        if task_input.cell_index is not None:
+            if cell_representation.shape[0] != len(task_input.cell_index):
                 raise ValueError(
                     "Number of prediction rows must match length of provided cell_index."
                 )
-            if task_input.gene_index is not None and cell_representation.shape[
-                1
-            ] != len(task_input.gene_index):
+        if task_input.gene_index is not None:
+            if cell_representation.shape[1] != len(task_input.gene_index):
                 raise ValueError(
                     "Number of prediction columns must match length of provided gene_index."
+                )
+        if task_input.cell_index is None and task_input.gene_index is None:
+            if cell_representation.shape != (adata.n_obs, adata.n_vars):
+                raise ValueError(
+                    "Predictions must match adata shape (n_obs, n_vars) when no indices are provided."
                 )
 
         if "de_results" not in adata.uns:

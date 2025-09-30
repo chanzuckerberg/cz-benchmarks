@@ -143,9 +143,6 @@ if __name__ == "__main__":
     It then calculates the correlation between ground truth and predicted log 
     fold change for each condition using a variety of metrics.    
     """
-    # Before running this example, make sure the `--dataset_path` flag is set to where
-    # the dataset input file is saved.
-    # """
 
     args = parse_args()
     dataset_name = "replogle_k562_essential_perturbpredict"
@@ -157,6 +154,11 @@ if __name__ == "__main__":
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
+    dataset_cfg = load_dataset_config(
+        dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
+    )
+    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
+
     dataset_cfg = load_dataset_config(
         dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
     )
@@ -181,7 +183,7 @@ if __name__ == "__main__":
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
-        pred_effect_operation="ratio"
+        pred_effect_operation="ratio",
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
     metrics_values = np.asarray(

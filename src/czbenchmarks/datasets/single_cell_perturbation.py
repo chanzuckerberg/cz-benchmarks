@@ -32,7 +32,7 @@ def sample_de_genes(
         gene_col (str): Column name for the gene names.
         seed (int): Random seed.
     Returns:
-        Dict[str, List[str]]: Dictionary that maps each condition to a list of 
+        Dict[str, List[str]]: Dictionary that maps each condition to a list of
         genes to be masked for that condition.
     """
     np.random.seed(seed)
@@ -72,9 +72,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary mapping each condition to a dictionary
             of treatment cell barcodes (keys) to matched control cell barcodes (values).
-        de_results (pd.DataFrame): Differential expression results calculated on ground 
+        de_results (pd.DataFrame): Differential expression results calculated on ground
             truth data using matched controls.
-        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each 
+        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each
             condition to a list of masked genes for that condition.
     """
 
@@ -136,9 +136,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             task_inputs_dir (Optional[Path]): Path to the directory containing the task inputs.
                 Default is None. If not provided, a default path will be used.
             random_seed (int): Random seed for reproducibility.
-            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that 
+            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that
                 maps a target condition to a list of genes that the user specified to be masked.
-                This overrides the default sampling of genes for masking in target_conditions_dict. 
+                This overrides the default sampling of genes for masking in target_conditions_dict.
                 Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
