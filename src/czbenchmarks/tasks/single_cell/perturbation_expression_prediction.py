@@ -1,82 +1,68 @@
-import json
 import logging
-from pathlib import Path
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 
+import anndata as ad
 import numpy as np
 import pandas as pd
 from scipy import sparse as sp_sparse
 
-from ...constants import RANDOM_SEED
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ..task import Task, TaskInput, TaskOutput
-from ..utils import binarize_values
+from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
 
 
 class PerturbationExpressionPredictionTaskInput(TaskInput):
-    """Pydantic model for PerturbationTask inputs."""
+    """Pydantic model for Perturbation task inputs.
 
-    de_results: pd.DataFrame
-    masked_adata_obs: pd.DataFrame
-    var_index: pd.Index
-    target_conditions_to_save: Dict[str, List[str]]
-    row_index: pd.Index
-
-
-def load_perturbation_task_input_from_saved_files(
-    task_inputs_dir: Path,
-) -> PerturbationExpressionPredictionTaskInput:
+    Optionally carries the predictions' ordering via cell_index/gene_index so the
+    task can align a model matrix that is a subset of or re-ordered relative to
+    the dataset adata.
     """
-    Load task input from files saved by dataset's `store_task_inputs`.
 
-    This creates a PerturbationExpressionPredictionTaskInput from stored files,
-    allowing the task to be instantiated without going through the full dataset
-    loading process.
+    adata: ad.AnnData
+    pred_effect_operation: Literal["difference", "ratio"] = ("ratio",)
+    gene_index: Optional[pd.Index] = None
+    cell_index: Optional[pd.Index] = None
+
+
+def build_task_input_from_predictions(
+    predictions_adata: ad.AnnData,
+    dataset_adata: ad.AnnData,
+    pred_effect_operation: Literal["difference", "ratio"] = "ratio",
+) -> PerturbationExpressionPredictionTaskInput:
+    """Create a task input from a predictions AnnData and the dataset AnnData.
+
+    This preserves the predictions' obs/var order so the task can align matrices
+    without forcing the caller to reorder arrays.
 
     Args:
-        task_inputs_dir: Directory containing task inputs.
-
-    Returns:
-        PerturbationExpressionPredictionTaskInput: Task input ready for use.
+        predictions_adata (ad.AnnData): The anndata containing model predictions.
+        dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
+        pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
+            effect between treated and control mean predictions over genes. "difference"
+            uses mean(treated) - mean(control) and is generally safe across scales
+            (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
+            when means are positive. Default is "ratio".
+        gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
+        cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
     """
-
-    inputs_dir = Path(task_inputs_dir)
-
-    # Load DE results
-    de_results_path = inputs_dir / "de_results.json"
-    de_results = pd.read_json(de_results_path)
-
-    # Load target conditions to save
-    target_genes_path = inputs_dir / "target_conditions_to_save.json"
-    with target_genes_path.open("r") as f:
-        target_conditions_to_save = json.load(f)
-
-    # Rebuild AnnData obs and var
-    adata_dir = inputs_dir / "control_matched_adata"
-    obs = pd.read_json(adata_dir / "obs.json", orient="split")
-    var = pd.read_json(adata_dir / "var.json", orient="split")
-    row_index = pd.Index(
-        np.load(inputs_dir / "original_adata/obs/index.npy", allow_pickle=True)
-    )
-
     return PerturbationExpressionPredictionTaskInput(
-        de_results=de_results,
-        masked_adata_obs=obs,
-        var_index=var.index,
-        target_conditions_to_save=target_conditions_to_save,
-        row_index=row_index,
+        adata=dataset_adata,
+        pred_effect_operation=pred_effect_operation,
+        gene_index=predictions_adata.var.index,
+        cell_index=predictions_adata.obs.index,
     )
 
 
 class PerturbationExpressionPredictionOutput(TaskOutput):
     """Output for perturbation task."""
 
-    pred_log_fc_dict: Dict[str, np.ndarray]
-    true_log_fc_dict: Dict[str, np.ndarray]
+    pred_mean_change_dict: Dict[str, np.ndarray]
+    true_mean_change_dict: Dict[str, np.ndarray]
 
 
 class PerturbationExpressionPredictionTask(Task):
@@ -86,24 +72,32 @@ class PerturbationExpressionPredictionTask(Task):
 
     def __init__(
         self,
-        metric: str = "wilcoxon",
-        control_prefix: str = "non-targeting",
         *,
         random_seed: int = RANDOM_SEED,
     ):
         """
+        Perturbation Expression Prediction Task.
+
+        The following arguments are required and must be supplied by the task input class
+        (PerturbationExpressionPredictionTaskInput) when running the task. They are described
+        below for documentation purposes:
+
+            predictions_adata (ad.AnnData): The anndata containing model predictions.
+            dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
+            pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
+                effect between treated and control mean predictions over genes. "difference"
+                uses mean(treated) - mean(control) and is generally safe across scales
+                (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
+                when means are positive. Default is "ratio".
+            gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
+            cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
+
         Args:
-            control_prefix (str): Prefix for control conditions.
             random_seed (int): Random seed for reproducibility.
         """
+
         super().__init__(random_seed=random_seed)
-        if metric == "wilcoxon":
-            self.metric_column = "logfoldchange"
-        elif metric == "t-test":
-            self.metric_column = "standardized_mean_diff"
-        else:
-            raise ValueError(f"Metric {metric} not supported")
-        self.control_prefix = control_prefix
+        self.condition_key = None
 
     def _run_task(
         self,
@@ -113,82 +107,158 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Runs the perturbation evaluation task.
 
-        This method computes predicted and ground truth log fold changes for each perturbation
-        condition in the dataset, using the provided cell representations and differential
-        expression results. It aligns predictions and ground truth values for masked genes,
-        and prepares data for downstream metric computation.
-
         Args:
-            cell_representation (CellRepresentation): A numpy matrix of shape (n_cells, n_genes)
-            task_input (PerturbationExpressionPredictionTaskInput): Input object containing:
-                - de_results (pd.DataFrame): DataFrame with differential expression results,
-                  including log fold changes/standard mean deviation and gene names.
-                - control_cells_ids (Dict[str, np.ndarray]): Dictionary of control cell IDs for each perturbation condition.
+            cell_representation: Cell expression matrix of shape (n_cells, n_genes)
+            task_input: Task input containing AnnData with all necessary data
 
         Returns:
-            PerturbationExpressionPredictionOutput: Output object containing dictionaries of predicted and true log fold changes
-            for each perturbation condition.
+            PerturbationExpressionPredictionOutput: Predicted and true log fold changes
         """
+        adata = task_input.adata
+        pred_effect_operation = task_input.pred_effect_operation
+        self.condition_key = adata.uns["config"].get("condition_key", "condition")
+        self._validate(task_input, cell_representation)  # requires condition_key
 
-        pred_log_fc_dict = {}
-        true_log_fc_dict = {}
-        de_results = task_input.de_results
+        pred_mean_change_dict: Dict[str, np.ndarray] = {}
+        true_mean_change_dict: Dict[str, np.ndarray] = {}
 
-        condition_series = task_input.masked_adata_obs["condition"].astype(str)
-        condition_list = np.unique(
-            condition_series[~condition_series.str.startswith(self.control_prefix)]
+        obs = adata.obs
+        obs_index = obs.index
+        var_index = adata.var.index
+
+        # Predictions index spaces; default to dataset order if not provided
+        pred_cell_index = (
+            task_input.cell_index if task_input.cell_index is not None else obs_index
         )
-        row_index = task_input.row_index.str.split("_").str[0]
+        pred_gene_index = (
+            task_input.gene_index if task_input.gene_index is not None else var_index
+        )
+        de_results: pd.DataFrame = adata.uns["de_results"]
+        metric_column: str = adata.uns.get("metric_column", "logfoldchange")
+        # Strict 1-1 mapping is required
+        control_map_1to1: Optional[Dict] = adata.uns.get("control_cells_map")
+        if not isinstance(control_map_1to1, dict):
+            raise ValueError(
+                "adata.uns['control_cells_map'] is required and must be a dict of treated->control mappings per condition."
+            )
+        target_conditions_dict: Dict[str, List[str]] = adata.uns.get(
+            "target_conditions_dict", {}
+        )
 
-        for condition in condition_list:
-            condition_de_df = de_results[de_results["condition"] == condition]
+        perturbation_conditions = de_results[self.condition_key].unique().tolist()
 
-            masked_genes = np.array(
-                task_input.target_conditions_to_save[
-                    task_input.masked_adata_obs.index[
-                        task_input.masked_adata_obs["condition"] == condition
-                    ][0]
+        # Let user know which is being used
+        if pred_effect_operation == "difference":
+            logger.info(
+                "Using mean difference to compute difference between treated and control means"
+            )
+        else:  # "ratio"
+            logger.info(
+                "Using log ratio to compute ratio between treated and control means"
+            )
+
+        for condition in perturbation_conditions:
+            # Select genes for this condition
+            condition_de = de_results[de_results[self.condition_key] == condition]
+            if (
+                condition in target_conditions_dict
+                and target_conditions_dict[condition]
+            ):
+                candidate_genes = [
+                    g
+                    for g in target_conditions_dict[condition]
+                    if g in condition_de["gene_id"].values
                 ]
-            )
-            # Filter masked_genes to only those present in var.index
-            masked_genes = np.array(
-                [g for g in masked_genes if g in task_input.var_index]
-            )
-
-            if len(masked_genes) == 0:
-                print("Skipping condition because it has no masked genes.")
+            else:
+                # Skip conditions that don't have target conditions defined
                 continue
-            true_log_fc = (
-                condition_de_df.set_index("gene_id")
-                .reindex(masked_genes)[self.metric_column]
-                .values
-            )
-            valid = ~np.isnan(true_log_fc)
-            masked_genes = masked_genes[valid]
-            true_log_fc = true_log_fc[valid]
-            col_indices = task_input.var_index.get_indexer(masked_genes)
-            condition_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"] == condition
-            ].index
-            condition_col_ids = condition_adata.to_series().str.split("_").str[0]
-            condition_idx = np.where(row_index.isin(condition_col_ids))[0]
-            control_adata = task_input.masked_adata_obs[
-                task_input.masked_adata_obs["condition"]
-                == f"{self.control_prefix}_{condition}"
-            ].index
-            control_col_ids = control_adata.to_series().str.split("_").str[0]
 
-            control_idx = np.where(row_index.isin(control_col_ids))[0]
-            condition_vals = cell_representation[np.ix_(condition_idx, col_indices)]
-            control_vals = cell_representation[np.ix_(control_idx, col_indices)]
-            ctrl_mean = np.mean(control_vals, axis=0)
-            cond_mean = np.mean(condition_vals, axis=0)
-            pred_log_fc = cond_mean - ctrl_mean
-            pred_log_fc_dict[condition] = pred_log_fc
-            true_log_fc_dict[condition] = true_log_fc
+            if len(candidate_genes) == 0:
+                continue
+
+            # Ground truth vector
+            true_mean_change_data = condition_de.set_index("gene_id").reindex(
+                candidate_genes
+            )[metric_column]
+            true_mean_change = true_mean_change_data.values
+            valid_mask = ~np.isnan(true_mean_change)
+            if not valid_mask.any():
+                continue
+            genes = np.asarray(candidate_genes)[valid_mask]
+            true_mean_change = true_mean_change[valid_mask]
+
+            # Map genes to predictions' columns
+            gene_idx = pred_gene_index.get_indexer(genes)
+            keep = gene_idx >= 0
+            if not keep.any():
+                continue
+            genes = genes[keep]
+            true_mean_change = true_mean_change[keep]
+            gene_idx = gene_idx[keep]
+
+            # Compute per-pair differences using the strict 1-1 map
+            if condition not in control_map_1to1 or not isinstance(
+                control_map_1to1[condition], dict
+            ):
+                raise ValueError(
+                    f"Missing 1-1 control mapping for condition '{condition}' in adata.uns['control_cells_map']"
+                )
+
+            mapping: Dict[str, str] = control_map_1to1[condition]  # treated -> control
+            treated_rows: List[int] = []
+            control_rows: List[int] = []
+            for tb, ctl in mapping.items():
+                tb_idx = pred_cell_index.get_indexer_for([str(tb)])
+                ctl_idx = pred_cell_index.get_indexer_for([str(ctl)])
+                if tb_idx.size == 0 or ctl_idx.size == 0:
+                    continue
+                tb_row = tb_idx[0]
+                ctl_row = ctl_idx[0]
+                if tb_row < 0 or ctl_row < 0:
+                    continue
+                treated_rows.append(int(tb_row))
+                control_rows.append(int(ctl_row))
+
+            if len(treated_rows) == 0:
+                continue
+
+            # Compute mean prediction per group (treated vs control) for the selected genes
+            treated_matrix = cell_representation[np.ix_(treated_rows, gene_idx)]
+            control_matrix = cell_representation[np.ix_(control_rows, gene_idx)]
+
+            if sp_sparse.issparse(treated_matrix):
+                treated_matrix = treated_matrix.toarray()
+            if sp_sparse.issparse(control_matrix):
+                control_matrix = control_matrix.toarray()
+
+            treated_mean = np.mean(treated_matrix, axis=0)
+            control_mean = np.mean(control_matrix, axis=0)
+
+            # Compute predicted log fold-change depending on configuration and scale
+            eps = 1e-8
+            if pred_effect_operation == "difference":
+                logger.info(
+                    f"Using mean difference to compute difference between treated and control means for condition {condition}"
+                )
+                # Use difference regardless of scale; this is safest for z-scores and bounded scores
+                pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
+            else:  # "ratio"
+                logger.info(
+                    f"Using log ratio to compute ratio between treated and control means for condition {condition}"
+                )
+                # Raw scale ratio; guard against non-positive means by falling back to difference
+                if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
+                    pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
+                else:
+                    pred_mean_change = np.log(
+                        (treated_mean + eps) / (control_mean + eps)
+                    ).ravel()
+            pred_mean_change_dict[condition] = np.asarray(pred_mean_change).ravel()
+            true_mean_change_dict[condition] = np.asarray(true_mean_change).ravel()
+
         return PerturbationExpressionPredictionOutput(
-            pred_log_fc_dict=pred_log_fc_dict,
-            true_log_fc_dict=true_log_fc_dict,
+            pred_mean_change_dict=pred_mean_change_dict,
+            true_mean_change_dict=true_mean_change_dict,
         )
 
     def _compute_metrics(
@@ -197,114 +267,25 @@ class PerturbationExpressionPredictionTask(Task):
         task_output: PerturbationExpressionPredictionOutput,
     ) -> List[MetricResult]:
         """
-        Computes perturbation prediction quality metrics for cell line perturbation predictions.
-
-        This method evaluates the quality of gene perturbation predictions by comparing predicted
-        and true log fold changes across different perturbation conditions. For each condition,
-        it computes multiple classification and correlation metrics.
-
-        For each perturbation condition, computes:
-        - **Accuracy**: Classification accuracy between binarized predicted and true log fold changes
-        - **Precision**: Precision score for binarized predictions (positive predictions that are correct)
-        - **Recall**: Recall score for binarized predictions (true positives that are detected)
-        - **F1 Score**: Harmonic mean of precision and recall for binarized predictions
-        - **Spearman Correlation**: Rank correlation between raw predicted and true log fold changes
-
-        The binarization process converts continuous log fold change values to binary classifications
-        (up-regulated vs. not up-regulated) using the `binarize_values` function.
-
-        Args:
-            task_input (PerturbationExpressionPredictionTaskInput): Input object containing differential expression
-                results and prediction data from the perturbation experiment.
-            task_output (PerturbationExpressionPredictionOutput): Output object containing aligned predicted and
-                true log fold changes for each perturbation condition.
-
-        Returns:
-            List[MetricResult]: A flat list of MetricResult objects, where each result contains
-                the metric type, value, and the corresponding perturbation condition in its params.
-                Each metric (accuracy, precision, recall, F1 score, and Spearman correlation) is
-                computed for every condition and appended to the list.
-
-        Note:
-            Each MetricResult includes the condition name in its params for identification.
+        Compute perturbation prediction quality using Spearman rank correlation
+        between predicted and true log fold changes for each condition.
         """
-        accuracy_metric = MetricType.ACCURACY_CALCULATION
-        precision_metric = MetricType.PRECISION_CALCULATION
-        recall_metric = MetricType.RECALL_CALCULATION
-        f1_metric = MetricType.F1_CALCULATION
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
-        metric_results = []
-        for condition in task_output.pred_log_fc_dict.keys():
-            pred_log_fc = task_output.pred_log_fc_dict[condition]
-            true_log_fc = task_output.true_log_fc_dict[condition]
-            true_binary, pred_binary = binarize_values(true_log_fc, pred_log_fc)
+        metric_results: List[MetricResult] = []
+        for condition in task_output.pred_mean_change_dict.keys():
+            pred_mean_change = task_output.pred_mean_change_dict[condition]
+            true_mean_change = task_output.true_mean_change_dict[condition]
 
-            # Compute precision, recall, F1, and Spearman correlation for each condition
-            precision_value = metrics_registry.compute(
-                precision_metric,
-                y_true=true_binary,
-                y_pred=pred_binary,
-            )
-            metric_results.append(
-                MetricResult(
-                    metric_type=precision_metric,
-                    value=precision_value,
-                    params={"condition": condition},
-                )
-            )
-
-            recall_value = metrics_registry.compute(
-                recall_metric,
-                y_true=true_binary,
-                y_pred=pred_binary,
-            )
-            metric_results.append(
-                MetricResult(
-                    metric_type=recall_metric,
-                    value=recall_value,
-                    params={"condition": condition},
-                )
-            )
-
-            f1_value = metrics_registry.compute(
-                f1_metric,
-                y_true=true_binary,
-                y_pred=pred_binary,
-            )
-            metric_results.append(
-                MetricResult(
-                    metric_type=f1_metric,
-                    value=f1_value,
-                    params={"condition": condition},
-                )
-            )
-
-            # Compute Spearman correlation and accuracy for each condition
-            spearman_corr = metrics_registry.compute(
+            spearman_corr_value = metrics_registry.compute(
                 spearman_correlation_metric,
-                a=true_log_fc,
-                b=pred_log_fc,
+                a=true_mean_change,
+                b=pred_mean_change,
             )
-            # If the result has a 'correlation' attribute (e.g., scipy.stats result), use it; otherwise, use the value directly
-            spearman_corr_value = getattr(spearman_corr, "correlation", spearman_corr)
             metric_results.append(
                 MetricResult(
                     metric_type=spearman_correlation_metric,
                     value=spearman_corr_value,
-                    params={"condition": condition},
-                )
-            )
-
-            accuracy_value = metrics_registry.compute(
-                accuracy_metric,
-                y_true=true_binary,
-                y_pred=pred_binary,
-            )
-            metric_results.append(
-                MetricResult(
-                    metric_type=accuracy_metric,
-                    value=accuracy_value,
                     params={"condition": condition},
                 )
             )
@@ -341,3 +322,47 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Store the baseline prediction in the dataset for evaluation
         return perturb_baseline_pred
+
+    def _validate(
+        self,
+        task_input: PerturbationExpressionPredictionTaskInput,
+        cell_representation: CellRepresentation,
+    ) -> None:
+        # Allow both log-normalized and raw predictions. Downstream computation adapts accordingly.
+
+        adata = task_input.adata
+        # Allow callers to pass predictions with custom ordering/subsets via indices.
+        # If indices are not provided, enforce exact shape equality with adata.
+
+        if task_input.cell_index is not None:
+            if cell_representation.shape[0] != len(task_input.cell_index):
+                raise ValueError(
+                    "Number of prediction rows must match length of provided cell_index."
+                )
+        if task_input.gene_index is not None:
+            if cell_representation.shape[1] != len(task_input.gene_index):
+                raise ValueError(
+                    "Number of prediction columns must match length of provided gene_index."
+                )
+        if task_input.cell_index is None and task_input.gene_index is None:
+            if cell_representation.shape != (adata.n_obs, adata.n_vars):
+                raise ValueError(
+                    "Predictions must match adata shape (n_obs, n_vars) when no indices are provided."
+                )
+
+        if "de_results" not in adata.uns:
+            raise ValueError("adata.uns['de_results'] is required.")
+        de_results = adata.uns["de_results"]
+        if not isinstance(de_results, pd.DataFrame):
+            raise ValueError("adata.uns['de_results'] must be a pandas DataFrame.")
+
+        metric_column = adata.uns.get("metric_column", "logfoldchange")
+        for col in [self.condition_key, "gene_id", metric_column]:
+            if col not in de_results.columns:
+                raise ValueError(f"de_results missing required column '{col}'")
+
+        cm = adata.uns.get("control_cells_map")
+        if not isinstance(cm, dict):
+            raise ValueError(
+                "adata.uns['control_cells_map'] is required and must be a dict."
+            )
