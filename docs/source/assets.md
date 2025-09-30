@@ -2,22 +2,20 @@
 
 ## Table of Contents
 
-- [Assets](#assets)
-  - [Table of Contents](#table-of-contents)
-  - [Task Descriptions](#task-descriptions)
-  - [Dataset Descriptions](#dataset-descriptions)
-  - [Task Details](#task-details)
+- [Task Descriptions](#task-descriptions)
+- [Data Descriptions](#data-descriptions)
+- [Task Details](#task-details)
     - [Cell Clustering (in embedding space)](#cell-clustering-in-embedding-space)
-      - [Task: Cell Clustering (in embedding space)](#task-cell-clustering-in-embedding-space)
-    - [Metadata label prediction - Cell type classification](#metadata-label-prediction---cell-type-classification)
-      - [Task: Metadata label prediction - Cell type classification](#task-metadata-label-prediction---cell-type-classification)
+    - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
     - [Sequential Organization](#sequential-organization)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
 
 
+
 ## Task Descriptions
+
 
 | Task                                                                                | Description                                                                                                                                               |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
