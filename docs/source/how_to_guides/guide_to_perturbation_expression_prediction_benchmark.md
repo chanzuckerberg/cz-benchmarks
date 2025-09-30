@@ -47,9 +47,9 @@ Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `ta
 
 To cache and reuse dataset outputs without re-running preprocessing, the outputs of the dataset can be saved with:
 
-```python
-task_inputs_dir = dataset.store_task_inputs()
-```
+  ```python
+  task_inputs_dir = dataset.store_task_inputs()
+  ```
 
 ## Task Functionality and Parameters 
 
@@ -59,13 +59,12 @@ The task class also calculates a baseline prediction (`compute_baseline` method)
 
 The following parameters are used by the task input class, via the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) class:  
 
-- `adata`: The AnnData object produced when the data are loaded by the dataset class (`SingleCellPerturbationDataset`), containing control-matched and masked data.
+- `adata`: The AnnData object produced when the data are loaded by the dataset class ([`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html)), containing control-matched and masked data.
 - `cell_index`: Sequence of user-provided cell is vertically aligned with `cell_representation` matrix, which contains the predictions from the model.
 - `gene_index`: Sequence of user-provided gene names horizontally aligned with `cell_representation` matrix, which contains the predictions from the model.
 
 The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires the following inputs:
 
-- `condition_key`: The condition key from the dataset. # FIXME MICHELLE this can probably be removed.
 - `pred_effect_operation`: This determines how to compute the effect of between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. If non-positive values are detected it falls back to "difference".
 
 The task returns a dataclass, [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html), which contains the following:
@@ -80,12 +79,12 @@ These outputs are then provided to the metric for computation of the [Spearman c
 
 When a user loads in model predictions, the cells and genes whose expression values are predicted should each be a subset of those in the dataset. At the start of the task, validation is performed to ensure these criteria are met. 
 
-It is essential that the mapping of the cells (rows) and genes (columns) from the model expression predictions to those in the dataset is correct. Thus, the `PerturbationExpressionPredictionTaskInput` requires a `gene_index` and `cell_index` to be provided by the user for validation.
+It is essential that the mapping of the cells (rows) and genes (columns) from the model expression predictions to those in the dataset is correct. Thus, the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires a `gene_index` and `cell_index` to be provided by the user for validation.
 
-If the user has an AnnData (model_adata) with model predictions, and a [`SingleCellPerturbationDataset`]() with loaded data, [`PerturbationExpressionPredictionTaskInput`]() can be prepared usning the `build_task_input_from_predictions` function:
+If the user has an AnnData (model_adata) with model predictions, and a [`SingleCellPerturbationDataset`]() with loaded data, [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) can be prepared using the [`build_task_input_from_predictions`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) function:
 
   ```python
-  task_input = (predictions_adata=model_adata, dataset_adata=dataset.adata)
+  task_input = build_task_input_from_predictions(predictions_adata=model_adata, dataset_adata=dataset.adata)
   ```
 
 ## Metrics
@@ -97,7 +96,7 @@ The task produces a per-condition correlation by comparing predicted and ground-
 
 Results are generated for each perturbation condition separately. Downstream reporting may aggregate scores across conditions (e.g., mean and standard deviation).
 
-For large-scale benchmarks, metrics can be exported to CSV/JSON via the provided `czbenchmarks.tasks.utils.print_metrics_summary helper`, or integrated into custom logging frameworks.
+For large-scale benchmarks, metrics can be exported to CSV/JSON via the provided [`czbenchmarks.tasks.utils.print_metrics_summary helper`](../autoapi/czbenchmarks/tasks/utils/index.html), or integrated into custom logging frameworks.
 
 ## Example Usage
 
