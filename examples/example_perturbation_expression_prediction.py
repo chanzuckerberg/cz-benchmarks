@@ -154,10 +154,6 @@ if __name__ == "__main__":
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
-    dataset_cfg = load_dataset_config(
-        dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
-    )
-    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
 
     dataset_cfg = load_dataset_config(
         dataset_name=dataset_name, dataset_update_dict=dataset_update_dict

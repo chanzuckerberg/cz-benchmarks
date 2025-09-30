@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    The parameters cell_index gene_index are optional and used to describe the
-    ordering of cell ids and gene names in the model predictions to ensure the
-    task can align them relative to the dataset adata.
+    Optionally carries the predictions' ordering via cell_index/gene_index so the
+    task can align a model matrix that is a subset of or re-ordered relative to
+    the dataset adata.
     """
 
     adata: ad.AnnData
@@ -28,10 +28,6 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     gene_index: Optional[pd.Index] = None
     cell_index: Optional[pd.Index] = None
 
-    adata: ad.AnnData
-    pred_effect_operation: Literal["difference", "ratio"] = "ratio",
-    gene_index: Optional[pd.Index] = None
-    cell_index: Optional[pd.Index] = None
 
 def build_task_input_from_predictions(
     predictions_adata: ad.AnnData,
@@ -286,7 +282,6 @@ class PerturbationExpressionPredictionTask(Task):
                 a=true_mean_change,
                 b=pred_mean_change,
             )
-
             metric_results.append(
                 MetricResult(
                     metric_type=spearman_correlation_metric,
