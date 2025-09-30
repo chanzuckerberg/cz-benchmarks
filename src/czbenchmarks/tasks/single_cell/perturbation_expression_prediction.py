@@ -47,8 +47,8 @@ def build_task_input_from_predictions(
 class PerturbationExpressionPredictionOutput(TaskOutput):
     """Output for perturbation task."""
 
-    pred_log_fc_dict: Dict[str, np.ndarray]
-    true_log_fc_dict: Dict[str, np.ndarray]
+    pred_mean_change_dict: Dict[str, np.ndarray]
+    true_mean_change_dict: Dict[str, np.ndarray]
 
 
 class PerturbationExpressionPredictionTask(Task):
@@ -94,8 +94,8 @@ class PerturbationExpressionPredictionTask(Task):
 
         # Detect if predictions are already log-normalized; computation will adapt accordingly
         is_lognorm_predictions = looks_like_lognorm(cell_representation)
-        pred_log_fc_dict: Dict[str, np.ndarray] = {}
-        true_log_fc_dict: Dict[str, np.ndarray] = {}
+        pred_mean_change_dict: Dict[str, np.ndarray] = {}
+        true_mean_change_dict: Dict[str, np.ndarray] = {}
 
         obs = adata.obs
         obs_index = obs.index
@@ -142,15 +142,15 @@ class PerturbationExpressionPredictionTask(Task):
                 continue
 
             # Ground truth vector
-            true_lfc_series = condition_de.set_index("gene_id").reindex(
+            true_mean_change_data = condition_de.set_index("gene_id").reindex(
                 candidate_genes
             )[metric_column]
-            true_lfc = true_lfc_series.values
-            valid_mask = ~np.isnan(true_lfc)
+            true_mean_change = true_mean_change_data.values
+            valid_mask = ~np.isnan(true_mean_change)
             if not valid_mask.any():
                 continue
             genes = np.asarray(candidate_genes)[valid_mask]
-            true_lfc = true_lfc[valid_mask]
+            true_mean_change = true_mean_change[valid_mask]
 
             # Map genes to predictions' columns
             gene_idx = pred_gene_index.get_indexer(genes)
@@ -158,7 +158,7 @@ class PerturbationExpressionPredictionTask(Task):
             if not keep.any():
                 continue
             genes = genes[keep]
-            true_lfc = true_lfc[keep]
+            true_mean_change = true_mean_change[keep]
             gene_idx = gene_idx[keep]
 
             # Compute per-pair differences using the strict 1-1 map
@@ -204,27 +204,27 @@ class PerturbationExpressionPredictionTask(Task):
             if self.pred_effect_operation == "difference":
                 logger.info(f"Using mean difference to compute difference between treated and control means for condition {condition}")
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
-                pred_lfc = np.asarray(treated_mean - control_mean).ravel()
+                pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
                 if is_lognorm_predictions:
                     # FIXME MICHELLE: I think this may be a bug in determining if the predictions are log-normalized
                     # If already log scale, ratio corresponds to difference
-                    pred_lfc = np.asarray(treated_mean - control_mean).ravel()
+                    pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
                     logger.info(f"Using log ratio to compute ratio between treated and control means for condition {condition}")
                     # Raw scale ratio; guard against non-positive means by falling back to difference
                     if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
-                        pred_lfc = np.asarray(treated_mean - control_mean).ravel()
+                        pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                     else:
-                        pred_lfc = np.log(
+                        pred_mean_change = np.log(
                             (treated_mean + eps) / (control_mean + eps)
                         ).ravel()
-            pred_log_fc_dict[condition] = np.asarray(pred_lfc).ravel()
-            true_log_fc_dict[condition] = np.asarray(true_lfc).ravel()
+            pred_mean_change_dict[condition] = np.asarray(pred_mean_change).ravel()
+            true_mean_change_dict[condition] = np.asarray(true_mean_change).ravel()
 
         return PerturbationExpressionPredictionOutput(
-            pred_log_fc_dict=pred_log_fc_dict,
-            true_log_fc_dict=true_log_fc_dict,
+            pred_mean_change_dict=pred_mean_change_dict,
+            true_mean_change_dict=true_mean_change_dict,
         )
 
     def _compute_metrics(
