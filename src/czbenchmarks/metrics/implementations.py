@@ -38,8 +38,6 @@ from .utils import (
 
 from .types import MetricRegistry, MetricType
 from .utils import (
-    compute_entropy_per_cell,
-    mean_fold_metric,
     sequential_alignment,
 )
 
