@@ -40,5 +40,7 @@ Each task class implements a specific evaluation goal. All tasks are located und
 
 - [`SequentialOrganizationTask`](../autoapi/czbenchmarks/tasks/sequential/index): Evaluates sequential consistency in embeddings using time point labels. Computes metrics like silhouette score and sequential alignment to assess how well embeddings preserve sequential organization between cells.
 
+- [`SequentialOrganizationTask`](../autoapi/czbenchmarks/tasks/sequential/index): Evaluates sequential consistency in embeddings using time point labels. Computes metrics like silhouette score and sequential alignment to assess how well embeddings preserve sequential organization between cells.
+
 For instructions on **adding a new custom task**, see [How to Add a Custom Task](../how_to_guides/add_new_task.md).
 

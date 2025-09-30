@@ -12,13 +12,9 @@
     - [Metadata label prediction - Cell type classification](#metadata-label-prediction---cell-type-classification)
       - [Task: Metadata label prediction - Cell type classification](#task-metadata-label-prediction---cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
-      - [Task: Cross-Species Batch Integration](#task-cross-species-batch-integration)
     - [Sequential Organization](#sequential-organization)
-      - [Task: Sequential Organization](#task-sequential-organization)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
-      - [Task: Genetic Perturbation Prediction](#task-genetic-perturbation-prediction)
-  - [Guidelines for Included Assets](#guidelines-for-included-assets)
-
+- [Guidelines for Included Assets](#guidelines-for-included-assets)
 
 
 ## Task Descriptions
