@@ -16,7 +16,6 @@
 
 ## Task Descriptions
 
-
 | Task                                                                                | Description                                                                                                                                               |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Cell clustering](#cell-clustering-in-embedding-space) (in embedding space)         | Cluster cells in embedding space and evaluate against known labels (e.g. cell type)                                                                       |
