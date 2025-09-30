@@ -9,6 +9,7 @@ from czbenchmarks.tasks.single_cell import (
 
 from czbenchmarks.metrics.types import MetricType, MetricResult
 
+
 @pytest.fixture
 def wilcoxon_test_data():
     """Create deterministic test data for Wilcoxon testing.
@@ -19,7 +20,11 @@ def wilcoxon_test_data():
     condition_key = "condition"
     control_name = "ctrl"
     de_gene_col = "gene_id"
-    config = {"condition_key": condition_key, "control_name": control_name, "de_gene_col": de_gene_col}
+    config = {
+        "condition_key": condition_key,
+        "control_name": control_name,
+        "de_gene_col": de_gene_col,
+    }
     metric_column = "logfoldchange"
 
     n_per_group = 4
@@ -31,7 +36,9 @@ def wilcoxon_test_data():
         {
             condition_key: ["gene_A"] * 4 + ["gene_B"] * 4,
             de_gene_col: gene_names * 2,
-            metric_column: np.concatenate([true_mean_change_gene_A, true_mean_change_gene_B]),
+            metric_column: np.concatenate(
+                [true_mean_change_gene_A, true_mean_change_gene_B]
+            ),
         }
     )
 
@@ -48,9 +55,9 @@ def wilcoxon_test_data():
     eps = 0.003
     cell_representation = np.ones((len(conditions), len(gene_names)), dtype=float) + eps
     cell_representation[0:n_per_group, :] += true_mean_change_gene_A[None, :]
-    cell_representation[2 * n_per_group : 3 * n_per_group, :] += true_mean_change_gene_B[
-        None, :
-    ]
+    cell_representation[2 * n_per_group : 3 * n_per_group, :] += (
+        true_mean_change_gene_B[None, :]
+    )
 
     # Setup AnnData
     adata = ad.AnnData(
@@ -157,7 +164,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         adata=task_input_adata,
         gene_index=task_input_gene_index,
         cell_index=task_input_cell_index,
-        pred_effect_operation="difference"
+        pred_effect_operation="difference",
     )
 
     # Verify internal task output matches expectations
@@ -166,7 +173,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
 
     # Validate metrics results
     results = task.run(cell_representation=matrix, task_input=task_input)
-    
+
     assert_metric_results(
         results,
         expected_count=2,
