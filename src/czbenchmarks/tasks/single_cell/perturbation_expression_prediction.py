@@ -207,7 +207,7 @@ class PerturbationExpressionPredictionTask(Task):
                 pred_lfc = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
                 if is_lognorm_predictions:
-                    # FIXME MICHELLE: I think this may be a bug in determing if the predictions are log-normalized
+                    # FIXME MICHELLE: I think this may be a bug in determining if the predictions are log-normalized
                     # If already log scale, ratio corresponds to difference
                     pred_lfc = np.asarray(treated_mean - control_mean).ravel()
                 else:
