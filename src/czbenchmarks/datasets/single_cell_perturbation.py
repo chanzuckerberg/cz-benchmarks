@@ -32,7 +32,8 @@ def sample_de_genes(
         gene_col (str): Column name for the gene names.
         seed (int): Random seed.
     Returns:
-        Dict[str, List[str]]: Dictionary that maps each condition to a list of masked genes for that condition.
+        Dict[str, List[str]]: Dictionary that maps each condition to a list of 
+        genes to be maskedfor that condition.
     """
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
@@ -71,8 +72,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Attributes:
         control_cells_ids (dict): Dictionary mapping each condition to a dictionary
             of treatment cell barcodes (keys) to matched control cell barcodes (values).
-        de_results (pd.DataFrame): Differential expression results calculated on ground truth data using matched controls.
-        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each condition to a list of masked genes for that condition
+        de_results (pd.DataFrame): Differential expression results calculated on ground 
+            truth data using matched controls.
+        target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each 
+            condition to a list of masked genes for that condition.
     """
 
     control_cells_ids: dict
@@ -127,9 +130,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             min_logfoldchange (float): Minimum log-fold change for differential
                 expression. Default is 1.0.
             random_seed (int): Random seed for reproducibility.
-            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that maps a target condition to a list of genes that the user specified to be masked.
-            This overrides the default sampling of genes for masking.
-                Default is None.
+            target_conditions_override (Optional[Dict[str, List[str]]]): Dictionary that 
+                maps a target condition to a list of genes that the user specified to be masked.
+                This overrides the default sampling of genes for masking. Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
         self.condition_key = condition_key
@@ -546,6 +549,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
         # Validate conditions found in the original adata
+        # FIXME MICHELLE: verify that I understand the implications of logic change
         original_conditions = set(self.adata.obs[self.condition_key])
         mapped_conditions = set(self.control_mapping.keys())
         for condition in original_conditions:
@@ -583,6 +587,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 
+        # FIXME MICHELLE: verify that I understand the implications of logic change
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition not in mapped_conditions:

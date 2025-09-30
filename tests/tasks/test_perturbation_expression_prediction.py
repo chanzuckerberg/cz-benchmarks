@@ -19,7 +19,8 @@ def wilcoxon_test_data():
     """
     condition_key = "condition"
     control_name = "ctrl"
-    config = {"condition_key": condition_key, "control_name": control_name}
+    de_gene_col = "gene_id"
+    config = {"condition_key": condition_key, "control_name": control_name, "de_gene_col": de_gene_col}
     metric_column = "logfoldchange"
 
     n_per_group = 4
@@ -30,7 +31,7 @@ def wilcoxon_test_data():
     de_results = pd.DataFrame(
         {
             condition_key: ["gene_A"] * 4 + ["gene_B"] * 4,
-            "gene_id": gene_names * 2,
+            de_gene_col: gene_names * 2,
             metric_column: np.concatenate([true_lfc_gene_A, true_lfc_gene_B]),
         }
     )
