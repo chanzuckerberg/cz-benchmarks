@@ -4,11 +4,11 @@
 
 This task evaluates a model's ability to predict expression for masked genes using the remaining (unmasked) genes for a given cell as context. Genes are randomly selected for masking from the set of genes that are identified as differentially expressed, based on threshold parameters explained in [Masking Parameters](#masking-parameters). For Replogle K562 Essentials[^replogle-k562-essentials], the provided controls used for the differential expression (DE) analysis have been determined based on GEM group and UMI count and are stored in the dataset along with the DE results.
 
-- Single cell perturbation datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the AnnData under the key `control_cell_ids`. 
+- Single cell perturbation datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the AnnData under the key `control_cell_map`.  # FIXME MICHELLE check
 - The differential expression results are also stored in the unstructured portion of the AnnData in the key `de_results_wilcoxon`. This analysis utilized the Wilcoxon rank-sum test, and is currently the only DE selection method that is supported, but additional options are planned. 
 - The gene expression values in the dataset are counts, provided in unmodified form relative to that from the original authors. Additional preprocessing, such as scaling and log transformation, should be performed by the user.
 
-This benchmark is designed for evaluation by any model that produces a cell × gene prediction matrix, whose cells and genes can be aligned with those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in an unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
+This benchmark is designed for evaluation by any model that produces a prediction matrix whose cells (rows) and genes (columns) can be aligned with those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in an unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
 
 ## Dataset Functionality and Parameters
 
@@ -39,7 +39,7 @@ The following parameters control masking of the DE genes:
 - `condition_key`: Key for the column in `adata.obs` specifying conditions (default value is "condition")
 - `control_name`: Name of the control condition (default value is "ctrl")
 - `random_seed`: Random seed for reproducible masking
-- `target_conditions_override`: An externally supplied list of target conditions for customized masking.
+- `target_conditions_override`: An externally supplied list of target conditions for customized masking. This overrides the default sampling of genes for masking in `target_conditions_dict`. 
 
 Parameters shared with other single-cell datasets (e.g., `path`, `organism`, `task_inputs_dir`) are also required but not described here.
 
@@ -53,23 +53,40 @@ task_inputs_dir = dataset.store_task_inputs()
 
 ## Task Functionality and Parameters 
 
-This task evaluates predictions of perturbation-induced changes in gene expression against their ground truth values by correlating their values. The predictions provided to the task are can be in any format that is monotonic with the differential expression results (Log2FC). Predicted changes are computed per condition as the difference in mean expression between perturbed and matched control cells, for the subset of masked genes.
+This task evaluates predictions of perturbation-induced changes in gene expression against their ground truth values by correlating their values. The predictions provided to the task can be in any format that is monotonic with the differential expression results (Log2FC). Predicted changes are computed per condition as the difference in mean expression between perturbed and matched control cells, for the subset of masked genes.
 
 The task class also calculates a baseline prediction (`compute_baseline` method), which takes as input a `baseline_type`, either `median` (default) or `mean`, that calculates the median or mean expression values, respectively, across all masked values in the dataset.
 
-The following parameters are used by the task, via the `PerturbationExpressionPredictionTaskInput` class:  
+The following parameters are used by the task input class, via the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) class:  
 
 - `adata`: The AnnData object produced when the data are loaded by the dataset class (`SingleCellPerturbationDataset`), containing control-matched and masked data.
-- `de_results`: the DE results filtered by the dataset class(`SingleCellPerturbationDataset`) according to user provided thresholds. This is provided by the `adata` and used to determine ground truth values.
-- `target_conditions_dict`: Dictionary of target conditions whose genes were randomly selected for masking. This is provided by the `adata` and used to determine which values are used for predicted and ground truth values.
 - `cell_index`: Sequence of user-provided cell is vertically aligned with `cell_representation` matrix, which contains the predictions from the model.
 - `gene_index`: Sequence of user-provided gene names horizontally aligned with `cell_representation` matrix, which contains the predictions from the model.
+
+The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires the following inputs:
+
+- `condition_key`: The condition key from the dataset. # FIXME MICHELLE this can probably be removed.
+- `pred_effect_operation`: This determines how to compute the effect of between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. If non-positive values are detected it falls back to "difference".
+
+The task returns a dataclass, [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html), which contains the following:
+
+- `pred_log_fc_dict`: The predicted fold change for the masked genes based on the model. # FIXME MICHELLE may change variable name
+- `true_log_fc_dict`: The ground truth log fold change (Log2FC) based on the differential expression results provided by the dataset.
+
+These outputs are then provided to the metric for computation of the [Spearman correlation](../autoapi/czbenchmarks/metrics/implementations/index.html).
+
 
 ### Notes on Loading Model Predictions
 
 When a user loads in model predictions, the cells and genes whose expression values are predicted should each be a subset of those in the dataset. At the start of the task, validation is performed to ensure these criteria are met. 
 
 It is essential that the mapping of the cells (rows) and genes (columns) from the model expression predictions to those in the dataset is correct. Thus, the `PerturbationExpressionPredictionTaskInput` requires a `gene_index` and `cell_index` to be provided by the user for validation.
+
+If the user has an AnnData (model_adata) with model predictions, and a [`SingleCellPerturbationDataset`]() with loaded data, [`PerturbationExpressionPredictionTaskInput`]() can be prepared usning the `build_task_input_from_predictions` function:
+
+  ```python
+  task_input = (predictions_adata=model_adata, dataset_adata=dataset.adata)
+  ```
 
 ## Metrics
 

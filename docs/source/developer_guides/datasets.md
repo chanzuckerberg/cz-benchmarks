@@ -49,7 +49,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - It also validates that a column with the value of the parameter `de_gene_col`, as well as columns with the names "logfoldchange" and "pval_adj" are present in the differential expression results. 
    - The value set by `control_name` must be present for the control cells in the data of condition column in `adata.obs`.
    - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
-   - Computes and stores control matched AnnData (stored as `dataset.adata`). Other outputs, `control_cells_ids`, `de_results`, `target_conditions_dict`, are stored in the unstructured portion of the AnnData (`adata.uns`).
+   - Computes and stores control matched AnnData (stored as `dataset.adata`). Other outputs, `control_cells_map`, `de_results`, `target_conditions_dict`, are stored in the unstructured portion of the AnnData (`adata.uns`).
 
    Example valid perturbation formats:
 
