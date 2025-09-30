@@ -66,6 +66,7 @@ def parse_args():
     return parser.parse_args()
 
 
+# TODO: Replace with `load_local_dataset()`
 def load_dataset_config(
     dataset_name: str,
     config_name: str = "datasets",
