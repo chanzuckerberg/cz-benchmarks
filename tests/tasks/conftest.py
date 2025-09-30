@@ -80,3 +80,38 @@ def assert_metric_results():
             assert expected_types.issubset(metric_types)
 
     return _assert_results
+
+
+@pytest.fixture
+def expression_matrix(dummy_anndata):
+    return dummy_anndata["expression_matrix"]
+
+
+@pytest.fixture
+def embedding_matrix(dummy_anndata):
+    return dummy_anndata["embedding_matrix"]
+
+
+@pytest.fixture
+def obs(dummy_anndata):
+    return dummy_anndata["obs"]
+
+
+@pytest.fixture
+def fixture_data(request):
+    # Enables lazy generation of fixture data so fixtures can be used as
+    # parameters
+    valid_fixture_names = ["expression_matrix", "embedding_matrix", "obs", "var"]
+    fixture_name, other_data = request.param
+    if isinstance(fixture_name, str):
+        fixture_data = (
+            request.getfixturevalue(fixture_name)
+            if fixture_name in valid_fixture_names
+            else fixture_name
+        )
+    else:
+        fixture_data = [
+            request.getfixturevalue(f) if f in valid_fixture_names else f
+            for f in fixture_name
+        ]
+    return fixture_data, other_data
