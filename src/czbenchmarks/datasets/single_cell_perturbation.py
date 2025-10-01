@@ -65,11 +65,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Must have a column ``condition_key`` in ``adata.obs`` specifying
         control and perturbed conditions.
     - Condition format must be one of:
-
       - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
       - ``{perturb}`` for a single perturbation.
-
-    - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
         de_results (pd.DataFrame): Differential expression results calculated on ground
@@ -112,7 +109,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_conditions_override: Optional[Dict[str, List[str]]] = None,
     ):
         """
-        Initialize a SingleCellPerturbationDataset instance.
+        Instantiate a SingleCellPerturbationDataset instance.
 
         Args:
             path (Path): Path to the dataset file.

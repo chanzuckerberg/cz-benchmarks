@@ -89,7 +89,6 @@ def load_dataset_config(
     config_name: str = "datasets",
     dataset_update_dict: Optional[dict] = None,
 ):
-    # TODO could be used to improve flexibility of current load_dataset function
     """Customize dataset class instantiation parameters using cli args
 
     Args:

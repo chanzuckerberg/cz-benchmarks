@@ -18,9 +18,10 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    Optionally carries the predictions' ordering via cell_index/gene_index so the
-    task can align a model matrix that is a subset of or re-ordered relative to
-    the dataset adata.
+    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask. 
+    The row and column ordering of the model predictions can optionallybe provided as 
+    cell_index and gene_index, respectively, so the task can align a model matrix that 
+    is a subset of or re-ordered relative to the dataset adata.
     """
 
     adata: ad.AnnData
@@ -81,27 +82,35 @@ class PerturbationExpressionPredictionTask(Task):
         This task evaluates perturbation-induced expression predictions against
         their ground truth values. This is done by calculating metrics derived
         from predicted and ground truth log fold change values for each condition.
-        So far, the only supported metric is Spearman rank correlation.
+        Currently, Spearman rank correlation is supported.
 
         The following arguments are required and must be supplied by the task input class
         (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
         are described below for documentation purposes:
 
-            predictions_adata (ad.AnnData): The anndata containing model predictions.
-            dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
-            pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
-                effect between treated and control mean predictions over genes. "difference"
-                uses mean(treated) - mean(control) and is generally safe across scales
-                (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
-                when means are positive. Default is "ratio".
-            gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
-            cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
+        - predictions_adata (ad.AnnData): 
+            The anndata containing model predictions
+        - dataset_adata (ad.AnnData): 
+            The anndata object from SingleCellPerturbationDataset.
+        - pred_effect_operation (Literal["difference", "ratio"]): 
+            How to compute predicted effect between treated and control mean predictions 
+            over genes.  
+
+            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).  
+
+            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.  
+            
+            Default is "ratio".
+        - gene_index (Optional[pd.Index]): 
+            The index of the genes in the predictions AnnData.
+        - cell_index (Optional[pd.Index]): 
+            The index of the cells in the predictions AnnData.
 
         Args:
             random_seed (int): Random seed for reproducibility.
 
         Returns:
-            PerturbationExpressionPredictionTask: A dictionary of mean predicted and
+            PerturbationExpressionPredictionTask: dictionary of mean predicted and
             ground truth changes in gene expression values for each condition.
         """
 
@@ -121,7 +130,7 @@ class PerturbationExpressionPredictionTask(Task):
             task_input: Task input containing AnnData with all necessary data
 
         Returns:
-            PerturbationExpressionPredictionOutput: Predicted and true log fold changes
+            PerturbationExpressionPredictionOutput: Predicted and true mean fold changes
         """
         adata = task_input.adata
         pred_effect_operation = task_input.pred_effect_operation
