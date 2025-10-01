@@ -4,7 +4,7 @@
 
 This task evaluates a model's ability to predict expression for masked genes using the remaining (unmasked) genes for a given cell as context. Genes are randomly selected for masking from the set of genes that are identified as differentially expressed, based on threshold parameters explained in [Masking Parameters](#masking-parameters). For Replogle K562 Essentials[^replogle-k562-essentials], the provided controls used for the differential expression (DE) analysis have been determined based on GEM group and UMI count and are stored in the dataset along with the DE results.
 
-- Single cell perturbation datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the AnnData under the key `control_cell_map`.  # FIXME MICHELLE check
+- Single cell perturbation datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the AnnData under the key `control_cell_map`.
 - The differential expression results are also stored in the unstructured portion of the AnnData in the key `de_results_wilcoxon`. This analysis utilized the Wilcoxon rank-sum test, and is currently the only DE selection method that is supported, but additional options are planned. 
 - The gene expression values in the dataset are counts, provided in unmodified form relative to that from the original authors. Additional preprocessing, such as scaling and log transformation, should be performed by the user.
 
