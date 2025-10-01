@@ -26,7 +26,7 @@ At the core of this module is a centralized registry, `MetricRegistry`, which st
   - `embedding`: Silhouette Score
   - `integration`: Entropy per Cell, Batch Silhouette
   - `label_prediction`: Accuracy, F1, Precision, Recall, AUROC
-  - `perturbation`: Spearman correlation, Accuracy, F1, Precision, Recall
+  - `perturbation`: Spearman correlation
 
 ## Supported Metrics
 
@@ -40,10 +40,6 @@ The following metrics are pre-registered:
 | `entropy_per_cell`       | integration      | Assesses the mixing of batch labels at the single-cell level. Higher entropy indicates better integration.       |
 | `batch_silhouette`       | integration      | Combines silhouette scoring with batch information to evaluate clustering quality while accounting for batch effects. |
 | `spearman_correlation`   | perturbation     | Rank correlation between predicted and actual values     |
-| `accuracy_score`         | perturbation     | Accuracy of binary classification predictions against ground truth labels     |
-| `f1_score`               | perturbation     | F1-score balancing precision and recall for binary classification tasks     |
-| `precision_score`        | perturbation     | Precision measuring the fraction of true positives among predicted positives     |
-| `recall_score`           | perturbation     | Recall measuring the fraction of true positives correctly identified     |
 | `mean_fold_accuracy`     | label_prediction | Average accuracy across k-fold cross-validation splits, indicating overall classification performance.           |
 | `mean_fold_f1`           | label_prediction | Average F1 score across folds, balancing precision and recall for classification tasks.                          |
 | `mean_fold_precision`    | label_prediction | Average precision across folds, reflecting the proportion of true positives among predicted positives.           |
