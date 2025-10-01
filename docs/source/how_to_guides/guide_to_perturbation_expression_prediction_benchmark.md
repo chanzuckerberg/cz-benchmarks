@@ -65,7 +65,7 @@ The following parameters are used by the task input class, via the [`Perturbatio
 
 The main task, [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires only an optional random seed as input. The dataclass ([`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html)) and a matrix of model predictions is required to be provided to the `run` method which executes the task.
 
-The task returns a dataclass, [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html), which contains the following:
+The task returns an object of type [`PerturbationExpressionPredictionOutput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) (a Pydantic model), which contains the following:
 
 - `pred_mean_change_dict`: The predicted fold change for the masked genes based on the model.
 - `true_mean_change_dict`: The ground truth fold change based on the differential expression results provided by the dataset.
@@ -79,7 +79,7 @@ When a user loads in model predictions, the cells and genes whose expression val
 
 It is essential that the mapping of the cells (rows) and genes (columns) from the model expression predictions to those in the dataset is correct. Thus, the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) requires a `gene_index` and `cell_index` to be provided by the user for validation.
 
-If the user has an AnnData (model_adata) with model predictions, and a [`SingleCellPerturbationDataset`]() with loaded data, [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) can be prepared using the [`build_task_input_from_predictions`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) function:
+If the user has an AnnData (model_adata) with model predictions, and a [`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html) with loaded data, [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) can be prepared using the [`build_task_input_from_predictions`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) function:
 
   ```python
   task_input = build_task_input_from_predictions(predictions_adata=model_adata, dataset_adata=dataset.adata)

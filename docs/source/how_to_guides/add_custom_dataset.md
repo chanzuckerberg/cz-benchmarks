@@ -47,6 +47,7 @@ datasets:
 
   my_perturbation_dataset:
   _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
+  path: /path/to/your/perturb_data.h5ad
   organism: ${organism:MOUSE}
   condition_key: condition
   control_name: ctrl
