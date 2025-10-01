@@ -17,7 +17,7 @@ This benchmark is designed for evaluation by any model that produces a predictio
 The data preprocessing method accomplishes the following:
 
 - Perturbed cells and their matched controls are selected and indexed to create a new AnnData object for each condition. Conditions are stored in AnnData `obs` metadata column defined by the parameter ``{condition_key}``.
-- In the control matched data, the perturbations are labeled as ``{perturb}``, and control cells are labeled as ``{control_nam}``.
+- In the control matched data, the perturbations are labeled as ``{perturb}``, and control cells are labeled as ``{control_name}``.
 - For each condition, a subset of DE genes are sampled and their default values are masked. These become the prediction targets for the model.
 - The objective is for the model to predict the masked expression values for the prediction targets per cell and per condition.
 
@@ -26,7 +26,7 @@ The data preprocessing method accomplishes the following:
 The following parameters are used in loading the data:
 
 - `condition_key`: The name of the column in `adata.obs` and in the DE results containing condition labels for perturbations and controls. Default is "condition".
-- `control_name`: The name used to denote control samples in the data. Default is "ctrl".
+- `control_name`: The name used to denote control samples in the `condition_key` column of the metadata (`adata.obs`). Default is "ctrl".
 - `de_gene_col`: The name of the column in the DE results indicating gene identifiers to be considered for masking. Default is "gene_id".
 - `de_metric_col`: The name of the metric column in the differential expression data. Default is "logfoldchange".
 - `de_pval_col`: The name of the p-value column in the differential expression data. Default is "de_pval_col".
