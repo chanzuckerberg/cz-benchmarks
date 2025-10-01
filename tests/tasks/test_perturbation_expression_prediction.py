@@ -151,3 +151,6 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         expected_conditions={"gene_A", "gene_B"},
         condition_key=condition_key,
     )
+
+    with pytest.raises(NotImplementedError):
+        task.compute_baseline(cell_representation=adata.X)
