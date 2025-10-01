@@ -81,7 +81,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Must have a column ``condition_key`` in ``adata.obs`` specifying
         control and perturbed conditions.
     - Condition format must be one of:
-      - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
+      - ``{control_name}`` for control samples.
       - ``{perturb}`` for a single perturbation.
 
     Attributes:
@@ -345,7 +345,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
 
-        if not self.adata.obs[self.condition_key].str.contains(self.control_name).any():
+        if not (self.adata.obs[self.condition_key] == self.control_name).any():
             raise ValueError(
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
