@@ -89,7 +89,7 @@ If the user has an AnnData (model_adata) with model predictions, and a [`SingleC
 
 The task produces a per-condition correlation by comparing predicted and ground-truth expression values for the masked genes. The comparison metric is:
 
-- **Spearman correlation (rank)**: Rank correlation between the raw predicted and ground truth values. As this is a rank metric, the predictions can be supplied in any units that are monotonic to the ground truth data, which uses log fold change (Log2FC).
+- **Spearman correlation (rank)**: Rank correlation between the raw predicted and ground truth values. As this is a rank metric, the predictions can be supplied in any units that are monotonic to the ground truth data, the later of which is in units of log fold change (log2FC).
 
 
 Results are generated for each perturbation condition separately. Downstream reporting may aggregate scores across conditions (e.g., mean and standard deviation).

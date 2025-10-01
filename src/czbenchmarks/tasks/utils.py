@@ -26,6 +26,54 @@ TASK_NAMES = frozenset(
 )
 
 
+def print_correlation_metrics_baseline_and_model(
+    metrics_dict, moderate_correlation_threshold=0.3, precision=4
+):
+    """Print a summary table of all metrics.
+    Args:
+        metrics_values: List of model prediction metric values
+        baseline_metrics_values: List of baseline metric values
+        moderate_correlation_threshold: Threshold for considering a correlation as moderate
+        precision: Precision for the summary table
+    """
+
+    # Get basic statistics using describe()
+    describe_stats = metrics_dict.describe()
+
+    # Create column name mapping from describe() output to original names
+    column_mapping = {
+        "count": "Number of conditions",
+        "mean": "Mean correlation",
+        "std": "Standard Deviation",
+        "min": "Min correlation",
+        "25%": "25th percentile",
+        "50%": "Median correlation",
+        "75%": "75th percentile",
+        "max": "Max correlation",
+    }
+
+    # Rename the index to match original column names
+    describe_stats = describe_stats.rename(index=column_mapping)
+
+    # Add custom statistics that aren't in describe()
+    custom_stats = {}
+    for col in ["Model", "Baseline"]:
+        s = metrics_dict[col]
+        custom_stats[col] = {
+            f"Number of correlations > {moderate_correlation_threshold} (num)": sum(
+                s > moderate_correlation_threshold
+            ),
+            "Number of negative correlations": sum(s < 0),
+        }
+
+    # Convert custom stats to DataFrame and append to describe stats
+    custom_df = pd.DataFrame(custom_stats).rename_axis("Statistic")
+    summary = pd.concat([describe_stats, custom_df])
+
+    with pd.option_context("display.precision", precision):
+        print(summary.to_string())
+
+
 def print_metrics_summary(metrics_list):
     """Print a nice summary table of all metrics.
 

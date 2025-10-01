@@ -21,7 +21,8 @@ def sample_de_genes(
     seed: int = RANDOM_SEED,
 ) -> Dict[str, List[str]]:
     """
-    Sample genes from a differential expression results dataframe.
+    Sample a percentage of genes for masking for each condition from a
+    differential expression results dataframe.
 
     Args:
         de_results (pd.DataFrame): Differential expression results dataframe.
@@ -61,7 +62,8 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Input data requirements:
 
     - H5AD file containing single-cell gene expression data.
-    - Must have a column ``condition_key`` in ``adata.obs`` specifying control and perturbed conditions.
+    - Must have a column ``condition_key`` in ``adata.obs`` specifying
+        control and perturbed conditions.
     - Condition format must be one of:
 
       - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
@@ -157,7 +159,14 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def load_and_filter_deg_results(self):
         """
-        Load and filter differential expression results.
+        Load and filter differential expression results from adata.uns.
+        - Enforces that de_pval_col and de_metric_col are present in the dataframe and are not null.
+        - Filters out rows where the p-value is greater than the pval_threshold.
+        - Filters out rows where the metric is less than the min_logfoldchange.
+        - Returns the filtered dataframe.
+
+        Returns:
+            pd.DataFrame: Differential expression results dataframe after filtering.
         """
         logger.info("Loading de_results from adata.uns")
         # FIXME MICHELLE: check proper handling of float precision
@@ -301,14 +310,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self,
     ) -> None:
         """
-        Load the dataset and populate perturbation truth data.
-
-        This method validates the presence of `condition_key` in
-        `adata.obs`, and extracts control data for each condition into the
-        `perturbation_truth` attribute.
-
-        Raises:
-            ValueErrors or FileNotFoundErrors based on required data structure.
+        Load the dataset and populates the perturbation truth data.
+        - Validates the presence of required keys and values in `adata`:
+            - `condition_key` in `adata.obs`
+            - `control_name` present in `adata.obs[condition_key]`
+            - `de_results_{self.deg_test_name}` in `adata.uns`
+            - `control_cells_map` in `adata.uns`
+        - Loads and filters differential expression results from `adata.uns`,
+            keeping only genes whose differential expression meets
+            user-defined thresholds.
+        - Populates the `target_conditions_dict` attribute
         """
         super().load_data()
         if self.condition_key not in self.adata.obs.columns:
@@ -540,17 +551,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Ensures that ``condition_key`` exists in ``adata.obs``.
-        - Establishes the set of allowed condition labels from the configured target
-          set and, when available, from differential expression results present in
-          ``adata.uns``. Any labels not in this set (and not equal to
-          ``control_name``) will emit a warning but will not halt execution.
+        - Ensures that each condition in ``adata.obs[condition_key]`` is present
+            in the control mapping or is the control name.
+        - Ensures that every condition present in the differential expression
+            results or in the target conditions dict is present in the control mapping.
 
         Notes:
         - This method does not strictly enforce condition label formatting and does
-          not explicitly validate combinatorial perturbations.
+            not explicitly validate combinatorial perturbations.
 
         Raises:
-            ValueError: If ``condition_key`` is missing from ``adata.obs``.
+            ValueError: If required keys or mappings are missing from adata.obs or adata.uns.
         """
         super()._validate()
 

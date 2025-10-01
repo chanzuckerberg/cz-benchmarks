@@ -44,7 +44,7 @@ These errors originate from the content of your `.h5ad` file not meeting the req
 
     - **Solution**: Add the required column with the correct data to your `AnnData` object's `.obs` DataFrame and save the `.h5ad` file again.
 
-  - **Error**: `ValueError: Invalid perturbation condition format: ...`
+  - **Error**: `ValueError: Unexpected condition label: ``{condition}`` not present in control mapping.`
 
     - **Cause**: The `condition` columns in a `SingleCellPerturbationDataset` contain incorrectly formatted values.
 

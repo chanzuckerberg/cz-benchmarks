@@ -78,9 +78,14 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Perturbation Expression Prediction Task.
 
+        This task evaluates perturbation-induced expression predictions against
+        their ground truth values. This is done by calculating metrics derived
+        from predicted and ground truth log fold change values for each condition.
+        So far, the only supported metric is Spearman rank correlation.
+
         The following arguments are required and must be supplied by the task input class
-        (PerturbationExpressionPredictionTaskInput) when running the task. They are described
-        below for documentation purposes:
+        (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
+        are described below for documentation purposes:
 
             predictions_adata (ad.AnnData): The anndata containing model predictions.
             dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
@@ -94,6 +99,10 @@ class PerturbationExpressionPredictionTask(Task):
 
         Args:
             random_seed (int): Random seed for reproducibility.
+
+        Returns:
+            PerturbationExpressionPredictionTask: A dictionary of mean predicted and
+            ground truth changes in gene expression values for each condition.
         """
 
         super().__init__(random_seed=random_seed)
@@ -269,6 +278,14 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Compute perturbation prediction quality using Spearman rank correlation
         between predicted and true log fold changes for each condition.
+
+        Args:
+            task_input: Task input dataclass containing AnnData with all necessary data
+            task_output: Task output dataclass containing predicted and true mean changes
+                 in expression values for each condition.
+        Returns:
+            List[MetricResult]: A list of MetricResult objects containing Spearman rank
+                correlation for each condition.
         """
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
@@ -328,6 +345,18 @@ class PerturbationExpressionPredictionTask(Task):
         task_input: PerturbationExpressionPredictionTaskInput,
         cell_representation: CellRepresentation,
     ) -> None:
+        """
+        Validate the task input.
+        - Checks that cell_representation shape matches task input shape(with or without custom indices).
+        - Verifies that 'de_results' exists in adata.uns, is a pandas DataFrame, and contains required columns.
+        - Ensures 'control_cells_map' exists in adata.uns and is a dict.
+        This allows both log-normalized and raw predictions. Downstream computation adapts accordingly.
+        Args:
+            task_input: Task input containing AnnData with all necessary data
+            cell_representation: Cell expression matrix of shape (n_cells, n_genes)
+        Raises:
+            ValueError: If required keys or mappings are missing from adata.uns.
+        """
         # Allow both log-normalized and raw predictions. Downstream computation adapts accordingly.
 
         adata = task_input.adata

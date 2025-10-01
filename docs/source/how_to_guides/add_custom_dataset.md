@@ -30,7 +30,7 @@ The AnnData object must also meet validation requirements for the specific datas
 - Save your data as an AnnData object in `.h5ad` format.
 - Ensure:
   - All required metadata columns (e.g., cell type, batch, condition) are included in `obs`.
-  - Ensembl IDs are properly defined in `var` or as `var_names`.
+  - Ensembl ids are properly defined in `var` or as `var_names`.
 
 
 ### 2. Update Datasets Configuration File
@@ -64,7 +64,7 @@ datasets:
 - `path`: Path to the `.h5ad` file (local or S3).
 - `organism`: Must be a value from `czbenchmarks.datasets.types.Organism` (e.g., HUMAN, MOUSE).
 - `label_column_key`: (For `SingleCellLabeledDataset`) Name of the label column in `obs`.
-- `condition_key`, `control_name`, `de_gene_col`: (For `SingleCellPerturbationDataset`) Required keys for perturbation data and DE results.
+- `condition_key`, `control_name`, `de_gene_col`: (For [`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html)) Required keys for perturbation data and DE results.
 
 You may add multiple datasets as children of `datasets`.
 
