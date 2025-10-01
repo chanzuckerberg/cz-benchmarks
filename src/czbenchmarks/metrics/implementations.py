@@ -19,7 +19,7 @@ Each metric is registered with:
 
 import numpy as np
 from scib_metrics import silhouette_batch, silhouette_label
-from scipy.stats import spearmanr
+from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import (
     accuracy_score,
     adjusted_rand_score,
@@ -29,11 +29,15 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-
-from .types import MetricRegistry, MetricType
 from .utils import (
     compute_entropy_per_cell,
     mean_fold_metric,
+    single_metric,
+    jaccard_score,
+)
+
+from .types import MetricRegistry, MetricType
+from .utils import (
     sequential_alignment,
 )
 
@@ -119,46 +123,13 @@ metrics_registry.register(
     tags={"perturbation"},
 )
 
-# Register cross-validation classification metrics
-metrics_registry.register(
-    MetricType.MEAN_FOLD_ACCURACY,
-    func=mean_fold_metric,
-    required_args={"results_df"},
-    default_params={"metric": "accuracy", "classifier": None},
-    tags={
-        "label_prediction",
-    },
-)
+# classification metrics
 
 metrics_registry.register(
-    MetricType.MEAN_FOLD_F1_SCORE,
-    func=mean_fold_metric,
-    required_args={"results_df"},
-    default_params={"metric": "f1", "classifier": None},
-    tags={"label_prediction"},
-)
-
-metrics_registry.register(
-    MetricType.MEAN_FOLD_PRECISION,
-    func=mean_fold_metric,
-    required_args={"results_df"},
-    default_params={"metric": "precision", "classifier": None},
-    tags={"label_prediction"},
-)
-
-metrics_registry.register(
-    MetricType.MEAN_FOLD_RECALL,
-    func=mean_fold_metric,
-    required_args={"results_df"},
-    default_params={"metric": "recall", "classifier": None},
-    tags={"label_prediction"},
-)
-
-metrics_registry.register(
-    MetricType.MEAN_FOLD_AUROC,
-    func=mean_fold_metric,
-    required_args={"results_df"},
-    default_params={"metric": "auroc", "classifier": None},
+    MetricType.ACCURACY,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "accuracy"},
     tags={"label_prediction"},
 )
 
@@ -170,20 +141,39 @@ metrics_registry.register(
     tags={"label_prediction", "perturbation"},
 )
 
+
 metrics_registry.register(
-    MetricType.PRECISION_CALCULATION,
-    func=precision_score_zero_division,
-    required_args={"y_true", "y_pred"},
-    description="Precision between true and predicted values",
-    tags={"label_prediction", "perturbation"},
+    MetricType.MEAN_FOLD_ACCURACY,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "accuracy", "classifier": None},
+    tags={
+        "label_prediction",
+    },
 )
 
 metrics_registry.register(
-    MetricType.RECALL_CALCULATION,
-    func=recall_score_zero_division,
-    required_args={"y_true", "y_pred"},
-    description="Recall between true and predicted values",
-    tags={"label_prediction", "perturbation"},
+    MetricType.AUROC,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "auroc"},
+    tags={"label_prediction"},
+)
+metrics_registry.register(
+    MetricType.MEAN_FOLD_AUROC,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "auroc", "classifier": None},
+    tags={"label_prediction"},
+)
+
+
+metrics_registry.register(
+    MetricType.F1_SCORE,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "f1"},
+    tags={"label_prediction"},
 )
 
 metrics_registry.register(
@@ -192,6 +182,78 @@ metrics_registry.register(
     required_args={"y_true", "y_pred"},
     description="F1 score between true and predicted values",
     tags={"label_prediction", "perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_F1_SCORE,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "f1", "classifier": None},
+    tags={"label_prediction"},
+)
+metrics_registry.register(
+    MetricType.JACCARD,
+    func=jaccard_score,
+    required_args={"y_true", "y_pred"},
+    description="Jaccard similarity between true and predicted values",
+    tags={"perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.PEARSON_CORRELATION,
+    func=pearsonr,
+    required_args={"x", "y"},
+    description="Pearson correlation between true and predicted values",
+    tags={"perturbation"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "precision"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.PRECISION_CALCULATION,
+    func=precision_score_zero_division,
+    required_args={"y_true", "y_pred"},
+    description="Precision between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_PRECISION,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "precision", "classifier": None},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.RECALL,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "recall"},
+    tags={"label_prediction"},
+)
+metrics_registry.register(
+    MetricType.RECALL_CALCULATION,
+    func=recall_score_zero_division,
+    required_args={"y_true", "y_pred"},
+    description="Recall between true and predicted values",
+    tags={"label_prediction", "perturbation"},
+)
+
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_RECALL,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "recall", "classifier": None},
+    tags={"label_prediction"},
 )
 
 metrics_registry.register(
