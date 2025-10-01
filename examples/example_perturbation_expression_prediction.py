@@ -7,8 +7,6 @@ import numpy as np
 import hydra
 from hydra.utils import instantiate
 import omegaconf
-import pickle
-
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.tasks.single_cell import (
@@ -185,9 +183,6 @@ if __name__ == "__main__":
         pred_effect_operation="ratio",
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
-    # Save metrics_dict to a file for later analysis
-    with open("metrics_dict.pkl", "wb") as f:
-        pickle.dump(metrics_dict, f)
 
     metrics_values = np.asarray(
         [
@@ -204,9 +199,6 @@ if __name__ == "__main__":
     baseline_metrics_dict = task.run(
         cell_representation=baseline_model, task_input=task_input
     )
-    with open("baseline_metrics_dict.pkl", "wb") as f:
-        pickle.dump(baseline_metrics_dict, f)
-
     baseline_metrics_values = np.asarray(
         [
             x.value
