@@ -160,7 +160,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 "min_de_genes_to_mask",
                 "pval_threshold",
                 "min_logfoldchange",
-                "random_seed",
                 "target_conditions_override",
             ],
             [
@@ -168,7 +167,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 min_de_genes_to_mask,
                 pval_threshold,
                 min_logfoldchange,
-                random_seed,
                 target_conditions_override,
             ],
         ):
