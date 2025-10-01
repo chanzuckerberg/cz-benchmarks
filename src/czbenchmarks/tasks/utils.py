@@ -344,7 +344,7 @@ def run_standard_scrna_workflow(
     return adata.obsm[obsm_key]
 
 
-def looks_like_lognorm(
+def is_not_count_data(
     matrix: CellRepresentation,
     sample_size: int | float = 1_000,
     tol: float = 1e-2,
