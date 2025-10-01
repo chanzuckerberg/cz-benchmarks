@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask. 
-    The row and column ordering of the model predictions can optionallybe provided as 
-    cell_index and gene_index, respectively, so the task can align a model matrix that 
+    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask.
+    The row and column ordering of the model predictions can optionallybe provided as
+    cell_index and gene_index, respectively, so the task can align a model matrix that
     is a subset of or re-ordered relative to the dataset adata.
     """
 
@@ -88,22 +88,22 @@ class PerturbationExpressionPredictionTask(Task):
         (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
         are described below for documentation purposes:
 
-        - predictions_adata (ad.AnnData): 
+        - predictions_adata (ad.AnnData):
             The anndata containing model predictions
-        - dataset_adata (ad.AnnData): 
+        - dataset_adata (ad.AnnData):
             The anndata object from SingleCellPerturbationDataset.
-        - pred_effect_operation (Literal["difference", "ratio"]): 
-            How to compute predicted effect between treated and control mean predictions 
-            over genes.  
+        - pred_effect_operation (Literal["difference", "ratio"]):
+            How to compute predicted effect between treated and control mean predictions
+            over genes.
 
-            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.  
-            
-            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).  
-            
+            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.
+
+            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).
+
             Default is "ratio".
-        - gene_index (Optional[pd.Index]): 
+        - gene_index (Optional[pd.Index]):
             The index of the genes in the predictions AnnData.
-        - cell_index (Optional[pd.Index]): 
+        - cell_index (Optional[pd.Index]):
             The index of the cells in the predictions AnnData.
 
         Args:
@@ -261,8 +261,8 @@ class PerturbationExpressionPredictionTask(Task):
                 # Raw scale ratio; guard against non-positive means by falling back to difference
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                     logger.warning(
-                       f"Negative values found in treated_mean or control_mean for condition {condition}. "
-                       "Switching to mean difference (\"ratio\") for pred_effect_operation to avoid non-positive mean values."
+                        f"Negative values found in treated_mean or control_mean for condition {condition}. "
+                        'Switching to mean difference ("ratio") for pred_effect_operation to avoid non-positive mean values.'
                     )
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
@@ -318,34 +318,32 @@ class PerturbationExpressionPredictionTask(Task):
     @staticmethod
     def compute_baseline(
         cell_representation: CellRepresentation,
-        baseline_type: Literal["median", "mean"] = "median",
+        random_seed: int = RANDOM_SEED,
     ) -> CellRepresentation:
-        """Set a baseline perturbation prediction using mean or median expression.
+        """Creates a completely random baseline prediction.
 
-        This method creates a baseline prediction by either taking the mean or
-        the median of the control cells' gene expression. This baseline
-        represents a simple no-change prediction.
+        This method creates a baseline prediction by using random noise with similar
+        statistical properties and bounded by min/max of cell_representation.
 
         Args:
-            cell_representation: The gene expression matrix of control cells.
-            baseline_type: The type of baseline to use, either "mean" or "median".
+            cell_representation: The gene expression matrix of all cells.
+            random_seed: Random seed for reproducibility.
 
         Returns:
-            A DataFrame representing the baseline perturbation prediction.
+            A matrix representing the baseline perturbation prediction.
         """
-        # Create baseline prediction by replicating the aggregated expression values
-        # across all cells in the dataset.
-        baseline_func = np.median if baseline_type == "median" else np.mean
-        if baseline_type == "median" and sp_sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
 
-        perturb_baseline_pred = np.tile(
-            baseline_func(cell_representation, axis=0),
-            (cell_representation.shape[0], 1),
+        # Generate a random baseline with similar statistical properties and bounded by min/max of cell_representation
+        rng = np.random.RandomState(RANDOM_SEED)
+        baseline = rng.normal(
+            loc=np.mean(cell_representation),
+            scale=np.std(cell_representation),
+            size=cell_representation.shape,
         )
-
-        # Store the baseline prediction in the dataset for evaluation
-        return perturb_baseline_pred
+        baseline = np.clip(
+            baseline, np.min(cell_representation), np.max(cell_representation)
+        )
+        return baseline
 
     def _validate(
         self,

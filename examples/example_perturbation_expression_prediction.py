@@ -206,7 +206,7 @@ if __name__ == "__main__":
     )
     # Compute baselines
     baseline_model = task.compute_baseline(
-        cell_representation=dataset.adata.X, baseline_type="median"
+        cell_representation=dataset.adata.X, random_seed=RANDOM_SEED
     )
     baseline_metrics_dict = task.run(
         cell_representation=baseline_model, task_input=task_input
@@ -235,7 +235,7 @@ if __name__ == "__main__":
         + "Summary over all conditions of correlations between mean \n"
         "predicted and ground truth changes in gene expression values." + Colors.END
     )
-    print(f"\nDataset: Replogle K562 Essentials")
+    print("\nDataset: Replogle K562 Essentials")
     print(
         Colors.BOLD
         + "------------------------------------------------------------\n"
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             + "Correlations between mean predicted and ground truth  \n"
             "changes in gene expression values for each condition." + Colors.END
         )
-        print(f"\nDataset: Replogle K562 Essentials")
+        print("\nDataset: Replogle K562 Essentials")
         print(
             Colors.BOLD
             + "------------------------------------------------------------\n"

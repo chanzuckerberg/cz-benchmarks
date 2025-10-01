@@ -141,6 +141,7 @@ def test_perturbation_expression_prediction_task_wilcoxon(
     task = PerturbationExpressionPredictionTask()
 
     # Validate metrics results
+
     results = task.run(cell_representation=matrix, task_input=task_input)
 
     assert_metric_results(
@@ -152,17 +153,16 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         condition_key=condition_key,
     )
 
-    for baseline_type in ["mean", "median"]:
-        baseline_embedding = task.compute_baseline(
-            cell_representation=matrix, baseline_type=baseline_type
-        )
-        baseline_results = task.run(
-            cell_representation=baseline_embedding, task_input=task_input
-        )
-        assert_metric_results(
-            baseline_results,
-            expected_count=2,
-            expected_types={MetricType.SPEARMAN_CORRELATION_CALCULATION},
-            expected_conditions={"gene_A", "gene_B"},
-            condition_key=condition_key,
-        )
+    baseline_embedding = task.compute_baseline(
+        cell_representation=matrix, random_seed=random_seed
+    )
+    baseline_results = task.run(
+        cell_representation=baseline_embedding, task_input=task_input
+    )
+    assert_metric_results(
+        baseline_results,
+        expected_count=2,
+        expected_types={MetricType.SPEARMAN_CORRELATION_CALCULATION},
+        expected_conditions={"gene_A", "gene_B"},
+        condition_key=condition_key,
+    )

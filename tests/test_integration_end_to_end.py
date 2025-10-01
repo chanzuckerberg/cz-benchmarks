@@ -302,7 +302,7 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Compute and run baseline
     baseline_model = task.compute_baseline(
-        cell_representation=dataset.adata.X, baseline_type="median"
+        cell_representation=dataset.adata.X, random_seed=RANDOM_SEED
     )
     baseline_results = task.run(
         cell_representation=baseline_model,
