@@ -51,7 +51,7 @@ autoapi_dirs = ["../../src/"]
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autoapi_keep_files = True
-
+autoapi_python_class_content = 'both' 
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
