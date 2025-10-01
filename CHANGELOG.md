@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.13.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.12.0...v0.13.0) (2025-10-01)
+
+
+### Features
+
+* add cross species label prediction task ([#424](https://github.com/chanzuckerberg/cz-benchmarks/issues/424)) ([a452fbf](https://github.com/chanzuckerberg/cz-benchmarks/commit/a452fbf83535aeabb86371effe31592695162a66))
+* improvements to single cell perturbation dataset class and perturb seq task class ([#399](https://github.com/chanzuckerberg/cz-benchmarks/issues/399)) ([6360702](https://github.com/chanzuckerberg/cz-benchmarks/commit/636070277644324d4370dc65eb0d3ba49c23bb91))
+
+
+### Bug Fixes
+
+* add click package ([#431](https://github.com/chanzuckerberg/cz-benchmarks/issues/431)) ([e916b72](https://github.com/chanzuckerberg/cz-benchmarks/commit/e916b724f8aaa8ee4e5c48ec1731553ff38fe0af))
+
+
+### Documentation
+
+* Improve autoapi generated documentation ([#440](https://github.com/chanzuckerberg/cz-benchmarks/issues/440)) ([ea0d5cc](https://github.com/chanzuckerberg/cz-benchmarks/commit/ea0d5cc2f7cc1f7dadab0ce2b6ee5966c46c445e))
+* update assets.md for cross species label prediction task ([#439](https://github.com/chanzuckerberg/cz-benchmarks/issues/439)) ([3fca830](https://github.com/chanzuckerberg/cz-benchmarks/commit/3fca8309301446aabf1d991713a882b24df0d887))
+* Updates for single cell dataset and perturbation task changes ([#419](https://github.com/chanzuckerberg/cz-benchmarks/issues/419)) ([0ee0f68](https://github.com/chanzuckerberg/cz-benchmarks/commit/0ee0f6890ec51cd7c7d26747fc2ce411de38e8f6))
+
 ## [0.12.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.2...v0.12.0) (2025-09-29)
 
 
