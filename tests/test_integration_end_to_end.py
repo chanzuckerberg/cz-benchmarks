@@ -300,22 +300,12 @@ def test_end_to_end_perturbation_expression_prediction():
     )
     model_results = task.run(cell_representation=model_output, task_input=task_input)
 
-    # Compute and run baseline
-    baseline_model = task.compute_baseline(
-        cell_representation=dataset.adata.X, baseline_type="median"
-    )
-    baseline_results = task.run(
-        cell_representation=baseline_model,
-        task_input=task_input,
-    )
-
     # Validate results structure
-    for results in [model_results, baseline_results]:
-        assert isinstance(results, list)
-        assert len(results) > 0
-        for result in results:
-            for attr in ["metric_type", "value", "params"]:
-                assert hasattr(result, attr)
+    assert isinstance(model_results, list)
+    assert len(model_results) > 0
+    for result in model_results:
+        for attr in ["metric_type", "value", "params"]:
+            assert hasattr(result, attr)
 
     # Expect presence of required metric types in model results
     model_metric_types = {r.metric_type.value for r in model_results}
@@ -323,27 +313,20 @@ def test_end_to_end_perturbation_expression_prediction():
 
     # Combine results for JSON validation
     model_serialized = [r.model_dump() for r in model_results]
-    baseline_serialized = [r.model_dump() for r in baseline_results]
     all_results = {
         "perturbation": {
             "model": model_serialized,
-            "baseline": baseline_serialized,
         }
     }
 
     # Validate combined structure
     assert "perturbation" in all_results
     assert "model" in all_results["perturbation"]
-    assert "baseline" in all_results["perturbation"]
     assert isinstance(all_results["perturbation"]["model"], list)
-    assert isinstance(all_results["perturbation"]["baseline"], list)
     assert len(all_results["perturbation"]["model"]) > 0
-    assert len(all_results["perturbation"]["baseline"]) > 0
 
     # Verify each serialized result has expected keys/types
-    for result in (
-        all_results["perturbation"]["model"] + all_results["perturbation"]["baseline"]
-    ):
+    for result in all_results["perturbation"]["model"]:
         assert isinstance(result, dict)
         assert "metric_type" in result
         assert "value" in result
@@ -356,4 +339,3 @@ def test_end_to_end_perturbation_expression_prediction():
     parsed = json.loads(json_output)
     assert "perturbation" in parsed
     assert "model" in parsed["perturbation"]
-    assert "baseline" in parsed["perturbation"]

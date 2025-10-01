@@ -45,9 +45,9 @@ def wilcoxon_test_data():
     # Build AnnData with 4 groups: condition/control for A and B
     conditions = (
         ["gene_A"] * n_per_group
-        + [f"{control_name}_gene_A"] * n_per_group
+        + [f"{control_name}"] * n_per_group
         + ["gene_B"] * n_per_group
-        + [f"{control_name}_gene_B"] * n_per_group
+        + [f"{control_name}"] * n_per_group
     )
     obs_names = [f"cellbarcode{i}_{cond}" for i, cond in enumerate(conditions)]
 
