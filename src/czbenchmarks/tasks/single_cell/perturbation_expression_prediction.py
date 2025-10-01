@@ -112,7 +112,8 @@ class PerturbationExpressionPredictionTask(Task):
             task_input: Task input containing AnnData with all necessary data
 
         Returns:
-            PerturbationExpressionPredictionOutput: Predicted and true log fold changes
+            PerturbationExpressionPredictionOutput: A dictionary of predicted and
+            true log fold changes for each condition.
         """
         adata = task_input.adata
         pred_effect_operation = task_input.pred_effect_operation

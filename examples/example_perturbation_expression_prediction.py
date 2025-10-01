@@ -3,11 +3,11 @@ import sys
 import argparse
 from typing import Optional
 import anndata as ad
-import pandas as pd
 import numpy as np
 import hydra
 from hydra.utils import instantiate
 import omegaconf
+import pickle
 
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.constants import RANDOM_SEED
@@ -18,7 +18,10 @@ from czbenchmarks.tasks.single_cell import (
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     build_task_input_from_predictions,
 )
-from czbenchmarks.tasks.utils import print_metrics_summary
+from czbenchmarks.tasks.utils import (
+    print_metrics_summary,
+    print_correlation_metrics_baseline_and_model,
+)
 from czbenchmarks.tasks.types import CellRepresentation
 
 from czbenchmarks.utils import initialize_hydra
@@ -182,6 +185,10 @@ if __name__ == "__main__":
         pred_effect_operation="ratio",
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
+    # Save metrics_dict to a file for later analysis
+    with open("metrics_dict.pkl", "wb") as f:
+        pickle.dump(metrics_dict, f)
+
     metrics_values = np.asarray(
         [
             x.value
@@ -197,6 +204,9 @@ if __name__ == "__main__":
     baseline_metrics_dict = task.run(
         cell_representation=baseline_model, task_input=task_input
     )
+    with open("baseline_metrics_dict.pkl", "wb") as f:
+        pickle.dump(baseline_metrics_dict, f)
+
     baseline_metrics_values = np.asarray(
         [
             x.value
@@ -205,12 +215,6 @@ if __name__ == "__main__":
         ]
     )
 
-    # Inspect metrics
-    metrics_df = pd.DataFrame(
-        {"Model": metrics_values, "Baseline": baseline_metrics_values}
-    )
-    summary_df = metrics_df.describe()
-
     print("-------------------------------------")
     print("Summary of Model and Baseline metrics:")
     print("-------------------------------------\n")
@@ -218,8 +222,9 @@ if __name__ == "__main__":
         "Description: Summary of Spearman correlations of fold changes of \n"
         "model predictions for all differentially expressed genes."
     )
-    with pd.option_context("display.precision", 4):
-        print(summary_df.to_string(index=False))
+    print_correlation_metrics_baseline_and_model(
+        metrics_values, baseline_metrics_values
+    )
 
     if args.verbose:
         print("--------------------------------")

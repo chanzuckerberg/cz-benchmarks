@@ -21,7 +21,7 @@ def sample_de_genes(
     seed: int = RANDOM_SEED,
 ) -> Dict[str, List[str]]:
     """
-    Sample genes from a differential expression results dataframe.
+    Sample a percentage of genes for masking for each condition from a differential expression results dataframe.
 
     Args:
         de_results (pd.DataFrame): Differential expression results dataframe.
@@ -157,12 +157,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
     def load_and_filter_deg_results(self):
         """
-        Load and filter differential expression results.
+        Load and filter differential expression results from adata.uns.
+
+        - Enforces that de_pval_col and de_metric_col are present in the dataframe and are not null.
+        - Filters out rows where the p-value is greater than the pval_threshold.
+        - Filters out rows where the metric is less than the min_logfoldchange.
+        - Returns the filtered dataframe.
+
+        Returns:
+            pd.DataFrame: Differential expression results dataframe after filtering.
         """
         logger.info("Loading de_results from adata.uns")
-        # FIXME MICHELLE: check proper handling of float precision
         de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
-        # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
         error_str = ""
@@ -301,12 +307,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self,
     ) -> None:
         """
-        Load the dataset and populate perturbation truth data.
+        Load the dataset and populates the perturbation truth data.
 
-        This method validates the presence of `condition_key` in
-        `adata.obs`, and extracts control data for each condition into the
-        `perturbation_truth` attribute.
-
+        - Validates the presence of required keys and values in `adata`:
+            - `condition_key` in `adata.obs`
+            - `control_name` present in `adata.obs[condition_key]`
+            - `de_results_{self.deg_test_name}` in `adata.uns`
+            - `control_cells_map` in `adata.uns`
+        - Loads and filters differential expression results from `adata.uns`, keeping only significant genes per condition.
+        - Populates the `target_conditions_dict` attribute
+        - Populates the `control_cells_ids` attribute
         Raises:
             ValueErrors or FileNotFoundErrors based on required data structure.
         """
@@ -403,117 +413,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     @property
     def control_mapping(self) -> Dict[str, Dict[str, List[str]]]:
         raw = self.adata.uns.get(self.UNS_CONTROL_MAP_KEY, {})
-        return self._normalize_control_mapping(raw)
+        return raw if isinstance(raw, dict) else {}
 
     @property
     def target_genes(self) -> Dict[str, List[str]]:
         value = self.adata.uns.get(self.UNS_TARGET_GENES_KEY, {})
         return value if isinstance(value, dict) else {}
-
-    def set_control_mapping(self, raw_mapping: Dict) -> None:
-        canonical = self._normalize_control_mapping(raw_mapping)
-        self.adata.uns[self.UNS_CONTROL_MAP_KEY] = canonical
-
-    def _normalize_control_mapping(
-        self, raw_mapping: Dict
-    ) -> Dict[str, Dict[str, List[str]]]:
-        canonical: Dict[str, Dict[str, List[str]]] = {}
-        if not isinstance(raw_mapping, dict):
-            return {}
-
-        obs = self.adata.obs
-        for condition, mapping in raw_mapping.items():
-            treated_barcodes = (
-                obs.index[obs[self.condition_key] == condition].tolist()
-                if self.condition_key in obs.columns
-                else []
-            )
-            canonical_cond: Dict[str, List[str]] = {}
-
-            if isinstance(mapping, dict):
-                default_controls: List[str] = []
-                if "_default" in mapping:
-                    default_val = mapping["_default"]
-                    default_controls = (
-                        [default_val]
-                        if isinstance(default_val, str)
-                        else list(default_val)
-                    )
-                    default_controls = [str(x) for x in default_controls]
-
-                for tb, controls in mapping.items():
-                    if tb == "_default":
-                        continue
-                    if isinstance(controls, str):
-                        ctl_list = [controls]
-                    else:
-                        ctl_list = list(controls)
-                    canonical_cond[str(tb)] = [str(x) for x in ctl_list]
-
-                for tb in treated_barcodes:
-                    if tb not in canonical_cond and default_controls:
-                        canonical_cond[str(tb)] = list(default_controls)
-
-            elif isinstance(mapping, str) or isinstance(
-                mapping, (list, tuple, np.ndarray)
-            ):
-                default_controls = (
-                    [mapping] if isinstance(mapping, str) else list(mapping)
-                )
-                default_controls = [str(x) for x in default_controls]
-                for tb in treated_barcodes:
-                    canonical_cond[str(tb)] = list(default_controls)
-            else:
-                continue
-
-            for tb in canonical_cond.keys():
-                vals = canonical_cond[tb]
-                canonical_cond[tb] = [
-                    str(x) for x in (vals if isinstance(vals, list) else [vals])
-                ]
-
-            canonical[condition] = canonical_cond
-
-        return canonical
-
-    def get_controls(
-        self, condition: str, treated_barcode: Optional[str] = None
-    ) -> List[str]:
-        mapping = self.control_mapping
-        if condition in mapping:
-            if treated_barcode is not None and treated_barcode in mapping[condition]:
-                return list(mapping[condition][treated_barcode])
-            union = set()
-            for ctl_list in mapping[condition].values():
-                union.update(ctl_list)
-            if len(union) > 0:
-                return sorted(union)
-
-        obs = self.adata.obs
-        ctrl_global = obs.index[obs[self.condition_key] == self.control_name]
-        ctrl_matched = obs.index[
-            obs[self.condition_key] == f"{self.control_name}_{condition}"
-        ]
-        return pd.Index(ctrl_global).append(pd.Index(ctrl_matched)).unique().tolist()
-
-    def get_indices_for(
-        self, condition: str, treated_barcodes: Optional[List[str]] = None
-    ) -> tuple[np.ndarray, np.ndarray]:
-        obs = self.adata.obs
-        obs_index = obs.index
-
-        if treated_barcodes is None:
-            treated_barcodes = obs_index[obs[self.condition_key] == condition].tolist()
-
-        control_union: set[str] = set()
-        for tb in treated_barcodes:
-            control_union.update(self.get_controls(condition, tb))
-
-        treated_rows = obs_index.get_indexer_for(treated_barcodes)
-        control_rows = obs_index.get_indexer_for(list(control_union))
-        treated_rows = treated_rows[treated_rows >= 0]
-        control_rows = control_rows[control_rows >= 0]
-        return treated_rows, control_rows
 
     def store_task_inputs(self) -> Path:
         """
@@ -540,17 +445,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Ensures that ``condition_key`` exists in ``adata.obs``.
-        - Establishes the set of allowed condition labels from the configured target
-          set and, when available, from differential expression results present in
-          ``adata.uns``. Any labels not in this set (and not equal to
-          ``control_name``) will emit a warning but will not halt execution.
-
+        - Ensures that each condition in ``adata.obs[condition_key]`` is present
+        in the control mapping or is the control name.
+        - Ensure that every condition present in the differential expression
+        results or in the target conditions dict is present in the control mapping.
         Notes:
         - This method does not strictly enforce condition label formatting and does
           not explicitly validate combinatorial perturbations.
 
         Raises:
-            ValueError: If ``condition_key`` is missing from ``adata.obs``.
+            ValueError: If required keys or mappings are missing from adata.obs or adata.uns.
         """
         super()._validate()
 
@@ -559,7 +463,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
         # Validate conditions found in the original adata
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         original_conditions = set(self.adata.obs[self.condition_key])
         mapped_conditions = set(self.control_mapping.keys())
         for condition in original_conditions:
@@ -597,7 +500,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition not in mapped_conditions:

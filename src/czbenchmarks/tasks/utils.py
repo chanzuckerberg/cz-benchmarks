@@ -27,6 +27,42 @@ TASK_NAMES = frozenset(
 )
 
 
+def print_correlation_metrics_baseline_and_model(
+    metrics_values, baseline_metrics_values, moderate_correlation_threshold=0.3
+):
+    """Print a summary table of all metrics.
+    Args:
+        metrics_values: List of model prediction metric values
+        baseline_metrics_values: List of baseline metric values
+        moderate_correlation_threshold: Threshold for considering a correlation as moderate
+    """
+    df = pd.DataFrame({"Model": metrics_values, "Baseline": baseline_metrics_values})
+
+    stats = {}
+    for col in ["Model", "Baseline"]:
+        s = df[col]
+        stats[col] = {
+            "Number of conditions": int(len(s)),
+            "Median correlation": s.median(),
+            "Mean correlation": s.mean(),
+            "Standard Deviation": s.std(),
+            "25th percentile": s.quantile(0.25),
+            "75th percentile": s.quantile(0.75),
+            f"At least moderate correlation, % > {moderate_correlation_threshold}": (
+                s > moderate_correlation_threshold
+            ).mean()
+            * 100,
+            "Inverted correlation, % < 0": (s < 0).mean() * 100,
+            "Max correlation": s.max(),
+            "Min correlation": s.min(),
+        }
+
+    summary = pd.DataFrame(stats).rename_axis("Statistic")
+
+    with pd.option_context("display.precision", 4):
+        print(summary.to_string())
+
+
 def print_metrics_summary(metrics_list):
     """Print a nice summary table of all metrics.
 
