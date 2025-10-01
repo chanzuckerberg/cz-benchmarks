@@ -159,6 +159,12 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
+
+        if random_seed < 0:
+            raise ValueError(
+                f"Parameter random_seed must be greater than 0, got {random_seed}"
+            )
+        self.random_seed = random_seed
         self.condition_key = condition_key
         self.control_name = control_name
         self.deg_test_name = "wilcoxon"  # TODO: will allow other tests in the future
@@ -166,17 +172,10 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.de_metric_col = de_metric_col
         self.de_pval_col = de_pval_col
         self.target_conditions_override = target_conditions_override
-
-        if random_seed < 0:
-            raise ValueError(
-                f"Parameter random_seed must be greater than 0, got {random_seed}"
-            )
-
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
-        self.random_seed = random_seed
 
     def load_and_filter_deg_results(self):
         """
