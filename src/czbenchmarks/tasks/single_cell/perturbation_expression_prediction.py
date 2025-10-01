@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask. 
-    The row and column ordering of the model predictions can optionallybe provided as 
-    cell_index and gene_index, respectively, so the task can align a model matrix that 
+    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask.
+    The row and column ordering of the model predictions can optionallybe provided as
+    cell_index and gene_index, respectively, so the task can align a model matrix that
     is a subset of or re-ordered relative to the dataset adata.
     """
 
@@ -88,22 +88,22 @@ class PerturbationExpressionPredictionTask(Task):
         (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
         are described below for documentation purposes:
 
-        - predictions_adata (ad.AnnData): 
+        - predictions_adata (ad.AnnData):
             The anndata containing model predictions
-        - dataset_adata (ad.AnnData): 
+        - dataset_adata (ad.AnnData):
             The anndata object from SingleCellPerturbationDataset.
-        - pred_effect_operation (Literal["difference", "ratio"]): 
-            How to compute predicted effect between treated and control mean predictions 
-            over genes.  
+        - pred_effect_operation (Literal["difference", "ratio"]):
+            How to compute predicted effect between treated and control mean predictions
+            over genes.
 
-            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.  
-            
-            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).  
-            
+            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.
+
+            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).
+
             Default is "ratio".
-        - gene_index (Optional[pd.Index]): 
+        - gene_index (Optional[pd.Index]):
             The index of the genes in the predictions AnnData.
-        - cell_index (Optional[pd.Index]): 
+        - cell_index (Optional[pd.Index]):
             The index of the cells in the predictions AnnData.
 
         Args:
@@ -261,8 +261,8 @@ class PerturbationExpressionPredictionTask(Task):
                 # Raw scale ratio; guard against non-positive means by falling back to difference
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                     logger.warning(
-                       f"Negative values found in treated_mean or control_mean for condition {condition}. "
-                       "Switching to mean difference (\"ratio\") for pred_effect_operation to avoid non-positive mean values."
+                        f"Negative values found in treated_mean or control_mean for condition {condition}. "
+                        'Switching to mean difference ("ratio") for pred_effect_operation to avoid non-positive mean values.'
                     )
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
