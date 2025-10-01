@@ -194,7 +194,7 @@ if __name__ == "__main__":
     task_input = build_task_input_from_predictions(
         predictions_adata=model_adata,
         dataset_adata=dataset.adata,
-        pred_effect_operation="ratio",
+        pred_effect_operation="difference",
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
     metrics_values = np.asarray(

@@ -96,9 +96,9 @@ class PerturbationExpressionPredictionTask(Task):
             How to compute predicted effect between treated and control mean predictions 
             over genes.  
 
-            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).  
-
             * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.  
+            
+            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).  
             
             Default is "ratio".
         - gene_index (Optional[pd.Index]): 
@@ -262,7 +262,7 @@ class PerturbationExpressionPredictionTask(Task):
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
                     logger.warning(
                        f"Negative values found in treated_mean or control_mean for condition {condition}. "
-                       "\"Ratio\" selected for pred_effect_operation but falling back to mean difference to avoid non-positive mean values."
+                       "Switching to mean difference (\"ratio\") for pred_effect_operation to avoid non-positive mean values."
                     )
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:

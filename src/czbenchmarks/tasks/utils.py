@@ -63,7 +63,7 @@ def print_correlation_metrics_baseline_and_model(
     for col in metrics_df.columns:
         s = metrics_df[col]
         custom_stats[col] = {
-            f"Number of correlations > {moderate_correlation_threshold} (num)": sum(
+            f"Number of correlations > {moderate_correlation_threshold}": sum(
                 s > moderate_correlation_threshold
             ),
             "Number of negative correlations": sum(s < 0),
