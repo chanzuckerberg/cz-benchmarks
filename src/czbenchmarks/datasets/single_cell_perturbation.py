@@ -21,7 +21,8 @@ def sample_de_genes(
     seed: int = RANDOM_SEED,
 ) -> Dict[str, List[str]]:
     """
-    Sample genes from a differential expression results dataframe.
+    Sample a percentage of genes for masking for each condition from a
+    differential expression results dataframe.
 
     Args:
         de_results (pd.DataFrame): Differential expression results dataframe.
@@ -35,6 +36,22 @@ def sample_de_genes(
         Dict[str, List[str]]: Dictionary that maps each condition to a list of
         genes to be masked for that condition.
     """
+    # Validate parameters
+    for param_name, param in zip(
+        [
+            "percent_genes_to_mask",
+            "min_de_genes_to_mask",
+        ],
+        [
+            percent_genes_to_mask,
+            min_de_genes_to_mask,
+        ],
+    ):
+        if param < 0.0:
+            raise ValueError(
+                f"Parameter {param_name} must be greater than 0.0, got {param}"
+            )
+
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
     target_conditions_dict = {}
@@ -61,26 +78,26 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     Input data requirements:
 
     - H5AD file containing single-cell gene expression data.
-    - Must have a column ``condition_key`` in ``adata.obs`` specifying control and perturbed conditions.
+    - Must have a column ``condition_key`` in ``adata.obs`` specifying
+        control and perturbed conditions.
     - Condition format must be one of:
-
       - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
       - ``{perturb}`` for a single perturbation.
 
-    - Combinatorial (multiple) perturbations are not currently supported.
-
     Attributes:
-        control_cells_ids (dict): Dictionary mapping each condition to a dictionary
-            of treatment cell barcodes (keys) to matched control cell barcodes (values).
         de_results (pd.DataFrame): Differential expression results calculated on ground
             truth data using matched controls.
         target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each
             condition to a list of masked genes for that condition.
+        control_cells_ids (dict): Dictionary mapping each condition to a dictionary
+            of treatment cell barcodes (keys) to matched control cell barcodes (values).
+            It is used primarily for creation of differential expression results
+            in data processing and may be removed in a future release.
     """
 
-    control_cells_ids: dict
     de_results: pd.DataFrame
     target_conditions_dict: dict
+    control_cells_ids: dict
 
     # UNS keys contract for task consumption
     UNS_DE_RESULTS_KEY = "de_results"
@@ -108,7 +125,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         target_conditions_override: Optional[Dict[str, List[str]]] = None,
     ):
         """
-        Initialize a SingleCellPerturbationDataset instance.
+        Instantiate a SingleCellPerturbationDataset instance.
 
         Args:
             path (Path): Path to the dataset file.
@@ -142,27 +159,37 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 Default is None.
         """
         super().__init__("single_cell_perturbation", path, organism, task_inputs_dir)
+
+        if random_seed < 0:
+            raise ValueError(
+                f"Parameter random_seed must be greater than 0, got {random_seed}"
+            )
+        self.random_seed = random_seed
         self.condition_key = condition_key
         self.control_name = control_name
         self.deg_test_name = "wilcoxon"  # TODO: will allow other tests in the future
         self.de_gene_col = de_gene_col
         self.de_metric_col = de_metric_col
         self.de_pval_col = de_pval_col
+        self.target_conditions_override = target_conditions_override
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
-        self.random_seed = random_seed
-        self.target_conditions_override = target_conditions_override
 
     def load_and_filter_deg_results(self):
         """
-        Load and filter differential expression results.
+        Load and filter differential expression results from adata.uns.
+        - Enforces that de_pval_col and de_metric_col are present in the dataframe and are not null.
+        - Filters out rows where the p-value is greater than the pval_threshold.
+        - Filters out rows where the metric is less than the min_logfoldchange.
+        - Returns the filtered dataframe.
+
+        Returns:
+            pd.DataFrame: Differential expression results dataframe after filtering.
         """
         logger.info("Loading de_results from adata.uns")
-        # FIXME MICHELLE: check proper handling of float precision
         de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
-        # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
         error_str = ""
@@ -301,14 +328,16 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self,
     ) -> None:
         """
-        Load the dataset and populate perturbation truth data.
-
-        This method validates the presence of `condition_key` in
-        `adata.obs`, and extracts control data for each condition into the
-        `perturbation_truth` attribute.
-
-        Raises:
-            ValueErrors or FileNotFoundErrors based on required data structure.
+        Load the dataset and populates the perturbation truth data.
+        - Validates the presence of required keys and values in `adata`:
+            - `condition_key` in `adata.obs`
+            - `control_name` present in `adata.obs[condition_key]`
+            - `de_results_{self.deg_test_name}` in `adata.uns`
+            - `control_cells_map` in `adata.uns`
+        - Loads and filters differential expression results from `adata.uns`,
+            keeping only genes whose differential expression meets
+            user-defined thresholds.
+        - Populates the `target_conditions_dict` attribute
         """
         super().load_data()
         if self.condition_key not in self.adata.obs.columns:
@@ -520,9 +549,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Store all task inputs into a single .h5ad file.
 
         The AnnData object contains in uns:
-        - control_cells_ids (optional)
         - target_conditions_dict
         - de_results (DataFrame with required columns)
+        - control_cells_ids
 
         Returns:
             Path: Path to the task inputs directory.
@@ -540,17 +569,17 @@ class SingleCellPerturbationDataset(SingleCellDataset):
 
         Validates the following:
         - Ensures that ``condition_key`` exists in ``adata.obs``.
-        - Establishes the set of allowed condition labels from the configured target
-          set and, when available, from differential expression results present in
-          ``adata.uns``. Any labels not in this set (and not equal to
-          ``control_name``) will emit a warning but will not halt execution.
+        - Ensures that each condition in ``adata.obs[condition_key]`` is present
+            in the control mapping or is the control name.
+        - Ensures that every condition present in the differential expression
+            results or in the target conditions dict is present in the control mapping.
 
         Notes:
         - This method does not strictly enforce condition label formatting and does
-          not explicitly validate combinatorial perturbations.
+            not explicitly validate combinatorial perturbations.
 
         Raises:
-            ValueError: If ``condition_key`` is missing from ``adata.obs``.
+            ValueError: If required keys or mappings are missing from adata.obs or adata.uns.
         """
         super()._validate()
 
@@ -559,7 +588,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
         # Validate conditions found in the original adata
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         original_conditions = set(self.adata.obs[self.condition_key])
         mapped_conditions = set(self.control_mapping.keys())
         for condition in original_conditions:
@@ -597,7 +625,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition not in mapped_conditions:

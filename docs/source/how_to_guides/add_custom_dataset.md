@@ -10,12 +10,19 @@ This section describes how to add new datasets for use with the `czbenchmarks.da
 
 For single-cell datasets:
 
+- As with all datasets, Ensembl gene IDs must be valid for the specified `Organism` (e.g., `ENSG` for human, `ENSMUSG` for mouse).
 - The dataset file must be an `.h5ad` file conforming to the [AnnData on-disk format](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#on-disk-format).
 - The AnnData object's `var_names` must specify the Ensembl gene ID for each gene, **or** `var` must contain a column named `ensembl_id`.
-- The AnnData object must meet the validation requirements for the specific dataset class:
-  - For `SingleCellLabeledDataset`: `obs` must contain the label column (e.g., `cell_type`).
-  - For `SingleCellPerturbationDataset`: `obs` must contain the `condition_key` column and the control condition value (`control_name`). The differential expression results must be present in `uns` under the specified test name (e.g., `de_results_wilcoxon` or `de_results_t_test`), and must include the `de_gene_col` column.
-- The Ensembl gene IDs must be valid for the specified `Organism` (e.g., `ENSG` for human, `ENSMUSG` for mouse).
+
+The AnnData object must also meet validation requirements for the specific dataset class:
+
+- For `SingleCellLabeledDataset`: `obs` must contain the label column (e.g., `cell_type`).
+
+- For `SingleCellPerturbationDataset`: 
+   - `obs` must contain a column with the value specified by `condition_key` in the dataset configuration. The control cells should be labeled with the value specified by the control condition value (`control_name`) for control cells. 
+   - A mapping of treatment cells to their control cells is expected in the AnnData unstructured data (`uns`) under `control_cells_map`. The structure of this mapping is a nested dictionary where the top level key is a condition and the value is a key/value pair of treatment cell id and control cell id, respectively. 
+   - A table of differential expression results is also expected in the AnnData unstructured data under `de_results_wilcoxon`. The differential expression results table must include the column specified by the parameter `de_gene_col` in the dataset configuration file, in addition to columns titled "logfoldchange" and "pval_adj". These columns are analogous to those returned from [`scanpy.tl.rank_genes_groups`](https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.rank_genes_groups.html).
+
 
 
 ### 1. Prepare Your Data
@@ -23,7 +30,7 @@ For single-cell datasets:
 - Save your data as an AnnData object in `.h5ad` format.
 - Ensure:
   - All required metadata columns (e.g., cell type, batch, condition) are included in `obs`.
-  - Gene names or Ensembl IDs are properly defined in `var` or as `var_names`.
+  - Ensembl ids are properly defined in `var` or as `var_names`.
 
 
 ### 2. Update Datasets Configuration File
@@ -43,9 +50,8 @@ datasets:
   path: /path/to/your/perturb_data.h5ad
   organism: ${organism:MOUSE}
   condition_key: condition
-  control_name: non-targeting
+  control_name: ctrl
   de_gene_col: gene_id
-  deg_test_name: wilcoxon
 ```
 
 **Explanation of keys:**
@@ -58,7 +64,7 @@ datasets:
 - `path`: Path to the `.h5ad` file (local or S3).
 - `organism`: Must be a value from `czbenchmarks.datasets.types.Organism` (e.g., HUMAN, MOUSE).
 - `label_column_key`: (For `SingleCellLabeledDataset`) Name of the label column in `obs`.
-- `condition_key`, `control_name`, `de_gene_col`, `deg_test_name`: (For `SingleCellPerturbationDataset`) Required keys for perturbation data and DE results.
+- `condition_key`, `control_name`, `de_gene_col`: (For [`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html)) Required keys for perturbation data and DE results.
 
 You may add multiple datasets as children of `datasets`.
 
@@ -158,6 +164,7 @@ class MyCustomDataset(SingleCellDataset):
 - Test it with the intended tasks to ensure compatibility.
 
 ### Tips
+
 - Place your new class in the appropriate module under `czbenchmarks.datasets`.
 - If your dataset type is specialized (e.g., single-cell), inherit from the relevant subclass (`SingleCellDataset`).
 - Refer to existing classes in `single_cell.py` or `single_cell_labeled.py` for more examples.

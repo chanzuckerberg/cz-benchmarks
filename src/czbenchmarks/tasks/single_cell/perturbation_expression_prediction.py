@@ -18,9 +18,10 @@ logger = logging.getLogger(__name__)
 class PerturbationExpressionPredictionTaskInput(TaskInput):
     """Pydantic model for Perturbation task inputs.
 
-    Optionally carries the predictions' ordering via cell_index/gene_index so the
-    task can align a model matrix that is a subset of or re-ordered relative to
-    the dataset adata.
+    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask.
+    The row and column ordering of the model predictions can optionallybe provided as
+    cell_index and gene_index, respectively, so the task can align a model matrix that
+    is a subset of or re-ordered relative to the dataset adata.
     """
 
     adata: ad.AnnData
@@ -76,24 +77,41 @@ class PerturbationExpressionPredictionTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         """
-        Perturbation Expression Prediction Task.
+        **Perturbation Expression Prediction Task.**
+
+        This task evaluates perturbation-induced expression predictions against
+        their ground truth values. This is done by calculating metrics derived
+        from predicted and ground truth log fold change values for each condition.
+        Currently, Spearman rank correlation is supported.
 
         The following arguments are required and must be supplied by the task input class
-        (PerturbationExpressionPredictionTaskInput) when running the task. They are described
-        below for documentation purposes:
+        (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
+        are described below for documentation purposes:
 
-            predictions_adata (ad.AnnData): The anndata containing model predictions.
-            dataset_adata (ad.AnnData): The anndata object from SingleCellPerturbationDataset.
-            pred_effect_operation (Literal["difference", "ratio"]): How to compute predicted
-                effect between treated and control mean predictions over genes. "difference"
-                uses mean(treated) - mean(control) and is generally safe across scales
-                (probabilities, z-scores, raw expression). "ratio" uses log((mean(treated)+eps)/(mean(control)+eps))
-                when means are positive. Default is "ratio".
-            gene_index (Optional[pd.Index]): The index of the genes in the predictions AnnData.
-            cell_index (Optional[pd.Index]): The index of the cells in the predictions AnnData.
+        - predictions_adata (ad.AnnData):
+            The anndata containing model predictions
+        - dataset_adata (ad.AnnData):
+            The anndata object from SingleCellPerturbationDataset.
+        - pred_effect_operation (Literal["difference", "ratio"]):
+            How to compute predicted effect between treated and control mean predictions
+            over genes.
+
+            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.
+
+            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).
+
+            Default is "ratio".
+        - gene_index (Optional[pd.Index]):
+            The index of the genes in the predictions AnnData.
+        - cell_index (Optional[pd.Index]):
+            The index of the cells in the predictions AnnData.
 
         Args:
             random_seed (int): Random seed for reproducibility.
+
+        Returns:
+            PerturbationExpressionPredictionTask: dictionary of mean predicted and
+            ground truth changes in gene expression values for each condition.
         """
 
         super().__init__(random_seed=random_seed)
@@ -112,7 +130,7 @@ class PerturbationExpressionPredictionTask(Task):
             task_input: Task input containing AnnData with all necessary data
 
         Returns:
-            PerturbationExpressionPredictionOutput: Predicted and true log fold changes
+            PerturbationExpressionPredictionOutput: Predicted and true mean fold changes
         """
         adata = task_input.adata
         pred_effect_operation = task_input.pred_effect_operation
@@ -237,17 +255,15 @@ class PerturbationExpressionPredictionTask(Task):
             # Compute predicted log fold-change depending on configuration and scale
             eps = 1e-8
             if pred_effect_operation == "difference":
-                logger.info(
-                    f"Using mean difference to compute difference between treated and control means for condition {condition}"
-                )
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
                 pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
-                logger.info(
-                    f"Using log ratio to compute ratio between treated and control means for condition {condition}"
-                )
                 # Raw scale ratio; guard against non-positive means by falling back to difference
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
+                    logger.warning(
+                        f"Negative values found in treated_mean or control_mean for condition {condition}. "
+                        'Switching to mean difference ("ratio") for pred_effect_operation to avoid non-positive mean values.'
+                    )
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
                     pred_mean_change = np.log(
@@ -269,6 +285,14 @@ class PerturbationExpressionPredictionTask(Task):
         """
         Compute perturbation prediction quality using Spearman rank correlation
         between predicted and true log fold changes for each condition.
+
+        Args:
+            task_input: Task input dataclass containing AnnData with all necessary data
+            task_output: Task output dataclass containing predicted and true mean changes
+                 in expression values for each condition.
+        Returns:
+            List[MetricResult]: A list of MetricResult objects containing Spearman rank
+                correlation for each condition.
         """
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
@@ -328,6 +352,18 @@ class PerturbationExpressionPredictionTask(Task):
         task_input: PerturbationExpressionPredictionTaskInput,
         cell_representation: CellRepresentation,
     ) -> None:
+        """
+        Validate the task input.
+        - Checks that cell_representation shape matches task input shape(with or without custom indices).
+        - Verifies that 'de_results' exists in adata.uns, is a pandas DataFrame, and contains required columns.
+        - Ensures 'control_cells_map' exists in adata.uns and is a dict.
+        This allows both log-normalized and raw predictions. Downstream computation adapts accordingly.
+        Args:
+            task_input: Task input containing AnnData with all necessary data
+            cell_representation: Cell expression matrix of shape (n_cells, n_genes)
+        Raises:
+            ValueError: If required keys or mappings are missing from adata.uns.
+        """
         # Allow both log-normalized and raw predictions. Downstream computation adapts accordingly.
 
         adata = task_input.adata
