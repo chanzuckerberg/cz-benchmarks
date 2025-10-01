@@ -197,30 +197,14 @@ if __name__ == "__main__":
         pred_effect_operation="difference",
     )
     metrics_dict = task.run(cell_representation=model_output, task_input=task_input)
-    metrics_values = np.asarray(
-        [
-            x.value
-            for x in metrics_dict
-            if x.metric_type.value == "spearman_correlation_calculation"
-        ]
-    )
-    # Compute baselines
-    baseline_model = task.compute_baseline(
-        cell_representation=dataset.adata.X, baseline_type="median"
-    )
-    baseline_metrics_dict = task.run(
-        cell_representation=baseline_model, task_input=task_input
-    )
-    baseline_metrics_values = np.asarray(
-        [
-            x.value
-            for x in baseline_metrics_dict
-            if x.metric_type.value == "spearman_correlation_calculation"
-        ]
-    )
-
-    combined_metrics_df = pd.DataFrame(
-        {"Model": metrics_values, "Baseline": baseline_metrics_values}
+    metrics_df = pd.DataFrame(
+        {
+            "Model": [
+                x.value
+                for x in metrics_dict
+                if x.metric_type.value == "spearman_correlation_calculation"
+            ]
+        }
     )
 
     # Inspect metrics
@@ -241,7 +225,7 @@ if __name__ == "__main__":
         + "------------------------------------------------------------\n"
         + Colors.END
     )
-    print_correlation_metrics_baseline_and_model(combined_metrics_df)
+    print_correlation_metrics_baseline_and_model(metrics_df)
 
     if args.verbose:
         print(
@@ -264,6 +248,3 @@ if __name__ == "__main__":
 
         print("\nModel Predictions \n")
         print_metrics_summary(metrics_dict)
-
-        print("\nBaseline Model Predictions \n")
-        print_metrics_summary(baseline_metrics_dict)

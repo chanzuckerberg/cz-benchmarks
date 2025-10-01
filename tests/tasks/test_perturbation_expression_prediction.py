@@ -45,9 +45,9 @@ def wilcoxon_test_data():
     # Build AnnData with 4 groups: condition/control for A and B
     conditions = (
         ["gene_A"] * n_per_group
-        + [f"{control_name}_gene_A"] * n_per_group
+        + [f"{control_name}"] * n_per_group
         + ["gene_B"] * n_per_group
-        + [f"{control_name}_gene_B"] * n_per_group
+        + [f"{control_name}"] * n_per_group
     )
     obs_names = [f"cellbarcode{i}_{cond}" for i, cond in enumerate(conditions)]
 
@@ -151,18 +151,3 @@ def test_perturbation_expression_prediction_task_wilcoxon(
         expected_conditions={"gene_A", "gene_B"},
         condition_key=condition_key,
     )
-
-    for baseline_type in ["mean", "median"]:
-        baseline_embedding = task.compute_baseline(
-            cell_representation=matrix, baseline_type=baseline_type
-        )
-        baseline_results = task.run(
-            cell_representation=baseline_embedding, task_input=task_input
-        )
-        assert_metric_results(
-            baseline_results,
-            expected_count=2,
-            expected_types={MetricType.SPEARMAN_CORRELATION_CALCULATION},
-            expected_conditions={"gene_A", "gene_B"},
-            condition_key=condition_key,
-        )

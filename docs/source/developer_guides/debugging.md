@@ -46,11 +46,11 @@ These errors originate from the content of your `.h5ad` file not meeting the req
 
   - **Error**: `ValueError: Unexpected condition label: ``{condition}`` not present in control mapping.`
 
-    - **Cause**: The `condition` columns in a `SingleCellPerturbationDataset` contain incorrectly formatted values.
+    - **Cause**: One or more values in the `condition` column in a `SingleCellPerturbationDataset` are not present in the `control_cells_map`.
 
     - **Solution**:
 
-        - The `condition` column must follow the format ``{control_name}``, ``{control_name}_{perturbation}``, or ``{perturbation}``. Correct the values in your `adata.obs` and re-save the dataset.
+        - The values in the `condition` column in a `SingleCellPerturbationDataset` must all be present in the `control_cells_map`. Ensure the values are correct in `adata.obs[``{condition_key}``]` and in the `control_cells_map` and re-save the dataset.
 
 
 
