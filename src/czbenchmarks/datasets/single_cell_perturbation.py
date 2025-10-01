@@ -617,7 +617,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             ):
                 target_conditions = target_conditions.union(
                     set(de_res_df[self.condition_key].astype(str).unique())
-                )   
+                )
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 

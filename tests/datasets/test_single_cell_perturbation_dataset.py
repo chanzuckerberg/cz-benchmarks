@@ -320,7 +320,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             condition_key="condition",
             control_name="ctrl",
         )
-        with pytest.raises(ValueError, match="Key 'de_results_wilcoxon' not found in adata.uns"):
+        with pytest.raises(
+            ValueError, match="Key 'de_results_wilcoxon' not found in adata.uns"
+        ):
             dataset.load_data()
 
     def test_missing_control_map_uns_key_raises(self, tmp_path):
@@ -367,7 +369,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             condition_key="condition",
             control_name="ctrl",
         )
-        with pytest.raises(ValueError, match="Key 'control_cells_map' not found in adata.uns"):
+        with pytest.raises(
+            ValueError, match="Key 'control_cells_map' not found in adata.uns"
+        ):
             dataset.load_data()
 
     def test_missing_control_condition_raises(self, tmp_path):
@@ -549,7 +553,9 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         assert controls_test1 == {"CTRL001", "CTRL002"}
 
         treated = ["A1", "A2"]
-        treated_idx, control_idx = dataset.get_indices_for("test1", treated_barcodes=treated)
+        treated_idx, control_idx = dataset.get_indices_for(
+            "test1", treated_barcodes=treated
+        )
 
         treated_names = dataset.adata.obs.index[treated_idx]
         control_names = dataset.adata.obs.index[control_idx]
