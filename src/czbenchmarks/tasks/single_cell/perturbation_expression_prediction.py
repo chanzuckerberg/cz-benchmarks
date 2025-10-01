@@ -374,7 +374,7 @@ class PerturbationExpressionPredictionTask(Task):
     def compute_baseline(self, **kwargs):
         """Set a baseline embedding for perturbation expression prediction.
 
-        This method is not implemented for perturbation expression prediction 
+        This method is not implemented for perturbation expression prediction
         tasks.
 
         Raises:
