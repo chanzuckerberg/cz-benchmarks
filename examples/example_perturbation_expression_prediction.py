@@ -235,7 +235,7 @@ if __name__ == "__main__":
         + "Summary over all conditions of correlations between mean \n"
         "predicted and ground truth changes in gene expression values." + Colors.END
     )
-    print(f"\nDataset: Replogle K562 Essentials")
+    print("\nDataset: Replogle K562 Essentials")
     print(
         Colors.BOLD
         + "------------------------------------------------------------\n"
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             + "Correlations between mean predicted and ground truth  \n"
             "changes in gene expression values for each condition." + Colors.END
         )
-        print(f"\nDataset: Replogle K562 Essentials")
+        print("\nDataset: Replogle K562 Essentials")
         print(
             Colors.BOLD
             + "------------------------------------------------------------\n"
