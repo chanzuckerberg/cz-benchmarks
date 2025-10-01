@@ -59,7 +59,7 @@ The task class also calculates a baseline prediction (`compute_baseline` method)
 The following parameters are used by the task input class, via the [`PerturbationExpressionPredictionTaskInput`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index.html) class:  
 
 - `adata`: The AnnData object produced when the data are loaded by the dataset class ([`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html)), containing control-matched and masked data.
-- `pred_effect_operation`: This determines how to compute the effect of between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. The default is "ratio".
+- `pred_effect_operation`: This determines how to compute the effect between treated and control mean predictions. There are two possible values: "difference" uses `mean(treated) - mean(control)` and is generally safe across scales; "ratio" uses `log((mean(treated)+eps)/(mean(control)+eps))` when means are all positive. The default is "ratio".
 - `cell_index`: Sequence of user-provided cell is vertically aligned with `cell_representation` matrix, which contains the predictions from the model.
 - `gene_index`: Sequence of user-provided gene names horizontally aligned with `cell_representation` matrix, which contains the predictions from the model.
 
