@@ -8,6 +8,7 @@
     - [Cell Clustering (in embedding space)](#cell-clustering-in-embedding-space)
     - [Metadata Label Prediction - Cell Type Classification](#metadata-label-prediction-cell-type-classification)
     - [Cross-Species Batch Integration](#cross-species-batch-integration)
+    - [Cross-Species Label Prediction](#cross-species-label-prediction)
     - [Sequential Organization](#sequential-organization)
     - [Genetic Perturbation Prediction](#genetic-perturbation-prediction)
 - [Guidelines for Included Assets](#guidelines-for-included-assets)
@@ -80,6 +81,14 @@ This task evaluates the model's ability to learn representations that are consis
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entropy per cell | Measures the average entropy of the batch labels within the local neighborhood of each cell. Implemented [here](https://github.com/chanzuckerberg/cellxgene-census/blob/f44637ba33567400820407f4f7b9984e52966156/tools/models/metrics/run-scib.py#L86). |
 | Batch silhouette | A modified silhouette score to measure the extent of batch mixing within biological labels. Described by [Luecken et al](https://www.nature.com/articles/s41592-021-01336-8).                                                                           |
+
+### Cross-Species Label Prediction
+
+This task evaluates how well model embeddings can be used to determine cell properties across species. It task evaluates cross-species transfer by training classifiers on one species and testing on another species. It computes accuracy, F1, precision, recall, and AUROC for multiple classifiers (Logistic Regression, KNN, Random Forest). The task can optionally aggregate cell-level embeddings to sample/donor level before running classification.
+
+####  Task: Cross-Species Label Prediction
+
+TODO
 
 
 ### Sequential Organization
