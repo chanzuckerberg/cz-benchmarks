@@ -8,7 +8,7 @@ This task evaluates a model's ability to predict expression for masked genes usi
 - The differential expression results are also stored in the unstructured portion of the AnnData in the key `de_results_wilcoxon`. This analysis utilized the Wilcoxon rank-sum test, and is currently the only DE selection method that is supported, but additional options are planned. 
 - The gene expression values in the dataset are counts, provided in unmodified form relative to that from the original authors. Additional preprocessing, such as scaling and log transformation, should be performed by the user.
 
-This benchmark is designed for evaluation by any model that produces a prediction matrix whose cells (rows) and genes (columns) can be aligned with those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in an unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
+This benchmark is designed for evaluation by any model that produces a prediction matrix whose cells (rows) and genes (columns) can be aligned with those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in any unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
 
 ## Dataset Functionality and Parameters
 
