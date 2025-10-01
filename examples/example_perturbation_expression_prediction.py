@@ -18,7 +18,10 @@ from czbenchmarks.tasks.single_cell import (
 from czbenchmarks.tasks.single_cell.perturbation_expression_prediction import (
     build_task_input_from_predictions,
 )
-from czbenchmarks.tasks.utils import print_metrics_summary
+from czbenchmarks.tasks.utils import (
+    print_metrics_summary,
+    print_correlation_metrics_baseline_and_model,
+)
 from czbenchmarks.tasks.types import CellRepresentation
 
 from czbenchmarks.utils import initialize_hydra
@@ -27,6 +30,20 @@ from czbenchmarks.file_utils import download_file_from_remote
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
+
+
+class Colors:
+    # ANSI escape codes for colors
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
 def parse_args():
@@ -66,7 +83,6 @@ def parse_args():
     return parser.parse_args()
 
 
-# TODO: Replace with `load_local_dataset()`
 # TODO: Replace with `load_local_dataset()`
 def load_dataset_config(
     dataset_name: str,
@@ -189,7 +205,6 @@ if __name__ == "__main__":
             if x.metric_type.value == "spearman_correlation_calculation"
         ]
     )
-
     # Compute baselines
     baseline_model = task.compute_baseline(
         cell_representation=dataset.adata.X, baseline_type="median"
@@ -205,29 +220,51 @@ if __name__ == "__main__":
         ]
     )
 
-    # Inspect metrics
-    metrics_df = pd.DataFrame(
+    combined_metrics_df = pd.DataFrame(
         {"Model": metrics_values, "Baseline": baseline_metrics_values}
     )
-    summary_df = metrics_df.describe()
 
-    print("-------------------------------------")
-    print("Summary of Model and Baseline metrics:")
-    print("-------------------------------------\n")
+    # Inspect metrics
     print(
-        "Description: Summary of Spearman correlations of fold changes of \n"
-        "model predictions for all differentially expressed genes."
+        Colors.BOLD
+        + "\n------------------------------------------------------------"
+        + Colors.END
     )
-    with pd.option_context("display.precision", 4):
-        print(summary_df.to_string(index=False))
+    print(
+        Colors.BLUE
+        + Colors.BOLD
+        + "Summary over all conditions of correlations between mean \n"
+        "predicted and ground truth changes in gene expression values." + Colors.END
+    )
+    print(f"\nDataset: Replogle K562 Essentials")
+    print(
+        Colors.BOLD
+        + "------------------------------------------------------------\n"
+        + Colors.END
+    )
+    print_correlation_metrics_baseline_and_model(combined_metrics_df)
 
     if args.verbose:
-        print("--------------------------------")
-        print("Model metrics:")
-        print("--------------------------------")
+        print(
+            Colors.BOLD
+            + "\n------------------------------------------------------------"
+            + Colors.END
+        )
+        print(
+            Colors.BLUE
+            + Colors.BOLD
+            + "Correlations between mean predicted and ground truth  \n"
+            "changes in gene expression values for each condition." + Colors.END
+        )
+        print(f"\nDataset: Replogle K562 Essentials")
+        print(
+            Colors.BOLD
+            + "------------------------------------------------------------\n"
+            + Colors.END
+        )
+
+        print("\nModel Predictions \n")
         print_metrics_summary(metrics_dict)
 
-        print("--------------------------------")
-        print("Baseline metrics:")
-        print("--------------------------------")
+        print("\nBaseline Model Predictions \n")
         print_metrics_summary(baseline_metrics_dict)

@@ -1,6 +1,45 @@
+from io import StringIO
+import sys
 import numpy as np
-from czbenchmarks.tasks.utils import looks_like_lognorm
+from czbenchmarks.tasks.utils import (
+    looks_like_lognorm,
+    print_correlation_metrics_baseline_and_model,
+)
 import scipy.sparse as sp
+import pandas as pd
+
+
+def test_print_correlation_metrics_baseline_and_model():
+    """Test the print_correlation_metrics_baseline_and_model function."""
+
+    # Create test data
+    model_values = [0.5, 0.6, 0.7, 0.8]
+    baseline_values = [0.4, 0.5, 0.6, 0.7]
+    metrics_df = pd.DataFrame({"Model": model_values, "Baseline": baseline_values})
+
+    # Capture printed output
+    captured_output = StringIO()
+    sys.stdout = captured_output
+
+    print_correlation_metrics_baseline_and_model(metrics_df=metrics_df)
+    output = captured_output.getvalue()
+
+    # Validate output contains expected elements
+    for col in metrics_df.columns:
+        assert col in output
+
+    row_names = [
+        "Number of conditions",
+        "Mean correlation",
+        "Standard Deviation",
+        "Min correlation",
+        "25th percentile",
+        "Median correlation",
+        "75th percentile",
+        "Max correlation",
+    ]
+    for row in row_names:
+        assert row in output
 
 
 class TestLooksLikeLognorm:

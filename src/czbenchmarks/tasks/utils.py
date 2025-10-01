@@ -27,18 +27,20 @@ TASK_NAMES = frozenset(
 
 
 def print_correlation_metrics_baseline_and_model(
-    metrics_dict, moderate_correlation_threshold=0.3, precision=4
+    metrics_df: pd.DataFrame,
+    moderate_correlation_threshold: float = 0.3,
+    precision: int = 4,
 ):
     """Print a summary table of all metrics.
     Args:
-        metrics_values: List of model prediction metric values
-        baseline_metrics_values: List of baseline metric values
+        metrics_dict: Dictionary of model prediction metric values
+        baseline_metrics_dict: Dictionary of baseline metric values
         moderate_correlation_threshold: Threshold for considering a correlation as moderate
         precision: Precision for the summary table
     """
 
     # Get basic statistics using describe()
-    describe_stats = metrics_dict.describe()
+    describe_stats = metrics_df.describe()
 
     # Create column name mapping from describe() output to original names
     column_mapping = {
@@ -57,8 +59,8 @@ def print_correlation_metrics_baseline_and_model(
 
     # Add custom statistics that aren't in describe()
     custom_stats = {}
-    for col in ["Model", "Baseline"]:
-        s = metrics_dict[col]
+    for col in metrics_df.columns:
+        s = metrics_df[col]
         custom_stats[col] = {
             f"Number of correlations > {moderate_correlation_threshold} (num)": sum(
                 s > moderate_correlation_threshold
