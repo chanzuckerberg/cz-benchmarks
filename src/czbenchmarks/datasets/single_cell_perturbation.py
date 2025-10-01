@@ -152,12 +152,40 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.de_gene_col = de_gene_col
         self.de_metric_col = de_metric_col
         self.de_pval_col = de_pval_col
+        self.target_conditions_override = target_conditions_override
+
+        for param_name, param in zip(
+            [
+                "percent_genes_to_mask",
+                "min_de_genes_to_mask",
+                "pval_threshold",
+                "min_logfoldchange",
+                "random_seed",
+                "target_conditions_override",
+            ],
+            [
+                percent_genes_to_mask,
+                min_de_genes_to_mask,
+                pval_threshold,
+                min_logfoldchange,
+                random_seed,
+                target_conditions_override,
+            ],
+        ):
+            if param < 0.0:
+                raise ValueError(
+                    f"Parameter {param_name} must be greater than 0.0, got {param}"
+                )
+        if random_seed < 0:
+            raise ValueError(
+                f"Parameter random_seed must be greater than 0, got {random_seed}"
+            )
+
         self.percent_genes_to_mask = percent_genes_to_mask
         self.min_de_genes_to_mask = min_de_genes_to_mask
         self.pval_threshold = pval_threshold
         self.min_logfoldchange = min_logfoldchange
         self.random_seed = random_seed
-        self.target_conditions_override = target_conditions_override
 
     def load_and_filter_deg_results(self):
         """
@@ -533,9 +561,9 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         Store all task inputs into a single .h5ad file.
 
         The AnnData object contains in uns:
-        - control_cells_ids (optional)
         - target_conditions_dict
         - de_results (DataFrame with required columns)
+        - control_cells_ids
 
         Returns:
             Path: Path to the task inputs directory.
