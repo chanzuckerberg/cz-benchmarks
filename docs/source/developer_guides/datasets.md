@@ -19,6 +19,9 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    All dataset types must inherit from `Dataset`.
 
+- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
+   Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
+
 - [SingleCellDataset](../autoapi/czbenchmarks/datasets/single_cell/index)  
    An abstract implementation of `Dataset` for single-cell data.
 
@@ -42,18 +45,16 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    Responsibilities:
 
-   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_ids` and `de_results_wilcoxon` or `de_results_t_test` in `adata.uns`.
-   - It also validates that `de_gene_col` is in the column names of the differential expression results. And that `control_name` is present in the data of condition column in `adata.obs`.
+   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_map` and `de_results_wilcoxon` in `adata.uns`.
+   - It also validates that a column with the value of the parameter `de_gene_col`, as well as columns with the names "logfoldchange" and "pval_adj" are present in the differential expression results. 
+   - The value set by `control_name` must be present for the control cells in the data of condition column in `adata.obs`.
    - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
-   - Computes and stores `control_matched_adata` (anndata that is split into `X`, `obs`, and `var` for output), `control_cells_ids`, `de_results`, `target_genes_to_save`.
+   - Computes and stores control matched AnnData (stored as `dataset.adata`). Other outputs, `control_cells_map`, `de_results`, `target_conditions_dict`, are stored in the unstructured portion of the AnnData (`adata.uns`).
 
    Example valid perturbation formats:
 
-   - ``{condition_name}`` or ``{condition_name}_{perturb}`` for matched control samples, where perturb can be any type of perturbation.
+   - ``{condition_name}`` for input or ``{condition_name}_{perturb}`` for matched control samples, respectively, where perturb can be any type of perturbation.
    - ``{perturb}`` for a single perturbation
-
-- [Organism](../autoapi/czbenchmarks/datasets/types/index)  
-   Enum that specifies supported species (e.g., HUMAN, MOUSE) and gene prefixes (e.g., `ENSG` and `ENSMUSG`, respectively).
 
 ## Using Available Datasets
 
@@ -90,17 +91,17 @@ labels_series = dataset.labels      # Labels from the specified obs column
 #### For `SingleCellPerturbationDataset`:
 
 ```python
-control_cells_ids = dataset.control_cells_ids                  # List of control cell IDs
-target_conditions_to_save = dataset.target_conditions_to_save  # Conditions to be saved for benchmarking
-de_results = dataset.de_results                                # Differential expression results
-control_matched_adata = dataset.control_matched_adata          # AnnData object for matched controls
+control_cells_map = dataset.control_cells_map           # Dictionary: condition → {treatment cell barcodes : matched control barcodes}
+target_conditions_dict = dataset.target_conditions_dict # Dictionary of masked gene ids for each condition
+de_results = dataset.de_results                         # Differential expression results
+control_matched_adata = dataset.adata                   # AnnData object for matched controls
 ```
 
 Refer to the class docstrings and API documentation for more details on available attributes and methods.
 
 ## Tips for Developers
 
-- **AnnData Views:** Use `.copy()` when slicing to avoid "view" issues in Scanpy.
+- **AnnData Views:** Use `.copy()` when slicing data to avoid issues with modified "views" in Scanpy.
 
 ## Related References
 
