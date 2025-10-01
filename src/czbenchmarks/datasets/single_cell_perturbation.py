@@ -81,7 +81,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Must have a column ``condition_key`` in ``adata.obs`` specifying
         control and perturbed conditions.
     - Condition format must be one of:
-      - ``{control_name}`` or ``{control_name}_{perturb}`` for control samples.
+      - ``{control_name}`` for control samples.
       - ``{perturb}`` for a single perturbation.
 
     Attributes:
@@ -345,7 +345,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
 
-        if not self.adata.obs[self.condition_key].str.contains(self.control_name).any():
+        if not (self.adata.obs[self.condition_key] == self.control_name).any():
             raise ValueError(
                 f"Data in condition key '{self.condition_key}' column does not contain control condition '{self.control_name}'"
             )
@@ -509,21 +509,18 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self, condition: str, treated_barcode: Optional[str] = None
     ) -> List[str]:
         mapping = self.control_mapping
-        if condition in mapping:
-            if treated_barcode is not None and treated_barcode in mapping[condition]:
-                return list(mapping[condition][treated_barcode])
-            union = set()
-            for ctl_list in mapping[condition].values():
-                union.update(ctl_list)
-            if len(union) > 0:
-                return sorted(union)
+        if condition not in mapping:
+            raise ValueError(f"Condition {condition} not found in control mapping")
 
-        obs = self.adata.obs
-        ctrl_global = obs.index[obs[self.condition_key] == self.control_name]
-        ctrl_matched = obs.index[
-            obs[self.condition_key] == f"{self.control_name}_{condition}"
-        ]
-        return pd.Index(ctrl_global).append(pd.Index(ctrl_matched)).unique().tolist()
+        # If a specific treated barcode is provided and known, return its controls
+        if treated_barcode is not None and treated_barcode in mapping[condition]:
+            return list(mapping[condition][treated_barcode])
+
+        # Otherwise, return the union of all control barcodes for the condition
+        control_union: set[str] = set()
+        for ctl_list in mapping[condition].values():
+            control_union.update(list(ctl_list))
+        return sorted(control_union)
 
     def get_indices_for(
         self, condition: str, treated_barcodes: Optional[List[str]] = None
@@ -598,8 +595,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 continue
             else:
                 logger.warning(
-                    f"Unexpected condition label: {condition}."
-                    f"not present in control mapping."
+                    f"Unexpected condition label: {condition} not present in control mapping."
                 )
                 continue
 

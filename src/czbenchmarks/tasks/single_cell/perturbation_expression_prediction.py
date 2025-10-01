@@ -315,38 +315,6 @@ class PerturbationExpressionPredictionTask(Task):
             )
         return metric_results
 
-    @staticmethod
-    def compute_baseline(
-        cell_representation: CellRepresentation,
-        baseline_type: Literal["median", "mean"] = "median",
-    ) -> CellRepresentation:
-        """Set a baseline perturbation prediction using mean or median expression.
-
-        This method creates a baseline prediction by either taking the mean or
-        the median of the control cells' gene expression. This baseline
-        represents a simple no-change prediction.
-
-        Args:
-            cell_representation: The gene expression matrix of control cells.
-            baseline_type: The type of baseline to use, either "mean" or "median".
-
-        Returns:
-            A DataFrame representing the baseline perturbation prediction.
-        """
-        # Create baseline prediction by replicating the aggregated expression values
-        # across all cells in the dataset.
-        baseline_func = np.median if baseline_type == "median" else np.mean
-        if baseline_type == "median" and sp_sparse.issparse(cell_representation):
-            cell_representation = cell_representation.toarray()
-
-        perturb_baseline_pred = np.tile(
-            baseline_func(cell_representation, axis=0),
-            (cell_representation.shape[0], 1),
-        )
-
-        # Store the baseline prediction in the dataset for evaluation
-        return perturb_baseline_pred
-
     def _validate(
         self,
         task_input: PerturbationExpressionPredictionTaskInput,
@@ -402,3 +370,16 @@ class PerturbationExpressionPredictionTask(Task):
             raise ValueError(
                 "adata.uns['control_cells_map'] is required and must be a dict."
             )
+
+    def compute_baseline(self, **kwargs):
+        """Set a baseline embedding for perturbation expression prediction.
+
+        This method is not implemented for perturbation expression prediction
+        tasks.
+
+        Raises:
+            NotImplementedError: Always raised as baseline is not implemented
+        """
+        raise NotImplementedError(
+            "Baseline not implemented for perturbation expression prediction."
+        )

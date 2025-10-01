@@ -44,24 +44,24 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
             "test2",
             "test2",
         ]
-        # Set indices so that splitting on '_' and taking token [1] yields the condition
+        # Use arbitrary, schema-free barcodes (no reliance on underscores or tokens)
         adata.obs_names = [
-            "ctrl_test1_a",  # control cell 1
-            "ctrl_test2_b",  # control cell 2
-            "cond_test1_a",
-            "cond_test1_b",
-            "cond_test2_a",
-            "cond_test2_b",
+            "CTRL001",  # control cell 1
+            "CTRL002",  # control cell 2
+            "A1",
+            "A2",
+            "B1",
+            "B2",
         ]
         # Strict 1-1 control map: condition -> {treated_barcode -> control_barcode}
         adata.uns["control_cells_map"] = {
             "test1": {
-                "cond_test1_a": "ctrl_test1_a",
-                "cond_test1_b": "ctrl_test2_b",
+                "A1": "CTRL001",
+                "A2": "CTRL002",
             },
             "test2": {
-                "cond_test2_a": "ctrl_test1_a",
-                "cond_test2_b": "ctrl_test2_b",
+                "B1": "CTRL001",
+                "B2": "CTRL002",
             },
         }
         # Provide sufficient DE results to pass internal filtering and sampling
@@ -280,3 +280,284 @@ class TestSingleCellPerturbationDataset(SingleCellDatasetTests):
         de_metric_col = uns["config"]["de_metric_col"]
         expected_cols = {condition_key, de_gene_col, de_metric_col}
         assert set(de_df.columns) == expected_cols
+
+    def test_missing_de_results_uns_key_raises(self, tmp_path):
+        """load_data should fail when 'de_results_wilcoxon' is missing in uns."""
+        file_path = tmp_path / "missing_de_results.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        # Provide conditions but no DE results
+        adata.obs["condition"] = [
+            "ctrl",
+            "ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
+        ]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        # Control map exists, but DE results are missing
+        adata.uns["control_cells_map"] = {
+            "test1": {"cond_test1_a": "ctrl_test1_a", "cond_test1_b": "ctrl_test2_b"},
+            "test2": {"cond_test2_a": "ctrl_test1_a", "cond_test2_b": "ctrl_test2_b"},
+        }
+        adata.write_h5ad(file_path)
+
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+        )
+        with pytest.raises(
+            ValueError, match="Key 'de_results_wilcoxon' not found in adata.uns"
+        ):
+            dataset.load_data()
+
+    def test_missing_control_map_uns_key_raises(self, tmp_path):
+        """load_data should fail when 'control_cells_map' is missing in uns."""
+        file_path = tmp_path / "missing_control_map.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = [
+            "ctrl",
+            "ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
+        ]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        # Minimal DE results present
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
+        )
+        adata.write_h5ad(file_path)
+
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+        )
+        with pytest.raises(
+            ValueError, match="Key 'control_cells_map' not found in adata.uns"
+        ):
+            dataset.load_data()
+
+    def test_missing_control_condition_raises(self, tmp_path):
+        """load_data should fail when control condition is absent from obs."""
+        file_path = tmp_path / "missing_control_condition.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = [
+            "test1",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
+            "test2",
+        ]
+        adata.obs_names = [
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test1_c",
+            "cond_test2_a",
+            "cond_test2_b",
+            "cond_test2_c",
+        ]
+        adata.uns["control_cells_map"] = {
+            "test1": {"cond_test1_a": "ctrl_test1_a", "cond_test1_b": "ctrl_test2_b"},
+            "test2": {"cond_test2_a": "ctrl_test1_a", "cond_test2_b": "ctrl_test2_b"},
+        }
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval_adj": [1e-6] * 20,
+                "logfoldchange": [2.0] * 20,
+            }
+        )
+        adata.write_h5ad(file_path)
+
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+        )
+        with pytest.raises(
+            ValueError,
+            match="Data in condition key 'condition' column does not contain control condition 'ctrl'",
+        ):
+            dataset.load_data()
+
+    def test_missing_de_columns_raises(self, tmp_path):
+        """load_data should fail if required DE columns are missing."""
+        file_path = tmp_path / "missing_de_columns.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = [
+            "ctrl",
+            "ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
+        ]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        adata.uns["control_cells_map"] = {
+            "test1": {"cond_test1_a": "ctrl_test1_a", "cond_test1_b": "ctrl_test2_b"},
+            "test2": {"cond_test2_a": "ctrl_test1_a", "cond_test2_b": "ctrl_test2_b"},
+        }
+        # Omit pval_adj
+        de_conditions = ["test1"] * 10 + ["test2"] * 10
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(20)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                # "pval_adj" missing
+                "logfoldchange": [2.0] * 20,
+            }
+        )
+        adata.write_h5ad(file_path)
+
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+        )
+        with pytest.raises(ValueError, match="pval_adj column not found in de_results"):
+            dataset.load_data()
+
+    def test_filtering_removes_all_rows_raises(self, tmp_path):
+        """Filtering that removes all rows should raise a ValueError."""
+        file_path = tmp_path / "filtering_all_removed.h5ad"
+        adata = create_dummy_anndata(
+            n_cells=6,
+            n_genes=3,
+            obs_columns=["condition"],
+            organism=Organism.HUMAN,
+        )
+        adata.obs["condition"] = [
+            "ctrl",
+            "ctrl",
+            "test1",
+            "test1",
+            "test2",
+            "test2",
+        ]
+        adata.obs_names = [
+            "ctrl_test1_a",
+            "ctrl_test2_b",
+            "cond_test1_a",
+            "cond_test1_b",
+            "cond_test2_a",
+            "cond_test2_b",
+        ]
+        adata.uns["control_cells_map"] = {
+            "test1": {"cond_test1_a": "ctrl_test1_a", "cond_test1_b": "ctrl_test2_b"},
+            "test2": {"cond_test2_a": "ctrl_test1_a", "cond_test2_b": "ctrl_test2_b"},
+        }
+        # All rows will be filtered out by high p-values and low effect sizes
+        de_conditions = ["test1"] * 5 + ["test2"] * 5
+        de_genes = [f"ENSG000000000{str(i).zfill(2)}" for i in range(10)]
+        adata.uns["de_results_wilcoxon"] = pd.DataFrame(
+            {
+                "condition": de_conditions,
+                "gene": de_genes,
+                "pval_adj": [1.0] * 10,  # above threshold
+                "logfoldchange": [0.1] * 10,  # below threshold
+            }
+        )
+        adata.write_h5ad(file_path)
+
+        dataset = SingleCellPerturbationDataset(
+            path=file_path,
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
+        )
+        with pytest.raises(
+            ValueError,
+            match="No differential expression results remain after filtering",
+        ):
+            dataset.load_data()
+
+    def test_get_controls_and_indices_helpers(self, tmp_path):
+        """get_controls and get_indices_for should return expected barcodes and indices."""
+        dataset = SingleCellPerturbationDataset(
+            path=self.valid_dataset_file(tmp_path),
+            organism=Organism.HUMAN,
+            condition_key="condition",
+            control_name="ctrl",
+            percent_genes_to_mask=0.5,
+            min_de_genes_to_mask=5,
+            pval_threshold=1e-4,
+            min_logfoldchange=1.0,
+        )
+        dataset.load_data()
+        dataset.validate()
+
+        controls_test1 = set(dataset.get_controls("test1"))
+        assert controls_test1 == {"CTRL001", "CTRL002"}
+
+        treated = ["A1", "A2"]
+        treated_idx, control_idx = dataset.get_indices_for(
+            "test1", treated_barcodes=treated
+        )
+
+        treated_names = dataset.adata.obs.index[treated_idx]
+        control_names = dataset.adata.obs.index[control_idx]
+        assert set(treated_names) == set(treated)
+        assert set(control_names) == {"CTRL001", "CTRL002"}
