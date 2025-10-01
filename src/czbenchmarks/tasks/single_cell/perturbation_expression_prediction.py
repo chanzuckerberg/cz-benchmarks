@@ -77,7 +77,7 @@ class PerturbationExpressionPredictionTask(Task):
         random_seed: int = RANDOM_SEED,
     ):
         """
-        Perturbation Expression Prediction Task.
+        **Perturbation Expression Prediction Task.**
 
         This task evaluates perturbation-induced expression predictions against
         their ground truth values. This is done by calculating metrics derived
@@ -255,17 +255,15 @@ class PerturbationExpressionPredictionTask(Task):
             # Compute predicted log fold-change depending on configuration and scale
             eps = 1e-8
             if pred_effect_operation == "difference":
-                logger.info(
-                    f"Using mean difference to compute difference between treated and control means for condition {condition}"
-                )
                 # Use difference regardless of scale; this is safest for z-scores and bounded scores
                 pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
             else:  # "ratio"
-                logger.info(
-                    f"Using log ratio to compute ratio between treated and control means for condition {condition}"
-                )
                 # Raw scale ratio; guard against non-positive means by falling back to difference
                 if np.any(treated_mean <= 0.0) or np.any(control_mean <= 0.0):
+                    logger.warning(
+                       f"Negative values found in treated_mean or control_mean for condition {condition}. "
+                       "\"Ratio\" selected for pred_effect_operation but falling back to mean difference to avoid non-positive mean values."
+                    )
                     pred_mean_change = np.asarray(treated_mean - control_mean).ravel()
                 else:
                     pred_mean_change = np.log(

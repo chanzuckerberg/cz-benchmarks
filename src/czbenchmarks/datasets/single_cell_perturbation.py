@@ -36,6 +36,22 @@ def sample_de_genes(
         Dict[str, List[str]]: Dictionary that maps each condition to a list of
         genes to be masked for that condition.
     """
+    # Validate parameters
+    for param_name, param in zip(
+        [
+            "percent_genes_to_mask",
+            "min_de_genes_to_mask",
+        ],
+        [
+            percent_genes_to_mask,
+            min_de_genes_to_mask,
+        ],
+    ):
+        if param < 0.0:
+            raise ValueError(
+                f"Parameter {param_name} must be greater than 0.0, got {param}"
+            )
+
     np.random.seed(seed)
     target_conditions = de_results[condition_col].unique()
     target_conditions_dict = {}
@@ -151,26 +167,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         self.de_pval_col = de_pval_col
         self.target_conditions_override = target_conditions_override
 
-        for param_name, param in zip(
-            [
-                "percent_genes_to_mask",
-                "min_de_genes_to_mask",
-                "pval_threshold",
-                "min_logfoldchange",
-                "target_conditions_override",
-            ],
-            [
-                percent_genes_to_mask,
-                min_de_genes_to_mask,
-                pval_threshold,
-                min_logfoldchange,
-                target_conditions_override,
-            ],
-        ):
-            if param < 0.0:
-                raise ValueError(
-                    f"Parameter {param_name} must be greater than 0.0, got {param}"
-                )
         if random_seed < 0:
             raise ValueError(
                 f"Parameter random_seed must be greater than 0, got {random_seed}"
@@ -194,9 +190,7 @@ class SingleCellPerturbationDataset(SingleCellDataset):
             pd.DataFrame: Differential expression results dataframe after filtering.
         """
         logger.info("Loading de_results from adata.uns")
-        # FIXME MICHELLE: check proper handling of float precision
         de_results = pd.DataFrame(self.adata.uns[f"de_results_{self.deg_test_name}"])
-        # de_results = pd.read_json(self.adata.uns[f"de_results_{self.deg_test_name}"], orient='records', precise_floats=True)
 
         # Validate structure of deg data
         error_str = ""
@@ -595,7 +589,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
                 f"Condition key '{self.condition_key}' not found in adata.obs"
             )
         # Validate conditions found in the original adata
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         original_conditions = set(self.adata.obs[self.condition_key])
         mapped_conditions = set(self.control_mapping.keys())
         for condition in original_conditions:
@@ -633,7 +626,6 @@ class SingleCellPerturbationDataset(SingleCellDataset):
         except Exception:
             logger.warning("No differential expression results found in adata.uns")
 
-        # FIXME MICHELLE: verify that I understand the implications of logic change
         for condition in target_conditions:
             # Strict schema on format, but allow extra perturbations not in DE with a warning
             if condition not in mapped_conditions:
