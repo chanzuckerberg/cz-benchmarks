@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.13.0...v0.14.0) (2025-10-01)
+
+
+### Features
+
+* make `get_controls` schema-agnostic; expand perturbation tests ([#443](https://github.com/chanzuckerberg/cz-benchmarks/issues/443)) ([c81da95](https://github.com/chanzuckerberg/cz-benchmarks/commit/c81da957ebcc1f0ad5321db540820e32602efab8))
+
 ## [0.13.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.12.0...v0.13.0) (2025-10-01)
 
 
