@@ -20,7 +20,7 @@ The AnnData object must also meet validation requirements for the specific datas
 
 - For `SingleCellPerturbationDataset`: 
    - `obs` must contain a column with the value specified by `condition_key` in the dataset configuration. The control cells should be labeled with the value specified by the control condition value (`control_name`) for control cells. 
-   - A mapping of treatment cells to their control cells is expected in the AnnData unstructured data (`uns`) under `control_cells_ids`. The structure of this mapping is a nested dictionary where the top level key is a condition and the value is a key/value pair of treatment cell id and control cell id, respectively. 
+   - A mapping of treatment cells to their control cells is expected in the AnnData unstructured data (`uns`) under `control_cells_map`. The structure of this mapping is a nested dictionary where the top level key is a condition and the value is a key/value pair of treatment cell id and control cell id, respectively. 
    - A table of differential expression results is also expected in the AnnData unstructured data under `de_results_wilcoxon`. The differential expression results table must include the column specified by the parameter `de_gene_col` in the dataset configuration file, in addition to columns titled "logfoldchange" and "pval_adj". These columns are analogous to those returned from [`scanpy.tl.rank_genes_groups`](https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.rank_genes_groups.html).
 
 

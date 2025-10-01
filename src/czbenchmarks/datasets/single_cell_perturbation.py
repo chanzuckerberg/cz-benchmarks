@@ -72,17 +72,19 @@ class SingleCellPerturbationDataset(SingleCellDataset):
     - Combinatorial (multiple) perturbations are not currently supported.
 
     Attributes:
-        control_cells_ids (dict): Dictionary mapping each condition to a dictionary
-            of treatment cell barcodes (keys) to matched control cell barcodes (values).
         de_results (pd.DataFrame): Differential expression results calculated on ground
             truth data using matched controls.
         target_conditions_dict (Dict[str, List[str]]): Dictionary that maps each
             condition to a list of masked genes for that condition.
+        control_cells_ids (dict): Dictionary mapping each condition to a dictionary
+            of treatment cell barcodes (keys) to matched control cell barcodes (values).
+            It is used primarily for creation of differential expression results
+            in data processing and may be removed in a future release.
     """
 
-    control_cells_ids: dict
     de_results: pd.DataFrame
     target_conditions_dict: dict
+    control_cells_ids: dict
 
     # UNS keys contract for task consumption
     UNS_DE_RESULTS_KEY = "de_results"

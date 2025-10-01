@@ -45,7 +45,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
 
    Responsibilities:
 
-   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_ids` and `de_results_wilcoxon` in `adata.uns`.
+   - Validates presence of specific AnnData features: `condition_key` in `adata.obs` column names, and keys named `control_cells_map` and `de_results_wilcoxon` in `adata.uns`.
    - It also validates that a column with the value of the parameter `de_gene_col`, as well as columns with the names "logfoldchange" and "pval_adj" are present in the differential expression results. 
    - The value set by `control_name` must be present for the control cells in the data of condition column in `adata.obs`.
    - Matches control cells with perturbation data and determines which genes can be masked for benchmarking
