@@ -2,21 +2,22 @@
 
 ## Overview
 
-This task evaluates a model's ability to predict expression for masked genes using the remaining (unmasked) genes for a given cell as context. Genes are randomly selected for masking from the set of genes that are identified as differentially expressed, based on threshold parameters explained in [Masking Parameters](#masking-parameters). For Replogle K562 Essentials[^replogle-k562-essentials], the provided controls used for the differential expression (DE) analysis have been determined based on GEM group and UMI count and are stored in the dataset along with the DE results.
+This task evaluates a model’s ability to predict the expression of masked genes using the remaining unmasked genes as context, across both CRISPR perturbed and unperturbed control cells. The Replogle K562 Essentials[^replogle-k562-essentials] dataset is a Perturb-seq resource profiling essential gene knockdowns in the K562 leukemia cell line, providing a benchmark set of perturbation and matched control cells. 
+
+Within this dataset, we first compute log fold change values for all genes by comparing perturbed cells to their matched controls. The model is then evaluated on its ability to predict expression changes based on cell context, and these predictions are compared directly against the observed log fold changes.
+
 
 - Single cell perturbation datasets contain perturbed and control cells. Matched controls have been determined for each condition and are stored in the unstructured portion of the AnnData under the key `control_cell_map`.
-- The differential expression results are also stored in the unstructured portion of the AnnData in the key `de_results_wilcoxon`. This analysis utilized the Wilcoxon rank-sum test, and is currently the only DE selection method that is supported, but additional options are planned. 
-- The gene expression values in the dataset are counts, provided in unmodified form relative to that from the original authors. Additional preprocessing, such as scaling and log transformation, should be performed by the user.
+- The differential expression results are also stored in the unstructured portion of the AnnData in the key `de_results_wilcoxon`. This analysis utilized the Wilcoxon rank-sum test.
 
-This benchmark is designed for evaluation by any model that produces a prediction matrix whose cells (rows) and genes (columns) can be aligned with those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in any unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
+This benchmark is designed for evaluation by any model that produces a prediction matrix whose cell ids (rows) and gene names (columns) can be ordered identically to  those used by the dataset. The task ensures alignment by validating gene and cell indices against the dataset. The predictions provided to the task can be in any unit (e.g. counts, log transformed) that is monotonic to the differential expression results (log2FC).
 
 ## Dataset Functionality and Parameters
 
-The data loading method accomplishes the following:
+The data preprocessing method accomplishes the following:
 
 - Perturbed cells and their matched controls are selected and indexed to create a new AnnData object for each condition. Conditions are stored in AnnData `obs` metadata column defined by the parameter ``{condition_key}``.
 - In the control matched data, the perturbations are labeled as ``{perturb}``, and matched control cells are labeled as ``{control_name}_{perturb}``, where ``{perturb}`` is the name of the perturbation and ``{control_name}`` is a configurable parameter.
-- Combinatorial perturbations are not currently supported.
 - For each condition, a subset of DE genes are sampled and their default values are masked. These become the prediction targets for the model.
 - The objective is for the model to predict the masked expression values for the prediction targets per cell and per condition.
 
@@ -44,7 +45,7 @@ The parameters `condition_key` and `control_name` are as described above and use
 
 ### Saving the Dataset
 
-To cache and reuse dataset outputs without re-running preprocessing, the outputs of the dataset can be saved with:
+To cache and reuse dataset outputs without re-running preprocessing, the outputs of the dataset can be saved with the `store_task_inputs` method of the [`SingleCellPerturbationDataset`](../autoapi/czbenchmarks/datasets/single_cell_perturbation/index.html):
 
   ```python
   task_inputs_dir = dataset.store_task_inputs()
@@ -98,6 +99,8 @@ For large-scale benchmarks, metrics can be exported to CSV/JSON via the provided
 
 ## Example Usage
 
-For example use cases, see the example script `examples/example_perturbation_expression_prediction.py`. 
+For example use cases, see the example script `examples/example_perturbation_expression_prediction.py`.  
+
+In this example, random predictions are generated for the cells and genes and provided to the task as representative model predictions for calculating the final metric. This serves as an example of the workflow for running the task to completion.
 
 [^replogle-k562-essentials]: Replogle, J. M., Elgamal, R. M., Abbas, A. et al. Mapping information-rich genotype–phenotype landscapes with genome-scale Perturb-seq. Cell, 185(14):2559–2575.e28 (2022). [DOI](https://doi.org/10.1016/j.cell.2022.05.013)
