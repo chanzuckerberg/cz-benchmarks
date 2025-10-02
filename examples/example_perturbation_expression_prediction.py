@@ -1,15 +1,10 @@
 import logging
 import sys
 import argparse
-from typing import Optional
 import anndata as ad
 import pandas as pd
 import numpy as np
-import hydra
-from hydra.utils import instantiate
-import omegaconf
 
-from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
@@ -23,9 +18,7 @@ from czbenchmarks.tasks.utils import (
     print_correlation_metrics_baseline_and_model,
 )
 from czbenchmarks.tasks.types import CellRepresentation
-
-from czbenchmarks.utils import initialize_hydra
-from czbenchmarks.file_utils import download_file_from_remote
+from czbenchmarks.datasets.utils import load_customized_dataset
 
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -82,30 +75,6 @@ def parse_args():
     )
     return parser.parse_args()
 
-
-# TODO: Replace with `load_local_dataset()`
-def load_dataset_config(
-    dataset_name: str,
-    config_name: str = "datasets",
-    dataset_update_dict: Optional[dict] = None,
-):
-    """Customize dataset class instantiation parameters using cli args
-
-    Args:
-        dataset_name: Name of the dataset to load
-        dataset_update_dict: Optional dictionary of dataset parameters to update
-
-    Returns:
-        Dataset configuration
-    """
-    initialize_hydra()
-    cfg = hydra.compose(config_name=config_name)
-    dataset_cfg = cfg.datasets[dataset_name]
-    if dataset_update_dict:
-        with omegaconf.open_dict(dataset_cfg) as d:
-            d.update(dataset_update_dict)
-
-    return dataset_cfg
 
 
 def generate_random_model_predictions(dataset, n_cells, n_genes):
@@ -170,14 +139,10 @@ if __name__ == "__main__":
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
 
-    dataset_cfg = load_dataset_config(
-        dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
+    dataset = load_customized_dataset(
+        dataset_name=dataset_name,
+        **dataset_update_dict
     )
-    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
-
-    # Instantiate dataset and load data
-    dataset: SingleCellPerturbationDataset = instantiate(dataset_cfg)
-    dataset.load_data()
     dataset.validate()
 
     # This generates sample model anndata. In applications,

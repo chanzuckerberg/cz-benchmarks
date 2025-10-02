@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import hydra
 from omegaconf import OmegaConf
@@ -8,8 +9,10 @@ logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_HYDRA_CONFIG_PATH = "./conf"
 
-def initialize_hydra(config_path="./conf"):
+
+def initialize_hydra(config_path=DEFAULT_HYDRA_CONFIG_PATH):
     """
     Initialize Hydra configuration system.
 
@@ -64,3 +67,35 @@ def import_class_from_config(config_path: str):
     logger.info(f"Imported class: {class_obj.__name__}")
 
     return class_obj
+
+
+def load_custom_config(
+    item_name: str,
+    config_name: str,
+    config_path: str = DEFAULT_HYDRA_CONFIG_PATH,
+    class_init_kwargs: Optional[dict] = None,
+):
+    """Customize czbenchmarks parameters for class instantiation
+
+    Args:
+        item_name: Item from the czbenchmarks config to load, e.g. "replogle_k562_essential_perturbpredict" for "datasets.yaml"
+        config_name: Name of the czbenchmarks config to load, e.g. "datasets" for "datasets.yaml"
+        config_path: Optional path to a custom config YAML file. If not provided, czbenchmarks default config path is used.
+        class_kwargs: Optional dictionary of dataset parameters to update
+
+    Returns:
+        Configuration
+    """
+    initialize_hydra(config_path=config_path)
+    
+    # Load a customized configuration
+    # FIXME MICHELLE -- how to handle edge case where item_name is new and not in config?
+    # FIXME MICHELLE -- also test with parameters that don't belong
+    overrides = []
+    if class_init_kwargs:
+        for key, value in class_init_kwargs.items():
+            overrides.append(f"+czbenchmarks.{config_name}.{item_name}.{key}={value}")
+    
+    cfg = hydra.compose(config_name=config_name, overrides=overrides)
+    custom_cfg = cfg[config_name][item_name]
+    return custom_cfg

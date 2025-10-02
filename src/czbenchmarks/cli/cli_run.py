@@ -10,7 +10,7 @@ import pandas as pd
 
 from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
 from czbenchmarks.datasets import load_dataset
-from czbenchmarks.datasets.utils import load_local_dataset
+from czbenchmarks.datasets.utils import load_customized_dataset
 from czbenchmarks.tasks.task import TASK_REGISTRY
 
 from .runner import run_task
@@ -200,10 +200,14 @@ def add_dynamic_task_command(task_name: str):
                     raise click.ClickException(
                         f"The file specified in --user-dataset 'path' does not exist: {resolved_path}"
                     )
-                dataset = load_local_dataset(
-                    dataset_class=user_dataset["dataset_class"],
-                    organism=user_dataset["organism"],
+                dataset_update_dict = {
+                    "organism": user_dataset["organism"],
+                    "path": str(resolved_path),
+                }
+                dataset = load_customized_dataset(
+                    dataset_class=dataset_name,
                     path=str(resolved_path),
+                    **dataset_update_dict
                 )
             elif dataset_name:
                 dataset = load_dataset(dataset_name)

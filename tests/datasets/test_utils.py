@@ -2,7 +2,7 @@ import sys
 from czbenchmarks.datasets import utils
 import types
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.utils import load_dataset, load_local_dataset
+from czbenchmarks.datasets.utils import load_dataset, load_customized_dataset
 from unittest.mock import patch
 import pytest
 
@@ -26,16 +26,29 @@ def test_load_local_dataset(tmp_path, monkeypatch):
             self.loaded = True
 
     # Dynamically create a dummy module and add DummyDataset to it
-    dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
+    # FIXME MICHELLE
+    # dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
+    # dummy_module.DummyDataset = DummyDataset
+    # sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
+    dummy_module = types.ModuleType("czbenchmarks.datasets")
     dummy_module.DummyDataset = DummyDataset
-    sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
+    sys.modules["czbenchmarks.datasets"] = dummy_module
 
-    # Now call load_local_dataset with the dummy class
-    dataset = load_local_dataset(
-        dataset_class="czbenchmarks.datasets.dummy.DummyDataset",
-        organism=Organism.HUMAN,
-        path=str(dummy_file),
-        foo="bar",
+    # Now call load_customized_dataset with the dummy class
+    dataset_update_dict = {
+        "organism": Organism.HUMAN,
+        "path": str(dummy_file),
+        "foo": "bar",
+    }
+    # dataset = load_customized_dataset(
+    #     dataset_class="czbenchmarks.datasets.dummy.DummyDataset",
+    #     organism=Organism.HUMAN,
+    #     path=str(dummy_file),
+    #     foo="bar",
+    # )
+    dataset = load_customized_dataset(
+        dataset_name="my_dummy_dataset",
+        **dataset_update_dict
     )
 
     assert isinstance(dataset, DummyDataset)
