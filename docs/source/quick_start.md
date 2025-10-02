@@ -68,9 +68,9 @@ czbenchmarks list --help
 
 The cz-benchmarks package is designed to be used programmatically within your Python workflow. The below code example demonstrates how you can run a benchmark task on a model's output. The example generates a "dummy" cell embedding as the model's output and computes a benchmark result using the clustering task.
 
-> Note that if you are interested in running benchmarks using a CLI instead of code, you can use the [Virtual Cell Platform CLI](https://chanzuckerberg.github.io/vcp-cli/). The VCP CLI supports:
-> * Running a benchmark on any Virtual Cell Platform [model](https://virtualcellmodels.cziscience.com/models) that has been [benchmarked](https://virtualcellmodels.cziscience.com/benchmarks) using a `cz-benchmark` dataset, allowing you to reproduce a VCP-published result.
-> * Running a benchmark on any Virtual Cell Platform [model](https://virtualcellmodels.cziscience.com/models) that has been [benchmarked](https://virtualcellmodels.cziscience.com/benchmarks) using your own benchmarking dataset.
+> Note that if you are interested in running benchmarks using a CLI instead of code, you can use the [Virtual Cells Platform CLI](https://chanzuckerberg.github.io/vcp-cli/). The VCP CLI supports:
+> * Running a benchmark on any Virtual Cells Platform [model](https://virtualcellmodels.cziscience.com/models) that has been [benchmarked](https://virtualcellmodels.cziscience.com/benchmarks) using a `cz-benchmark` dataset, allowing you to reproduce a VCP-published result.
+> * Running a benchmark on any Virtual Cells Platform [model](https://virtualcellmodels.cziscience.com/models) that has been [benchmarked](https://virtualcellmodels.cziscience.com/benchmarks) using your own benchmarking dataset.
 > * Running a benchmark on the output of your own model using either a `cz-benchmark` dataset or your own benchmarking dataset.
 
 
