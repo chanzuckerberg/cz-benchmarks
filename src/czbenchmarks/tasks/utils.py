@@ -8,6 +8,7 @@ from anndata import AnnData
 
 from ..constants import RANDOM_SEED
 from ..tasks.types import CellRepresentation
+from ..types import ListLike
 from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
 
 logger = logging.getLogger(__name__)
@@ -18,11 +19,62 @@ TASK_NAMES = frozenset(
     {
         "clustering",
         "embedding",
+        "sequential",
         "label_prediction",
         "integration",
         "perturbation",
     }.union(MULTI_DATASET_TASK_NAMES)
 )
+
+
+def print_correlation_metrics_baseline_and_model(
+    metrics_df: pd.DataFrame,
+    moderate_correlation_threshold: float = 0.3,
+    precision: int = 4,
+):
+    """Print a summary table of all metrics.
+    Args:
+        metrics_dict: Dictionary of model prediction metric values
+        baseline_metrics_dict: Dictionary of baseline metric values
+        moderate_correlation_threshold: Threshold for considering a correlation as moderate
+        precision: Precision for the summary table
+    """
+
+    # Get basic statistics using describe()
+    describe_stats = metrics_df.describe()
+
+    # Create column name mapping from describe() output to original names
+    column_mapping = {
+        "count": "Number of conditions",
+        "mean": "Mean correlation",
+        "std": "Standard Deviation",
+        "min": "Min correlation",
+        "25%": "25th percentile",
+        "50%": "Median correlation",
+        "75%": "75th percentile",
+        "max": "Max correlation",
+    }
+
+    # Rename the index to match original column names
+    describe_stats = describe_stats.rename(index=column_mapping)
+
+    # Add custom statistics that aren't in describe()
+    custom_stats = {}
+    for col in metrics_df.columns:
+        s = metrics_df[col]
+        custom_stats[col] = {
+            f"Number of correlations > {moderate_correlation_threshold}": sum(
+                s > moderate_correlation_threshold
+            ),
+            "Number of negative correlations": sum(s < 0),
+        }
+
+    # Convert custom stats to DataFrame and append to describe stats
+    custom_df = pd.DataFrame(custom_stats).rename_axis("Statistic")
+    summary = pd.concat([describe_stats, custom_df])
+
+    with pd.option_context("display.precision", precision):
+        print(summary.to_string())
 
 
 def print_metrics_summary(metrics_list):
@@ -172,27 +224,6 @@ def _print_simple_metrics(grouped_metrics):
             print(f"  {i + 1}: {result.value:.4f}{params_display}")
 
 
-def binarize_values(y_true: np.ndarray, y_pred: np.ndarray):
-    """Convert continuous values to binary classification.
-
-    Filters out NaN and infinite values, then converts values to binary
-    using a threshold of 0 (positive values become 1, others become 0).
-
-    Args:
-        y_true: True continuous values
-        y_pred: Predicted continuous values
-
-    Returns:
-        tuple: (true_binary, pred_binary) - binary arrays for classification metrics
-    """
-    ids = np.where(~np.isnan(y_true) & ~np.isinf(y_true))[0]
-    y_true = y_true[ids]
-    y_pred = y_pred[ids]
-    pred_binary = (y_pred > 0).astype(int)
-    true_binary = (y_true > 0).astype(int)
-    return true_binary, pred_binary
-
-
 def cluster_embedding(
     adata: AnnData,
     n_iterations: int = 2,
@@ -257,8 +288,7 @@ def filter_minimum_class(
 
     filtered_counts = class_counts[class_counts >= min_class_size]
     logger.info(
-        f"Total classes after filtering "
-        f"(min_class_size={min_class_size}): {len(filtered_counts)}"
+        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
     )
 
     labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
@@ -313,3 +343,94 @@ def run_standard_scrna_workflow(
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]
+
+
+def is_not_count_data(
+    matrix: CellRepresentation,
+    sample_size: int | float = 1_000,
+    tol: float = 1e-2,
+    random_seed: int = RANDOM_SEED,
+) -> bool:
+    """
+    Guess if a matrix contains log-normalized (non-integer) values by inspecting random cell sums.
+
+    This function randomly picks a subset of rows (cells), sums their values, and checks if any
+    of those sums are not close to integers, which would indicate the data is not raw counts.
+
+    Args:
+        matrix: Expression matrix (cells x genes).
+        sample_size: How many cells to check (default: 1000 or all if fewer).
+        tol: Allowed deviation from integer for sum to be considered integer-like.
+
+    Returns:
+        bool: True if at least one sampled cell sum is non-integer (suggesting log-normalized data).
+    """
+    total_cells = matrix.shape[0]
+    n = int(min(sample_size, total_cells))
+    indices = np.random.default_rng(random_seed).choice(total_cells, n, replace=False)
+    row_totals = matrix[indices].sum(axis=1)
+    if np.any(np.abs(row_totals - np.round(row_totals)) > tol):
+        return True
+    return False
+
+
+def aggregate_cells_to_samples(
+    embeddings: CellRepresentation,
+    labels: ListLike,
+    sample_ids: ListLike,
+    aggregation_method: Literal["mean", "median"] = "mean",
+) -> tuple[np.ndarray, pd.Series, pd.Series]:
+    """Aggregate cell-level embeddings to sample level.
+
+    This function groups cells by sample ID and aggregates their embeddings
+    using the specified method. It also ensures that each sample has a
+    consistent label (taking the first occurrence for each sample).
+
+    Args:
+        embeddings: Cell-level embeddings of shape (n_cells, d)
+        labels: Cell-level labels, length n_cells
+        sample_ids: Sample/donor identifiers for grouping cells, length n_cells
+        aggregation_method: Method to aggregate embeddings ("mean" or "median")
+
+    Returns:
+        Tuple containing:
+            - sample_embeddings: Aggregated embeddings (n_samples, d)
+            - sample_labels: Labels for each sample (length n_samples)
+            - sample_ids_out: Sample identifiers (length n_samples)
+
+    Raises:
+        ValueError: If inputs have mismatched lengths
+    """
+    embeddings = np.asarray(embeddings)
+    labels = pd.Series(labels)
+    sample_ids = pd.Series(sample_ids)
+
+    if len(embeddings) != len(labels) or len(labels) != len(sample_ids):
+        raise ValueError(
+            f"Mismatched lengths: embeddings={len(embeddings)}, "
+            f"labels={len(labels)}, sample_ids={len(sample_ids)}"
+        )
+
+    # Create DataFrame with embeddings and metadata
+    emb_df = pd.DataFrame(embeddings)
+    emb_df["sample_id"] = sample_ids
+    emb_df["label"] = labels
+
+    # Group by sample and aggregate embeddings (excluding non-numeric columns)
+    numeric_cols = emb_df.select_dtypes(include=[np.number]).columns
+    sample_emb_df = (
+        emb_df[numeric_cols.tolist() + ["sample_id"]]
+        .groupby("sample_id")
+        .agg(aggregation_method)
+    )
+    sample_embeddings = sample_emb_df.values
+
+    # Get unique labels per sample (take first occurrence)
+    sample_labels_df = emb_df[["sample_id", "label"]].groupby("sample_id").first()
+    sample_labels_df = sample_labels_df.reindex(sample_emb_df.index)
+
+    return (
+        sample_embeddings,
+        sample_labels_df["label"],
+        pd.Series(sample_emb_df.index.values, name="sample_id"),
+    )

@@ -40,18 +40,17 @@ These errors originate from the content of your `.h5ad` file not meeting the req
     - **Cause**: A required metadata column is missing from `adata.obs`. This often happens with:
 
         - `SingleCellLabeledDataset`: The `label_column_key` (e.g., `"cell_type"`) is missing.
-        - `SingleCellPerturbationDataset`: The `condition_key` or `split_key` is missing.
+        - `SingleCellPerturbationDataset`: The `condition_key` is missing.
 
     - **Solution**: Add the required column with the correct data to your `AnnData` object's `.obs` DataFrame and save the `.h5ad` file again.
 
-  - **Error**: `ValueError: Invalid split value(s): ...` or `ValueError: Invalid perturbation condition format: ...`
+  - **Error**: `ValueError: Unexpected condition label: ``{condition}`` not present in control mapping.`
 
-    - **Cause**: The `split` or `condition` columns in a `SingleCellPerturbationDataset` contain incorrectly formatted values.
+    - **Cause**: One or more values in the `condition` column in a `SingleCellPerturbationDataset` are not present in the `control_cells_map`.
 
     - **Solution**:
 
-        - The `split` column must only contain `"train"`, `"test"`, and `"val"`.
-        - The `condition` column must follow the format `"ctrl"`, `"{gene}+ctrl"`, or `"{gene1}+{gene2}"`. Correct the values in your `adata.obs` and re-save the dataset.
+        - The values in the `condition` column in a `SingleCellPerturbationDataset` must all be present in the `control_cells_map`. Ensure the values are correct in `adata.obs[``{condition_key}``]` and in the `control_cells_map` and re-save the dataset.
 
 
 

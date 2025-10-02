@@ -1,5 +1,50 @@
 # Changelog
 
+## [0.14.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.13.0...v0.14.0) (2025-10-01)
+
+
+### Features
+
+* make `get_controls` schema-agnostic; expand perturbation tests ([#443](https://github.com/chanzuckerberg/cz-benchmarks/issues/443)) ([c81da95](https://github.com/chanzuckerberg/cz-benchmarks/commit/c81da957ebcc1f0ad5321db540820e32602efab8))
+
+## [0.13.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.12.0...v0.13.0) (2025-10-01)
+
+
+### Features
+
+* add cross species label prediction task ([#424](https://github.com/chanzuckerberg/cz-benchmarks/issues/424)) ([a452fbf](https://github.com/chanzuckerberg/cz-benchmarks/commit/a452fbf83535aeabb86371effe31592695162a66))
+* improvements to single cell perturbation dataset class and perturb seq task class ([#399](https://github.com/chanzuckerberg/cz-benchmarks/issues/399)) ([6360702](https://github.com/chanzuckerberg/cz-benchmarks/commit/636070277644324d4370dc65eb0d3ba49c23bb91))
+
+
+### Bug Fixes
+
+* add click package ([#431](https://github.com/chanzuckerberg/cz-benchmarks/issues/431)) ([e916b72](https://github.com/chanzuckerberg/cz-benchmarks/commit/e916b724f8aaa8ee4e5c48ec1731553ff38fe0af))
+
+
+### Documentation
+
+* Improve autoapi generated documentation ([#440](https://github.com/chanzuckerberg/cz-benchmarks/issues/440)) ([ea0d5cc](https://github.com/chanzuckerberg/cz-benchmarks/commit/ea0d5cc2f7cc1f7dadab0ce2b6ee5966c46c445e))
+* update assets.md for cross species label prediction task ([#439](https://github.com/chanzuckerberg/cz-benchmarks/issues/439)) ([3fca830](https://github.com/chanzuckerberg/cz-benchmarks/commit/3fca8309301446aabf1d991713a882b24df0d887))
+* Updates for single cell dataset and perturbation task changes ([#419](https://github.com/chanzuckerberg/cz-benchmarks/issues/419)) ([0ee0f68](https://github.com/chanzuckerberg/cz-benchmarks/commit/0ee0f6890ec51cd7c7d26747fc2ce411de38e8f6))
+
+## [0.12.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.2...v0.12.0) (2025-09-29)
+
+
+### Features
+
+* Add Sequential Organization task, metric, and related datasets ([#422](https://github.com/chanzuckerberg/cz-benchmarks/issues/422)) ([f9aa098](https://github.com/chanzuckerberg/cz-benchmarks/commit/f9aa0982431dd133067097e9b70c8efa8062d86c))
+
+
+### Bug Fixes
+
+* broken links ([#415](https://github.com/chanzuckerberg/cz-benchmarks/issues/415)) ([339974a](https://github.com/chanzuckerberg/cz-benchmarks/commit/339974a109dbe137b7c2c0a4604521dfa7895812))
+* doc email link ([#417](https://github.com/chanzuckerberg/cz-benchmarks/issues/417)) ([1880e19](https://github.com/chanzuckerberg/cz-benchmarks/commit/1880e19cf6b3532a952565aa14a6a129b7a5b195))
+
+
+### Documentation
+
+* rename philosophy page to principles ([#421](https://github.com/chanzuckerberg/cz-benchmarks/issues/421)) ([bfab887](https://github.com/chanzuckerberg/cz-benchmarks/commit/bfab887dbddedceb88f47d2e5f251a4f214b5463))
+
 ## [0.11.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.11.1...v0.11.2) (2025-09-17)
 
 

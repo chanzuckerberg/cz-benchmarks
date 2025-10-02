@@ -1,0 +1,1372 @@
+diff --git a/docs/source/developer_guides/tasks.md b/docs/source/developer_guides/tasks.md
+index 42ba8de..60c288b 100644
+--- a/docs/source/developer_guides/tasks.md
++++ b/docs/source/developer_guides/tasks.md
+@@ -22,9 +22,9 @@ Tasks in the `czbenchmarks.tasks` module are organized based on their scope and
+ 
+ - **Generic Tasks**: Tasks that can be applied across multiple modalities (e.g., embedding evaluation, clustering, label prediction) are placed directly in the `tasks/` directory. Each task is implemented in its own file (e.g., `embedding.py`, `clustering.py`).
+ - **Specialized Tasks**: Tasks designed for specific modalities are placed in dedicated subdirectories (e.g., `single_cell/`). For example:
+-    
++
+     - `single_cell/` for single-cell-specific tasks like perturbation prediction or cross-species integration.
+-        
++
+     New subdirectories can be created as needed for other modalities.
+ 
+ ### Available Tasks
+@@ -36,6 +36,7 @@ Each task class implements a specific evaluation goal. All tasks are located und
+ - [`MetadataLabelPredictionTask`](../autoapi/czbenchmarks/tasks/label_prediction/index): Performs k-fold cross-validation using multiple classifiers (logistic regression, KNN, random forest) on model embeddings to predict metadata labels. Evaluates metrics like accuracy, F1, precision, recall, and AUROC.
+ - [`BatchIntegrationTask`](../autoapi/czbenchmarks/tasks/integration/index): Evaluates how well a model integrates data from different batches using entropy per cell and batch-aware Silhouette scores.
+ - [`CrossSpeciesIntegrationTask`](../autoapi/czbenchmarks/tasks/single_cell/cross_species/index): A multi-dataset task that evaluates how well models embed cells from different species into a shared space, using metrics like entropy per cell and species-aware silhouette scores.
++- [`CrossSpeciesLabelPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/cross_species_label_prediction/index): A multi-dataset task that evaluates how well model embeddings can be used to determine cell properties across species.
+ - [`PerturbationExpressionPredictionTask`](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index): Designed for perturbation models. Compares the model's ability to predict masked gene expression levels relative to ground truth using metrics like Spearman correlation, accuracy, F1, precision, and recall.
+ 
+ For instructions on **adding a new custom task**, see [How to Add a Custom Task](../how_to_guides/add_new_task.md).
+diff --git a/pyproject.toml b/pyproject.toml
+index 5e42571..a46f66f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -37,7 +37,6 @@ dependencies = [
+     "scib-metrics>=0.5.1",
+     "scipy>=1.15.3",
+     "scikit-misc>=0.5.1",
+-    "typing-extensions>=4.13.0",
+     "pydantic>=2.0.0",
+     "hnswlib>=0.8.0",
+     "tomli>=2.2.1",
+@@ -56,9 +55,9 @@ build = [
+     "setuptools>=78.1.0",
+     "twine>=6.1.0",
+ ]
+-
+ dev = [
+     "boto3-stubs>=1.37.26",
++    "boto3-stubs-lite[s3]>=1.38.0",
+     "botocore-stubs>=1.37.26",
+     "ruff>=0.11.2",
+     "mypy>=1.15.0",
+@@ -68,8 +67,8 @@ dev = [
+     "pytest-cov>=6.0.0",
+     "pytest-mock>=3.14.0",
+     "types-pyyaml>=6.0.12.20250402",
++    "typing-extensions>=4.13.0",
+ ]
+-
+ docs = [
+     "toml",
+     "sphinx==8.1.3",
+diff --git a/src/czbenchmarks/metrics/implementations.py b/src/czbenchmarks/metrics/implementations.py
+index aff81fd..6b43770 100644
+--- a/src/czbenchmarks/metrics/implementations.py
++++ b/src/czbenchmarks/metrics/implementations.py
+@@ -19,7 +19,7 @@ Each metric is registered with:
+ 
+ import numpy as np
+ from scib_metrics import silhouette_batch, silhouette_label
+-from scipy.stats import spearmanr
++from scipy.stats import pearsonr, spearmanr
+ from sklearn.metrics import (
+     accuracy_score,
+     adjusted_rand_score,
+@@ -29,9 +29,14 @@ from sklearn.metrics import (
+     precision_score,
+     recall_score,
+ )
++from .utils import (
++    compute_entropy_per_cell,
++    mean_fold_metric,
++    single_metric,
++    jaccard_score,
++)
+ 
+ from .types import MetricRegistry, MetricType
+-from .utils import compute_entropy_per_cell, mean_fold_metric
+ 
+ 
+ def spearman_correlation(a, b):
+@@ -117,7 +122,25 @@ metrics_registry.register(
+     tags={"perturbation"},
+ )
+ 
+-# Register cross-validation classification metrics
++# classification metrics
++
++metrics_registry.register(
++    MetricType.ACCURACY,
++    func=single_metric,
++    required_args={"results_df", "metric"},
++    default_params={"metric": "accuracy"},
++    tags={"label_prediction"},
++)
++
++metrics_registry.register(
++    MetricType.ACCURACY_CALCULATION,
++    func=accuracy_score,
++    required_args={"y_true", "y_pred"},
++    description="Accuracy between true and predicted values",
++    tags={"label_prediction", "perturbation"},
++)
++
++
+ metrics_registry.register(
+     MetricType.MEAN_FOLD_ACCURACY,
+     func=mean_fold_metric,
+@@ -129,43 +152,65 @@ metrics_registry.register(
+ )
+ 
+ metrics_registry.register(
+-    MetricType.MEAN_FOLD_F1_SCORE,
+-    func=mean_fold_metric,
+-    required_args={"results_df"},
+-    default_params={"metric": "f1", "classifier": None},
++    MetricType.AUROC,
++    func=single_metric,
++    required_args={"results_df", "metric"},
++    default_params={"metric": "auroc"},
+     tags={"label_prediction"},
+ )
+-
+ metrics_registry.register(
+-    MetricType.MEAN_FOLD_PRECISION,
++    MetricType.MEAN_FOLD_AUROC,
+     func=mean_fold_metric,
+     required_args={"results_df"},
+-    default_params={"metric": "precision", "classifier": None},
++    default_params={"metric": "auroc", "classifier": None},
+     tags={"label_prediction"},
+ )
+ 
++
+ metrics_registry.register(
+-    MetricType.MEAN_FOLD_RECALL,
+-    func=mean_fold_metric,
+-    required_args={"results_df"},
+-    default_params={"metric": "recall", "classifier": None},
++    MetricType.F1_SCORE,
++    func=single_metric,
++    required_args={"results_df", "metric"},
++    default_params={"metric": "f1"},
+     tags={"label_prediction"},
+ )
+ 
+ metrics_registry.register(
+-    MetricType.MEAN_FOLD_AUROC,
++    MetricType.F1_CALCULATION,
++    func=f1_score_zero_division,
++    required_args={"y_true", "y_pred"},
++    description="F1 score between true and predicted values",
++    tags={"label_prediction", "perturbation"},
++)
++metrics_registry.register(
++    MetricType.MEAN_FOLD_F1_SCORE,
+     func=mean_fold_metric,
+     required_args={"results_df"},
+-    default_params={"metric": "auroc", "classifier": None},
++    default_params={"metric": "f1", "classifier": None},
+     tags={"label_prediction"},
+ )
+-
+ metrics_registry.register(
+-    MetricType.ACCURACY_CALCULATION,
+-    func=accuracy_score,
++    MetricType.JACCARD,
++    func=jaccard_score,
+     required_args={"y_true", "y_pred"},
+-    description="Accuracy between true and predicted values",
+-    tags={"label_prediction", "perturbation"},
++    description="Jaccard similarity between true and predicted values",
++    tags={"perturbation"},
++)
++
++metrics_registry.register(
++    MetricType.PEARSON_CORRELATION,
++    func=pearsonr,
++    required_args={"x", "y"},
++    description="Pearson correlation between true and predicted values",
++    tags={"perturbation"},
++)
++
++metrics_registry.register(
++    MetricType.PRECISION,
++    func=single_metric,
++    required_args={"results_df", "metric"},
++    default_params={"metric": "precision"},
++    tags={"label_prediction"},
+ )
+ 
+ metrics_registry.register(
+@@ -176,6 +221,22 @@ metrics_registry.register(
+     tags={"label_prediction", "perturbation"},
+ )
+ 
++
++metrics_registry.register(
++    MetricType.MEAN_FOLD_PRECISION,
++    func=mean_fold_metric,
++    required_args={"results_df"},
++    default_params={"metric": "precision", "classifier": None},
++    tags={"label_prediction"},
++)
++
++metrics_registry.register(
++    MetricType.RECALL,
++    func=single_metric,
++    required_args={"results_df", "metric"},
++    default_params={"metric": "recall"},
++    tags={"label_prediction"},
++)
+ metrics_registry.register(
+     MetricType.RECALL_CALCULATION,
+     func=recall_score_zero_division,
+@@ -184,12 +245,13 @@ metrics_registry.register(
+     tags={"label_prediction", "perturbation"},
+ )
+ 
++
+ metrics_registry.register(
+-    MetricType.F1_CALCULATION,
+-    func=f1_score_zero_division,
+-    required_args={"y_true", "y_pred"},
+-    description="F1 score between true and predicted values",
+-    tags={"label_prediction", "perturbation"},
++    MetricType.MEAN_FOLD_RECALL,
++    func=mean_fold_metric,
++    required_args={"results_df"},
++    default_params={"metric": "recall", "classifier": None},
++    tags={"label_prediction"},
+ )
+ 
+ metrics_registry.register(
+diff --git a/src/czbenchmarks/metrics/types.py b/src/czbenchmarks/metrics/types.py
+index fc33bd2..8f1f12c 100644
+--- a/src/czbenchmarks/metrics/types.py
++++ b/src/czbenchmarks/metrics/types.py
+@@ -29,20 +29,32 @@ class MetricType(Enum):
+     ENTROPY_PER_CELL = "entropy_per_cell"
+     BATCH_SILHOUETTE = "batch_silhouette"
+ 
+-    # Cross-validation prediction metrics
++    # Regression metrics
++    MEAN_SQUARED_ERROR = "mean_squared_error"
++    PEARSON_CORRELATION = "PEARSON_CORRELATION"
++
++    # Classification metrics
++    ACCURACY = "accuracy"
++    ACCURACY_CALCULATION = "accuracy_calculation"
+     MEAN_FOLD_ACCURACY = "mean_fold_accuracy"
+-    MEAN_FOLD_F1_SCORE = "mean_fold_f1"
+-    MEAN_FOLD_PRECISION = "mean_fold_precision"
+-    MEAN_FOLD_RECALL = "mean_fold_recall"
++
++    AUROC = "auroc"
+     MEAN_FOLD_AUROC = "mean_fold_auroc"
+ 
+-    MEAN_SQUARED_ERROR = "mean_squared_error"
+-    PEARSON_CORRELATION = "PEARSON_CORRELATION"
++    F1_SCORE = "f1"
++    F1_CALCULATION = "f1_calculation"
++    MEAN_FOLD_F1_SCORE = "mean_fold_f1"
++
+     JACCARD = "jaccard"
+-    ACCURACY_CALCULATION = "accuracy_calculation"
++
++    PRECISION = "precision"
+     PRECISION_CALCULATION = "precision_calculation"
++    MEAN_FOLD_PRECISION = "mean_fold_precision"
++
++    RECALL = "recall"
+     RECALL_CALCULATION = "recall_calculation"
+-    F1_CALCULATION = "f1_calculation"
++    MEAN_FOLD_RECALL = "mean_fold_recall"
++
+     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
+ 
+ 
+diff --git a/src/czbenchmarks/metrics/utils.py b/src/czbenchmarks/metrics/utils.py
+index b447e55..c3a0f56 100644
+--- a/src/czbenchmarks/metrics/utils.py
++++ b/src/czbenchmarks/metrics/utils.py
+@@ -148,6 +148,37 @@ def mean_fold_metric(results_df, metric="accuracy", classifier=None):
+     return df[metric].mean()
+ 
+ 
++def single_metric(results_df, metric: str, **kwargs):
++    """Get a single metric value from filtered results.
++
++    Args:
++        results_df: DataFrame containing classification results
++        metric: Name of metric column to extract ("accuracy", "f1", etc.)
++        **kwargs: Filter parameters (e.g., classifier, train_species, test_species)
++
++    Returns:
++        Single metric value from the filtered results
++
++    Raises:
++        ValueError: If filtering results in 0 or >1 rows
++        KeyError: If the specified metric column is not present in results_df
++    """
++    df = results_df.copy()
++
++    for param, value in kwargs.items():
++        if param in df.columns:
++            df = df[df[param] == value]
++
++    if len(df) == 0:
++        raise ValueError(f"No results found after filtering with {kwargs!r}")
++    elif len(df) > 1:
++        raise ValueError(
++            f"Multiple results found after filtering with {kwargs!r}. Expected exactly 1 row."
++        )
++
++    return df[metric].iloc[0]
++
++
+ def aggregate_results(results: Iterable[MetricResult]) -> list[AggregatedMetricResult]:
+     """aggregate a collection of MetricResults by their type and parameters"""
+     grouped_results = collections.defaultdict(list)
+diff --git a/src/czbenchmarks/tasks/__init__.py b/src/czbenchmarks/tasks/__init__.py
+index cb1aada..f4221c1 100644
+--- a/src/czbenchmarks/tasks/__init__.py
++++ b/src/czbenchmarks/tasks/__init__.py
+@@ -15,6 +15,11 @@ from .single_cell import (
+     CrossSpeciesIntegrationTask,
+     CrossSpeciesIntegrationTaskInput,
+ )
++from .single_cell.cross_species_label_prediction import (
++    CrossSpeciesLabelPredictionTaskInput,
++    CrossSpeciesLabelPredictionOutput,
++    CrossSpeciesLabelPredictionTask,
++)
+ from .task import TASK_REGISTRY, MetricResult, Task, TaskInput, TaskOutput
+ from .single_cell.perturbation_expression_prediction import (
+     PerturbationExpressionPredictionOutput,
+@@ -46,4 +51,7 @@ __all__ = [
+     "PerturbationExpressionPredictionOutput",
+     "PerturbationExpressionPredictionTask",
+     "TASK_REGISTRY",
++    "CrossSpeciesLabelPredictionTaskInput",
++    "CrossSpeciesLabelPredictionOutput",
++    "CrossSpeciesLabelPredictionTask",
+ ]
+diff --git a/src/czbenchmarks/tasks/single_cell/__init__.py b/src/czbenchmarks/tasks/single_cell/__init__.py
+index be72cbc..9331c4a 100644
+--- a/src/czbenchmarks/tasks/single_cell/__init__.py
++++ b/src/czbenchmarks/tasks/single_cell/__init__.py
+@@ -1,8 +1,13 @@
+-from .cross_species import (
++from .cross_species_integration import (
+     CrossSpeciesIntegrationOutput,
+     CrossSpeciesIntegrationTask,
+     CrossSpeciesIntegrationTaskInput,
+ )
++from .cross_species_label_prediction import (
++    CrossSpeciesLabelPredictionTaskInput,
++    CrossSpeciesLabelPredictionOutput,
++    CrossSpeciesLabelPredictionTask,
++)
+ from .perturbation_expression_prediction import (
+     PerturbationExpressionPredictionOutput,
+     PerturbationExpressionPredictionTask,
+@@ -13,6 +18,9 @@ __all__ = [
+     "CrossSpeciesIntegrationTaskInput",
+     "CrossSpeciesIntegrationOutput",
+     "CrossSpeciesIntegrationTask",
++    "CrossSpeciesLabelPredictionTaskInput",
++    "CrossSpeciesLabelPredictionOutput",
++    "CrossSpeciesLabelPredictionTask",
+     "PerturbationExpressionPredictionTask",
+     "PerturbationExpressionPredictionTaskInput",
+     "PerturbationExpressionPredictionOutput",
+diff --git a/src/czbenchmarks/tasks/single_cell/cross_species.py b/src/czbenchmarks/tasks/single_cell/cross_species_integration.py
+similarity index 100%
+rename from src/czbenchmarks/tasks/single_cell/cross_species.py
+rename to src/czbenchmarks/tasks/single_cell/cross_species_integration.py
+diff --git a/src/czbenchmarks/tasks/single_cell/cross_species_label_prediction.py b/src/czbenchmarks/tasks/single_cell/cross_species_label_prediction.py
+new file mode 100644
+index 0000000..1475de4
+--- /dev/null
++++ b/src/czbenchmarks/tasks/single_cell/cross_species_label_prediction.py
+@@ -0,0 +1,504 @@
++import itertools
++import logging
++from typing import List, Dict, Any, Optional, Literal
++import pandas as pd
++import numpy as np
++from sklearn.linear_model import LogisticRegression
++from sklearn.ensemble import RandomForestClassifier
++from sklearn.metrics import (
++    accuracy_score,
++    f1_score,
++    make_scorer,
++    precision_score,
++    recall_score,
++    roc_auc_score,
++)
++from sklearn.model_selection import StratifiedKFold, StratifiedGroupKFold
++from sklearn.neighbors import KNeighborsClassifier
++from sklearn.pipeline import Pipeline
++from sklearn.preprocessing import StandardScaler
++
++from ...constants import RANDOM_SEED
++from ..constants import N_FOLDS
++from ..task import Task, TaskInput, TaskOutput
++from ...tasks.types import CellRepresentation
++from ...types import ListLike
++from ...metrics.types import MetricResult, MetricType
++from ...datasets.types import Organism
++from ..utils import aggregate_cells_to_samples
++
++
++logger = logging.getLogger(__name__)
++
++
++class CrossSpeciesLabelPredictionTaskInput(TaskInput):
++    labels: List[ListLike]  # Labels for each species dataset
++    organisms: List[Organism]  # List of organisms corresponding to each dataset
++    sample_ids: Optional[List[ListLike]] = (
++        None  # list of sample/donor IDs for aggregation for each dataset
++    )
++    aggregation_method: Literal["none", "mean", "median"] = (
++        "mean"  # how to aggregate samples with the same sample_id
++    )
++    n_folds: int = N_FOLDS  # number of cross-validation folds to use when training/testing on the same species
++
++
++class CrossSpeciesLabelPredictionOutput(TaskOutput):
++    results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
++
++
++class CrossSpeciesLabelPredictionTask(Task):
++    """Task for cross-species label prediction evaluation.
++
++    This task evaluates cross-species transfer by training classifiers on one species
++    and testing on another species. It computes accuracy, F1, precision, recall, and AUROC
++    for multiple classifiers (Logistic Regression, KNN, Random Forest).
++
++    The task can optionally aggregate cell-level embeddings to sample/donor level
++    before running classification.
++
++    Args:
++        random_seed (int): Random seed for reproducibility
++    """
++
++    display_name = "cross-species label prediction"
++
++    def __init__(self, *, random_seed: int = RANDOM_SEED):
++        super().__init__(random_seed=random_seed)
++        self.requires_multiple_datasets = True
++
++    def _run_cross_species_classification(
++        self,
++        train_embeddings: np.ndarray,
++        train_labels: pd.Series,
++        test_embeddings: np.ndarray,
++        test_labels: pd.Series,
++        train_species: str,
++        test_species: str,
++    ) -> List[Dict[str, Any]]:
++        """Run cross-species classification for multiple classifiers.
++
++        Args:
++            train_embeddings: Training embeddings
++            train_labels: Training labels
++            test_embeddings: Test embeddings
++            test_labels: Test labels
++            train_species: Name of training species
++            test_species: Name of test species
++
++        Returns:
++            List of result dictionaries with metrics for each classifier
++        """
++        train_labels_cat = pd.Categorical(train_labels.astype(str))
++        test_labels_cat = pd.Categorical(
++            test_labels.astype(str), categories=train_labels_cat.categories
++        )
++
++        train_label_codes = train_labels_cat.codes
++        test_label_codes = test_labels_cat.codes
++
++        n_classes = len(train_labels_cat.categories)
++        target_type = "binary" if n_classes == 2 else "macro"
++
++        logger.info(
++            f"Cross-species classification: {train_species} -> {test_species}, "
++            f"{n_classes} classes, using {target_type} averaging"
++        )
++
++        scorers = {
++            "accuracy": make_scorer(accuracy_score),
++            "f1": make_scorer(f1_score, average=target_type),
++            "precision": make_scorer(precision_score, average=target_type),
++            "recall": make_scorer(recall_score, average=target_type),
++            "auroc": make_scorer(
++                roc_auc_score,
++                average="macro",
++                multi_class="ovr",
++                response_method="predict_proba",
++            ),
++        }
++
++        classifiers = {
++            "lr": Pipeline(
++                [
++                    ("scaler", StandardScaler()),
++                    (
++                        "lr",
++                        LogisticRegression(
++                            max_iter=1000, random_state=self.random_seed
++                        ),
++                    ),
++                ]
++            ),
++            "knn": Pipeline(
++                [
++                    ("scaler", StandardScaler()),
++                    ("knn", KNeighborsClassifier(n_neighbors=5)),
++                ]
++            ),
++            "rf": Pipeline(
++                [
++                    (
++                        "rf",
++                        RandomForestClassifier(
++                            n_estimators=100, random_state=self.random_seed
++                        ),
++                    )
++                ]
++            ),
++        }
++
++        results = []
++
++        for name, clf in classifiers.items():
++            logger.info(f"Training {name} classifier...")
++            clf.fit(train_embeddings, train_label_codes)
++
++            clf_results = {
++                "classifier": name,
++                "train_species": train_species,
++                "test_species": test_species,
++            }
++
++            for metric_name, scorer in scorers.items():
++                clf_results[metric_name] = scorer(
++                    clf, test_embeddings, test_label_codes
++                )
++
++            results.append(clf_results)
++            logger.debug(f"{name} results: {clf_results}")
++
++        return results
++
++    def _run_cross_validation_classification(
++        self,
++        embeddings: np.ndarray,
++        labels: pd.Series,
++        species: str,
++        sample_ids: Optional[pd.Series] = None,
++        n_folds: int = N_FOLDS,
++    ) -> List[Dict[str, Any]]:
++        """Run straitified cross-validation for multiple classifiers.
++
++        Args:
++            embeddings: embeddings
++            sample_ids: donor or sample identifiers, used to balance the folds
++            labels: labels
++            species: name of species
++
++        Returns:
++            List of result dictionaries with metrics for each classifier
++        """
++        if sample_ids is None:
++            selector = StratifiedKFold(
++                n_splits=n_folds, shuffle=True, random_state=self.random_seed
++            )
++        else:
++            # we need to use StratifiedGroupKFold so the sample_ids in train/test are completely disjoint
++            selector = StratifiedGroupKFold(
++                n_splits=n_folds, shuffle=True, random_state=self.random_seed
++            )
++
++        labels = pd.Categorical(labels.astype(str))
++        label_codes = labels.codes
++
++        n_classes = len(labels.categories)
++        target_type = "binary" if n_classes == 2 else "macro"
++
++        logger.info(
++            f"Cross-validated classification: {species}, "
++            f"{n_classes} classes, using {target_type} averaging"
++        )
++
++        scorers = {
++            "accuracy": make_scorer(accuracy_score),
++            "f1": make_scorer(f1_score, average=target_type),
++            "precision": make_scorer(precision_score, average=target_type),
++            "recall": make_scorer(recall_score, average=target_type),
++            "auroc": make_scorer(
++                roc_auc_score,
++                average="macro",
++                multi_class="ovr",
++                response_method="predict_proba",
++            ),
++        }
++
++        classifiers = {
++            "lr": Pipeline(
++                [
++                    ("scaler", StandardScaler()),
++                    (
++                        "lr",
++                        LogisticRegression(
++                            max_iter=1000, random_state=self.random_seed
++                        ),
++                    ),
++                ]
++            ),
++            "knn": Pipeline(
++                [
++                    ("scaler", StandardScaler()),
++                    ("knn", KNeighborsClassifier(n_neighbors=5)),
++                ]
++            ),
++            "rf": Pipeline(
++                [
++                    (
++                        "rf",
++                        RandomForestClassifier(
++                            n_estimators=100, random_state=self.random_seed
++                        ),
++                    )
++                ]
++            ),
++        }
++
++        results = []
++
++        for name, clf in classifiers.items():
++            for fold_idx, (train_idx, test_idx) in enumerate(
++                selector.split(embeddings, label_codes, groups=sample_ids)
++            ):
++                train_emb, test_emb = embeddings[train_idx], embeddings[test_idx]
++                train_labels, test_labels = (
++                    label_codes[train_idx],
++                    label_codes[test_idx],
++                )
++
++                logger.info(f"Training {name} classifier...")
++                clf.fit(train_emb, train_labels)
++
++                fold_results = {
++                    "classifier": name,
++                    "split": fold_idx,
++                    "train_species": species,
++                    "test_species": species,
++                }
++
++                for metric_name, scorer in scorers.items():
++                    fold_results[metric_name] = scorer(clf, test_emb, test_labels)
++
++                results.append(fold_results)
++                logger.debug(f"{name}, fold {fold_idx} results: {fold_results}")
++
++        return results
++
++    def _run_task(
++        self,
++        cell_representation: List[CellRepresentation],
++        task_input: CrossSpeciesLabelPredictionTaskInput,
++    ) -> CrossSpeciesLabelPredictionOutput:
++        """Run cross-species label prediction evaluation.
++
++        Args:
++            cell_representation: List of cell representations for each species
++            task_input: Task input containing labels and organism information
++
++        Returns:
++            CrossSpeciesLabelPredictionOutput: Results from cross-species evaluation
++        """
++        if task_input.sample_ids is None:
++            task_input.sample_ids = [None for _ in cell_representation]
++
++        lengths = {
++            len(cell_representation),
++            len(task_input.organisms),
++            len(task_input.labels),
++            len(task_input.sample_ids),
++        }
++        if len(lengths) != 1:
++            raise ValueError(
++                f"Number of cell representations ({len(cell_representation)}) must match "
++                f"number of items in the task inputs "
++                f"(got {len(task_input.organisms)} organisms, {len(task_input.labels)} labels, {len(task_input.sample_ids)} sets of sample IDs)"
++            )
++
++        all_results = []
++
++        species_data = []
++        for i, (embeddings, labels, organism, sample_ids) in enumerate(
++            zip(
++                cell_representation,
++                task_input.labels,
++                task_input.organisms,
++                task_input.sample_ids,
++            )
++        ):
++            embeddings = np.array(embeddings)
++            labels = pd.Series(labels)
++
++            logger.info(f"Processing {organism} data: {embeddings.shape} cells")
++
++            # Optionally aggregate cells across donor or sample
++            if task_input.aggregation_method != "none":
++                if task_input.sample_ids is None:
++                    raise ValueError("sample_ids required when aggregation != 'none'")
++
++                embeddings, labels, sample_ids = aggregate_cells_to_samples(
++                    embeddings, labels, sample_ids, task_input.aggregation_method
++                )
++                logger.info(f"Aggregated to {len(embeddings)} samples for {organism}")
++
++            species_data.append((embeddings, labels, str(organism), sample_ids))
++
++        for train_data, test_data in itertools.product(species_data, species_data):
++            train_emb, train_labels, train_species, train_sample_ids = train_data
++            test_emb, test_labels, test_species, test_sample_ids = test_data
++
++            if train_species == test_species:
++                logger.info(
++                    f"Running intra-species cross-validation evaluation: {train_species}"
++                )
++                results = self._run_cross_validation_classification(
++                    train_emb,
++                    train_labels,
++                    train_species,
++                    train_sample_ids,
++                    n_folds=task_input.n_folds,
++                )
++                all_results.extend(results)
++
++            else:
++                logger.info(
++                    f"Running cross-species evaluation: train on {train_species}, test on {test_species}"
++                )
++
++                results = self._run_cross_species_classification(
++                    train_emb,
++                    train_labels,
++                    test_emb,
++                    test_labels,
++                    train_species,
++                    test_species,
++                )
++                all_results.extend(results)
++
++        logger.info(
++            f"Completed cross-species evaluation with {len(all_results)} results"
++        )
++
++        return CrossSpeciesLabelPredictionOutput(results=all_results)
++
++    def _create_metric_results_for_species_pair(
++        self,
++        group_df: pd.DataFrame,
++        train_species: str,
++        test_species: str,
++    ) -> List[MetricResult]:
++        """Helper to create MetricResult objects for a species pair.
++
++        Args:
++            group_df: DataFrame containing results for this species pair
++            train_species: Training species name
++            test_species: Test species name
++
++        Returns:
++            List of MetricResult objects
++        """
++        metrics_list = []
++
++        # we have to do some things differently if we average over folds
++        is_cross_validation = train_species == test_species
++
++        if is_cross_validation:
++            metric_types = {
++                "accuracy": MetricType.MEAN_FOLD_ACCURACY,
++                "f1": MetricType.MEAN_FOLD_F1_SCORE,
++                "precision": MetricType.MEAN_FOLD_PRECISION,
++                "recall": MetricType.MEAN_FOLD_RECALL,
++                "auroc": MetricType.MEAN_FOLD_AUROC,
++            }
++        else:
++            metric_types = {
++                "accuracy": MetricType.ACCURACY,
++                "f1": MetricType.F1_SCORE,
++                "precision": MetricType.PRECISION,
++                "recall": MetricType.RECALL,
++                "auroc": MetricType.AUROC,
++            }
++
++        # Create aggregated metrics across all classifiers
++        base_params = {
++            "train_species": train_species,
++            "test_species": test_species,
++            "classifier": "MEAN(lr,knn,rf)",
++        }
++
++        for metric_name, metric_type in metric_types.items():
++            metrics_list.append(
++                MetricResult(
++                    metric_type=metric_type,
++                    value=group_df[metric_name].mean(),
++                    params=base_params,
++                )
++            )
++
++        # Create per-classifier metrics
++        for clf in group_df["classifier"].unique():
++            clf_df = group_df[group_df["classifier"] == clf]
++            clf_params = {
++                "train_species": train_species,
++                "test_species": test_species,
++                "classifier": clf,
++            }
++
++            for metric_name, metric_type in metric_types.items():
++                # For cross-validation, take mean across folds; for cross-species, single value
++                value = (
++                    clf_df[metric_name].mean()
++                    if is_cross_validation
++                    else clf_df[metric_name].iloc[0]
++                )
++                metrics_list.append(
++                    MetricResult(
++                        metric_type=metric_type,
++                        value=value,
++                        params=clf_params,
++                    )
++                )
++
++        return metrics_list
++
++    def _compute_metrics(
++        self,
++        _: CrossSpeciesLabelPredictionTaskInput,
++        task_output: CrossSpeciesLabelPredictionOutput,
++    ) -> List[MetricResult]:
++        """Compute cross-species label prediction metrics.
++
++        Args:
++            _: (unused) Task input
++            task_output: Task output containing results
++
++        Returns:
++            List of MetricResult objects containing cross-species prediction metrics
++        """
++        logger.info("Computing cross-species prediction metrics...")
++        results_df = pd.DataFrame(task_output.results)
++        metrics_list = []
++
++        # Group by train/test species pairs for aggregation
++        for (train_species, test_species), group_df in results_df.groupby(
++            ["train_species", "test_species"]
++        ):
++            species_metrics = self._create_metric_results_for_species_pair(
++                group_df,
++                train_species,
++                test_species,
++            )
++            metrics_list.extend(species_metrics)
++
++        return metrics_list
++
++    def compute_baseline(self, **kwargs):
++        """Set a baseline for cross-species label prediction.
++
++        This method is not implemented for cross-species prediction tasks
++        as standard preprocessing workflows need to be applied per species.
++
++        Raises:
++            NotImplementedError: Always raised as baseline is not implemented
++        """
++        raise NotImplementedError(
++            "Baseline not implemented for cross-species label prediction"
++        )
+diff --git a/src/czbenchmarks/tasks/utils.py b/src/czbenchmarks/tasks/utils.py
+index 196009a..0e2921f 100644
+--- a/src/czbenchmarks/tasks/utils.py
++++ b/src/czbenchmarks/tasks/utils.py
+@@ -8,6 +8,7 @@ from anndata import AnnData
+ 
+ from ..constants import RANDOM_SEED
+ from ..tasks.types import CellRepresentation
++from ..types import ListLike
+ from .constants import FLAVOR, KEY_ADDED, OBSM_KEY
+ 
+ logger = logging.getLogger(__name__)
+@@ -313,3 +314,65 @@ def run_standard_scrna_workflow(
+     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
+ 
+     return adata.obsm[obsm_key]
++
++
++def aggregate_cells_to_samples(
++    embeddings: CellRepresentation,
++    labels: ListLike,
++    sample_ids: ListLike,
++    aggregation_method: Literal["mean", "median"] = "mean",
++) -> tuple[np.ndarray, pd.Series, pd.Series]:
++    """Aggregate cell-level embeddings to sample level.
++
++    This function groups cells by sample ID and aggregates their embeddings
++    using the specified method. It also ensures that each sample has a
++    consistent label (taking the first occurrence for each sample).
++
++    Args:
++        embeddings: Cell-level embeddings of shape (n_cells, d)
++        labels: Cell-level labels, length n_cells
++        sample_ids: Sample/donor identifiers for grouping cells, length n_cells
++        aggregation_method: Method to aggregate embeddings ("mean" or "median")
++
++    Returns:
++        Tuple containing:
++            - sample_embeddings: Aggregated embeddings (n_samples, d)
++            - sample_labels: Labels for each sample (length n_samples)
++            - sample_ids_out: Sample identifiers (length n_samples)
++
++    Raises:
++        ValueError: If inputs have mismatched lengths
++    """
++    embeddings = np.asarray(embeddings)
++    labels = pd.Series(labels)
++    sample_ids = pd.Series(sample_ids)
++
++    if len(embeddings) != len(labels) or len(labels) != len(sample_ids):
++        raise ValueError(
++            f"Mismatched lengths: embeddings={len(embeddings)}, "
++            f"labels={len(labels)}, sample_ids={len(sample_ids)}"
++        )
++
++    # Create DataFrame with embeddings and metadata
++    emb_df = pd.DataFrame(embeddings)
++    emb_df["sample_id"] = sample_ids
++    emb_df["label"] = labels
++
++    # Group by sample and aggregate embeddings (excluding non-numeric columns)
++    numeric_cols = emb_df.select_dtypes(include=[np.number]).columns
++    sample_emb_df = (
++        emb_df[numeric_cols.tolist() + ["sample_id"]]
++        .groupby("sample_id")
++        .agg(aggregation_method)
++    )
++    sample_embeddings = sample_emb_df.values
++
++    # Get unique labels per sample (take first occurrence)
++    sample_labels_df = emb_df[["sample_id", "label"]].groupby("sample_id").first()
++    sample_labels_df = sample_labels_df.reindex(sample_emb_df.index)
++
++    return (
++        sample_embeddings,
++        sample_labels_df["label"],
++        pd.Series(sample_emb_df.index.values, name="sample_id"),
++    )
+diff --git a/tests/tasks/test_cross_species_label_prediction.py b/tests/tasks/test_cross_species_label_prediction.py
+new file mode 100644
+index 0000000..caf46e3
+--- /dev/null
++++ b/tests/tasks/test_cross_species_label_prediction.py
+@@ -0,0 +1,193 @@
++import pytest
++import numpy as np
++from czbenchmarks.tasks.single_cell.cross_species_label_prediction import (
++    CrossSpeciesLabelPredictionTask,
++    CrossSpeciesLabelPredictionTaskInput,
++)
++from czbenchmarks.tasks.utils import aggregate_cells_to_samples
++from czbenchmarks.datasets.types import Organism
++from czbenchmarks.metrics.types import MetricResult
++
++
++@pytest.fixture
++def cross_species_test_data():
++    """Create dummy data for cross-species testing."""
++    n_cells_human = 100
++    n_cells_mouse = 80
++    n_features = 20  # embedding dimension
++
++    human_embeddings = np.random.randn(n_cells_human, n_features)
++    human_labels = np.random.choice(["healthy", "disease"], size=n_cells_human)
++    human_sample_ids = [f"human_sample_{i // 10}" for i in range(n_cells_human)]
++
++    mouse_embeddings = np.random.randn(n_cells_mouse, n_features)
++    mouse_labels = np.random.choice(["healthy", "disease"], size=n_cells_mouse)
++    mouse_sample_ids = [f"mouse_sample_{i // 8}" for i in range(n_cells_mouse)]
++
++    return {
++        "human_embeddings": human_embeddings,
++        "human_labels": human_labels,
++        "human_sample_ids": human_sample_ids,
++        "mouse_embeddings": mouse_embeddings,
++        "mouse_labels": mouse_labels,
++        "mouse_sample_ids": mouse_sample_ids,
++    }
++
++
++def test_sample_aggregation(cross_species_test_data):
++    """Test the sample aggregation functionality."""
++    embeddings = cross_species_test_data["human_embeddings"]
++    labels = cross_species_test_data["human_labels"]
++    sample_ids = cross_species_test_data["human_sample_ids"]
++
++    sample_emb, sample_labels, sample_ids_out = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids, aggregation_method="mean"
++    )
++
++    # Check that we have fewer samples than cells
++    assert len(sample_emb) < len(embeddings)
++    assert len(sample_emb) == len(sample_labels)
++    assert len(sample_emb) == len(sample_ids_out)
++
++    # Check that sample embeddings have correct shape
++    assert sample_emb.shape[1] == embeddings.shape[1]
++
++    # do the same thing with median to make sure we get different values
++    sample_emb_median, _, _ = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids, aggregation_method="median"
++    )
++
++    # Should have same number of samples but different values
++    assert sample_emb_median.shape == sample_emb.shape
++    assert not np.array_equal(sample_emb_median, sample_emb)
++
++    # Test error handling for mismatched lengths
++    with pytest.raises(ValueError, match="Mismatched lengths"):
++        aggregate_cells_to_samples(
++            embeddings[:-1],
++            labels,
++            sample_ids,  # One fewer embedding row
++        )
++
++
++def test_cross_species_classification(cross_species_test_data):
++    """Test cross-species classification functionality."""
++    task = CrossSpeciesLabelPredictionTask()
++
++    human_emb = cross_species_test_data["human_embeddings"]
++    human_labels = cross_species_test_data["human_labels"]
++    mouse_emb = cross_species_test_data["mouse_embeddings"]
++    mouse_labels = cross_species_test_data["mouse_labels"]
++
++    results = task._run_cross_species_classification(
++        human_emb, human_labels, mouse_emb, mouse_labels, "human", "mouse"
++    )
++
++    # Should have 3 classifiers (lr, knn, rf)
++    assert len(results) == 3
++
++    numeric_keys = {"accuracy", "f1", "precision", "recall", "auroc"}
++    other_keys = {"classifier", "train_species", "test_species"}
++    for result in results:
++        assert (numeric_keys | other_keys) == result.keys()
++        assert all(0 <= result[key] <= 1 for key in numeric_keys)
++
++
++def test_cross_species_task_cell_level(cross_species_test_data):
++    """Test full cross-species task execution at cell level (no aggregation)."""
++    task = CrossSpeciesLabelPredictionTask()
++
++    human_embeddings = cross_species_test_data["human_embeddings"]
++    mouse_embeddings = cross_species_test_data["mouse_embeddings"]
++    human_labels = cross_species_test_data["human_labels"]
++    mouse_labels = cross_species_test_data["mouse_labels"]
++
++    task_input = CrossSpeciesLabelPredictionTaskInput(
++        labels=[human_labels, mouse_labels],
++        organisms=[Organism.HUMAN, Organism.MOUSE],
++        aggregation_method="none",
++    )
++
++    results = task.run(
++        cell_representation=[human_embeddings, mouse_embeddings],
++        task_input=task_input,
++    )
++
++    assert len(results) > 0
++    assert all(isinstance(r, MetricResult) for r in results)
++
++
++def test_cross_species_task_sample_level(cross_species_test_data):
++    """Test cross-species task execution with sample-level aggregation."""
++    task = CrossSpeciesLabelPredictionTask()
++
++    human_embeddings = cross_species_test_data["human_embeddings"]
++    mouse_embeddings = cross_species_test_data["mouse_embeddings"]
++    human_labels = cross_species_test_data["human_labels"]
++    mouse_labels = cross_species_test_data["mouse_labels"]
++    human_sample_ids = cross_species_test_data["human_sample_ids"]
++    mouse_sample_ids = cross_species_test_data["mouse_sample_ids"]
++
++    task_input = CrossSpeciesLabelPredictionTaskInput(
++        labels=[human_labels, mouse_labels],
++        organisms=[Organism.HUMAN, Organism.MOUSE],
++        sample_ids=[human_sample_ids, mouse_sample_ids],
++        aggregation_method="mean",
++        n_folds=2,
++    )
++
++    results = task.run(
++        cell_representation=[human_embeddings, mouse_embeddings],
++        task_input=task_input,
++    )
++
++    assert all(isinstance(r, MetricResult) for r in results)
++
++
++def test_invalid_inputs(cross_species_test_data):
++    """Test error handling for invalid inputs."""
++    task = CrossSpeciesLabelPredictionTask()
++
++    human_embeddings = cross_species_test_data["human_embeddings"]
++    mouse_embeddings = cross_species_test_data["mouse_embeddings"]
++    human_labels = cross_species_test_data["human_labels"]
++    mouse_labels = cross_species_test_data["mouse_labels"]
++
++    # Test wrong number of species
++    task_input = CrossSpeciesLabelPredictionTaskInput(
++        labels=[human_labels],  # Only one species
++        organisms=[Organism.HUMAN],
++        aggregation_method="none",
++    )
++
++    with pytest.raises(ValueError):
++        task.run([human_embeddings], task_input)
++
++    # Test mismatched lengths
++    task_input = CrossSpeciesLabelPredictionTaskInput(
++        labels=[human_labels, mouse_labels],
++        organisms=[Organism.HUMAN, Organism.MOUSE],
++        aggregation_method="none",
++    )
++
++    with pytest.raises(ValueError):
++        task.run([human_embeddings], task_input)  # Only one embedding
++
++    # Test missing sample_ids when aggregation != "none"
++    task_input = CrossSpeciesLabelPredictionTaskInput(
++        labels=[human_labels, mouse_labels],
++        organisms=[Organism.HUMAN, Organism.MOUSE],
++        aggregation_method="mean",  # Requires sample_ids
++        sample_ids=None,
++    )
++
++    with pytest.raises(ValueError):
++        task.run([human_embeddings, mouse_embeddings], task_input)
++
++
++def test_baseline_not_implemented():
++    """Test that baseline raises NotImplementedError."""
++    task = CrossSpeciesLabelPredictionTask()
++
++    with pytest.raises(NotImplementedError, match="Baseline not implemented"):
++        task.compute_baseline()
+diff --git a/tests/tasks/test_utils.py b/tests/tasks/test_utils.py
+new file mode 100644
+index 0000000..a2f7a66
+--- /dev/null
++++ b/tests/tasks/test_utils.py
+@@ -0,0 +1,122 @@
++import pytest
++import numpy as np
++import pandas as pd
++from czbenchmarks.tasks.utils import aggregate_cells_to_samples
++
++
++def test_aggregate_cells_to_samples():
++    """Test cell to sample aggregation functionality."""
++    # Create test data
++    n_cells = 100
++    n_features = 20
++
++    embeddings = np.random.randn(n_cells, n_features)
++    labels = np.random.choice(["A", "B"], size=n_cells)
++    sample_ids = [f"sample_{i // 10}" for i in range(n_cells)]  # 10 samples
++
++    # Test mean aggregation
++    sample_emb, sample_labels, sample_ids_out = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids, aggregation_method="mean"
++    )
++
++    # Check shapes
++    assert len(sample_emb) == 10  # Should have 10 samples
++    assert sample_emb.shape[1] == n_features
++    assert len(sample_labels) == 10
++    assert len(sample_ids_out) == 10
++
++    # Check that aggregation actually happened
++    assert len(sample_emb) < len(embeddings)
++
++    # Test median aggregation
++    sample_emb_median, _, _ = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids, aggregation_method="median"
++    )
++
++    # Should have same shape but different values
++    assert sample_emb_median.shape == sample_emb.shape
++    assert not np.array_equal(sample_emb_median, sample_emb)
++
++
++def test_aggregate_cells_to_samples_edge_cases():
++    """Test edge cases for cell to sample aggregation."""
++    # Test with single sample
++    embeddings = np.random.randn(5, 3)
++    labels = ["A"] * 5
++    sample_ids = ["sample1"] * 5
++
++    sample_emb, sample_labels, sample_ids_out = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids
++    )
++
++    assert len(sample_emb) == 1
++    assert len(sample_labels) == 1
++    assert sample_labels.iloc[0] == "A"
++    assert sample_ids_out.iloc[0] == "sample1"
++
++    # Test with mismatched lengths
++    with pytest.raises(ValueError, match="Mismatched lengths"):
++        aggregate_cells_to_samples(
++            embeddings[:-1],
++            labels,
++            sample_ids,  # One fewer embedding
++        )
++
++    with pytest.raises(ValueError, match="Mismatched lengths"):
++        aggregate_cells_to_samples(
++            embeddings,
++            labels[:-1],
++            sample_ids,  # One fewer label
++        )
++
++
++def test_aggregate_cells_to_samples_types():
++    """Test that the function handles different input types correctly."""
++    n_cells = 20
++    n_features = 5
++
++    # Test with numpy arrays
++    embeddings = np.random.randn(n_cells, n_features)
++    labels = np.array(["A", "B"] * 10)
++    sample_ids = np.array([f"sample_{i // 5}" for i in range(n_cells)])
++
++    sample_emb, sample_labels, sample_ids_out = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids
++    )
++
++    assert isinstance(sample_emb, np.ndarray)
++    assert isinstance(sample_labels, pd.Series)
++    assert isinstance(sample_ids_out, pd.Series)
++
++    # Test with pandas Series
++    labels_series = pd.Series(labels)
++    sample_ids_series = pd.Series(sample_ids)
++
++    sample_emb2, sample_labels2, sample_ids_out2 = aggregate_cells_to_samples(
++        embeddings, labels_series, sample_ids_series
++    )
++
++    # Results should be the same
++    np.testing.assert_array_equal(sample_emb, sample_emb2)
++    pd.testing.assert_series_equal(sample_labels, sample_labels2)
++    pd.testing.assert_series_equal(sample_ids_out, sample_ids_out2)
++
++
++def test_aggregate_cells_to_samples_label_consistency():
++    """Test that each sample gets a consistent label."""
++    # Create data where each sample has mixed labels initially
++    embeddings = np.random.randn(30, 4)
++
++    # Create sample IDs and labels such that first occurrence determines sample label
++    sample_ids = ["s1"] * 10 + ["s2"] * 10 + ["s3"] * 10
++    labels = ["A"] * 5 + ["B"] * 5 + ["B"] * 5 + ["A"] * 5 + ["A"] * 10
++
++    sample_emb, sample_labels, sample_ids_out = aggregate_cells_to_samples(
++        embeddings, labels, sample_ids
++    )
++
++    # Each sample should have a single label (first occurrence)
++    assert len(sample_labels) == 3
++    assert sample_labels.iloc[0] == "A"  # s1: first cell was "A"
++    assert sample_labels.iloc[1] == "B"  # s2: first cell was "B"
++    assert sample_labels.iloc[2] == "A"  # s3: first cell was "A"
+diff --git a/tests/test_dataset_task_e2e_regression.py b/tests/test_dataset_task_e2e_regression.py
+index 27db359..f7aa06d 100644
+--- a/tests/test_dataset_task_e2e_regression.py
++++ b/tests/test_dataset_task_e2e_regression.py
+@@ -16,7 +16,7 @@ from czbenchmarks.tasks.integration import (
+     BatchIntegrationTask,
+     BatchIntegrationTaskInput,
+ )
+-from czbenchmarks.tasks.single_cell.cross_species import (
++from czbenchmarks.tasks.single_cell.cross_species_integration import (
+     CrossSpeciesIntegrationTask,
+     CrossSpeciesIntegrationTaskInput,
+ )
+diff --git a/uv.lock b/uv.lock
+index 6ce70a0..720d25b 100644
+--- a/uv.lock
++++ b/uv.lock
+@@ -671,7 +671,7 @@ wheels = [
+ 
+ [[package]]
+ name = "cz-benchmarks"
+-version = "0.10.0"
++version = "0.10.2"
+ source = { editable = "." }
+ dependencies = [
+     { name = "anndata" },
+@@ -694,7 +694,6 @@ dependencies = [
+     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+     { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+     { name = "tomli" },
+-    { name = "typing-extensions" },
+ ]
+ 
+ [package.optional-dependencies]
+@@ -711,6 +710,7 @@ build = [
+ ]
+ dev = [
+     { name = "boto3-stubs" },
++    { name = "boto3-stubs-lite", extra = ["s3"] },
+     { name = "botocore-stubs" },
+     { name = "mypy" },
+     { name = "pandas-stubs" },
+@@ -720,6 +720,7 @@ dev = [
+     { name = "pytest-mock" },
+     { name = "ruff" },
+     { name = "types-pyyaml" },
++    { name = "typing-extensions" },
+ ]
+ docs = [
+     { name = "linkify-it-py" },
+@@ -757,7 +758,6 @@ requires-dist = [
+     { name = "scikit-misc", specifier = ">=0.5.1" },
+     { name = "scipy", specifier = ">=1.15.3" },
+     { name = "tomli", specifier = ">=2.2.1" },
+-    { name = "typing-extensions", specifier = ">=4.13.0" },
+ ]
+ provides-extras = ["interactive"]
+ 
+@@ -770,6 +770,7 @@ build = [
+ ]
+ dev = [
+     { name = "boto3-stubs", specifier = ">=1.37.26" },
++    { name = "boto3-stubs-lite", extras = ["s3"], specifier = ">=1.38.0" },
+     { name = "botocore-stubs", specifier = ">=1.37.26" },
+     { name = "mypy", specifier = ">=1.15.0" },
+     { name = "pandas-stubs", specifier = ">=2.2.3.250308" },
+@@ -779,6 +780,7 @@ dev = [
+     { name = "pytest-mock", specifier = ">=3.14.0" },
+     { name = "ruff", specifier = ">=0.11.2" },
+     { name = "types-pyyaml", specifier = ">=6.0.12.20250402" },
++    { name = "typing-extensions", specifier = ">=4.13.0" },
+ ]
+ docs = [
+     { name = "linkify-it-py" },

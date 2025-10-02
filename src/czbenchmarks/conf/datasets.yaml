@@ -8,8 +8,7 @@ datasets:
     condition_key: condition
     control_name: non-targeting
     de_gene_col: gene_id
-    deg_test_name: wilcoxon
-    path: s3://cz-benchmarks-data/datasets/v1/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells.h5ad
+    path: s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad
 
   human_spermatogenesis:
     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
@@ -185,3 +184,15 @@ datasets:
     _target_: czbenchmarks.datasets.SingleCellLabeledDataset
     organism: ${organism:HUMAN}
     path: s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Vasculature_v2_curated.h5ad
+
+  allen_soundlife_immune_variation:
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    organism: ${organism:HUMAN}
+    path: s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_immune_variation.h5ad
+    label_column_key: subject__ageAtFirstDraw
+
+  allen_soundlife_flu_vax_response:
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    organism: ${organism:HUMAN}
+    path: s3://cz-benchmarks-data/datasets/v1/allen_soundlife/allen_soundlife_flu_response.h5ad
+    label_column_key: sample__visitName
