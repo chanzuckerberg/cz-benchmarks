@@ -31,7 +31,7 @@ You can find **cz-benchmarks** on:
    :maxdepth: 1
 
    quick_start
-   benchmarking_philosophy
+   principles
    how_to_guides/index
    notebook_examples
    developer_guides/index

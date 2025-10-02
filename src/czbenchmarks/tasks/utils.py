@@ -18,6 +18,7 @@ TASK_NAMES = frozenset(
     {
         "clustering",
         "embedding",
+        "sequential",
         "label_prediction",
         "integration",
         "perturbation",
@@ -257,8 +258,7 @@ def filter_minimum_class(
 
     filtered_counts = class_counts[class_counts >= min_class_size]
     logger.info(
-        f"Total classes after filtering "
-        f"(min_class_size={min_class_size}): {len(filtered_counts)}"
+        f"Total classes after filtering (min_class_size={min_class_size}): {len(filtered_counts)}"
     )
 
     labels = pd.Series(labels) if isinstance(labels, np.ndarray) else labels
@@ -313,31 +313,3 @@ def run_standard_scrna_workflow(
     sc.pp.pca(adata, n_comps=n_pcs, key_added=obsm_key, random_state=random_state)
 
     return adata.obsm[obsm_key]
-
-
-def looks_like_lognorm(
-    matrix: CellRepresentation,
-    sample_size: int | float = 1_000,
-    tol: float = 1e-2,
-) -> bool:
-    """
-    Guess if a matrix contains log-normalized (non-integer) values by inspecting random cell sums.
-
-    This function randomly picks a subset of rows (cells), sums their values, and checks if any
-    of those sums are not close to integers, which would indicate the data is not raw counts.
-
-    Args:
-        matrix: Expression matrix (cells x genes).
-        sample_size: How many cells to check (default: 500 or all if fewer).
-        tol: Allowed deviation from integer for sum to be considered integer-like.
-
-    Returns:
-        bool: True if at least one sampled cell sum is non-integer (suggesting log-normalized data).
-    """
-    total_cells = matrix.shape[0]
-    n = int(min(sample_size, total_cells))
-    indices = np.random.choice(total_cells, n, replace=False)
-    row_totals = matrix[indices].sum(axis=1)
-    if np.any(np.abs(row_totals - np.round(row_totals)) > tol):
-        return True
-    return False
