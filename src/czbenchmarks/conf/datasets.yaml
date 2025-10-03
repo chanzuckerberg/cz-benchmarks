@@ -8,10 +8,6 @@ datasets:
     condition_key: condition
     control_name: non-targeting
     de_gene_col: gene_id
-    percent_genes_to_mask: 0.22 # FIXME MICHELLE
-    min_logfoldchange: 22.0
-    pval_threshold: 1e-2
-    min_de_genes_to_mask: 0.75
     path: s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad
 
   human_spermatogenesis:

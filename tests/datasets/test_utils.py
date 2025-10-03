@@ -106,7 +106,3 @@ class TestUtils:
         """Test that load_dataset raises ValueError for invalid dataset name."""
         with pytest.raises(ValueError):
             load_dataset("invalid_dataset")
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-k", "test_test_load_customized_dataset"])

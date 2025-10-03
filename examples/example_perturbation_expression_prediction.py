@@ -131,14 +131,16 @@ if __name__ == "__main__":
     dataset_name = "replogle_k562_essential_perturbpredict"
     logging.info(f"Loading dataset for {dataset_name} with args: {args}")
 
-    dataset_update_dict = {
+    custom_dataset_config = {
         "percent_genes_to_mask": args.percent_genes_to_mask,
         "min_logfoldchange": args.min_logfoldchange,
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
 
-    dataset = load_customized_dataset(dataset_name=dataset_name, **dataset_update_dict)
+    dataset = load_customized_dataset(
+        dataset_name=dataset_name, custom_dataset_config=custom_dataset_config
+    )
     dataset.validate()
 
     # This generates sample model anndata. In applications,
