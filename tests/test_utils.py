@@ -52,3 +52,11 @@ def test_import_class_from_config(tmp_path):
     instance = imported_class(param1="test", param2=42)
     assert instance.param1 == "test"
     assert instance.param2 == 42
+
+
+# FIXME MICHELLE write test for load_custom_config, with parameters:
+# item_name: existing item, new item
+# config_name: existing config, new config
+# class_init_kwargs: some overwritten, some are new
+def test_load_custom_config(tmp_path):
+    pass

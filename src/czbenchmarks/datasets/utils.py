@@ -1,6 +1,8 @@
 import os
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Dict
 from pathlib import Path
+from urllib.parse import urlparse
+import logging
 
 import hydra
 import yaml
@@ -10,6 +12,8 @@ from omegaconf import OmegaConf
 from czbenchmarks.datasets.dataset import Dataset
 from czbenchmarks.file_utils import download_file_from_remote
 from czbenchmarks.utils import initialize_hydra, load_custom_config
+
+logger = logging.getLogger(__name__)
 
 
 def load_dataset(
@@ -111,7 +115,7 @@ def list_available_datasets() -> Dict[str, Dict[str, str]]:
 
 def load_customized_dataset(
     dataset_name: str,
-    custom_dataset_init: Dict[str, Any],
+    custom_dataset_config: Dict[str, Any],
 ) -> Dataset:
     """
     Instantiate a dataset with a custom configuration. This can include but
@@ -135,41 +139,42 @@ def load_customized_dataset(
         from czbenchmarks.datasets.utils import load_customized_dataset
 
         my_dataset_name = "my_dataset"
-        custom_dataset_init = {
+        custom_dataset_config = {
             "organism": Organism.HUMAN,
             "path": "example-small.h5ad",
         }
         dataset = load_customized_dataset(
             dataset_name=my_dataset_name,
-            custom_dataset_init=custom_dataset_init
+            custom_dataset_config=custom_dataset_config
         )
         ```
     """
 
     custom_cfg = load_custom_config(
-        item_name=dataset_name, config_name="datasets", class_init_kwargs=custom_dataset_init
+        item_name=dataset_name, config_name="datasets", class_init_kwargs=custom_dataset_config
     )
 
     if 'path' not in custom_cfg:
         raise ValueError(f"Path required but not found in harmonized configuration: {custom_cfg}")
 
     path = custom_cfg.pop("path")
-    # download_file_from_remote expects an s3 path
-    if path.startswith("s3://"):
-        custom_cfg["path"] = download_file_from_remote(path)
-    elif "://" in path:
-        # FIXME MICHELLE better way to determine remote protocol?
-        raise ValueError(f"Remote protocols other than s3 are not currently supported: {path}")
+    protocol = urlparse(str(path)).scheme
+
+    if protocol:
+        # download_file_from_remote expects an s3 path
+        if protocol == 's3':
+            custom_cfg["path"] = download_file_from_remote(path)
+        else:
+            raise ValueError(f"Remote protocols other than s3 are not currently supported: {path}")
     else:
-        path = Path(path) if isinstance(path, str) else path
-        resolved_path = path.expanduser().resolve()
+        logger.info(f"Local dataset file found: {path}")
+        resolved_path = Path(path).expanduser().resolve()
 
         if not resolved_path.exists():
             raise FileNotFoundError(f"Local dataset file not found: {resolved_path}")
 
         custom_cfg["path"] = str(resolved_path)
         
-
     dataset = instantiate(custom_cfg)
     dataset.load_data()
 

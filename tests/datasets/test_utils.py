@@ -7,8 +7,12 @@ from unittest.mock import patch
 import pytest
 
 
-def test_load_local_dataset(tmp_path, monkeypatch):
-    """Test load_local_dataset instantiates and loads a dataset from a local file."""
+# FIXME MICHELLE parameterize test for: 
+# path: local path, remote path, no path
+# dataset name: existing dataset, new dataset
+# other parameters: some overwritten, some are new
+def test_load_customized_dataset(tmp_path, monkeypatch):
+    """Test load_customized_dataset instantiates and loads a customized dataset."""
 
     # Create a dummy file to represent the dataset
     dummy_file = tmp_path / "dummy.h5ad"
@@ -31,15 +35,16 @@ def test_load_local_dataset(tmp_path, monkeypatch):
     sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
 
     # Now call load_customized_dataset with the dummy class
-    custom_dataset_init = {
+    dataset_name = "my_dummy_dataset"
+    custom_dataset_config = {
         "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
         "organism": Organism.HUMAN,
         "path": str(dummy_file),
         "foo": "bar",
     }
     dataset = load_customized_dataset(
-        dataset_name="my_dummy_dataset",
-        custom_dataset_init=custom_dataset_init
+        dataset_name=dataset_name,
+        custom_dataset_config=custom_dataset_config
     )
 
     assert isinstance(dataset, DummyDataset)
@@ -104,4 +109,4 @@ class TestUtils:
             load_dataset("invalid_dataset")
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-k", "test_load_local_dataset"])
+    pytest.main([__file__, "-k", "test_test_load_customized_dataset"])

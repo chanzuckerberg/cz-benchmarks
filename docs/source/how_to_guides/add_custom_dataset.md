@@ -96,16 +96,21 @@ dataset = load_dataset("user_dataset", config_path='user_dataset.yaml')
 
 #### b. Loading Local Datasets Directly
 
-For quick experiments, use `load_local_dataset` to instantiate a dataset directly:
+For quick experiments, use `load_customized_dataset` to instantiate a dataset directly:
 
 ```python
-from czbenchmarks.datasets.utils import load_local_dataset
+from czbenchmarks.datasets.utils import load_customized_dataset
 from czbenchmarks.datasets.types import Organism
 
-dataset = load_local_dataset(
-  dataset_class="czbenchmarks.datasets.SingleCellLabeledDataset",
-  path="my_data.h5ad",
-  organism=Organism.HUMAN
+my_dataset_name = "my_dataset"
+custom_dataset_config = {
+    "_target_": "czbenchmarks.datasets.SingleCellLabeledDataset",
+    "organism": Organism.HUMAN,
+    "path": "my_data.h5ad",
+}
+dataset = load_customized_dataset(
+    dataset_name=my_dataset_name,
+    custom_dataset_config=custom_dataset_config
 )
 print(dataset.adata)
 ```
@@ -155,7 +160,7 @@ class MyCustomDataset(SingleCellDataset):
 
 - Add your new dataset class to the appropriate module in `czbenchmarks.datasets`.
 - Register it in the `src/czbenchmarks/datasets/__init__.py` file.
-- You can now use your new dataset type in YAML configs or with `load_local_dataset`.
+- You can now use your new dataset type in YAML configs or with `load_customized_dataset`.
 
 
 ### 3. Test and Validate
