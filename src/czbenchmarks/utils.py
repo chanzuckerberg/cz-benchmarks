@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 
 import hydra
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, open_dict
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
@@ -86,16 +86,20 @@ def load_custom_config(
     Returns:
         Configuration
     """
-    initialize_hydra(config_path=config_path)
+    initialize_hydra(config_path=config_path)    
+    
+    # Disable strict checking to allow adding new keys not in the original config
+    cfg = hydra.compose(config_name=config_name)
     
     # Load a customized configuration
-    # FIXME MICHELLE -- how to handle edge case where item_name is new and not in config?
-    # FIXME MICHELLE -- also test with parameters that don't belong
-    overrides = []
     if class_init_kwargs:
-        for key, value in class_init_kwargs.items():
-            overrides.append(f"+czbenchmarks.{config_name}.{item_name}.{key}={value}")
-    
-    cfg = hydra.compose(config_name=config_name, overrides=overrides)
+        OmegaConf.set_struct(cfg, False)
+        with open_dict(cfg):
+            if item_name not in cfg[config_name]:
+                cfg[config_name][item_name] = {}
+                logger.info(f"Added new item {item_name} to config {config_name}")
+            for key, value in class_init_kwargs.items():
+                cfg[config_name][item_name][key] = value
+
     custom_cfg = cfg[config_name][item_name]
     return custom_cfg

@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Any
 from pathlib import Path
 
 import hydra
@@ -111,19 +111,20 @@ def list_available_datasets() -> Dict[str, Dict[str, str]]:
 
 def load_customized_dataset(
     dataset_name: str,
-    path: Optional[Union[str, Path]] = None,
-    **kwargs,
+    custom_dataset_init: Dict[str, Any],
 ) -> Dataset:
     """
-    Instantiate a dataset directly from arguments without requiring a YAML file.
+    Instantiate a dataset with a custom configuration. This can include but
+    is not limited to a local path for a custom dataset file. If the dataset
+    exists in the default config, this function will update parameters. 
+    Otherwise, it will add the dataset to the default config.
 
     This function is completely independent from load_dataset() and directly
     instantiates the dataset class without using OmegaConf objects.
 
     Args:
         dataset_name: The name of the dataset, either custom or from the config
-        path: The local or remote path to the dataset file.
-        **kwargs: Additional key-value pairs for the dataset config.
+        custom_class_init: Custom configuration dictionary for the dataset. 
 
     Returns:
         Instantiated dataset object with data loaded.
@@ -134,22 +135,32 @@ def load_customized_dataset(
         from czbenchmarks.datasets.utils import load_customized_dataset
 
         my_dataset_name = "my_dataset"
-        dataset_update_dict = {
+        custom_dataset_init = {
             "organism": Organism.HUMAN,
             "path": "example-small.h5ad",
         }
         dataset = load_customized_dataset(
-            dataset_name="my_dataset",
-            **dataset_update_dict
+            dataset_name=my_dataset_name,
+            custom_dataset_init=custom_dataset_init
         )
         ```
     """
 
     custom_cfg = load_custom_config(
-        item_name=dataset_name, config_name="datasets", class_init_kwargs=kwargs
+        item_name=dataset_name, config_name="datasets", class_init_kwargs=custom_dataset_init
     )
 
-    if path:
+    if 'path' not in custom_cfg:
+        raise ValueError(f"Path required but not found in harmonized configuration: {custom_cfg}")
+
+    path = custom_cfg.pop("path")
+    # download_file_from_remote expects an s3 path
+    if path.startswith("s3://"):
+        custom_cfg["path"] = download_file_from_remote(path)
+    elif "://" in path:
+        # FIXME MICHELLE better way to determine remote protocol?
+        raise ValueError(f"Remote protocols other than s3 are not currently supported: {path}")
+    else:
         path = Path(path) if isinstance(path, str) else path
         resolved_path = path.expanduser().resolve()
 
@@ -157,8 +168,7 @@ def load_customized_dataset(
             raise FileNotFoundError(f"Local dataset file not found: {resolved_path}")
 
         custom_cfg["path"] = str(resolved_path)
-    else:
-        custom_cfg["path"] = download_file_from_remote(custom_cfg["path"])
+        
 
     dataset = instantiate(custom_cfg)
     dataset.load_data()

@@ -26,29 +26,20 @@ def test_load_local_dataset(tmp_path, monkeypatch):
             self.loaded = True
 
     # Dynamically create a dummy module and add DummyDataset to it
-    # FIXME MICHELLE
-    # dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
-    # dummy_module.DummyDataset = DummyDataset
-    # sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
-    dummy_module = types.ModuleType("czbenchmarks.datasets")
+    dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
     dummy_module.DummyDataset = DummyDataset
-    sys.modules["czbenchmarks.datasets"] = dummy_module
+    sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
 
     # Now call load_customized_dataset with the dummy class
-    dataset_update_dict = {
+    custom_dataset_init = {
+        "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
         "organism": Organism.HUMAN,
         "path": str(dummy_file),
         "foo": "bar",
     }
-    # dataset = load_customized_dataset(
-    #     dataset_class="czbenchmarks.datasets.dummy.DummyDataset",
-    #     organism=Organism.HUMAN,
-    #     path=str(dummy_file),
-    #     foo="bar",
-    # )
     dataset = load_customized_dataset(
         dataset_name="my_dummy_dataset",
-        **dataset_update_dict
+        custom_dataset_init=custom_dataset_init
     )
 
     assert isinstance(dataset, DummyDataset)
@@ -111,3 +102,6 @@ class TestUtils:
         """Test that load_dataset raises ValueError for invalid dataset name."""
         with pytest.raises(ValueError):
             load_dataset("invalid_dataset")
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-k", "test_load_local_dataset"])
