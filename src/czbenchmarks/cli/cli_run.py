@@ -207,7 +207,7 @@ def add_dynamic_task_command(task_name: str):
                 dataset = load_customized_dataset(
                     dataset_class=dataset_name,
                     path=str(resolved_path),
-                    **dataset_update_dict
+                    **dataset_update_dict,
                 )
             elif dataset_name:
                 dataset = load_dataset(dataset_name)

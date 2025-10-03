@@ -86,11 +86,11 @@ def load_custom_config(
     Returns:
         Configuration
     """
-    initialize_hydra(config_path=config_path)    
-    
+    initialize_hydra(config_path=config_path)
+
     # Disable strict checking to allow adding new keys not in the original config
     cfg = hydra.compose(config_name=config_name)
-    
+
     # Load a customized configuration
     if class_init_kwargs:
         OmegaConf.set_struct(cfg, False)

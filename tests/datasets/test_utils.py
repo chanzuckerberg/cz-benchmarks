@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 
 
-# FIXME MICHELLE parameterize test for: 
+# FIXME MICHELLE parameterize test for:
 # path: local path, remote path, no path
 # dataset name: existing dataset, new dataset
 # other parameters: some overwritten, some are new
@@ -43,8 +43,7 @@ def test_load_customized_dataset(tmp_path, monkeypatch):
         "foo": "bar",
     }
     dataset = load_customized_dataset(
-        dataset_name=dataset_name,
-        custom_dataset_config=custom_dataset_config
+        dataset_name=dataset_name, custom_dataset_config=custom_dataset_config
     )
 
     assert isinstance(dataset, DummyDataset)
@@ -107,6 +106,7 @@ class TestUtils:
         """Test that load_dataset raises ValueError for invalid dataset name."""
         with pytest.raises(ValueError):
             load_dataset("invalid_dataset")
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-k", "test_test_load_customized_dataset"])

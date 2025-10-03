@@ -120,7 +120,7 @@ def load_customized_dataset(
     """
     Instantiate a dataset with a custom configuration. This can include but
     is not limited to a local path for a custom dataset file. If the dataset
-    exists in the default config, this function will update parameters. 
+    exists in the default config, this function will update parameters.
     Otherwise, it will add the dataset to the default config.
 
     This function is completely independent from load_dataset() and directly
@@ -128,7 +128,7 @@ def load_customized_dataset(
 
     Args:
         dataset_name: The name of the dataset, either custom or from the config
-        custom_class_init: Custom configuration dictionary for the dataset. 
+        custom_class_init: Custom configuration dictionary for the dataset.
 
     Returns:
         Instantiated dataset object with data loaded.
@@ -151,21 +151,27 @@ def load_customized_dataset(
     """
 
     custom_cfg = load_custom_config(
-        item_name=dataset_name, config_name="datasets", class_init_kwargs=custom_dataset_config
+        item_name=dataset_name,
+        config_name="datasets",
+        class_init_kwargs=custom_dataset_config,
     )
 
-    if 'path' not in custom_cfg:
-        raise ValueError(f"Path required but not found in harmonized configuration: {custom_cfg}")
+    if "path" not in custom_cfg:
+        raise ValueError(
+            f"Path required but not found in harmonized configuration: {custom_cfg}"
+        )
 
     path = custom_cfg.pop("path")
     protocol = urlparse(str(path)).scheme
 
     if protocol:
         # download_file_from_remote expects an s3 path
-        if protocol == 's3':
+        if protocol == "s3":
             custom_cfg["path"] = download_file_from_remote(path)
         else:
-            raise ValueError(f"Remote protocols other than s3 are not currently supported: {path}")
+            raise ValueError(
+                f"Remote protocols other than s3 are not currently supported: {path}"
+            )
     else:
         logger.info(f"Local dataset file found: {path}")
         resolved_path = Path(path).expanduser().resolve()
@@ -174,7 +180,7 @@ def load_customized_dataset(
             raise FileNotFoundError(f"Local dataset file not found: {resolved_path}")
 
         custom_cfg["path"] = str(resolved_path)
-        
+
     dataset = instantiate(custom_cfg)
     dataset.load_data()
 

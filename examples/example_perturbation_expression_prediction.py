@@ -76,7 +76,6 @@ def parse_args():
     return parser.parse_args()
 
 
-
 def generate_random_model_predictions(dataset, n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
     This should be an anndata file where the obs.index contains the cell
@@ -139,10 +138,7 @@ if __name__ == "__main__":
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
 
-    dataset = load_customized_dataset(
-        dataset_name=dataset_name,
-        **dataset_update_dict
-    )
+    dataset = load_customized_dataset(dataset_name=dataset_name, **dataset_update_dict)
     dataset.validate()
 
     # This generates sample model anndata. In applications,
