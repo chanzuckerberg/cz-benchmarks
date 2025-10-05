@@ -9,7 +9,7 @@ from czbenchmarks.types import ListLike
 from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult, MetricType
 from .constants import FLAVOR, KEY_ADDED, N_ITERATIONS
-from .task import Task, TaskInput, TaskOutput
+from .task import PCABaselineInput, Task, TaskInput, TaskOutput
 from .types import CellRepresentation
 from .utils import cluster_embedding
 
@@ -44,6 +44,7 @@ class ClusteringTask(Task):
     display_name = "Clustering"
     description = "Evaluate clustering performance against ground truth labels using ARI and NMI metrics."
     input_model = ClusteringTaskInput
+    baseline_model = PCABaselineInput
 
     def __init__(
         self,

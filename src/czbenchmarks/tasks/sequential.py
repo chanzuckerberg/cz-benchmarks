@@ -2,12 +2,13 @@ import logging
 from typing import List
 
 import pandas as pd
+import scipy.sparse as sp
 
 from czbenchmarks.types import ListLike
 
 from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, TaskOutput
+from .task import PCABaselineInput, Task, TaskInput, TaskOutput
 from .types import CellRepresentation
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class SequentialOrganizationTask(Task):
     display_name = "Sequential Organization"
     description = "Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics."
     input_model = SequentialOrganizationTaskInput
+    baseline_model = PCABaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -86,6 +88,10 @@ class SequentialOrganizationTask(Task):
         results = []
         embedding = task_output.embedding
         labels = task_input.input_labels
+
+        # Convert sparse matrix to dense if needed for JAX compatibility in metrics
+        if sp.issparse(embedding):
+            embedding = embedding.toarray()
 
         # Embedding Silhouette Score with sequential labels
         results.append(

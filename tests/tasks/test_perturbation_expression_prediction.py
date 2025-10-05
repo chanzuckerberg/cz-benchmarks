@@ -153,4 +153,4 @@ def test_perturbation_expression_prediction_task_wilcoxon(
     )
 
     with pytest.raises(NotImplementedError):
-        task.compute_baseline(cell_representation=adata.X)
+        task.compute_baseline(adata.X)

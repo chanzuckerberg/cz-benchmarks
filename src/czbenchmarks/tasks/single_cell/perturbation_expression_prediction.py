@@ -9,7 +9,7 @@ from scipy import sparse as sp_sparse
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
-from ..task import Task, TaskInput, TaskOutput
+from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
 from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
@@ -70,6 +70,7 @@ class PerturbationExpressionPredictionTask(Task):
     display_name = "Perturbation Expression Prediction"
     description = "Evaluate the quality of predicted changes in expression levels for genes that are differentially expressed under perturbation(s) using multiple classification and correlation metrics."
     input_model = PerturbationExpressionPredictionTaskInput
+    baseline_model = NoBaselineInput
 
     def __init__(
         self,
@@ -371,14 +372,14 @@ class PerturbationExpressionPredictionTask(Task):
                 "adata.uns['control_cells_map'] is required and must be a dict."
             )
 
-    def compute_baseline(self, **kwargs):
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        baseline_input: NoBaselineInput = None,
+    ):
         """Set a baseline embedding for perturbation expression prediction.
 
-        This method is not implemented for perturbation expression prediction
-        tasks.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
+        Not implemented as this task evaluates expression matrices, not embeddings.
         """
         raise NotImplementedError(
             "Baseline not implemented for perturbation expression prediction."

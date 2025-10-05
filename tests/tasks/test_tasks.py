@@ -9,6 +9,12 @@ from czbenchmarks.tasks import (
     MetadataLabelPredictionTask,
     MetadataLabelPredictionTaskInput,
 )
+from czbenchmarks.tasks.task import (
+    PCABaselineInput,
+)
+from czbenchmarks.tasks.label_prediction import (
+    LabelPredictionBaselineInput,
+)
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
@@ -135,11 +141,14 @@ def test_task_execution(
 
         # Test baseline execution if implemented
         try:
-            n_pcs = min(50, expression_matrix.shape[1] - 1)
-            baseline_embedding = task.compute_baseline(expression_matrix, n_pcs=n_pcs)
-            if hasattr(task_input, "var"):
-                task_input.var = task_input.var.iloc[:n_pcs]
-
+            # Use the appropriate baseline input type for each task
+            if task_class.__name__ == "MetadataLabelPredictionTask":
+                baseline_input = LabelPredictionBaselineInput()
+            else:
+                baseline_input = PCABaselineInput(n_pcs=50, n_top_genes=3000, obsm_key="emb")
+            
+            baseline_embedding = task.compute_baseline(expression_matrix, baseline_input)
+            
             baseline_results = task.run(
                 cell_representation=baseline_embedding,
                 task_input=task_input,
@@ -177,8 +186,10 @@ def test_cross_species_task(embedding_matrix, obs):
         assert all(isinstance(r, MetricResult) for r in results)
 
         # Test that baseline raises NotImplementedError
+        import numpy as np
+        dummy_expression_data = np.random.rand(10, 5)
         with pytest.raises(NotImplementedError):
-            task.compute_baseline()
+            task.compute_baseline(dummy_expression_data)
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")

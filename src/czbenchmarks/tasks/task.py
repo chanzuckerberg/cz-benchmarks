@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import inspect
-import typing
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Type, Union
 
 import anndata as ad
+import scipy.sparse as sp
 from pydantic import BaseModel, ValidationError
 from pydantic.fields import PydanticUndefined
 
@@ -13,6 +13,26 @@ from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult
 from .types import CellRepresentation
 from .utils import run_standard_scrna_workflow
+
+
+class BaselineInput(BaseModel):
+    """Base class for baseline inputs."""
+
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class PCABaselineInput(BaselineInput):
+    """Input for the standard PCA baseline workflow."""
+
+    n_top_genes: int = 3000
+    n_pcs: int = 50
+    obsm_key: str = "emb"
+
+
+class NoBaselineInput(BaselineInput):
+    """A model to signify that no baseline is available for a task."""
+
+    pass
 
 
 class TaskInput(BaseModel):
@@ -101,35 +121,27 @@ class TaskRegistry:
                         required=field_info.is_required(),
                     )
 
-            # 2. Get Baseline Parameters from the compute_baseline method signature
+            # 2. Get Baseline Parameters from the Pydantic baseline model
             baseline_params = {}
-            try:
-                hints = typing.get_type_hints(
-                    task_class.compute_baseline, include_extras=True
-                )
-                sig = inspect.signature(task_class.compute_baseline)
-                for param in list(sig.parameters.values())[1:]:  # Skip 'self'
-                    if param.name in {
-                        "kwargs",
-                        "cell_representation",
-                        "expression_data",
-                    }:
-                        continue
-                    type_info = hints.get(param.name, Any)
+            if hasattr(task_class, "baseline_model") and issubclass(
+                task_class.baseline_model, BaseModel
+            ):
+                for (
+                    field_name,
+                    field_info,
+                ) in task_class.baseline_model.model_fields.items():
+                    type_info = self._extract_type_info(
+                        field_info.annotation, field_name
+                    )
                     type_str = self._stringify_type(type_info)
-                    baseline_params[param.name] = TaskParameter(
+                    baseline_params[field_name] = TaskParameter(
                         type=type_info,
                         stringified_type=type_str,
-                        default=param.default
-                        if param.default != inspect.Parameter.empty
+                        default=field_info.default
+                        if field_info.default is not PydanticUndefined
                         else None,
-                        required=param.default == inspect.Parameter.empty,
+                        required=field_info.is_required(),
                     )
-            except Exception as e:
-                # If baseline introspection fails, continue without baseline params
-                print(
-                    f"Warning: Could not introspect baseline parameters for {task_class.__name__}: {e}"
-                )
 
             # 3. Get additional task metadata
             description = self._extract_description(task_class)
@@ -151,7 +163,6 @@ class TaskRegistry:
                 description="Task introspection failed - please check task implementation",
                 task_params={},
                 baseline_params={},
-                metrics=[],
             )
 
     def _extract_type_info(self, annotation: Any, param_name: str) -> type:
@@ -295,6 +306,9 @@ class Task(ABC):
         random_seed (int): Random seed for reproducibility
     """
 
+    input_model: Type[TaskInput]
+    baseline_model: Type[BaselineInput]  # Add baseline_model attribute
+
     def __init__(
         self,
         *,
@@ -359,25 +373,27 @@ class Task(ABC):
     def compute_baseline(
         self,
         expression_data: CellRepresentation,
-        **kwargs,
+        baseline_input: PCABaselineInput = None,
     ) -> CellRepresentation:
-        """Set a baseline embedding using PCA on gene expression data.
-
-        This method performs standard preprocessing on the raw gene expression data
-        and uses PCA for dimensionality reduction. It then sets the PCA embedding
-        as the BASELINE model output in the dataset, which can be used for comparison
-        with other model embeddings.
-
-        Args:
-            expression_data: expression data to use for anndata
-            **kwargs: Additional arguments passed to run_standard_scrna_workflow
-        """
-
+        """Set a baseline embedding using PCA on gene expression data."""
+        if baseline_input is None:
+            baseline_input = PCABaselineInput()
+        
+        # Convert sparse matrix to dense if needed for JAX compatibility
+        if sp.issparse(expression_data):
+            expression_data = expression_data.toarray()
+            
         # Create the AnnData object
         adata = ad.AnnData(X=expression_data)
 
         # Run the standard preprocessing workflow
-        embedding_baseline = run_standard_scrna_workflow(adata, **kwargs)
+        embedding_baseline = run_standard_scrna_workflow(
+            adata,
+            n_top_genes=baseline_input.n_top_genes,
+            n_pcs=baseline_input.n_pcs,
+            obsm_key=baseline_input.obsm_key,
+            random_state=self.random_seed,
+        )
         return embedding_baseline
 
     def run(

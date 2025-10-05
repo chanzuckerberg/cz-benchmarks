@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 
 from ...constants import RANDOM_SEED
 from ..constants import N_FOLDS
-from ..task import Task, TaskInput, TaskOutput
+from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics.types import MetricResult, MetricType
@@ -62,6 +62,10 @@ class CrossSpeciesLabelPredictionTask(Task):
     """
 
     display_name = "cross-species label prediction"
+    description = "Evaluate cross-species label prediction performance using multiple classifiers."
+
+    input_model = CrossSpeciesLabelPredictionTaskInput
+    baseline_model = NoBaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -490,14 +494,14 @@ class CrossSpeciesLabelPredictionTask(Task):
 
         return metrics_list
 
-    def compute_baseline(self, **kwargs):
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        baseline_input: NoBaselineInput = None,
+    ):
         """Set a baseline for cross-species label prediction.
 
-        This method is not implemented for cross-species prediction tasks
-        as standard preprocessing workflows need to be applied per species.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
+        Not implemented as standard preprocessing needs to be applied per species.
         """
         raise NotImplementedError(
             "Baseline not implemented for cross-species label prediction"

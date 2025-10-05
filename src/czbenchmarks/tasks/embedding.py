@@ -1,12 +1,14 @@
 import logging
 from typing import List
 
+import scipy.sparse as sp
+
 from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from ..tasks.types import CellRepresentation
 from ..types import ListLike
-from .task import Task, TaskInput, TaskOutput
+from .task import PCABaselineInput, Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,7 @@ class EmbeddingTask(Task):
     display_name = "Embedding"
     description = "Evaluate cell representation quality using silhouette score with ground truth labels."
     input_model = EmbeddingTaskInput
+    baseline_model = PCABaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -67,6 +70,11 @@ class EmbeddingTask(Task):
         """
         metric_type = MetricType.SILHOUETTE_SCORE
         cell_representation = task_output.cell_representation
+        
+        # Convert sparse matrix to dense if needed for JAX compatibility in metrics
+        if sp.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
+            
         return [
             MetricResult(
                 metric_type=metric_type,

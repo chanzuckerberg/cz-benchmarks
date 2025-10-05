@@ -54,6 +54,11 @@ class AnnDataReference(BaseModel):
         data_space = self.space
         data_key = self.key
 
+        if data_space == "adata":
+            if data_key is not None:
+                raise ValueError("Reference '@adata' does not take a key")
+            return anndata
+            
         if data_space == "X":
             if data_key is not None:
                 raise ValueError("Ref '@X' does not take a key")
