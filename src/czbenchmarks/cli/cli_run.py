@@ -149,7 +149,7 @@ def run():
 
 def add_dynamic_task_command(task_name: str):
     task_info = TASK_REGISTRY.get_task_info(task_name)
-    command_help_text = TASK_REGISTRY.get_task_help(task_name)
+    # command_help_text = TASK_REGISTRY.get_task_help(task_name)
 
     def task_execution_handler(**cli_kwargs):
         dataset_name: str = cli_kwargs.pop("dataset")
@@ -259,7 +259,7 @@ def add_dynamic_task_command(task_name: str):
         else:
             click.echo(json_output)
 
-    task_command = click.command(name=task_name, help=command_help_text)(
+    task_command = click.command(name=task_name)(
         task_execution_handler
     )
 

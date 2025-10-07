@@ -8,11 +8,12 @@ import anndata as ad
 import scipy.sparse as sp
 from pydantic import BaseModel, ValidationError
 from pydantic.fields import PydanticUndefined
-
+from typing import get_args
 from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult
 from .types import CellRepresentation
 from .utils import run_standard_scrna_workflow
+
 
 
 class BaselineInput(BaseModel):
@@ -206,46 +207,61 @@ class TaskRegistry:
             )
         return self._registry[task_name]
 
-    def get_task_help(self, task_name: str) -> str:
-        """Generate detailed help text for a specific task."""
-        try:
-            task_info = self.get_task_info(task_name)
-            help_text = [
-                f"Task: {task_info.display_name}",
-                f"Description: {task_info.description}",
-                "",
-            ]
+    # def get_task_help(self, task_name: str) -> str:
+    #     """Generate detailed help text for a specific task."""
+    #     try:
+    #         task_info = self.get_task_info(task_name)
+    #         help_text = [
+    #             f"Task: {task_info.display_name}",
+    #             f"Description: {task_info.description}",
+    #             "",
+    #         ]
 
-            if task_info.task_params:
-                help_text.append("Task Parameters:")
-                for param_name, param_info in task_info.task_params.items():
-                    required_str = (
-                        "(required)"
-                        if param_info.required
-                        else f"(optional, default: {param_info.default})"
-                    )
-                    help_text.append(
-                        f"  --{param_name.replace('_', '-')}: {param_info.type} {required_str}"
-                    )
-                help_text.append("")
+    #         if task_info.task_params:
+    #             help_text.append("Task Parameters:")
+    #             for param_name, param_info in task_info.task_params.items():
+    #                 required_str = (
+    #                     "(required)"
+    #                     if param_info.required
+    #                     else f"(optional, default: {param_info.default})"
+    #                 )
+    #                 help_text.append(
+    #                     f"  --{param_name.replace('_', '-')}: {param_info.type} {required_str}"
+    #                 )
+    #             help_text.append("")
 
-            if task_info.baseline_params:
-                help_text.append("Baseline Parameters (use with --compute-baseline):")
-                for param_name, param_info in task_info.baseline_params.items():
-                    required_str = (
-                        "(required)"
-                        if param_info.required
-                        else f"(optional, default: {param_info.default})"
-                    )
-                    help_text.append(
-                        f"  --baseline-{param_name.replace('_', '-')}: {param_info.type} {required_str}"
-                    )
-                help_text.append("")
+    #         if task_info.baseline_params:
+    #             if task_info.baseline_params.__name__ == "NoBaselineInput":
+    #                 help_text.append("Baselines: This task does not support a baseline.")
+    #             else:
+    #                 help_text.append("Baseline Parameters:")
+    #                 for param_name, param_info in task_info.baseline_params.items():
+    #                     required_str = (
+    #                         "(required)"
+    #                         if param_info.required
+    #                         else f"(optional, default: {param_info.default})"
+    #                     )
+    #                     help_text.append(
+    #                         f"  --baseline-{param_name.replace('_', '-')}: {param_info.type} {required_str}"
+    #                     )
+    #                 help_text.append("")
+    #         elif task_info.baseline_params:                
+    #             help_text.append("Baseline Parameters:")
+    #             for param_name, param_info in task_info.baseline_params.items():
+    #                 required_str = (
+    #                     "(required)"
+    #                     if param_info.required
+    #                     else f"(optional, default: {param_info.default})"
+    #                 )
+    #                 help_text.append(
+    #                     f"  --baseline-{param_name.replace('_', '-')}: {param_info.type} {required_str}"
+    #                 )
+    #             help_text.append("")
 
-            return "\n".join(help_text)
+    #         return "\n".join(help_text)
 
-        except Exception as e:
-            return f"Error generating help for task '{task_name}': {e}"
+    #     except Exception as e:
+    #         return f"Error generating help for task '{task_name}': {e}"
 
     def validate_task_input(self, task_name: str, parameters: Dict[str, Any]) -> None:
         """Strictly validate parameters using the Pydantic input model."""
@@ -418,16 +434,12 @@ class Task(ABC):
         # Check if task requires embeddings from multiple datasets
         if self.requires_multiple_datasets:
             error_message = "This task requires a list of cell representations"
-            if not isinstance(cell_representation, list):
-                raise ValueError(error_message)
-            if not all(
-                [isinstance(emb, CellRepresentation) for emb in cell_representation]
-            ):
+            if not all(isinstance(emb, get_args(CellRepresentation)) for emb in cell_representation):               
                 raise ValueError(error_message)
             if len(cell_representation) < 2:
                 raise ValueError(f"{error_message} but only one was provided")
         else:
-            if not isinstance(cell_representation, CellRepresentation):
+            if not isinstance(cell_representation, get_args(CellRepresentation)):
                 raise ValueError(
                     "This task requires a single cell representation for input"
                 )

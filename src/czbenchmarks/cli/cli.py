@@ -3,7 +3,7 @@ import logging
 import click
 
 from .cli_list import list_cmd
-from .cli_run import run
+# from .cli_run import run
 from .utils import get_version
 
 
@@ -31,7 +31,7 @@ def main(log_level: str):
 
 # Add subcommands to the main group
 main.add_command(list_cmd)
-main.add_command(run)
+# main.add_command(run)
 
 if __name__ == "__main__":
     main()
