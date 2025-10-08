@@ -94,12 +94,13 @@ def load_custom_config(
     # Load a customized configuration
     if class_init_kwargs:
         OmegaConf.set_struct(cfg, False)
-        with open_dict(cfg):
-            if item_name not in cfg[config_name]:
-                cfg[config_name][item_name] = {}
-                logger.info(f"Added new item {item_name} to config {config_name}")
-            for key, value in class_init_kwargs.items():
-                cfg[config_name][item_name][key] = value
+        # with open_dict(cfg):
+        # if item_name not in cfg[config_name]:
+        #     cfg[config_name][item_name] = {}
+        #     logger.info(f"Added new item {item_name} to config {config_name}")
+        # for key, value in class_init_kwargs.items():
+        #     cfg[config_name][item_name][key] = value
+        cfg[config_name][item_name] = OmegaConf.create(class_init_kwargs)
 
     custom_cfg = cfg[config_name][item_name]
     return custom_cfg

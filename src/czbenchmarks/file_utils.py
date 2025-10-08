@@ -99,7 +99,9 @@ def download_file_from_remote(
     if not protocol:
         raise ValueError(f"Only S3 paths are supported, got local path: {remote_url}")
     elif protocol != "s3":
-        raise ValueError(f"Unsupported protocol {protocol} for remote URL: {remote_url}")
+        raise ValueError(
+            f"Unsupported protocol {protocol} for remote URL: {remote_url}"
+        )
     else:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
 

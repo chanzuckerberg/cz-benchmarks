@@ -7,16 +7,38 @@ from unittest.mock import patch
 import pytest
 
 
-# FIXME MICHELLE parameterize test for:
-# path: local path, remote path, no path
-# dataset name: existing dataset, new dataset
-# other parameters: some overwritten, some are new
-def test_load_customized_dataset(tmp_path, monkeypatch):
+# FIXME MICHELLE find class with data that loads more quickly
+@pytest.mark.parametrize(
+    "dataset_path, dataset_name, custom_dataset_config",
+    [
+        # (
+        #     "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
+        #     "replogle_k562_essential_perturbpredict",
+        #     {"_target_": "czbenchmarks.datasets.SingleCellPerturbationDataset", "organism": Organism.HUMAN, "percent_genes_to_mask": .075},
+        # ),
+        (
+            "dummy.h5ad",
+            "my_dummy_dataset",
+            {
+                "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                "organism": Organism.HUMAN,
+                "foo": "bar",
+            },
+        ),
+    ],
+)
+def test_load_customized_dataset(
+    tmp_path, dataset_path, dataset_name, custom_dataset_config
+):
     """Test load_customized_dataset instantiates and loads a customized dataset."""
 
-    # Create a dummy file to represent the dataset
-    dummy_file = tmp_path / "dummy.h5ad"
-    dummy_file.write_text("dummy content")
+    if not dataset_path.startswith("s3://"):
+        # Create a dummy file to represent the dataset
+        dummy_file = tmp_path / dataset_path
+        dummy_file.write_text("dummy content")
+        custom_dataset_config["path"] = str(dummy_file)
+    else:
+        custom_dataset_config["path"] = dataset_path
 
     # Create a dummy dataset class
     class DummyDataset:
@@ -30,27 +52,22 @@ def test_load_customized_dataset(tmp_path, monkeypatch):
             self.loaded = True
 
     # Dynamically create a dummy module and add DummyDataset to it
-    dummy_module = types.ModuleType("czbenchmarks.datasets.dummy")
+    target_module = custom_dataset_config["_target_"].split(".")[:-1]
+    target_module = ".".join(target_module)
+    dummy_module = types.ModuleType(target_module)
     dummy_module.DummyDataset = DummyDataset
-    sys.modules["czbenchmarks.datasets.dummy"] = dummy_module
+    sys.modules[target_module] = dummy_module
 
-    # Now call load_customized_dataset with the dummy class
-    dataset_name = "my_dummy_dataset"
-    custom_dataset_config = {
-        "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
-        "organism": Organism.HUMAN,
-        "path": str(dummy_file),
-        "foo": "bar",
-    }
+    # Call load_customized_dataset with the dummy class
     dataset = load_customized_dataset(
         dataset_name=dataset_name, custom_dataset_config=custom_dataset_config
     )
 
     assert isinstance(dataset, DummyDataset)
     assert dataset.loaded is True
-    assert dataset.path == str(dummy_file)
-    assert dataset.organism == Organism.HUMAN
-    assert dataset.kwargs["foo"] == "bar"
+    assert dataset.path == custom_dataset_config["path"]
+    assert dataset.organism == custom_dataset_config["organism"]
+    assert dataset.kwargs["foo"] == custom_dataset_config["foo"]
 
 
 def test_list_available_datasets():

@@ -1,4 +1,7 @@
 import hydra
+import pytest
+from czbenchmarks.datasets.types import Organism
+from czbenchmarks.utils import load_custom_config
 from pathlib import Path
 from omegaconf import OmegaConf
 from czbenchmarks.utils import initialize_hydra, import_class_from_config
@@ -54,9 +57,39 @@ def test_import_class_from_config(tmp_path):
     assert instance.param2 == 42
 
 
-# FIXME MICHELLE write test for load_custom_config, with parameters:
-# item_name: existing item, new item
-# config_name: existing config, new config
-# class_init_kwargs: some overwritten, some are new
-def test_load_custom_config(tmp_path):
-    pass
+@pytest.mark.parametrize(
+    "dataset_path, dataset_name, custom_dataset_config",
+    [
+        (
+            "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
+            "replogle_k562_essential_perturbpredict",
+            {
+                "_target_": "czbenchmarks.datasets.SingleCellPerturbationDataset",
+                "organism": Organism.HUMAN,
+                "percent_genes_to_mask": 0.075,
+            },
+        ),
+        (
+            "dummy.h5ad",
+            "my_dummy_dataset",
+            {
+                "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                "organism": Organism.HUMAN,
+                "foo": "bar",
+            },
+        ),
+    ],
+)
+def test_load_custom_config(dataset_path, dataset_name, custom_dataset_config):
+    """Test load_customized_config instantiates and loads a customized configuration."""
+
+    custom_dataset_config["path"] = dataset_path
+    custom_cfg = load_custom_config(
+        item_name=dataset_name,
+        config_name="datasets",
+        class_init_kwargs=custom_dataset_config,
+    )
+
+    assert custom_cfg.path == custom_dataset_config["path"]
+    for key, value in custom_dataset_config.items():
+        assert custom_cfg[key] == value

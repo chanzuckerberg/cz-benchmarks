@@ -90,11 +90,16 @@ def test_download_file_from_remote(monkeypatch, temp_dir):
     )
 
 
-@pytest.mark.parametrize("remote_url, exception_match", [
-    ("https://example.com/file.txt", "Unsupported protocol"),   
-    ("/tmp/local/path/dummy.h5ad", "Only S3 paths are supported, got local path"),
-])
-def test_download_file_from_remote_invalid_protocol(temp_dir, remote_url, exception_match):
+@pytest.mark.parametrize(
+    "remote_url, exception_match",
+    [
+        ("https://example.com/file.txt", "Unsupported protocol"),
+        ("/tmp/local/path/dummy.h5ad", "Only S3 paths are supported, got local path"),
+    ],
+)
+def test_download_file_from_remote_invalid_protocol(
+    temp_dir, remote_url, exception_match
+):
     """Test download_file_from_remote rejects unsupported URLs."""
     with pytest.raises(ValueError, match=exception_match):
         download_file_from_remote(remote_url, cache_dir=temp_dir)
