@@ -94,7 +94,9 @@ def load_custom_config(
     # Load a customized configuration
     if class_init_kwargs:
         OmegaConf.set_struct(cfg, False)
-        cfg[config_name][item_name] = OmegaConf.create(class_init_kwargs)
+        cfg[config_name][item_name] = OmegaConf.merge(
+            cfg[config_name][item_name], class_init_kwargs
+        )
 
     custom_cfg = cfg[config_name][item_name]
     return custom_cfg
