@@ -61,21 +61,21 @@ def test_import_class_from_config(tmp_path):
     "dataset_path, dataset_name, custom_dataset_config",
     [
         (
-            "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
-            "replogle_k562_essential_perturbpredict",
-            {
-                "_target_": "czbenchmarks.datasets.SingleCellPerturbationDataset",
-                "organism": Organism.HUMAN,
-                "percent_genes_to_mask": 0.075,
-            },
-        ),
-        (
             "dummy.h5ad",
             "my_dummy_dataset",
             {
                 "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
                 "organism": Organism.HUMAN,
                 "foo": "bar",
+            },
+        ),
+        (
+            "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
+            "replogle_k562_essential_perturbpredict",
+            {
+                "_target_": "czbenchmarks.datasets.SingleCellPerturbationDataset",
+                "organism": Organism.HUMAN,
+                "percent_genes_to_mask": 0.075,
             },
         ),
     ],
@@ -93,3 +93,7 @@ def test_load_custom_config(dataset_path, dataset_name, custom_dataset_config):
     assert custom_cfg.path == custom_dataset_config["path"]
     for key, value in custom_dataset_config.items():
         assert custom_cfg[key] == value
+
+
+if __name__ == "__main__":
+    pytest.main(["-v", __file__, "-k", "test_load_custom_config"])

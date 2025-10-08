@@ -94,6 +94,10 @@ def load_custom_config(
     # Load a customized configuration
     if class_init_kwargs:
         OmegaConf.set_struct(cfg, False)
+        if item_name not in cfg[config_name]:
+            with open_dict(cfg):
+                cfg[config_name][item_name] = {}
+                logger.info(f"Added new item {item_name} to config {config_name}")
         cfg[config_name][item_name] = OmegaConf.merge(
             cfg[config_name][item_name], class_init_kwargs
         )
