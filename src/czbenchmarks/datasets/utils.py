@@ -153,7 +153,7 @@ def load_customized_dataset(
     custom_cfg = load_custom_config(
         item_name=dataset_name,
         config_name="datasets",
-        class_init_kwargs=custom_dataset_config,
+        class_update_kwargs=custom_dataset_config,
     )
 
     if "path" not in custom_cfg:

@@ -87,7 +87,7 @@ def test_load_custom_config(dataset_path, dataset_name, custom_dataset_config):
     custom_cfg = load_custom_config(
         item_name=dataset_name,
         config_name="datasets",
-        class_init_kwargs=custom_dataset_config,
+        class_update_kwargs=custom_dataset_config,
     )
 
     assert custom_cfg.path == custom_dataset_config["path"]
