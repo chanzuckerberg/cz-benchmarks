@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.14.0...v0.14.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* consistent pluralization for "Virtual Cells Platform" name ([#447](https://github.com/chanzuckerberg/cz-benchmarks/issues/447)) ([8dc5fa8](https://github.com/chanzuckerberg/cz-benchmarks/commit/8dc5fa872e125ad385bdd409007a5e04884acc28))
+
 ## [0.14.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.13.0...v0.14.0) (2025-10-01)
 
 
