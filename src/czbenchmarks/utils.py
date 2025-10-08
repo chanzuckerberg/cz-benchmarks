@@ -1,15 +1,18 @@
 import logging
+from typing import Any, Dict
 
 import hydra
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, open_dict
 
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logging.getLogger("botocore.httpchecksum").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_HYDRA_CONFIG_PATH = "./conf"
 
-def initialize_hydra(config_path="./conf"):
+
+def initialize_hydra(config_path=DEFAULT_HYDRA_CONFIG_PATH):
     """
     Initialize Hydra configuration system.
 
@@ -64,3 +67,39 @@ def import_class_from_config(config_path: str):
     logger.info(f"Imported class: {class_obj.__name__}")
 
     return class_obj
+
+
+def load_custom_config(
+    item_name: str,
+    config_name: str,
+    class_update_kwargs: Dict[str, Any],
+    config_path: str = DEFAULT_HYDRA_CONFIG_PATH,
+):
+    """Customize czbenchmarks parameters for class instantiation
+
+    Args:
+        item_name: Item from the czbenchmarks config to load, e.g. "replogle_k562_essential_perturbpredict" for "datasets.yaml"
+        config_name: Name of the czbenchmarks config to load, e.g. "datasets" for "datasets.yaml"
+        class_update_kwargs: Dictionary of parameters to update in the class instantiation
+        config_path: Optional path to a custom config YAML file. If not provided, czbenchmarks default config path is used.
+
+    Returns:
+        Configuration
+    """
+    initialize_hydra(config_path=config_path)
+
+    # Disable strict checking to allow adding new keys not in the original config
+    cfg = hydra.compose(config_name=config_name)
+
+    # Load a customized configuration
+    OmegaConf.set_struct(cfg, False)
+    if item_name not in cfg[config_name]:
+        with open_dict(cfg):
+            cfg[config_name][item_name] = {}
+            logger.info(f"Added new item {item_name} to config {config_name}")
+    cfg[config_name][item_name] = OmegaConf.merge(
+        cfg[config_name][item_name], class_update_kwargs
+    )
+
+    custom_cfg = cfg[config_name][item_name]
+    return custom_cfg

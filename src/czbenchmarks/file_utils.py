@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import boto3
 import botocore
@@ -89,13 +90,20 @@ def download_file_from_remote(
         - If the file already exists in the cache and is not expired, it will not be downloaded again.
         - Unsigned requests are tried first, followed by signed requests if the former fails.
     """
+
     cache_manager = (
         _default_cache_manager if cache_dir is None else CacheManager(cache_dir)
     )
-    try:
+
+    protocol = urlparse(remote_url).scheme
+    if not protocol:
+        raise ValueError(f"Only S3 paths are supported, got local path: {remote_url}")
+    elif protocol != "s3":
+        raise ValueError(
+            f"Unsupported protocol {protocol} for remote URL: {remote_url}"
+        )
+    else:
         bucket, remote_key = remote_url.removeprefix("s3://").split("/", 1)
-    except ValueError:
-        raise ValueError(f"Invalid remote URL: {remote_url}")
 
     local_file = cache_manager.get_cache_path(remote_url)
     if local_file.exists() and not cache_manager.is_expired(local_file):
