@@ -160,18 +160,22 @@ class TaskRegistry:
         """
         try:
             # Prefer Pydantic model introspection when available
-            if hasattr(task_class, "input_model") and hasattr(
-                task_class, "baseline_model"
-            ):
+            # Introspect task params
+            if hasattr(task_class, "input_model"):
                 task_params = self._introspect_pydantic_model(task_class.input_model)
-                baseline_params = self._introspect_pydantic_model(
-                    task_class.baseline_model
-                )
             else:
                 # Fallback to function signature introspection
                 task_params = self._introspect_function_signature(
                     task_class._run_task, exclude={"self", "cell_representation"}
                 )
+            
+            # Introspect baseline params
+            if hasattr(task_class, "baseline_model"):
+                baseline_params = self._introspect_pydantic_model(
+                    task_class.baseline_model
+                )
+            else:
+                # Fallback to function signature introspection
                 baseline_params = self._introspect_function_signature(
                     task_class.compute_baseline, exclude={"self", "expression_data"}
                 )

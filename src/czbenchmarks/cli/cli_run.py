@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, get_args
 
 import click
 import numpy as np
@@ -10,10 +11,13 @@ import pandas as pd
 
 from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
 from czbenchmarks.datasets import load_dataset
+from czbenchmarks.datasets.types import Organism
 from czbenchmarks.datasets.utils import load_local_dataset
-from czbenchmarks.tasks.task import TASK_REGISTRY
+from czbenchmarks.tasks.task import TASK_REGISTRY, TaskParameter
 
 from .runner import run_task
+
+logger = logging.getLogger(__name__)
 
 
 def load_numpy_array_from_path(file_path: str) -> np.ndarray:
@@ -42,7 +46,273 @@ def load_numpy_array_from_path(file_path: str) -> np.ndarray:
     raise ValueError(f"Unsupported file format: {file_extension}")
 
 
+def _to_organism_enum(s: str) -> Organism:
+    """Convert a string to an Organism enum, case-insensitive.
+
+    Supports enum names (e.g. "HUMAN"), species names (e.g. "homo_sapiens"),
+    gene prefix (e.g. "ENSG"), and common names like "human" or "mouse".
+
+    Args:
+        s: String to convert to Organism enum
+
+    Returns:
+        Organism enum value
+
+    Raises:
+        ValueError: If the string cannot be converted to an Organism
+    """
+    user_organism = s.strip().lower()
+    for organism in Organism:
+        logger.debug(
+            f"Resolving organism from: {user_organism}, to: {organism._name_.lower()}, "
+            f"{organism.value[0].lower()}, {organism.value[1].lower()}"
+        )
+        # Match enum name (e.g. "HUMAN")
+        if user_organism == organism._name_.lower():
+            return organism
+        # Match species name (e.g. "homo_sapiens")
+        if user_organism == organism.value[0].lower():
+            return organism
+        # Match gene prefix (e.g. "ENSG")
+        if organism.value[1] and user_organism == organism.value[1].lower():
+            return organism
+
+    valid_names = ", ".join([org._name_ for org in Organism])
+    logger.error(
+        f"Cannot convert '{s}' to Organism enum. Valid values are: {valid_names}"
+    )
+    raise ValueError(
+        f"Cannot convert '{s}' to Organism enum. Valid values are: {valid_names}"
+    )
+
+
+def _align_labels_to_organisms(
+    labels: List[str], organisms: List[str], default_label: str = "cell_type"
+) -> Tuple[List[str], List[Organism]]:
+    """Align and process labels and organisms for cross-species tasks.
+
+    - Ensures each organism has a corresponding label
+    - Converts label names to AnnData reference format if needed
+    - Pads labels with default if fewer labels than organisms
+    - Parses organism strings into Organism enums
+
+    Args:
+        labels: List of label strings (may be column names or references)
+        organisms: List of organism strings (e.g., "homo_sapiens", "HUMAN", etc.)
+        default_label: Default label to use if not enough labels provided
+
+    Returns:
+        Tuple of (processed_labels, organisms_list)
+            processed_labels: List of label references, one per organism
+            organisms_list: List of Organism enums
+    """
+    num_organisms = len(organisms)
+    labels = list(labels) if labels else []
+
+    # Pad labels if fewer than organisms
+    if len(labels) < num_organisms:
+        labels += [default_label] * (num_organisms - len(labels))
+    # Truncate if more labels than organisms
+    if len(labels) > num_organisms:
+        labels = labels[:num_organisms]
+
+    processed_labels = []
+    for idx, label in enumerate(labels):
+        if isinstance(label, str) and label.startswith("@"):
+            processed_labels.append(label)
+        else:
+            # For multi-dataset, use indexed references
+            processed_labels.append(f"@{idx}:obs:{label}")
+
+    organisms_list = []
+    for organism_str in organisms:
+        # Remove any suffix after colon if present
+        org_name = organism_str.split(":", 1)[0]
+        org_enum = _to_organism_enum(org_name)
+        organisms_list.append(org_enum)
+
+    return processed_labels, organisms_list
+
+
+def _normalize_label_param(name: str, value: Any) -> Any:
+    """Normalize common label-like parameters to AnnData references.
+
+    Converts simple column names like 'cell_type' to '@obs:cell_type' format.
+    Handles both single values and lists of values.
+
+    Args:
+        name: Parameter name
+        value: Parameter value to normalize
+
+    Returns:
+        Normalized value with proper AnnData reference format
+    """
+    # Parameters that should be normalized to @obs:column format
+    label_like = {"labels", "input_labels", "batch_labels", "sample_ids"}
+
+    if name not in label_like or not value:
+        return value
+
+    # Handle single string value
+    if isinstance(value, str):
+        if not value.startswith("@"):
+            return f"@obs:{value}"
+        return value
+
+    # Handle list/tuple of values
+    if isinstance(value, (list, tuple)):
+        normalized = []
+        for v in value:
+            if isinstance(v, str) and not v.startswith("@"):
+                normalized.append(f"@obs:{v}")
+            else:
+                normalized.append(v)
+        return normalized
+
+    return value
+
+
+def _build_option_from_param(
+    param: TaskParameter, is_baseline: bool = False
+) -> click.Option:
+    """Create a click.Option from a TaskParameter with proper type mapping.
+
+    Args:
+        param: TaskParameter to convert to Click option
+        is_baseline: Whether this is a baseline parameter
+
+    Returns:
+        click.Option configured for the parameter
+    """
+    prefix = "--baseline-" if is_baseline else "--"
+    long_name = f"{prefix}{param.name.replace('_', '-')}"
+
+    # Determine click type from Python type
+    click_type = click.STRING
+    if param.type is bool:
+        click_type = click.BOOL
+    elif param.type is int:
+        click_type = click.INT
+    elif param.type is float:
+        click_type = click.FLOAT
+
+    # Handle Literal types (choices)
+    param_str = str(param.type)
+    if "Literal" in param_str:
+        try:
+            choices = get_args(param.type)
+            if choices:
+                click_type = click.Choice([str(c) for c in choices])
+        except Exception:
+            pass
+
+    # Build help text
+    help_text = param.help_text
+    if not param.required and param.default is not None:
+        help_text += f" (Default: {param.default})"
+    if param.is_multiple:
+        help_text += " [multiple]"
+
+    # Build option kwargs
+    kwargs = {
+        "type": click_type,
+        "multiple": param.is_multiple,
+        "default": param.default if not param.is_multiple else None,
+        "help": help_text,
+        "required": param.required and param.default is None,
+    }
+
+    # Special handling for boolean flags
+    if click_type is click.BOOL:
+        kwargs["is_flag"] = True
+        kwargs["default"] = bool(param.default) if param.default is not None else False
+        return click.Option([long_name, f"--no-{long_name.lstrip('-')}"], **kwargs)
+
+    return click.Option([long_name], **kwargs)
+
+
+def _extract_and_normalize_cli_kwargs(
+    task_key: str, cli_params: Dict[str, Any]
+) -> Tuple[Dict[str, Any], Dict[str, Any], bool]:
+    """Extract and normalize CLI parameters into task and baseline dictionaries.
+
+    Separates parameters by task vs baseline, normalizes label-like parameters,
+    and handles special cases like organism resolution.
+
+    Args:
+        task_key: The task identifier
+        cli_params: Raw CLI parameters from Click
+
+    Returns:
+        Tuple of (task_kwargs, baseline_kwargs, baseline_param_seen)
+            task_kwargs: Normalized task parameters
+            baseline_kwargs: Normalized baseline parameters
+            baseline_param_seen: Whether any baseline param was provided
+    """
+    info = TASK_REGISTRY.get_task_info(task_key)
+    task_kwargs = {}
+    baseline_kwargs = {}
+    baseline_param_seen = False
+
+    # Extract task parameters
+    # Note: Click converts --kebab-case to snake_case in params dict
+    for name in info.task_params:
+        if name in cli_params and cli_params[name] is not None:
+            val = cli_params[name]
+            # Skip empty tuples from multiple params
+            if isinstance(val, tuple) and not val:
+                continue
+            # Normalize label-like parameters
+            task_kwargs[name] = _normalize_label_param(name, val)
+
+    # Extract baseline parameters
+    for name in info.baseline_params:
+        baseline_key = f"baseline_{name}"
+        if baseline_key in cli_params and cli_params[baseline_key] is not None:
+            val = cli_params[baseline_key]
+            if isinstance(val, tuple) and not val:
+                continue
+            baseline_kwargs[name] = val
+            baseline_param_seen = True
+
+    # Special handling for multi-dataset tasks with organisms
+    if info.requires_multiple_datasets:
+        if "organisms" in task_kwargs or "organism_list" in task_kwargs:
+            org_key = "organisms" if "organisms" in task_kwargs else "organism_list"
+            organisms = task_kwargs[org_key]
+
+            # Get labels if present
+            label_key = None
+            for key in ["labels", "input_labels"]:
+                if key in task_kwargs:
+                    label_key = key
+                    break
+
+            labels = task_kwargs.get(label_key, []) if label_key else []
+
+            try:
+                aligned_labels, organism_enums = _align_labels_to_organisms(
+                    labels, organisms
+                )
+                if label_key:
+                    task_kwargs[label_key] = aligned_labels
+                task_kwargs[org_key] = organism_enums
+            except ValueError as e:
+                raise click.ClickException(f"Organism resolution failed: {e}")
+
+    return task_kwargs, baseline_kwargs, baseline_param_seen
+
+
 def convert_cli_parameter(param_value: str, param_info) -> Any:
+    """Convert CLI parameter string to appropriate Python type.
+
+    Args:
+        param_value: String value from CLI
+        param_info: TaskParameter with type information
+
+    Returns:
+        Converted value in appropriate Python type
+    """
     if param_value is None:
         return None
 
@@ -114,30 +384,6 @@ def add_shared_cli_options():
     ]
 
 
-def add_task_parameter_option(parameter_name: str, param_info) -> click.Option:
-    cli_flag = f"--{parameter_name.replace('_', '-')}"
-    default_help = "" if param_info.required else f" (default: {param_info.default})"
-    return click.option(
-        cli_flag,
-        parameter_name,
-        required=param_info.required,
-        type=str,
-        help=f"{param_info.stringified_type}{default_help}",
-    )
-
-
-def add_baseline_parameter_option(parameter_name: str, param_info) -> click.Option:
-    cli_flag = f"--baseline-{parameter_name.replace('_', '-')}"
-    default_help = "" if param_info.required else f" (default: {param_info.default})"
-    return click.option(
-        cli_flag,
-        f"baseline_{parameter_name}",
-        required=False,
-        type=str,
-        help=f"[baseline] {param_info.stringified_type}{default_help}",
-    )
-
-
 @click.group(
     name="run",
     context_settings=dict(help_option_names=["-h", "--help"]),
@@ -148,35 +394,50 @@ def run():
 
 
 def add_dynamic_task_command(task_name: str):
+    """Create a dynamic Click command for a specific task using TaskRegistry.
+
+    Leverages the enhanced TaskRegistry to:
+    - Build task-specific CLI options automatically
+    - Validate task and baseline inputs before execution
+    - Handle multi-dataset tasks with proper parameter alignment
+    - Provide rich help text from task metadata
+
+    Args:
+        task_name: The task identifier from TASK_REGISTRY
+
+    Returns:
+        click.Command configured for the task
+    """
     task_info = TASK_REGISTRY.get_task_info(task_name)
-    # command_help_text = TASK_REGISTRY.get_task_help(task_name)
 
     def task_execution_handler(**cli_kwargs):
-        dataset_name: str = cli_kwargs.pop("dataset")
+        """Handle execution of a task with validated parameters."""
+        # Extract shared CLI options
+        dataset_name: str = cli_kwargs.pop("dataset", None)
         user_dataset_json: Optional[str] = cli_kwargs.pop("user_dataset", None)
         cell_representation_path: Optional[str] = cli_kwargs.pop(
-            "cell_representation_path"
+            "cell_representation_path", "@X"
         )
-        should_compute_baseline: bool = cli_kwargs.pop("compute_baseline")
-        random_seed: int = cli_kwargs.pop("random_seed")
-        output_file_path: Optional[str] = cli_kwargs.pop("output_file")
+        should_compute_baseline: bool = cli_kwargs.pop("compute_baseline", False)
+        random_seed: int = cli_kwargs.pop("random_seed", DEFAULT_SEED)
+        output_file_path: Optional[str] = cli_kwargs.pop("output_file", None)
 
-        task_parameters: Dict[str, Any] = {}
-        baseline_parameters: Dict[str, Any] = {}
+        # Extract and normalize task-specific parameters
+        try:
+            task_parameters, baseline_parameters, baseline_seen = (
+                _extract_and_normalize_cli_kwargs(task_name, cli_kwargs)
+            )
 
-        for param_name in task_info.task_params.keys():
-            if param_name in cli_kwargs and cli_kwargs[param_name] is not None:
-                task_parameters[param_name] = convert_cli_parameter(
-                    cli_kwargs[param_name], task_info.task_params[param_name]
-                )
+            # If user explicitly requested baseline or provided baseline params
+            if should_compute_baseline or baseline_seen:
+                should_compute_baseline = True
 
-        for param_name in task_info.baseline_params.keys():
-            baseline_key = f"baseline_{param_name}"
-            if baseline_key in cli_kwargs and cli_kwargs[baseline_key] is not None:
-                baseline_parameters[param_name] = convert_cli_parameter(
-                    cli_kwargs[baseline_key], task_info.baseline_params[param_name]
-                )
+            # Note: Validation happens in runner.py after AnnData references are resolved
 
+        except Exception as e:
+            raise click.ClickException(f"Error processing parameters: {e}")
+
+        # Load dataset
         try:
             if user_dataset_json:
                 user_dataset = json.loads(user_dataset_json)
@@ -185,28 +446,7 @@ def add_dynamic_task_command(task_name: str):
                 if missing_keys:
                     raise click.ClickException(
                         f"Missing required key(s) in --user-dataset JSON: {', '.join(missing_keys)}. "
-                        'Example: \'{"dataset_class": "czbenchmarks.datasets.Dataset", "organism": "Organism.Human", "path": "~/mydata.h5ad"}\''
-                    )
-                if (
-                    not isinstance(user_dataset["dataset_class"], str)
-                    or not user_dataset["dataset_class"]
-                ):
-                    raise click.ClickException(
-                        "The 'dataset_class' in --user-dataset must be a non-empty string."
-                    )
-                if (
-                    not isinstance(user_dataset["organism"], str)
-                    or not user_dataset["organism"]
-                ):
-                    raise click.ClickException(
-                        "The 'organism' in --user-dataset must be a non-empty string."
-                    )
-                if (
-                    not isinstance(user_dataset["path"], str)
-                    or not user_dataset["path"]
-                ):
-                    raise click.ClickException(
-                        "The 'path' in --user-dataset must be a non-empty string."
+                        'Example: \'{"dataset_class": "czbenchmarks.datasets.Dataset", "organism": "HUMAN", "path": "~/mydata.h5ad"}\''
                     )
                 resolved_path = os.path.expanduser(user_dataset["path"])
                 if not os.path.exists(resolved_path):
@@ -227,50 +467,68 @@ def add_dynamic_task_command(task_name: str):
 
             if not hasattr(dataset, "adata"):
                 raise click.ClickException(
-                    f"Dataset '{dataset_name}' does not provide an `.adata` attribute."
+                    "Dataset does not provide an `.adata` attribute."
                 )
             adata = dataset.adata
 
-            if cell_representation_path is None:
-                cell_representation = "@X"
-            elif cell_representation_path.startswith("@"):
+        except Exception as dataset_error:
+            raise click.ClickException(f"Error loading dataset: {dataset_error}")
+
+        # Load cell representation
+        try:
+            if cell_representation_path.startswith("@"):
                 cell_representation = cell_representation_path
             else:
                 cell_representation = load_numpy_array_from_path(
                     cell_representation_path
                 )
+        except Exception as rep_error:
+            raise click.ClickException(
+                f"Error loading cell representation: {rep_error}"
+            )
 
+        # Execute task
+        try:
+            logger.info(f"Executing task '{task_name}'...")
             execution_results = run_task(
                 task_name=task_name,
                 adata=adata,
                 cell_representation=cell_representation,
                 run_baseline=should_compute_baseline,
-                baseline_params=baseline_parameters,
+                baseline_params=baseline_parameters if should_compute_baseline else {},
                 task_params=task_parameters,
                 random_seed=random_seed,
             )
         except Exception as execution_error:
-            raise click.ClickException(str(execution_error)) from execution_error
+            raise click.ClickException(f"Task execution failed: {execution_error}")
 
+        # Output results
         json_output = json.dumps(execution_results, indent=2, default=str)
         if output_file_path:
             with open(output_file_path, "w") as output_file:
                 output_file.write(json_output)
+            logger.info(f"Results written to {output_file_path}")
         else:
             click.echo(json_output)
 
-    task_command = click.command(name=task_name)(
-        task_execution_handler
-    )
+    # Create the command with enhanced metadata
+    task_command = click.command(
+        name=task_name,
+        help=task_info.description,
+        context_settings={"help_option_names": ["-h", "--help"]},
+    )(task_execution_handler)
 
-    for param_name, param_info in reversed(list(task_info.baseline_params.items())):
-        task_command = add_baseline_parameter_option(param_name, param_info)(
-            task_command
-        )
+    # Add baseline parameters first (they appear last in help text)
+    for param_info in reversed(list(task_info.baseline_params.values())):
+        option = _build_option_from_param(param_info, is_baseline=True)
+        task_command.params.append(option)
 
-    for param_name, param_info in reversed(list(task_info.task_params.items())):
-        task_command = add_task_parameter_option(param_name, param_info)(task_command)
+    # Add task-specific parameters
+    for param_info in reversed(list(task_info.task_params.values())):
+        option = _build_option_from_param(param_info, is_baseline=False)
+        task_command.params.append(option)
 
+    # Add shared CLI options
     for cli_option in reversed(add_shared_cli_options()):
         task_command = cli_option(task_command)
 
