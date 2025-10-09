@@ -731,6 +731,8 @@ class Task(ABC):
         # Check if task requires embeddings from multiple datasets
         if self.requires_multiple_datasets:
             error_message = "This task requires a list of cell representations"
+            if not isinstance(cell_representation, List):
+                raise ValueError(error_message)
             if not all(
                 isinstance(emb, get_args(CellRepresentation))
                 for emb in cell_representation
@@ -741,7 +743,7 @@ class Task(ABC):
         else:
             if not isinstance(cell_representation, get_args(CellRepresentation)):
                 raise ValueError(
-                    "This task requires a single cell representation for input"
+                    "This task requires a single cell representation"
                 )
 
         return self._run_task_for_dataset(

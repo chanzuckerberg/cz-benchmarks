@@ -54,15 +54,15 @@ def test_embedding_valid_input_output(fixture_data):
     [
         (
             "abcd",
-            [False, "This task requires a single cell representation for input"],
+            [False, "This task requires a single cell representation"],
         ),
         (
             ["embedding_matrix"],
-            [False, "This task requires a single cell representation for input"],
+            [False, "This task requires a single cell representation"],
         ),
         (
             ["embedding_matrix", "embedding_matrix"],
-            [False, "This task requires a single cell representation for input"],
+            [False, "This task requires a single cell representation"],
         ),
         (
             "embedding_matrix",
@@ -146,9 +146,9 @@ def test_task_execution(
                 baseline_input = LabelPredictionBaselineInput()
             else:
                 baseline_input = PCABaselineInput(n_pcs=50, n_top_genes=3000, obsm_key="emb")
-            
+
             baseline_embedding = task.compute_baseline(expression_matrix, baseline_input)
-            
+
             baseline_results = task.run(
                 cell_representation=baseline_embedding,
                 task_input=task_input,
