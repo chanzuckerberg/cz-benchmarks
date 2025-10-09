@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Annotated
+from pydantic import Field
 
 import pandas as pd
 import scipy as sp
@@ -24,7 +25,7 @@ from ..metrics.types import MetricResult, MetricType
 from ..tasks.types import CellRepresentation
 from ..types import ListLike
 from .constants import MIN_CLASS_SIZE, N_FOLDS
-from .task import Task, TaskInput, TaskOutput
+from .task import BaselineInput, Task, TaskInput, TaskOutput
 from .utils import filter_minimum_class
 
 logger = logging.getLogger(__name__)
@@ -33,15 +34,33 @@ logger = logging.getLogger(__name__)
 class MetadataLabelPredictionTaskInput(TaskInput):
     """Pydantic model for MetadataLabelPredictionTask inputs."""
 
-    labels: ListLike
-    n_folds: int = N_FOLDS
-    min_class_size: int = MIN_CLASS_SIZE
+    labels: Annotated[
+    ListLike,
+    Field(description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type').")
+    ]
+    n_folds: Annotated[
+        int,
+        Field(description="Number of folds for stratified cross-validation.")
+    ] = N_FOLDS
+    min_class_size: Annotated[
+        int,
+        Field(description="Minimum number of samples required for a class to be included in evaluation.")
+    ] = MIN_CLASS_SIZE
 
 
 class MetadataLabelPredictionOutput(TaskOutput):
     """Output for label prediction task."""
 
     results: List[Dict[str, Any]]  # List of dicts with classifier, split, and metrics
+
+
+class LabelPredictionBaselineInput(BaselineInput):
+    """
+    This baseline uses the raw gene expression matrix as features.
+    It has no configurable parameters.
+    """
+
+    pass
 
 
 class MetadataLabelPredictionTask(Task):
@@ -57,6 +76,7 @@ class MetadataLabelPredictionTask(Task):
     display_name = "Label Prediction"
     description = "Predict labels from embeddings using cross-validated classifiers and standard metrics."
     input_model = MetadataLabelPredictionTaskInput
+    baseline_model = LabelPredictionBaselineInput
 
     def __init__(
         self,
@@ -131,10 +151,10 @@ class MetadataLabelPredictionTask(Task):
         # Create classifiers
         classifiers = {
             "lr": Pipeline(
-                [("scaler", StandardScaler()), ("lr", LogisticRegression())]
+                [("scaler", StandardScaler(with_mean=False)), ("lr", LogisticRegression())]
             ),
             "knn": Pipeline(
-                [("scaler", StandardScaler()), ("knn", KNeighborsClassifier())]
+                [("scaler", StandardScaler(with_mean=False)), ("knn", KNeighborsClassifier())]
             ),
             "rf": Pipeline(
                 [("rf", RandomForestClassifier(random_state=self.random_seed))]
@@ -294,21 +314,15 @@ class MetadataLabelPredictionTask(Task):
     def compute_baseline(
         self,
         expression_data: CellRepresentation,
-        **kwargs,
+        baseline_input: LabelPredictionBaselineInput = None,
     ) -> CellRepresentation:
         """Set a baseline cell representation using raw gene expression.
 
-        Instead of using embeddings from a model, this method uses the raw gene
-        expression matrix as features for classification. This provides a baseline
-        performance to compare against model-generated embeddings for classification
-        tasks.
-
-        Args:
-            expression_data: gene expression data or embedding
-
-        Returns:
-            Baseline embedding
+        This baseline uses the raw gene expression matrix directly as features.
         """
+        if baseline_input is None:
+            baseline_input = LabelPredictionBaselineInput()
+            
         # Convert sparse matrix to dense if needed
         if sp.sparse.issparse(expression_data):
             expression_data = expression_data.toarray()

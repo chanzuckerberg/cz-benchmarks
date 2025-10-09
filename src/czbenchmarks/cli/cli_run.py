@@ -60,29 +60,42 @@ def convert_cli_parameter(param_value: str, param_info) -> Any:
 
 
 def add_shared_cli_options():
+    def mutually_exclusive_callback(ctx, param, value):
+        if value is None:
+            return
+        other_option = "dataset" if param.name == "user_dataset" else "user_dataset"
+        if ctx.params.get(other_option) is not None:
+            raise click.UsageError(
+                f"'{param.opts[0]}' and '--{other_option}' are mutually exclusive."
+            )
+        return value
+
     return [
         click.option(
             "-d",
             "--dataset",
-            required=True,
             help="Dataset name available in czbenchmarks.",
+            callback=mutually_exclusive_callback,
         ),
         click.option(
             "-u",
             "--user-dataset",
             help='Path to a user .h5ad file as JSON: \'{"dataset_class": "SingleCellDataset", "organism": "Organism.Human", "path": "~/mydata.h5ad"}\'.',
+            callback=mutually_exclusive_callback,
         ),
         click.option(
             "-c",
             "--cell-representation-path",
-            help="Path to embedding arrays (.npy/.npz/.csv/.tsv) or AnnData reference like @X, @obs:col, @obsm:X_pca.",
+            help="Path to embedding array (.npy/.npz/.csv/.tsv) or AnnData reference like @X, @obsm:X_pca.",
+            default="@X",
+            show_default=True,
         ),
         click.option(
             "-b",
             "--compute-baseline",
             is_flag=True,
             default=False,
-            help="If set, compute the task baselines",
+            help="If set, compute and evaluate the task baseline.",
         ),
         click.option(
             "-r",
@@ -136,7 +149,7 @@ def run():
 
 def add_dynamic_task_command(task_name: str):
     task_info = TASK_REGISTRY.get_task_info(task_name)
-    command_help_text = TASK_REGISTRY.get_task_help(task_name)
+    # command_help_text = TASK_REGISTRY.get_task_help(task_name)
 
     def task_execution_handler(**cli_kwargs):
         dataset_name: str = cli_kwargs.pop("dataset")
@@ -246,7 +259,7 @@ def add_dynamic_task_command(task_name: str):
         else:
             click.echo(json_output)
 
-    task_command = click.command(name=task_name, help=command_help_text)(
+    task_command = click.command(name=task_name)(
         task_execution_handler
     )
 

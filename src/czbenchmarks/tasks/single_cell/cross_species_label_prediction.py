@@ -1,8 +1,9 @@
 import itertools
 import logging
-from typing import List, Dict, Any, Optional, Literal
+from typing import Annotated, List, Dict, Any, Optional, Literal
 import pandas as pd
 import numpy as np
+from pydantic import Field
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
@@ -20,7 +21,7 @@ from sklearn.preprocessing import StandardScaler
 
 from ...constants import RANDOM_SEED
 from ..constants import N_FOLDS
-from ..task import Task, TaskInput, TaskOutput
+from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ...metrics.types import MetricResult, MetricType
@@ -32,15 +33,38 @@ logger = logging.getLogger(__name__)
 
 
 class CrossSpeciesLabelPredictionTaskInput(TaskInput):
-    labels: List[ListLike]  # Labels for each species dataset
-    organisms: List[Organism]  # List of organisms corresponding to each dataset
-    sample_ids: Optional[List[ListLike]] = (
-        None  # list of sample/donor IDs for aggregation for each dataset
-    )
-    aggregation_method: Literal["none", "mean", "median"] = (
-        "mean"  # how to aggregate samples with the same sample_id
-    )
-    n_folds: int = N_FOLDS  # number of cross-validation folds to use when training/testing on the same species
+    """Pydantic model for CrossSpeciesLabelPredictionTask inputs."""
+
+    labels: Annotated[
+        List[ListLike],
+        Field(
+            description="List of ground truth labels for each species dataset (e.g., cell types)."
+        ),
+    ]
+    organisms: Annotated[
+        List[Organism],
+        Field(
+            description="List of organisms corresponding to each dataset for cross-species evaluation."
+        ),
+    ]
+    sample_ids: Annotated[
+        Optional[List[ListLike]],
+        Field(
+            description="Optional list of sample/donor IDs for aggregation, one per dataset."
+        ),
+    ] = None
+    aggregation_method: Annotated[
+        Literal["none", "mean", "median"],
+        Field(
+            description="Method to aggregate cells with the same sample_id ('none', 'mean', or 'median')."
+        ),
+    ] = "mean"
+    n_folds: Annotated[
+        int,
+        Field(
+            description="Number of cross-validation folds for intra-species evaluation."
+        ),
+    ] = N_FOLDS
 
 
 class CrossSpeciesLabelPredictionOutput(TaskOutput):
@@ -62,6 +86,10 @@ class CrossSpeciesLabelPredictionTask(Task):
     """
 
     display_name = "cross-species label prediction"
+    description = "Evaluate cross-species label prediction performance using multiple classifiers."
+
+    input_model = CrossSpeciesLabelPredictionTaskInput
+    baseline_model = NoBaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -490,14 +518,14 @@ class CrossSpeciesLabelPredictionTask(Task):
 
         return metrics_list
 
-    def compute_baseline(self, **kwargs):
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        baseline_input: NoBaselineInput = None,
+    ):
         """Set a baseline for cross-species label prediction.
 
-        This method is not implemented for cross-species prediction tasks
-        as standard preprocessing workflows need to be applied per species.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
+        Not implemented as standard preprocessing needs to be applied per species.
         """
         raise NotImplementedError(
             "Baseline not implemented for cross-species label prediction"
