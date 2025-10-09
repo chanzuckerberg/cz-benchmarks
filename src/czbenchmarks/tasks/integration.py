@@ -1,5 +1,6 @@
 import logging
-from typing import List
+from typing import Annotated, List
+from pydantic import Field
 
 import scipy.sparse as sp
 
@@ -16,8 +17,15 @@ logger = logging.getLogger(__name__)
 class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
-    batch_labels: ListLike
-    labels: ListLike
+    batch_labels: Annotated[
+        ListLike,
+        Field(description="Batch labels for each cell (e.g., '@obs:batch').")
+    ]
+
+    labels:  Annotated[
+        ListLike,
+        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+    ]
 
 
 class BatchIntegrationOutput(TaskOutput):

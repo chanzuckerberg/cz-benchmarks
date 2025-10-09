@@ -1,5 +1,6 @@
 import logging
-from typing import List
+from typing import Annotated, List
+from pydantic import Field
 
 import scipy.sparse as sp
 
@@ -16,7 +17,10 @@ logger = logging.getLogger(__name__)
 class EmbeddingTaskInput(TaskInput):
     """Pydantic model for EmbeddingTask inputs."""
 
-    input_labels: ListLike
+    input_labels: Annotated[
+        ListLike,
+        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+    ]
 
 
 class EmbeddingOutput(TaskOutput):

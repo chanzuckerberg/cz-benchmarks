@@ -1,5 +1,6 @@
 import logging
-from typing import List, Literal
+from typing import Annotated, List, Literal
+from pydantic import Field
 
 import anndata as ad
 import pandas as pd
@@ -17,13 +18,30 @@ logger = logging.getLogger(__name__)
 
 
 class ClusteringTaskInput(TaskInput):
-    obs: pd.DataFrame
-    input_labels: ListLike
-    use_rep: str = "X"
-    n_iterations: int = N_ITERATIONS
-    flavor: Literal["leidenalg", "igraph"] = FLAVOR
-    key_added: str = KEY_ADDED
-
+    obs: Annotated[
+        pd.DataFrame,
+        Field(description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs').")
+    ]
+    input_labels: Annotated[
+        ListLike,
+        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+    ]
+    use_rep: Annotated[
+        str,
+        Field(description="Data representation to use for clustering (e.g., 'X' or an obsm key like 'X_pca').")
+    ] = "X"
+    n_iterations: Annotated[
+        int,
+        Field(description="Number of iterations for the Leiden algorithm.")
+    ] = N_ITERATIONS
+    flavor: Annotated[
+        Literal["leidenalg", "igraph"],
+        Field(description="Algorithm for Leiden community detection.")
+    ] = FLAVOR
+    key_added: Annotated[
+        str,
+        Field(description="Key in AnnData.obs where cluster assignments are stored.")
+    ] = KEY_ADDED
 
 class ClusteringOutput(TaskOutput):
     """Output for clustering task."""

@@ -1,9 +1,10 @@
 import logging
-from typing import Dict, List, Literal, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
 import anndata as ad
 import numpy as np
 import pandas as pd
+from pydantic import Field
 from scipy import sparse as sp_sparse
 
 from ...metrics import metrics_registry
@@ -16,18 +17,32 @@ logger = logging.getLogger(__name__)
 
 
 class PerturbationExpressionPredictionTaskInput(TaskInput):
-    """Pydantic model for Perturbation task inputs.
+    """Pydantic model for Perturbation task inputs."""
 
-    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask.
-    The row and column ordering of the model predictions can optionallybe provided as
-    cell_index and gene_index, respectively, so the task can align a model matrix that
-    is a subset of or re-ordered relative to the dataset adata.
-    """
-
-    adata: ad.AnnData
-    pred_effect_operation: Literal["difference", "ratio"] = ("ratio",)
-    gene_index: Optional[pd.Index] = None
-    cell_index: Optional[pd.Index] = None
+    adata: Annotated[
+        ad.AnnData,
+        Field(
+            description="AnnData object from SingleCellPerturbationDataset containing perturbation data and metadata."
+        ),
+    ]
+    pred_effect_operation: Annotated[
+        Literal["difference", "ratio"],
+        Field(
+            description="Method to compute predicted effect: 'difference' (mean(treated) - mean(control)) or 'ratio' (log ratio of means)."
+        ),
+    ] = "ratio"
+    gene_index: Annotated[
+        Optional[pd.Index],
+        Field(
+            description="Optional gene index for predictions to align model predictions with dataset genes."
+        ),
+    ] = None
+    cell_index: Annotated[
+        Optional[pd.Index],
+        Field(
+            description="Optional cell index for predictions to align model predictions with dataset cells."
+        ),
+    ] = None
 
 
 def build_task_input_from_predictions(

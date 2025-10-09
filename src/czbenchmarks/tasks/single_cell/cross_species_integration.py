@@ -1,6 +1,7 @@
-from typing import List
+from typing import Annotated, List
 
 import numpy as np
+from pydantic import Field
 
 from czbenchmarks.datasets.types import Organism
 
@@ -15,8 +16,18 @@ from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
 class CrossSpeciesIntegrationTaskInput(TaskInput):
     """Pydantic model for CrossSpeciesIntegrationTask inputs."""
 
-    labels: List[ListLike]
-    organism_list: List[Organism]
+    labels: Annotated[
+        List[ListLike],
+        Field(
+            description="List of ground truth labels for each species dataset (e.g., cell types)."
+        ),
+    ]
+    organism_list: Annotated[
+        List[Organism],
+        Field(
+            description="List of organisms corresponding to each dataset for cross-species evaluation."
+        ),
+    ]
 
 
 class CrossSpeciesIntegrationOutput(TaskOutput):

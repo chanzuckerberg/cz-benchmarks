@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Annotated
+from pydantic import Field
 
 import pandas as pd
 import scipy as sp
@@ -33,9 +34,18 @@ logger = logging.getLogger(__name__)
 class MetadataLabelPredictionTaskInput(TaskInput):
     """Pydantic model for MetadataLabelPredictionTask inputs."""
 
-    labels: ListLike
-    n_folds: int = N_FOLDS
-    min_class_size: int = MIN_CLASS_SIZE
+    labels: Annotated[
+    ListLike,
+    Field(description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type').")
+    ]
+    n_folds: Annotated[
+        int,
+        Field(description="Number of folds for stratified cross-validation.")
+    ] = N_FOLDS
+    min_class_size: Annotated[
+        int,
+        Field(description="Minimum number of samples required for a class to be included in evaluation.")
+    ] = MIN_CLASS_SIZE
 
 
 class MetadataLabelPredictionOutput(TaskOutput):
