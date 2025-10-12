@@ -1,6 +1,6 @@
 import logging
 from typing import Annotated, List
-from pydantic import Field
+from pydantic import Field, field_validator
 
 import pandas as pd
 import scipy.sparse as sp
@@ -20,25 +20,36 @@ class SequentialOrganizationTaskInput(TaskInput):
 
     obs: Annotated[
         pd.DataFrame,
-        Field(description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs').")
+        Field(
+            description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs')."
+        ),
     ]
     input_labels: Annotated[
         ListLike,
-        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
     ]
     k: Annotated[
-        int,
-        Field(description="Number of nearest neighbors for k-NN based metrics.")
+        int, Field(description="Number of nearest neighbors for k-NN based metrics.")
     ] = 15
     normalize: Annotated[
         bool,
-        Field(description="Whether to normalize the embedding for k-NN based metrics.")
+        Field(description="Whether to normalize the embedding for k-NN based metrics."),
     ] = True
     adaptive_k: Annotated[
         bool,
-        Field(description="Whether to use an adaptive number of nearest neighbors for k-NN based metrics.")
+        Field(
+            description="Whether to use an adaptive number of nearest neighbors for k-NN based metrics."
+        ),
     ] = False
 
+    @field_validator("k")
+    @classmethod
+    def _validate_k(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("k must be a positive integer.")
+        return v
 
 
 class SequentialOrganizationOutput(TaskOutput):
@@ -102,6 +113,10 @@ class SequentialOrganizationTask(Task):
         """
         from ..metrics import metrics_registry
 
+        logger.debug("SequentialOrganizationTask._compute_metrics: Computing metrics")
+        logger.debug(
+            f"SequentialOrganizationTask._compute_metrics: embedding shape={task_output.embedding.shape}, labels shape={task_input.input_labels.shape}"
+        )
         results = []
         embedding = task_output.embedding
         labels = task_input.input_labels

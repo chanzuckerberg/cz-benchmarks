@@ -1,39 +1,39 @@
+"""AnnData reference resolution utilities.
 
+This module provides utilities for resolving string references to AnnData object attributes.
+References use the '@' prefix to denote AnnData slots and support both single and multi-dataset contexts.
 
+Supported reference formats:
+    - "@" or "@adata"      → adata (entire AnnData object)
+    - "@X"                 → adata.X (main data matrix)
+    - "@obs"               → adata.obs (entire observations DataFrame)
+    - "@obs:cell_type"     → adata.obs["cell_type"] (specific column)
+    - "@obsm:X_pca"        → adata.obsm["X_pca"] (specific key in obsm)
+    - "@layers:counts"     → adata.layers["counts"] (specific layer)
+    - "@var:gene_symbols"  → adata.var["gene_symbols"] (specific column in var)
+    - "@varm:some_key"     → adata.varm["some_key"] (specific key in varm)
+    - "@uns:some_key"      → adata.uns["some_key"] (specific key in uns)
+    - "@var_index"         → adata.var.index
+    - "@obs_index"         → adata.obs.index
 
+Multi-dataset indexed references:
+    - "@0:X"               → adata_list[0].X (first dataset's X matrix)
+    - "@1:obs:cell_type"   → adata_list[1].obs["cell_type"]
 
+The main entry point is `resolve_anndata_references()` which handles both single
+AnnData objects and lists of AnnData objects.
+"""
 
-    # """
-    # DataRef represents a structured reference to a specific slot or field within an AnnData object.
-    # References are denoted by a leading '@' and can point to various AnnData attributes:
-    #     - "@"                 → adata (entire AnnData object)
-    #     - '@X'                → adata.X (main data matrix)
-    #     - '@obs'              → adata.obs (entire observations DataFrame)
-    #     - '@obs:cell_type'    → adata.obs["cell_type"] (specific column in obs)
-    #     - '@obsm:X_pca'       → adata.obsm["X_pca"] (specific key in obsm)
-    #     - '@layers:counts'    → adata.layers["counts"] (specific layer)
-    #     - '@var:gene_symbols' → adata.var["gene_symbols"] (specific column in var)
-    #     - '@varm:some_key'    → adata.varm["some_key"] (specific key in varm)
-    #     - '@uns:some_key'     → adata.uns["some_key"] (specific key in uns)
-    # Attributes:
-    #     space (str): The AnnData attribute to reference ('X', 'obs', 'obsm', 'var', 'varm', 'layers', 'uns').
-    #     key (Optional[str]): The key or column name within the specified space, if applicable.
-    # Methods:
-    #     parse(value: str) -> DataRef:
-    #         Parse a string reference (e.g., '@obs:cell_type') into a DataRef instance.
-    #     resolve(adata: AnnData) -> Any:
-    #         Resolve the reference against a given AnnData object, returning the referenced data.
-    # Raises:
-    #     ValueError: If the reference format is invalid or unsupported.
-    #     KeyError: If the specified key does not exist in the referenced AnnData attribute.
-    # """
 from __future__ import annotations
 
+import logging
 from typing import Any, List, Mapping, Union
 
 import numpy as np
 import pandas as pd
 from anndata import AnnData
+
+logger = logging.getLogger(__name__)
 
 ANNDATA_REF_PREFIX = "@"
 
@@ -46,28 +46,31 @@ def is_anndata_reference(value: Any) -> bool:
 def resolve_anndata_references(
     input_value: Any, adata_context: Union[AnnData, List[AnnData]]
 ) -> Any:
-    """
-    Recursively resolves any AnnData references within a nested data structure.
+    """Recursively resolves AnnData references within nested data structures.
 
-    This single entry point intelligently handles both single and multi-dataset
-    contexts, providing clear error messages for misuse.
+    Handles both single and multi-dataset contexts with clear error messages.
 
     Args:
-        input_value: The item to resolve (e.g., a string, list, or dict).
-        adata_context: The AnnData object or list of AnnData objects to resolve against.
+        input_value: Value to resolve (string, list, dict, or primitive)
+        adata_context: Single AnnData or list of AnnData objects
 
     Returns:
-        The input value with all AnnData references resolved.
+        Input value with all AnnData references resolved to actual data
 
     Raises:
-        ValueError: If an indexed reference (e.g., '@0:...') is used in a single-dataset context.
-        IndexError: If a dataset index in a reference is out of bounds.
-        KeyError: If a key (e.g., 'cell_type') is not found in the specified AnnData attribute.
+        ValueError: If indexed reference used in single-dataset context
+        IndexError: If dataset index is out of bounds
+        KeyError: If key not found in specified AnnData attribute
     """
     is_multi_context = isinstance(adata_context, list)
+    logger.debug(
+        f"Resolving references: multi={is_multi_context}, "
+        f"input_type={type(input_value).__name__}, value={input_value if not isinstance(input_value, (dict, list)) else '...'}"
+    )
 
     def _resolve_single_reference(ref_string: str) -> Any:
         """Parses and resolves a single AnnData reference string."""
+        logger.debug(f"Resolving single reference: {ref_string}")
         if not is_anndata_reference(ref_string):
             return ref_string
 
@@ -98,11 +101,15 @@ def resolve_anndata_references(
         """Resolves a non-indexed reference against a single AnnData object."""
         body = ref_string[len(ANNDATA_REF_PREFIX) :]
         if body == "":
+            logger.debug("Returning entire AnnData object")
             return adata
 
         parts = body.split(":", 1)
         object_name = parts[0]
         key = parts[1] if len(parts) > 1 else None
+        logger.debug(
+            f"Resolving standard reference: object_name={object_name}, key={key}"
+        )
 
         if object_name == "var_index":
             if key:
@@ -141,7 +148,6 @@ def resolve_anndata_references(
         out = {}
         for k, v in input_value.items():
             rv = resolve_anndata_references(v, adata_context)
-            # Coerce only for the two PEP fields: Series/list/array -> Index
             if k in ("gene_index", "cell_index"):
                 if isinstance(rv, pd.Series):
                     rv = pd.Index(rv)
@@ -149,10 +155,6 @@ def resolve_anndata_references(
                     rv = pd.Index(rv)
             out[k] = rv
         return out
-        # return {
-        #     k: resolve_anndata_references(v, adata_context)
-        #     for k, v in input_value.items()
-        # }
 
     if isinstance(input_value, list):
         return [resolve_anndata_references(item, adata_context) for item in input_value]

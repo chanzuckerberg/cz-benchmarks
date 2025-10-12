@@ -1,6 +1,6 @@
 import logging
 from typing import Annotated, List
-from pydantic import Field
+from pydantic import Field, field_validator
 
 import scipy.sparse as sp
 
@@ -18,14 +18,29 @@ class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
     batch_labels: Annotated[
-        ListLike,
-        Field(description="Batch labels for each cell (e.g., '@obs:batch').")
+        ListLike, Field(description="Batch labels for each cell (e.g., '@obs:batch').")
     ]
 
-    labels:  Annotated[
+    labels: Annotated[
         ListLike,
-        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
     ]
+
+    @field_validator("batch_labels")
+    @classmethod
+    def _validate_batch_labels(cls, v: ListLike) -> ListLike:
+        if not isinstance(v, ListLike):
+            raise ValueError("batch_labels must be a list-like object.")
+        return v
+
+    @field_validator("labels")
+    @classmethod
+    def _validate_labels(cls, v: ListLike) -> ListLike:
+        if not isinstance(v, ListLike):
+            raise ValueError("labels must be a list-like object.")
+        return v
 
 
 class BatchIntegrationOutput(TaskOutput):
@@ -84,11 +99,17 @@ class BatchIntegrationTask(Task):
             List of MetricResult objects containing entropy per cell and
             batch-aware silhouette scores
         """
-
+        logger.debug("BatchIntegrationTask._compute_metrics: Computing metrics")
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
         cell_representation = task_output.cell_representation
-        
+        logger.debug(
+            f"BatchIntegrationTask._compute_metrics: cell_representation shape={cell_representation.shape}, labels shape={task_input.labels.shape}"
+        )
+        logger.debug(
+            f"BatchIntegrationTask._compute_metrics: batch_labels shape={task_input.batch_labels.shape}"
+        )
+
         # Convert sparse matrix to dense if needed for JAX compatibility in metrics
         if sp.issparse(cell_representation):
             cell_representation = cell_representation.toarray()

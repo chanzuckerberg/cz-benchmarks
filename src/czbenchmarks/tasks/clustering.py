@@ -1,6 +1,6 @@
 import logging
 from typing import Annotated, List, Literal
-from pydantic import Field
+from pydantic import Field, field_validator
 
 import anndata as ad
 import pandas as pd
@@ -20,28 +20,41 @@ logger = logging.getLogger(__name__)
 class ClusteringTaskInput(TaskInput):
     obs: Annotated[
         pd.DataFrame,
-        Field(description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs').")
+        Field(
+            description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs')."
+        ),
     ]
     input_labels: Annotated[
         ListLike,
-        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
     ]
     use_rep: Annotated[
         str,
-        Field(description="Data representation to use for clustering (e.g., 'X' or an obsm key like 'X_pca').")
+        Field(
+            description="Data representation to use for clustering (e.g., 'X' or an obsm key like 'X_pca')."
+        ),
     ] = "X"
     n_iterations: Annotated[
-        int,
-        Field(description="Number of iterations for the Leiden algorithm.")
+        int, Field(description="Number of iterations for the Leiden algorithm.")
     ] = N_ITERATIONS
     flavor: Annotated[
         Literal["leidenalg", "igraph"],
-        Field(description="Algorithm for Leiden community detection.")
+        Field(description="Algorithm for Leiden community detection."),
     ] = FLAVOR
     key_added: Annotated[
         str,
-        Field(description="Key in AnnData.obs where cluster assignments are stored.")
+        Field(description="Key in AnnData.obs where cluster assignments are stored."),
     ] = KEY_ADDED
+
+    @field_validator("n_iterations")
+    @classmethod
+    def _must_be_positive(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("n_iterations must be a positive integer.")
+        return v
+
 
 class ClusteringOutput(TaskOutput):
     """Output for clustering task."""
@@ -86,12 +99,19 @@ class ClusteringTask(Task):
         Returns:
             ClusteringOutput: Pydantic model with predicted cluster labels
         """
+        logger.debug(
+            f"ClusteringTask._run_task: cell_representation shape={cell_representation.shape}"
+        )
+        logger.debug(
+            f"ClusteringTask._run_task: use_rep={task_input.use_rep}, flavor={task_input.flavor}"
+        )
 
         # Create the AnnData object
         adata = ad.AnnData(
             X=cell_representation,
             obs=task_input.obs,
         )
+        logger.debug(f"ClusteringTask: Created AnnData with shape {adata.shape}")
 
         predicted_labels = cluster_embedding(
             adata,
@@ -100,6 +120,9 @@ class ClusteringTask(Task):
             n_iterations=task_input.n_iterations,
             flavor=task_input.flavor,
             key_added=task_input.key_added,
+        )
+        logger.debug(
+            f"ClusteringTask: Generated {len(predicted_labels)} cluster labels"
         )
 
         return ClusteringOutput(predicted_labels=predicted_labels)
@@ -118,11 +141,12 @@ class ClusteringTask(Task):
         Returns:
             List of MetricResult objects containing ARI and NMI scores
         """
+        logger.debug("ClusteringTask._compute_metrics: Computing ARI and NMI metrics")
 
         from ..metrics import metrics_registry
 
         predicted_labels = task_output.predicted_labels
-        return [
+        results = [
             MetricResult(
                 metric_type=metric_type,
                 value=metrics_registry.compute(
@@ -137,3 +161,7 @@ class ClusteringTask(Task):
                 MetricType.NORMALIZED_MUTUAL_INFO,
             ]
         ]
+        logger.debug(
+            f"ClusteringTask._compute_metrics: Computed {len(results)} metrics"
+        )
+        return results

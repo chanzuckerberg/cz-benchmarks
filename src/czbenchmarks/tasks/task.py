@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Type, Union, Annotated
 from pydantic import Field
 
 import anndata as ad
 import scipy.sparse as sp
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 from pydantic.fields import PydanticUndefined
 from typing import get_args
 from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult
 from .types import CellRepresentation
 from .utils import run_standard_scrna_workflow
+
+logger = logging.getLogger(__name__)
 
 
 class BaselineInput(BaseModel):
@@ -34,6 +37,24 @@ class PCABaselineInput(BaselineInput):
     obsm_key: str = Field(
         "emb", description="AnnData .obsm key to store the baseline PCA embedding."
     )
+
+    @field_validator("n_top_genes")
+    @classmethod
+    def _validate_n_top_genes(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("n_top_genes must be a positive integer.")
+        if v < 100 or v > 20000:
+            raise ValueError("n_top_genes should be between 100 and 20000.")
+        return v
+
+    @field_validator("n_pcs")
+    @classmethod
+    def _validate_n_pcs(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("n_pcs must be a positive integer.")
+        if v < 1 or v > 1000:
+            raise ValueError("n_pcs should be between 1 and 1000.")
+        return v
 
 
 class NoBaselineInput(BaselineInput):
@@ -168,7 +189,7 @@ class TaskRegistry:
                 task_params = self._introspect_function_signature(
                     task_class._run_task, exclude={"self", "cell_representation"}
                 )
-            
+
             # Introspect baseline params
             if hasattr(task_class, "baseline_model"):
                 baseline_params = self._introspect_pydantic_model(
@@ -204,7 +225,7 @@ class TaskRegistry:
             )
         except Exception as e:
             task_name = getattr(task_class, "__name__", "UnknownTask")
-            print(f"Warning: Task introspection failed for {task_name}: {e}")
+            logger.warning(f"Task introspection failed for {task_name}: {e}")
             return TaskInfo(
                 name=task_name,
                 display_name=getattr(task_class, "display_name", task_name),
@@ -682,9 +703,13 @@ class Task(ABC):
             List of MetricResult objects
 
         """
-
+        logger.debug(
+            f"Running task for dataset: cell_representation type={type(cell_representation)}"
+        )
         task_output = self._run_task(cell_representation, task_input)
+        logger.debug(f"Task output computed: {type(task_output)}")
         metrics = self._compute_metrics(task_input, task_output)
+        logger.debug(f"Metrics computed: {len(metrics)} metric(s)")
         return metrics
 
     def compute_baseline(
@@ -693,23 +718,35 @@ class Task(ABC):
         baseline_input: PCABaselineInput = None,
     ) -> CellRepresentation:
         """Set a baseline embedding using PCA on gene expression data."""
+        logger.debug(f"Computing baseline for {self.__class__.__name__}")
         if baseline_input is None:
             baseline_input = PCABaselineInput()
 
+        logger.debug(
+            f"Baseline parameters: n_top_genes={baseline_input.n_top_genes}, n_pcs={baseline_input.n_pcs}"
+        )
         # Convert sparse matrix to dense if needed for JAX compatibility
         if sp.issparse(expression_data):
+            logger.debug("Converting sparse expression data to dense array")
             expression_data = expression_data.toarray()
 
         # Create the AnnData object
+        logger.debug(
+            f"Creating AnnData from expression data with shape: {expression_data.shape}"
+        )
         adata = ad.AnnData(X=expression_data)
 
         # Run the standard preprocessing workflow
+        logger.debug("Running standard scRNA-seq workflow")
         embedding_baseline = run_standard_scrna_workflow(
             adata,
             n_top_genes=baseline_input.n_top_genes,
             n_pcs=baseline_input.n_pcs,
             obsm_key=baseline_input.obsm_key,
             random_state=self.random_seed,
+        )
+        logger.debug(
+            f"Baseline embedding computed with shape: {embedding_baseline.shape}"
         )
         return embedding_baseline
 
@@ -731,6 +768,10 @@ class Task(ABC):
         Raises:
             ValueError: If input does not match multiple embedding requirement
         """
+        logger.debug(f"Running task {self.__class__.__name__}")
+        logger.debug(
+            f"Task requires_multiple_datasets: {self.requires_multiple_datasets}"
+        )
 
         # Check if task requires embeddings from multiple datasets
         if self.requires_multiple_datasets:
@@ -746,9 +787,7 @@ class Task(ABC):
                 raise ValueError(f"{error_message} but only one was provided")
         else:
             if not isinstance(cell_representation, get_args(CellRepresentation)):
-                raise ValueError(
-                    "This task requires a single cell representation"
-                )
+                raise ValueError("This task requires a single cell representation")
 
         return self._run_task_for_dataset(
             cell_representation,  # type: ignore

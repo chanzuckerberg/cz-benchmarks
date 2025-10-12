@@ -155,3 +155,45 @@ def mutually_exclusive(*options):
         return value
 
     return _callback
+
+
+class CLIError(click.ClickException):
+    """
+    Custom exception class for CLI-related errors.
+
+    Inherits from click.ClickException to provide proper error handling
+    and formatting within the Click command-line interface framework.
+
+    Args:
+        message (str): The error message to display to the user.
+    """
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+def handle_cli_error(error: CLIError) -> None:
+    """Handle CLI-specific errors with consistent formatting.
+
+    Args:
+        error: The CLI error to handle
+
+    Raises:
+        CLIError: Re-raises the error for Click to format
+    """
+    log.error(f"CLI Error: {error.message}")
+    raise error
+
+
+def handle_unexpected_error(error: Exception, command_name: str) -> None:
+    """Handle unexpected errors during command execution.
+
+    Args:
+        error: The unexpected exception
+        command_name: Name of the command that failed
+
+    Raises:
+        Exception: Re-raises the error with context
+    """
+    log.exception(f"Unexpected error in command '{command_name}': {error}")
+    raise error

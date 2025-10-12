@@ -1,9 +1,9 @@
 import logging
 from typing import Any, Dict, List, Annotated
-from pydantic import Field
+from pydantic import Field, field_validator
 
 import pandas as pd
-import scipy as sp
+import scipy.sparse
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -35,17 +35,41 @@ class MetadataLabelPredictionTaskInput(TaskInput):
     """Pydantic model for MetadataLabelPredictionTask inputs."""
 
     labels: Annotated[
-    ListLike,
-    Field(description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type').")
+        ListLike,
+        Field(
+            description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
     ]
     n_folds: Annotated[
-        int,
-        Field(description="Number of folds for stratified cross-validation.")
+        int, Field(description="Number of folds for stratified cross-validation.")
     ] = N_FOLDS
     min_class_size: Annotated[
         int,
-        Field(description="Minimum number of samples required for a class to be included in evaluation.")
+        Field(
+            description="Minimum number of samples required for a class to be included in evaluation."
+        ),
     ] = MIN_CLASS_SIZE
+
+    @field_validator("n_folds")
+    @classmethod
+    def _validate_n_folds(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("n_folds must be a positive integer.")
+        return v
+
+    @field_validator("min_class_size")
+    @classmethod
+    def _validate_min_class_size(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("min_class_size must be a positive integer.")
+        return v
+
+    @field_validator("labels")
+    @classmethod
+    def _validate_labels(cls, v: ListLike) -> ListLike:
+        if not isinstance(v, ListLike):
+            raise ValueError("labels must be a list-like object.")
+        return v
 
 
 class MetadataLabelPredictionOutput(TaskOutput):
@@ -103,6 +127,9 @@ class MetadataLabelPredictionTask(Task):
             MetadataLabelPredictionOutput: Pydantic model with results from cross-validation
         """
         # FIXME BYOTASK: this is quite baroque and should be broken into sub-tasks
+        logger.debug(
+            f"LabelPredictionTask._run_task: cell_representation shape={cell_representation.shape}, n_folds={task_input.n_folds}"
+        )
         logger.info("Starting prediction task for labels")
         cell_representation = (
             cell_representation.copy()
@@ -151,10 +178,16 @@ class MetadataLabelPredictionTask(Task):
         # Create classifiers
         classifiers = {
             "lr": Pipeline(
-                [("scaler", StandardScaler(with_mean=False)), ("lr", LogisticRegression())]
+                [
+                    ("scaler", StandardScaler(with_mean=False)),
+                    ("lr", LogisticRegression()),
+                ]
             ),
             "knn": Pipeline(
-                [("scaler", StandardScaler(with_mean=False)), ("knn", KNeighborsClassifier())]
+                [
+                    ("scaler", StandardScaler(with_mean=False)),
+                    ("knn", KNeighborsClassifier()),
+                ]
             ),
             "rf": Pipeline(
                 [("rf", RandomForestClassifier(random_state=self.random_seed))]
@@ -322,8 +355,7 @@ class MetadataLabelPredictionTask(Task):
         """
         if baseline_input is None:
             baseline_input = LabelPredictionBaselineInput()
-            
-        # Convert sparse matrix to dense if needed
-        if sp.sparse.issparse(expression_data):
+
+        if scipy.sparse.issparse(expression_data):
             expression_data = expression_data.toarray()
         return expression_data

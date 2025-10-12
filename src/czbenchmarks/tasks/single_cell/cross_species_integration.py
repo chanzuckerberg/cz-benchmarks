@@ -1,7 +1,8 @@
 from typing import Annotated, List
+import logging
 
 import numpy as np
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from czbenchmarks.datasets.types import Organism
 
@@ -11,6 +12,8 @@ from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
 from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
+
+logger = logging.getLogger(__name__)
 
 
 class CrossSpeciesIntegrationTaskInput(TaskInput):
@@ -28,6 +31,13 @@ class CrossSpeciesIntegrationTaskInput(TaskInput):
             description="List of organisms corresponding to each dataset for cross-species evaluation."
         ),
     ]
+
+    @field_validator("organism_list")
+    @classmethod
+    def _validate_organism_list(cls, v: List[Organism]) -> List[Organism]:
+        if not isinstance(v, list):
+            raise ValueError("organism_list must be a list of organisms.")
+        return v
 
 
 class CrossSpeciesIntegrationOutput(TaskOutput):
@@ -77,6 +87,10 @@ class CrossSpeciesIntegrationTask(Task):
         Returns:
             CrossSpeciesIntegrationOutput: Pydantic model with combined data and labels
         """
+        logger.debug(
+            f"CrossSpeciesIntegrationTask._run_task: cell_representation type={type(cell_representation)}, "
+            f"n_datasets={len(cell_representation) if isinstance(cell_representation, list) else 1}"
+        )
         # FIXME BYODATASETdatasets should be concatenated to align along genes?
         # This operation is safe because requires_multiple_datasets is True
         cell_representation = np.vstack(cell_representation)
@@ -85,7 +99,7 @@ class CrossSpeciesIntegrationTask(Task):
         if len(set(task_input.organism_list)) < 2:
             raise AssertionError(
                 "At least two organisms are required for cross-species integration "
-                f"but got {len(set(task_input.organism_list))} : {{set(task_input.organism_list)}}"
+                f"but got {len(set(task_input.organism_list))} : {set(task_input.organism_list)}"
             )
 
         species = np.concatenate(

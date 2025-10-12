@@ -19,7 +19,9 @@ class EmbeddingTaskInput(TaskInput):
 
     input_labels: Annotated[
         ListLike,
-        Field(description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type').")
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
     ]
 
 
@@ -58,6 +60,9 @@ class EmbeddingTask(Task):
         Returns:
             EmbeddingOutput: Pydantic model with cell representation
         """
+        logger.debug(
+            f"EmbeddingTask._run_task: cell_representation shape={cell_representation.shape}"
+        )
         return EmbeddingOutput(cell_representation=cell_representation)
 
     def _compute_metrics(
@@ -72,14 +77,19 @@ class EmbeddingTask(Task):
         Returns:
             List of MetricResult objects containing silhouette score
         """
+        logger.debug("EmbeddingTask._compute_metrics: Computing silhouette score")
         metric_type = MetricType.SILHOUETTE_SCORE
         cell_representation = task_output.cell_representation
-        
+
         # Convert sparse matrix to dense if needed for JAX compatibility in metrics
         if sp.issparse(cell_representation):
+            logger.debug("EmbeddingTask: Converting sparse matrix to dense")
             cell_representation = cell_representation.toarray()
-            
-        return [
+
+        logger.debug(
+            f"EmbeddingTask: Computing metric on representation shape: {cell_representation.shape}"
+        )
+        result = [
             MetricResult(
                 metric_type=metric_type,
                 value=metrics_registry.compute(
@@ -89,3 +99,7 @@ class EmbeddingTask(Task):
                 ),
             )
         ]
+        logger.debug(
+            f"EmbeddingTask._compute_metrics: Computed {len(result)} metric(s)"
+        )
+        return result
