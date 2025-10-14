@@ -145,9 +145,13 @@ def test_task_execution(
             if task_class.__name__ == "MetadataLabelPredictionTask":
                 baseline_input = LabelPredictionBaselineInput()
             else:
-                baseline_input = PCABaselineInput(n_pcs=50, n_top_genes=3000, obsm_key="emb")
+                baseline_input = PCABaselineInput(
+                    n_pcs=50, n_top_genes=3000, obsm_key="emb"
+                )
 
-            baseline_embedding = task.compute_baseline(expression_matrix, baseline_input)
+            baseline_embedding = task.compute_baseline(
+                expression_matrix, baseline_input
+            )
 
             baseline_results = task.run(
                 cell_representation=baseline_embedding,
@@ -187,6 +191,7 @@ def test_cross_species_task(embedding_matrix, obs):
 
         # Test that baseline raises NotImplementedError
         import numpy as np
+
         dummy_expression_data = np.random.rand(10, 5)
         with pytest.raises(NotImplementedError):
             task.compute_baseline(dummy_expression_data)

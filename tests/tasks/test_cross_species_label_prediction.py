@@ -188,8 +188,9 @@ def test_invalid_inputs(cross_species_test_data):
 def test_baseline_not_implemented():
     """Test that baseline raises NotImplementedError."""
     import numpy as np
+
     task = CrossSpeciesLabelPredictionTask()
-    
+
     # Create dummy expression data
     expression_data = np.random.rand(10, 5)
 
