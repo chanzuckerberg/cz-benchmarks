@@ -128,7 +128,7 @@ def load_customized_dataset(
 
     Args:
         dataset_name: The name of the dataset, either custom or from the config
-        custom_class_init: Custom configuration dictionary for the dataset.
+        custom_dataset_config: Custom configuration dictionary for the dataset.
 
     Returns:
         Instantiated dataset object with data loaded.
