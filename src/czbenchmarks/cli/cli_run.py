@@ -10,7 +10,7 @@ import pandas as pd
 
 from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
 from czbenchmarks.datasets import load_dataset
-from czbenchmarks.datasets.utils import load_customized_dataset
+from czbenchmarks.datasets.utils import load_custom_dataset
 from czbenchmarks.tasks.task import TASK_REGISTRY
 
 from .runner import run_task
@@ -204,7 +204,7 @@ def add_dynamic_task_command(task_name: str):
                     "organism": user_dataset["organism"],
                     "path": str(resolved_path),
                 }
-                dataset = load_customized_dataset(
+                dataset = load_custom_dataset(
                     dataset_class=dataset_name,
                     path=str(resolved_path),
                     **dataset_update_dict,

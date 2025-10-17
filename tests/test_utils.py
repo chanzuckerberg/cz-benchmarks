@@ -57,6 +57,7 @@ def test_import_class_from_config(tmp_path):
     assert instance.param2 == 42
 
 
+# FIXME MICHELLE exercise all combinations of custom yaml and dict
 @pytest.mark.parametrize(
     "dataset_path, dataset_name, custom_dataset_config",
     [
@@ -95,5 +96,6 @@ def test_load_custom_config(dataset_path, dataset_name, custom_dataset_config):
         assert custom_cfg[key] == value
 
 
+# FIXME MICHELLE remove this
 if __name__ == "__main__":
     pytest.main(["-v", __file__, "-k", "test_load_custom_config"])

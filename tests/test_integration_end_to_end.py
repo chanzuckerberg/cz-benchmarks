@@ -6,7 +6,7 @@ import pytest
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.datasets.single_cell_labeled import SingleCellLabeledDataset
-from czbenchmarks.datasets.utils import load_dataset
+from czbenchmarks.datasets.utils import load_dataset, load_custom_dataset
 from czbenchmarks.tasks import (
     ClusteringTask,
     EmbeddingTask,
@@ -219,8 +219,9 @@ def test_end_to_end_sequential_organization_task():
         yaml.dump(config_data, temp_config)
         temp_config_path = Path(temp_config.name)
 
-    dataset: SingleCellLabeledDataset = load_dataset(
-        "allen_soundlife_immune_variation_subsampled", temp_config_path
+    dataset: SingleCellLabeledDataset = load_custom_dataset(
+        dataset_name="allen_soundlife_immune_variation_subsampled",
+        custom_dataset_config_path=temp_config_path,
     )
 
     # Create random model output as a stand-in for real model results

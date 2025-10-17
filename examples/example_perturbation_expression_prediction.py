@@ -18,7 +18,7 @@ from czbenchmarks.tasks.utils import (
     print_correlation_metrics_baseline_and_model,
 )
 from czbenchmarks.tasks.types import CellRepresentation
-from czbenchmarks.datasets.utils import load_customized_dataset
+from czbenchmarks.datasets.utils import load_custom_dataset
 
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -138,8 +138,8 @@ if __name__ == "__main__":
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
 
-    dataset = load_customized_dataset(
-        dataset_name=dataset_name, custom_dataset_config=custom_dataset_config
+    dataset = load_custom_dataset(
+        dataset_name=dataset_name, custom_dataset_kwargs=custom_dataset_config
     )
     dataset.validate()
 
