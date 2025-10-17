@@ -94,12 +94,10 @@ def load_custom_dataset(
 ) -> Dataset:
     """
     Instantiate a dataset with a custom configuration. This can include but
-    is not limited to a local path for a custom dataset file. If the dataset
-    exists in the default config, this function will update parameters.
-    Otherwise, it will add the dataset to the default config.
-
-    This function is completely independent from load_dataset() and directly
-    instantiates the dataset class without using OmegaConf objects.
+    is not limited to a local path for a custom dataset file and/or a 
+    dictionary of custom parameters to update the default configuration. If 
+    the dataset name does not exist in the default config, this function will 
+    add the dataset to the configuration.
 
     Args:
         dataset_name: The name of the dataset, either custom or from the config
