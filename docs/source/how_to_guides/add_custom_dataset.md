@@ -35,7 +35,7 @@ The AnnData object must also meet validation requirements for the specific datas
 
 ### 2. Update Datasets Configuration File
 
-Add your dataset to the configuration file (e.g., `src/czbenchmarks/conf/datasets.yaml`):
+Add your datasets to the existing configuration file (e.g., `src/czbenchmarks/conf/datasets.yaml`) or to a new file (e.g., `custom/path/my_custom_datasets.yaml`):
 
 ```yaml
 datasets:
@@ -69,13 +69,17 @@ datasets:
 You may add multiple datasets as children of `datasets`.
 
 
-### 3. Using Datasets
+### 3. Using Custom Datasets
 
-Datasets can be loaded in two ways:
+Customized datasets can be loaded using the `load_custom_dataset` function, from either a supplemental yaml configuration file, as created in the example above, or from a dictionary of configuration parameters. 
 
-#### a. Registering Datasets with a YAML Configuration
+If the same parameters exist in both the default and supplemental yaml configuration files, the values in the supplemental file will override those in the default file. Values provided as a dictionary will override both. 
 
-Define datasets in a YAML file and load them by name using `load_dataset`:
+While it is _possible_ to provide both a supplemental yaml file and dictionary parameters, using multiple forms of input for parameters can make it complex to track final values and is not recommended. 
+
+#### a. Registering Datasets with a Supplemental YAML Configuration
+
+Define datasets in a YAML file and load them by name using `load_custom_dataset`:
 
 **Example: `user_dataset.yaml`**
 
@@ -90,16 +94,14 @@ datasets:
 Load the dataset in Python:
 
 ```python
-from czbenchmarks.datasets.utils import load_dataset
-dataset = load_dataset("user_dataset", config_path='user_dataset.yaml')
+from czbenchmarks.datasets.utils import load_custom_dataset
+dataset = load_custom_dataset(dataset_name="user_dataset", custom_dataset_config_path='user_dataset.yaml')
 ```
 
-#### b. Loading Local Datasets Directly
-
-For quick experiments, use `load_customized_dataset` to instantiate a dataset directly:
+#### b. Loading Customized Datasets from a Parameter Dictionary
 
 ```python
-from czbenchmarks.datasets.utils import load_customized_dataset
+from czbenchmarks.datasets.utils import load_custom_dataset
 from czbenchmarks.datasets.types import Organism
 
 my_dataset_name = "my_dataset"
@@ -108,9 +110,9 @@ custom_dataset_config = {
     "organism": Organism.HUMAN,
     "path": "my_data.h5ad",
 }
-dataset = load_customized_dataset(
+dataset = load_custom_dataset(
     dataset_name=my_dataset_name,
-    custom_dataset_config=custom_dataset_config
+    custom_dataset_kwargs=custom_dataset_config
 )
 print(dataset.adata)
 ```
@@ -160,7 +162,7 @@ class MyCustomDataset(SingleCellDataset):
 
 - Add your new dataset class to the appropriate module in `czbenchmarks.datasets`.
 - Register it in the `src/czbenchmarks/datasets/__init__.py` file.
-- You can now use your new dataset type in YAML configs or with `load_customized_dataset`.
+- You can now use your new dataset type with `load_customized_dataset`.
 
 
 ### 3. Test and Validate
