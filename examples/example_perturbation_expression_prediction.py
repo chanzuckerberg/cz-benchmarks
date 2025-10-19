@@ -118,13 +118,19 @@ if __name__ == "__main__":
     
     The dataset can be saved after filtering, and then loaded back in.
     
-    In this example, a random model output is used. Instead, any model output of
+    In this example, random model output is used. In applications, any model output of
     the same shape as the dataset's adata can be used.
     
     The task computes the log fold change in model predicted expression of 
     differentially expressed genes between perturbed and non-targeting groups.
     It then calculates the correlation between ground truth and predicted log 
-    fold change for each condition using a variety of metrics.    
+    fold change for each condition using a variety of metrics.
+
+    This example uses `load_custom_dataset` instead of `load_dataset` to load the 
+    dataset with a custom configuration that changes the default masking parameters. 
+    Normally, these parameters should not be changed since they must be consistent 
+    for comparison across models. However, it is anticipated that users may want 
+    to change them for experiments.
     """
 
     args = parse_args()
