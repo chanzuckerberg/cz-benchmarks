@@ -6,7 +6,11 @@ from omegaconf import OmegaConf
 import scanpy as sc
 from czbenchmarks.utils import load_custom_config
 from czbenchmarks.datasets.types import Organism
-from czbenchmarks.datasets.utils import list_available_datasets, load_dataset, load_custom_dataset
+from czbenchmarks.datasets.utils import (
+    list_available_datasets,
+    load_dataset,
+    load_custom_dataset,
+)
 from unittest.mock import Mock, patch
 import pytest
 from tests.utils import create_dummy_anndata
@@ -51,8 +55,8 @@ def test_list_available_datasets():
 
 @pytest.mark.parametrize(
     "dataset_path, dataset_name, custom_dataset_config, custom_yaml_content",
-    [   
-        ( # dictionary configuration
+    [
+        (  # dictionary configuration
             "/extra_directory/extra_subdirectory/mouse_test.h5ad",
             "tsv2_bladder",
             {
@@ -62,7 +66,7 @@ def test_list_available_datasets():
             },
             None,
         ),
-        ( # YAML configuration
+        (  # YAML configuration
             "human_test.h5ad",
             "tsv2_bladder",
             None,
@@ -75,7 +79,7 @@ def test_list_available_datasets():
                 }
             },
         ),
-        ( # YAML plus dict; dict should override YAML path
+        (  # YAML plus dict; dict should override YAML path
             "gorilla_test.h5ad",
             "tsv2_bladder",
             {
@@ -93,7 +97,7 @@ def test_list_available_datasets():
                 }
             },
         ),
-        ( # New dataset with dummy class
+        (  # New dataset with dummy class
             "dummy.h5ad",
             "my_dummy_dataset",
             {
@@ -103,7 +107,7 @@ def test_list_available_datasets():
             },
             None,
         ),
-        pytest.param( # Valid s3 file configuration, must be downloaded
+        pytest.param(  # Valid s3 file configuration, must be downloaded
             "s3://cz-benchmarks-data/datasets/v1/cell_atlases/Homo_sapiens/Tabula_Sapiens_v2/homo_sapiens_10df7690-6d10-4029-a47e-0f071bb2df83_Bladder_v2_curated.h5ad",
             "tsv2_bladder",
             {
@@ -152,6 +156,7 @@ def test_load_custom_dataset(
 
     # Create a dummy dataset class and module if needed
     if dataset_name == "my_dummy_dataset":
+
         class DummyDataset:
             def __init__(self, path, organism, **kwargs):
                 self.path = path
@@ -245,7 +250,6 @@ class TestUtils:
         mock_instantiate.assert_called_once_with(dataset_config)
         mock_dataset.load_data.assert_called_once()
         assert loaded_dataset is mock_dataset
-
 
     def test_load_dataset_invalid_name(self):
         """Test that load_dataset raises ValueError for invalid dataset name."""

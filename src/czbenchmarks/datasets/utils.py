@@ -95,9 +95,9 @@ def load_custom_dataset(
 ) -> Dataset:
     """
     Instantiate a dataset with a custom configuration. This can include but
-    is not limited to a local path for a custom dataset file and/or a 
-    dictionary of custom parameters to update the default configuration. If 
-    the dataset name does not exist in the default config, this function will 
+    is not limited to a local path for a custom dataset file and/or a
+    dictionary of custom parameters to update the default configuration. If
+    the dataset name does not exist in the default config, this function will
     add the dataset to the configuration.
 
     Args:
@@ -106,7 +106,7 @@ def load_custom_dataset(
             custom configuration that can be used to update the existing default configuration.
         custom_dataset_kwargs: Custom configuration dictionary to update the default
             configuration of the dataset class.
-        cache_dir: Optional directory to cache the dataset file. If not provided, 
+        cache_dir: Optional directory to cache the dataset file. If not provided,
             the global cache manager directory will be used.
 
     Returns:

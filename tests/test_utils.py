@@ -125,7 +125,9 @@ def test_import_class_from_config(tmp_path):
         ),
     ],
 )
-def test_load_custom_config(tmp_path, dataset_name, custom_dataset_config, custom_yaml_content):
+def test_load_custom_config(
+    tmp_path, dataset_name, custom_dataset_config, custom_yaml_content
+):
     """Test load_custom_config supports both YAML path and dict updates, including changing existing defaults and adding new keys."""
 
     # Prepare YAML file from parameterized content
@@ -155,7 +157,11 @@ def test_load_custom_config(tmp_path, dataset_name, custom_dataset_config, custo
         yaml_items = custom_yaml_content.get("datasets", {}).get(dataset_name, {})
         if yaml_items:
             for key, yaml_value in yaml_items.items():
-                expected_value = custom_dataset_config.get(key, yaml_value) if custom_dataset_config else yaml_value
+                expected_value = (
+                    custom_dataset_config.get(key, yaml_value)
+                    if custom_dataset_config
+                    else yaml_value
+                )
                 if key == "organism":
                     assert str(custom_cfg[key]) == str(expected_value)
                 else:
