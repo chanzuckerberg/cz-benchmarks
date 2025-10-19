@@ -1,15 +1,10 @@
 import logging
 import sys
 import argparse
-from typing import Optional
 import anndata as ad
 import pandas as pd
 import numpy as np
-import hydra
-from hydra.utils import instantiate
-import omegaconf
 
-from czbenchmarks.datasets import SingleCellPerturbationDataset
 from czbenchmarks.constants import RANDOM_SEED
 from czbenchmarks.tasks.single_cell import (
     PerturbationExpressionPredictionTask,
@@ -23,9 +18,7 @@ from czbenchmarks.tasks.utils import (
     print_correlation_metrics_baseline_and_model,
 )
 from czbenchmarks.tasks.types import CellRepresentation
-
-from czbenchmarks.utils import initialize_hydra
-from czbenchmarks.file_utils import download_file_from_remote
+from czbenchmarks.datasets.utils import load_custom_dataset
 
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -83,31 +76,6 @@ def parse_args():
     return parser.parse_args()
 
 
-# TODO: Replace with `load_local_dataset()`
-def load_dataset_config(
-    dataset_name: str,
-    config_name: str = "datasets",
-    dataset_update_dict: Optional[dict] = None,
-):
-    """Customize dataset class instantiation parameters using cli args
-
-    Args:
-        dataset_name: Name of the dataset to load
-        dataset_update_dict: Optional dictionary of dataset parameters to update
-
-    Returns:
-        Dataset configuration
-    """
-    initialize_hydra()
-    cfg = hydra.compose(config_name=config_name)
-    dataset_cfg = cfg.datasets[dataset_name]
-    if dataset_update_dict:
-        with omegaconf.open_dict(dataset_cfg) as d:
-            d.update(dataset_update_dict)
-
-    return dataset_cfg
-
-
 def generate_random_model_predictions(dataset, n_cells, n_genes):
     """This demonstrates the expected format for the model predictions.
     This should be an anndata file where the obs.index contains the cell
@@ -150,34 +118,35 @@ if __name__ == "__main__":
     
     The dataset can be saved after filtering, and then loaded back in.
     
-    In this example, a random model output is used. Instead, any model output of
+    In this example, random model output is used. In applications, any model output of
     the same shape as the dataset's adata can be used.
     
     The task computes the log fold change in model predicted expression of 
     differentially expressed genes between perturbed and non-targeting groups.
     It then calculates the correlation between ground truth and predicted log 
-    fold change for each condition using a variety of metrics.    
+    fold change for each condition using a variety of metrics.
+
+    This example uses `load_custom_dataset` instead of `load_dataset` to load the 
+    dataset with a custom configuration that changes the default masking parameters. 
+    Normally, these parameters should not be changed since they must be consistent 
+    for comparison across models. However, it is anticipated that users may want 
+    to change them for experiments.
     """
 
     args = parse_args()
     dataset_name = "replogle_k562_essential_perturbpredict"
     logging.info(f"Loading dataset for {dataset_name} with args: {args}")
 
-    dataset_update_dict = {
+    custom_dataset_config = {
         "percent_genes_to_mask": args.percent_genes_to_mask,
         "min_logfoldchange": args.min_logfoldchange,
         "pval_threshold": args.pval_threshold,
         "min_de_genes_to_mask": args.min_de_genes_to_mask,
     }
 
-    dataset_cfg = load_dataset_config(
-        dataset_name=dataset_name, dataset_update_dict=dataset_update_dict
+    dataset = load_custom_dataset(
+        dataset_name=dataset_name, custom_dataset_kwargs=custom_dataset_config
     )
-    dataset_cfg["path"] = download_file_from_remote(dataset_cfg["path"])
-
-    # Instantiate dataset and load data
-    dataset: SingleCellPerturbationDataset = instantiate(dataset_cfg)
-    dataset.load_data()
     dataset.validate()
 
     # This generates sample model anndata. In applications,

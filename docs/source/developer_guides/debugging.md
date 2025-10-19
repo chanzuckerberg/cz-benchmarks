@@ -5,17 +5,7 @@ This guide provides solutions to common issues you might encounter when using `c
 
 ## Dataset Loading and Validation Errors
 
-These errors usually happen when calling `load_dataset()`, `dataset.load_data()`, or `dataset.validate()`.
-
-### 📄 File Not Found or Path Issues
-
-  - **Error**: `FileNotFoundError` or `ValueError: Dataset path does not exist`.
-
-    - **Cause**: The `path` specified in your YAML configuration file (e.g., `datasets.yaml`) is incorrect, or the file is not accessible.
-    - **Solution**:
-        1.  Verify that the path in your YAML config points to the correct `.h5ad` file.
-        2.  Ensure the file exists and that you have the necessary read permissions.
-        3.  If using a custom config with `load_dataset(config_path=...)`, make sure the path to the YAML file itself is correct.
+These errors usually happen when calling `load_dataset()`, `load_custom_dataset()`, `dataset.load_data()`, or `dataset.validate()`.
 
 ### ⚙️ Dataset Not Found in Configuration
 
@@ -24,6 +14,17 @@ These errors usually happen when calling `load_dataset()`, `dataset.load_data()`
     - **Solution**:
         1.  Check for typos in the dataset name. You can see available datasets with `list_available_datasets()`.
         2.  Ensure your custom YAML config is correctly structured and is being loaded.
+   
+
+### 📄 File Not Found or Path Issues
+
+  - **Error**: `FileNotFoundError: Local dataset file not found at path`.
+
+    - **Cause**: The `path` specified to the custom YAML configuration file (e.g., `datasets.yaml`) is incorrect, or the file is not accessible.
+    - **Solution**:
+        1.  Verify that the path in the YAML config points to the correct `.h5ad` file.
+        2.  Ensure the file exists and that the necessary read permissions exist.
+        3.  If using a custom config with `load_custom_dataset(custom_dataset_config_path=...)`, make sure the path to the YAML file itself is correct.
 
 ### 🔬 AnnData Validation Errors
 
@@ -118,7 +119,7 @@ These errors occur when calling `task.run()` and are often related to mismatches
 - **Start Small**: When debugging, use a small, fast-running dataset (like `tsv2_bladder`) or a subset of your custom data to quickly iterate.
 - **Isolate the Problem**: Determine if the issue is in data loading or task execution. First, ensure your dataset loads and validates successfully:
     ```python
-    dataset = load_dataset("my_dataset", config_path="my_config.yaml")
+    dataset = load_custom_dataset("my_dataset", custom_dataset_config_path="my_config.yaml")
     dataset.load_data()
     dataset.validate()
     print(dataset.adata)
