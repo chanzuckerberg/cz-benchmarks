@@ -57,45 +57,106 @@ def test_import_class_from_config(tmp_path):
     assert instance.param2 == 42
 
 
-# FIXME MICHELLE exercise all combinations of custom yaml and dict
 @pytest.mark.parametrize(
-    "dataset_path, dataset_name, custom_dataset_config",
+    "dataset_name, custom_dataset_config, custom_yaml_content",
     [
+        # Change existing default value and add a new key
         (
-            "dummy.h5ad",
-            "my_dummy_dataset",
-            {
-                "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
-                "organism": Organism.HUMAN,
-                "foo": "bar",
-            },
-        ),
-        (
-            "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
             "replogle_k562_essential_perturbpredict",
             {
                 "_target_": "czbenchmarks.datasets.SingleCellPerturbationDataset",
+                "path": "s3://cz-benchmarks-data/datasets/v2/perturb/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
                 "organism": Organism.HUMAN,
+                # change existing default value and add a new key
                 "percent_genes_to_mask": 0.075,
+            },
+            {
+                "datasets": {
+                    "replogle_k562_essential_perturbpredict": {
+                        "path": "/single_cell/replogle_k562_essential_perturbpredict_de_results_control_cells_v2.h5ad",
+                        "de_gene_col": "gene_symbol",
+                        "key_added": "yes",
+                    }
+                }
+            },
+        ),
+        # Brand new dataset with custom keys
+        (
+            "my_dummy_dataset",
+            {
+                "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                "path": "/dummy.h5ad",
+                "organism": Organism.HUMAN,
+                "foo": "bar",
+            },
+            {
+                "datasets": {
+                    "my_dummy_dataset": {
+                        "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                        "path": "/dummy.h5ad",
+                        "key_added": True,
+                    }
+                }
+            },
+        ),
+        # Dict-only example - change existing default and add new key
+        (
+            "tsv2_bladder",
+            {
+                "path": "/only_dict.h5ad",
+                "organism": Organism.MOUSE,  # change default organism
+                "dict_only": "yes",  # new key
+            },
+            None,
+        ),
+        # YAML-only example with new dataset
+        (
+            "yaml_only_dataset",
+            None,
+            {
+                "datasets": {
+                    "yaml_only_dataset": {
+                        "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                        "path": "/yaml_only_dataset.h5ad",
+                        "organism": Organism.HUMAN,
+                    }
+                }
             },
         ),
     ],
 )
-def test_load_custom_config(dataset_path, dataset_name, custom_dataset_config):
-    """Test load_customized_config instantiates and loads a customized configuration."""
+def test_load_custom_config(tmp_path, dataset_name, custom_dataset_config, custom_yaml_content):
+    """Test load_custom_config supports both YAML path and dict updates, including changing existing defaults and adding new keys."""
 
-    custom_dataset_config["path"] = dataset_path
+    # Prepare YAML file from parameterized content
+    custom_yaml_path = None
+    if custom_yaml_content:
+        custom_yaml_path = tmp_path / "custom_config.yaml"
+        OmegaConf.save(config=custom_yaml_content, f=custom_yaml_path)
+        custom_yaml_path = str(custom_yaml_path)
+
     custom_cfg = load_custom_config(
         item_name=dataset_name,
         config_name="datasets",
+        custom_config_path=custom_yaml_path,
         class_update_kwargs=custom_dataset_config,
     )
 
-    assert custom_cfg.path == custom_dataset_config["path"]
-    for key, value in custom_dataset_config.items():
-        assert custom_cfg[key] == value
+    # All dict-provided keys should be present and match
+    if custom_dataset_config:
+        for key, value in custom_dataset_config.items():
+            if key == "organism":
+                assert str(custom_cfg[key]) == str(value)
+            else:
+                assert custom_cfg[key] == value
 
-
-# FIXME MICHELLE remove this
-if __name__ == "__main__":
-    pytest.main(["-v", __file__, "-k", "test_load_custom_config"])
+    # YAML-provided keys for this item should be present; when overlapping, dict wins
+    if custom_yaml_content:
+        yaml_items = custom_yaml_content.get("datasets", {}).get(dataset_name, {})
+        if yaml_items:
+            for key, yaml_value in yaml_items.items():
+                expected_value = custom_dataset_config.get(key, yaml_value) if custom_dataset_config else yaml_value
+                if key == "organism":
+                    assert str(custom_cfg[key]) == str(expected_value)
+                else:
+                    assert custom_cfg[key] == expected_value

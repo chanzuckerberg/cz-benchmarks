@@ -91,6 +91,7 @@ def load_custom_dataset(
     dataset_name: str,
     custom_dataset_config_path: Optional[str] = None,
     custom_dataset_kwargs: Optional[Dict[str, Any]] = None,
+    cache_dir: Optional[str] = None,
 ) -> Dataset:
     """
     Instantiate a dataset with a custom configuration. This can include but
@@ -105,6 +106,8 @@ def load_custom_dataset(
             custom configuration that can be used to update the existing default configuration.
         custom_dataset_kwargs: Custom configuration dictionary to update the default
             configuration of the dataset class.
+        cache_dir: Optional directory to cache the dataset file. If not provided, 
+            the global cache manager directory will be used.
 
     Returns:
         Instantiated dataset object with data loaded.
@@ -142,11 +145,12 @@ def load_custom_dataset(
             f"Path required but not found in resolved configuration: {custom_cfg}"
         )
 
-    path = custom_cfg.pop("path")
+    # path = custom_cfg.pop("path")
+    path = custom_cfg["path"]
     protocol = urlparse(str(path)).scheme
 
     if protocol:
-        custom_cfg["path"] = download_file_from_remote(path)
+        custom_cfg["path"] = download_file_from_remote(path, cache_dir=cache_dir)
     else:
         resolved_path = Path(path).expanduser().resolve()
         resolved_path = str(resolved_path)
