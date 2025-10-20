@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.14.0...v0.15.0) (2025-10-20)
+
+
+### Features
+
+* Improve customized dataset loading ([#449](https://github.com/chanzuckerberg/cz-benchmarks/issues/449)) ([7f8508b](https://github.com/chanzuckerberg/cz-benchmarks/commit/7f8508b732e3aaa0cc26a6625a795adfaf352da7))
+
+
+### Bug Fixes
+
+* consistent pluralization for "Virtual Cells Platform" name ([#447](https://github.com/chanzuckerberg/cz-benchmarks/issues/447)) ([8dc5fa8](https://github.com/chanzuckerberg/cz-benchmarks/commit/8dc5fa872e125ad385bdd409007a5e04884acc28))
+* minor updates from the load_custom_dataset PR ([#455](https://github.com/chanzuckerberg/cz-benchmarks/issues/455)) ([d21d882](https://github.com/chanzuckerberg/cz-benchmarks/commit/d21d8824c294eb13892ae86a2bb4ba98e0838588))
+
 ## [0.14.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.13.0...v0.14.0) (2025-10-01)
 
 
