@@ -95,7 +95,7 @@ def load_custom_config(
 
     def _disable_strict_checking_if_required(cfg):
         """Disable OmegaConf strict checking if required"""
-        # TODO: Check if custom_cfg introduces new keys and only disable strict checking 
+        # TODO: Check if custom_cfg introduces new keys and only disable strict checking
         # if needed. This probably requires a recursive comparison of keys and additon of
         # appropriate tests.
         nonlocal strict_checking_is_disabled
