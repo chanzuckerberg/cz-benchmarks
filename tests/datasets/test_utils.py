@@ -16,6 +16,17 @@ import pytest
 from tests.utils import create_dummy_anndata
 
 
+@pytest.fixture()
+def adata():
+    adata = create_dummy_anndata(
+        n_cells=5,
+        n_genes=3,
+        obs_columns=["cell_type"],
+        organism=Organism.HUMAN,
+    )
+    return adata
+
+
 def test_list_available_datasets():
     """Test that list_available_datasets returns a sorted list of dataset names."""
     # Get the list of available datasets
@@ -120,19 +131,18 @@ def test_list_available_datasets():
     ],
 )
 def test_load_custom_dataset(
-    tmp_path, dataset_path, dataset_name, custom_dataset_config, custom_yaml_content
+    tmp_path,
+    adata,
+    dataset_path,
+    dataset_name,
+    custom_dataset_config,
+    custom_yaml_content,
 ):
     """Test load_custom_dataset instantiates and loads a customized dataset."""
 
     protocol = urlparse(str(dataset_path)).scheme
     if not protocol:
         # Create a dummy file to represent the dataset
-        adata = create_dummy_anndata(
-            n_cells=5,
-            n_genes=3,
-            obs_columns=["cell_type"],
-            organism=Organism.HUMAN,
-        )
         # Normalize dataset_path to be under tmp_path even if it starts with '/'
         normalized_dataset_path = dataset_path.lstrip("/")
         dummy_file = tmp_path / normalized_dataset_path
