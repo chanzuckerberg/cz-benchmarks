@@ -92,6 +92,18 @@ def load_custom_config(
     """
 
     strict_checking_is_disabled = False
+
+    def _disable_strict_checking_if_required(cfg):
+        """Disable OmegaConf strict checking if required"""
+        nonlocal strict_checking_is_disabled
+        if strict_checking_is_disabled:
+            log_msg = "Strict checking already disabled"
+        else:
+            log_msg = "Disabled strict checking"
+            strict_checking_is_disabled = True
+            OmegaConf.set_struct(cfg, False)
+        return cfg, log_msg
+
     initialize_hydra()
     cfg = hydra.compose(config_name=config_name)
 
@@ -115,15 +127,10 @@ def load_custom_config(
 
         # Disable strict checking and merge configs
         # TODO check if custom_cfg introduces new keys and only disable strict checking if needed
-        if strict_checking_is_disabled:
-            log_msg = "Strict checking already disabled "
-        else:
-            log_msg = "Disabled strict checking "
-            strict_checking_is_disabled = True
-            OmegaConf.set_struct(cfg, False)
+        cfg, log_msg = _disable_strict_checking_if_required(cfg)
         logger.info(
             log_msg
-            + f'to allow updating "{config_name}" with custom yaml config "{custom_config_path}" in config "{config_name}"'
+            + f' to allow updating "{config_name}" with custom yaml config "{custom_config_path}" in config "{config_name}"'
         )
 
         cfg = OmegaConf.merge(cfg, custom_cfg)
@@ -132,14 +139,9 @@ def load_custom_config(
     if class_update_kwargs:
         # Handle case where item_name is not in the config
         if item_name not in cfg[config_name]:
-            if strict_checking_is_disabled:
-                log_msg = "Strict checking already disabled "
-            else:
-                log_msg = "Disabled strict checking "
-                strict_checking_is_disabled = True
-                OmegaConf.set_struct(cfg, False)
+            cfg, log_msg = _disable_strict_checking_if_required(cfg)
             logger.info(
-                log_msg + f'to allow creating "{item_name}" under "{config_name}"'
+                log_msg + f' to allow creating "{item_name}" under "{config_name}"'
             )
 
             with open_dict(cfg):
@@ -172,14 +174,9 @@ def load_custom_config(
             logger.info(
                 f'Adding the following new items to "{item_name}": {new_keys_str}'
             )
-            if strict_checking_is_disabled:
-                log_msg = "Strict checking already disabled "
-            else:
-                log_msg = "Disabled strict checking "
-                strict_checking_is_disabled = True
-                OmegaConf.set_struct(cfg, False)
+            cfg, log_msg = _disable_strict_checking_if_required(cfg)
             logger.info(
-                log_msg + f'to allow adding these keys to the config "{item_name}"'
+                log_msg + f' to allow adding these keys to the config "{item_name}"'
             )
 
         cfg[config_name][item_name] = OmegaConf.merge(

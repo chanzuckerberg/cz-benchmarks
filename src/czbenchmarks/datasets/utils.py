@@ -145,7 +145,6 @@ def load_custom_dataset(
             f"Path required but not found in resolved configuration: {custom_cfg}"
         )
 
-    # path = custom_cfg.pop("path")
     path = custom_cfg["path"]
     protocol = urlparse(str(path)).scheme
 
