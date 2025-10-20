@@ -95,6 +95,9 @@ def load_custom_config(
 
     def _disable_strict_checking_if_required(cfg):
         """Disable OmegaConf strict checking if required"""
+        # TODO: Check if custom_cfg introduces new keys and only disable strict checking 
+        # if needed. This probably requires a recursive comparison of keys and additon of
+        # appropriate tests.
         nonlocal strict_checking_is_disabled
         if strict_checking_is_disabled:
             log_msg = "Strict checking already disabled"
@@ -126,7 +129,6 @@ def load_custom_config(
             custom_cfg = OmegaConf.create(yaml.safe_load(f))
 
         # Disable strict checking and merge configs
-        # TODO check if custom_cfg introduces new keys and only disable strict checking if needed
         cfg, log_msg = _disable_strict_checking_if_required(cfg)
         logger.info(
             log_msg
