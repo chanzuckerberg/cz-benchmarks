@@ -1,13 +1,15 @@
 import logging
-from typing import List
+from typing import Annotated, List
+from pydantic import Field, field_validator
 
 import pandas as pd
+import scipy.sparse as sp
 
 from czbenchmarks.types import ListLike
 
 from ..constants import RANDOM_SEED
 from ..metrics.types import MetricResult, MetricType
-from .task import Task, TaskInput, TaskOutput
+from .task import PCABaselineInput, Task, TaskInput, TaskOutput
 from .types import CellRepresentation
 
 logger = logging.getLogger(__name__)
@@ -16,11 +18,38 @@ logger = logging.getLogger(__name__)
 class SequentialOrganizationTaskInput(TaskInput):
     """Pydantic model for Sequential Organization inputs."""
 
-    obs: pd.DataFrame
-    input_labels: ListLike
-    k: int = 15
-    normalize: bool = True
-    adaptive_k: bool = False
+    obs: Annotated[
+        pd.DataFrame,
+        Field(
+            description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs')."
+        ),
+    ]
+    input_labels: Annotated[
+        ListLike,
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
+    ]
+    k: Annotated[
+        int, Field(description="Number of nearest neighbors for k-NN based metrics.")
+    ] = 15
+    normalize: Annotated[
+        bool,
+        Field(description="Whether to normalize the embedding for k-NN based metrics."),
+    ] = True
+    adaptive_k: Annotated[
+        bool,
+        Field(
+            description="Whether to use an adaptive number of nearest neighbors for k-NN based metrics."
+        ),
+    ] = False
+
+    @field_validator("k")
+    @classmethod
+    def _validate_k(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("k must be a positive integer.")
+        return v
 
 
 class SequentialOrganizationOutput(TaskOutput):
@@ -44,6 +73,7 @@ class SequentialOrganizationTask(Task):
     display_name = "Sequential Organization"
     description = "Evaluate sequential consistency in embeddings using time point labels and k-NN based metrics."
     input_model = SequentialOrganizationTaskInput
+    baseline_model = PCABaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -83,9 +113,17 @@ class SequentialOrganizationTask(Task):
         """
         from ..metrics import metrics_registry
 
+        logger.debug("SequentialOrganizationTask._compute_metrics: Computing metrics")
+        logger.debug(
+            f"SequentialOrganizationTask._compute_metrics: embedding shape={task_output.embedding.shape}, labels shape={task_input.input_labels.shape}"
+        )
         results = []
         embedding = task_output.embedding
         labels = task_input.input_labels
+
+        # Convert sparse matrix to dense if needed for JAX compatibility in metrics
+        if sp.issparse(embedding):
+            embedding = embedding.toarray()
 
         # Embedding Silhouette Score with sequential labels
         results.append(

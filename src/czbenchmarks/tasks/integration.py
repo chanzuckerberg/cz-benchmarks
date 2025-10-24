@@ -1,12 +1,15 @@
 import logging
-from typing import List
+from typing import Annotated, List
+from pydantic import Field, field_validator
+
+import scipy.sparse as sp
 
 from ..constants import RANDOM_SEED
 from ..metrics import metrics_registry
 from ..metrics.types import MetricResult, MetricType
 from ..tasks.types import CellRepresentation
 from ..types import ListLike
-from .task import Task, TaskInput, TaskOutput
+from .task import PCABaselineInput, Task, TaskInput, TaskOutput
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +17,30 @@ logger = logging.getLogger(__name__)
 class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
-    batch_labels: ListLike
-    labels: ListLike
+    batch_labels: Annotated[
+        ListLike, Field(description="Batch labels for each cell (e.g., '@obs:batch').")
+    ]
+
+    labels: Annotated[
+        ListLike,
+        Field(
+            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+        ),
+    ]
+
+    @field_validator("batch_labels")
+    @classmethod
+    def _validate_batch_labels(cls, v: ListLike) -> ListLike:
+        if not isinstance(v, ListLike):
+            raise ValueError("batch_labels must be a list-like object.")
+        return v
+
+    @field_validator("labels")
+    @classmethod
+    def _validate_labels(cls, v: ListLike) -> ListLike:
+        if not isinstance(v, ListLike):
+            raise ValueError("labels must be a list-like object.")
+        return v
 
 
 class BatchIntegrationOutput(TaskOutput):
@@ -39,6 +64,7 @@ class BatchIntegrationTask(Task):
         "Evaluate batch integration quality using various integration metrics."
     )
     input_model = BatchIntegrationTaskInput
+    baseline_model = PCABaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -73,10 +99,20 @@ class BatchIntegrationTask(Task):
             List of MetricResult objects containing entropy per cell and
             batch-aware silhouette scores
         """
-
+        logger.debug("BatchIntegrationTask._compute_metrics: Computing metrics")
         entropy_per_cell_metric = MetricType.ENTROPY_PER_CELL
         silhouette_batch_metric = MetricType.BATCH_SILHOUETTE
         cell_representation = task_output.cell_representation
+        logger.debug(
+            f"BatchIntegrationTask._compute_metrics: cell_representation shape={cell_representation.shape}, labels shape={task_input.labels.shape}"
+        )
+        logger.debug(
+            f"BatchIntegrationTask._compute_metrics: batch_labels shape={task_input.batch_labels.shape}"
+        )
+
+        # Convert sparse matrix to dense if needed for JAX compatibility in metrics
+        if sp.issparse(cell_representation):
+            cell_representation = cell_representation.toarray()
 
         return [
             MetricResult(
