@@ -167,7 +167,7 @@ def test_clustering_task_regression(dataset):
     assert "normalized_mutual_info" in clustering_model_metrics
 
     # Regression test: Compare against expected results
-    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # Expected results (captured from CZI Virtual Cells Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
     expected_metrics = [
         {"metric_type": "adjusted_rand_index", "value": 0.39411565248721414},
@@ -216,7 +216,7 @@ def test_embedding_task_regression(dataset):
     assert "silhouette_score" in embedding_model_metrics
 
     # Regression test: Compare against expected results
-    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # Expected results (captured from CZI Virtual Cells Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
     expected_metrics = [
         {"metric_type": "silhouette_score", "value": 0.5428805351257324}
@@ -275,7 +275,7 @@ def test_metadata_label_prediction_task_regression(dataset):
     assert "mean_fold_auroc" in metadata_label_prediction_model_metric_names
 
     # Regression test: Compare against expected results
-    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
+    # Expected results (captured from CZI Virtual Cells Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
     print(metadata_label_prediction_results)
     metadata_label_prediction_results_filtered = [
@@ -418,7 +418,7 @@ def test_cross_species_integration_task_regression(
         pass  # Expected behavior
 
     # Regression test: Compare against expected results
-    # Expected results (captured from CZI Virtual Cell Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_115809-1e669592.json)
+    # Expected results (captured from CZI Virtual Cells Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_115809-1e669592.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
     expected_metrics = [
         {"metric_type": "entropy_per_cell", "value": 0.11187911057813454},

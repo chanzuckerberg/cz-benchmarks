@@ -11,7 +11,7 @@ import pandas as pd
 
 from czbenchmarks.constants import RANDOM_SEED as DEFAULT_SEED
 from czbenchmarks.datasets import load_dataset
-from czbenchmarks.datasets.utils import load_local_dataset
+from czbenchmarks.datasets.utils import load_custom_dataset
 from czbenchmarks.tasks.task import TASK_REGISTRY, TaskParameter
 
 from .runner import run_task
