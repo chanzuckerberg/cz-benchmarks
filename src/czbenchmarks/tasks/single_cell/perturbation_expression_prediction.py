@@ -17,7 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class PerturbationExpressionPredictionTaskInput(TaskInput):
-    """Pydantic model for Perturbation task inputs."""
+    """Pydantic model for Perturbation task inputs.
+
+    Dataclass to contain input parameters for the PerturbationExpressionPredictionTask.
+    The row and column ordering of the model predictions can optionallybe provided as
+    cell_index and gene_index, respectively, so the task can align a model matrix that
+    is a subset of or re-ordered relative to the dataset adata.
+    """
 
     adata: Annotated[
         ad.AnnData,

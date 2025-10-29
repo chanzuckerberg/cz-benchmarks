@@ -145,9 +145,7 @@ def test_task_execution(
             if task_class.__name__ == "MetadataLabelPredictionTask":
                 baseline_input = LabelPredictionBaselineInput()
             else:
-                baseline_input = PCABaselineInput(
-                    n_pcs=50, n_top_genes=3000, obsm_key="emb"
-                )
+                baseline_input = PCABaselineInput()
 
             baseline_embedding = task.compute_baseline(
                 expression_matrix, baseline_input
