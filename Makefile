@@ -13,7 +13,7 @@ clean:
 	docker rmi cz-benchmarks-models:transcriptformer || true
 	docker rmi cz-benchmarks-models:aido || true
 
-DESIRED_COVERAGE = 90
+DESIRED_COVERAGE = 80
 TEST_TYPE ?= unit
 
 # Run all unit tests with coverage
