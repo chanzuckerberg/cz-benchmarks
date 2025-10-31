@@ -65,9 +65,6 @@ class SequentialOrganizationTask(Task):
 
     This task computes sequential quality metrics for embeddings using time point labels.
     Evaluates how well embeddings preserve sequential organization between cells.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Sequential Organization"

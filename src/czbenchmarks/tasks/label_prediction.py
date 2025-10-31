@@ -92,9 +92,6 @@ class MetadataLabelPredictionTask(Task):
 
     Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
     cross-validation. Reports standard classification metrics.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Label Prediction"

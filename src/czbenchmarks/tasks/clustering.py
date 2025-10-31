@@ -67,9 +67,6 @@ class ClusteringTask(Task):
 
     This task performs clustering on embeddings and evaluates the results
     using multiple clustering metrics (ARI and NMI).
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Clustering"

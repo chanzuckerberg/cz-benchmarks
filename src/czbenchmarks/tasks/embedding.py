@@ -36,9 +36,6 @@ class EmbeddingTask(Task):
 
     This task computes quality metrics for cell representations using ground truth labels.
     Currently supports silhouette score evaluation.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Embedding"

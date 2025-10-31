@@ -54,9 +54,6 @@ class BatchIntegrationTask(Task):
 
     This task computes metrics to assess how well different batches are integrated
     in the embedding space while preserving biological signals.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Batch Integration"
