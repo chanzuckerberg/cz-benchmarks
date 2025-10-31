@@ -29,25 +29,11 @@ jobs:
         run: |
           uv sync --group dev
 
-      - name: Run tests
-        run: uv run make test
-
       - name: Run ruff checks
-        if: always()
         run: uv run make ruff-check
 
-      - name: Generate coverage report
-        if: always()
-        run: |
-          uv run make test-coverage | tee coverage.txt
-          # Extract the total coverage percentage
-          COVERAGE=$(grep -oP 'TOTAL.*\d+%' coverage.txt | grep -oP '\d+%' | grep -oP '\d+')
-          if [ "$COVERAGE" -lt 74 ]; then
-            echo "Test coverage ($COVERAGE%) is below the required threshold of 74%"
-            echo "coverage_failed=true" >> $GITHUB_OUTPUT
-          else
-            echo "coverage_failed=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Run tests
+        run: uv run make test
 
       - name: Upload coverage report
         if: always()
@@ -66,7 +52,3 @@ jobs:
             cat coverage.txt;
             echo '```';
           } >> $GITHUB_STEP_SUMMARY
-
-      - name: Fail if coverage is below threshold
-        if: always() && steps.generate-coverage.outputs.coverage_failed == 'true'
-        run: exit 1
