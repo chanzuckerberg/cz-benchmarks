@@ -114,9 +114,7 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 class PerturbationExpressionPredictionTask(Task):
     """
-    **Perturbation Expression Prediction Task.**
-
-    This task evaluates perturbation-induced expression predictions against
+    Task for evaluating perturbation-induced expression predictions against
     their ground truth values. This is done by calculating metrics derived
     from predicted and ground truth log fold change values for each condition.
     Currently, Spearman rank correlation is supported.
