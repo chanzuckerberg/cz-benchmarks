@@ -1,6 +1,8 @@
-from typing import List
+from typing import Annotated, List
+import logging
 
 import numpy as np
+from pydantic import Field, field_validator
 
 from czbenchmarks.datasets.types import Organism
 
@@ -9,14 +11,33 @@ from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
 from ...types import ListLike
-from ..task import Task, TaskInput, TaskOutput
+from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
+
+logger = logging.getLogger(__name__)
 
 
 class CrossSpeciesIntegrationTaskInput(TaskInput):
     """Pydantic model for CrossSpeciesIntegrationTask inputs."""
 
-    labels: List[ListLike]
-    organism_list: List[Organism]
+    labels: Annotated[
+        List[ListLike],
+        Field(
+            description="List of ground truth labels for each species dataset (e.g., cell types)."
+        ),
+    ]
+    organism_list: Annotated[
+        List[Organism],
+        Field(
+            description="List of organisms corresponding to each dataset for cross-species evaluation."
+        ),
+    ]
+
+    @field_validator("organism_list")
+    @classmethod
+    def _validate_organism_list(cls, v: List[Organism]) -> List[Organism]:
+        if not isinstance(v, list):
+            raise ValueError("organism_list must be a list of organisms.")
+        return v
 
 
 class CrossSpeciesIntegrationOutput(TaskOutput):
@@ -43,6 +64,7 @@ class CrossSpeciesIntegrationTask(Task):
         "Evaluate cross-species integration quality using various integration metrics."
     )
     input_model = CrossSpeciesIntegrationTaskInput
+    baseline_model = NoBaselineInput
 
     def __init__(self, *, random_seed: int = RANDOM_SEED):
         super().__init__(random_seed=random_seed)
@@ -65,6 +87,10 @@ class CrossSpeciesIntegrationTask(Task):
         Returns:
             CrossSpeciesIntegrationOutput: Pydantic model with combined data and labels
         """
+        logger.debug(
+            f"CrossSpeciesIntegrationTask._run_task: cell_representation type={type(cell_representation)}, "
+            f"n_datasets={len(cell_representation) if isinstance(cell_representation, list) else 1}"
+        )
         # FIXME BYODATASETdatasets should be concatenated to align along genes?
         # This operation is safe because requires_multiple_datasets is True
         cell_representation = np.vstack(cell_representation)
@@ -73,7 +99,7 @@ class CrossSpeciesIntegrationTask(Task):
         if len(set(task_input.organism_list)) < 2:
             raise AssertionError(
                 "At least two organisms are required for cross-species integration "
-                f"but got {len(set(task_input.organism_list))} : {{set(task_input.organism_list)}}"
+                f"but got {len(set(task_input.organism_list))} : {set(task_input.organism_list)}"
             )
 
         species = np.concatenate(
@@ -141,15 +167,14 @@ class CrossSpeciesIntegrationTask(Task):
             ),
         ]
 
-    def compute_baseline(self, **kwargs):
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        baseline_input: NoBaselineInput = None,
+    ):
         """Set a baseline embedding for cross-species integration.
 
-        This method is not implemented for cross-species integration tasks
-        as standard preprocessing workflows are not directly applicable
-        across different species.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
+        Not implemented as standard preprocessing is not applicable across species.
         """
         raise NotImplementedError(
             "Baseline not implemented for cross-species integration"

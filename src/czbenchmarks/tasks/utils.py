@@ -297,6 +297,10 @@ def filter_minimum_class(
     valid_classes = class_counts[class_counts >= min_class_size].index
     valid_indices = labels.isin(valid_classes)
 
+    # Convert pandas Series boolean mask to numpy array for sparse matrix compatibility
+    if hasattr(valid_indices, "to_numpy"):
+        valid_indices = valid_indices.to_numpy()
+
     features_filtered = features[valid_indices]
     labels_filtered = labels[valid_indices]
 

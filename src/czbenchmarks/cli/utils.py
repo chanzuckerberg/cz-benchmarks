@@ -1,19 +1,11 @@
 import functools
 import importlib.metadata
-import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import Any, List
 
-import click
-import numpy as np
-import pandas as pd
 import tomli
 
-from ..datasets import Dataset, load_dataset
-from ..metrics.utils import aggregate_results
-from ..tasks.types import CellRepresentation
 
 log = logging.getLogger(__name__)
 
@@ -105,53 +97,3 @@ def get_version() -> str:
 
     git_commit = _get_git_commit(version)
     return "v" + version + git_commit
-
-
-def get_datasets(dataset_names: List[str]) -> List[Dataset]:
-    """Loads a list of datasets by name."""
-    try:
-        return [load_dataset(name) for name in dataset_names]
-    except Exception as e:
-        raise click.UsageError(f"Failed to load dataset: {e}")
-
-
-def load_embedding(path: str) -> CellRepresentation:
-    """Loads a model embedding from a file."""
-    try:
-        if path.endswith(".npy"):
-            return np.load(path)
-        elif path.endswith(".csv"):
-            return pd.read_csv(path, index_col=0).values
-        else:
-            raise NotImplementedError(
-                "Only .npy and .csv embedding files are supported."
-            )
-    except Exception as e:
-        raise click.BadParameter(f"Could not load embedding from '{path}': {e}")
-
-
-def write_results(results: List[Any], output_file: str | None):
-    """Aggregates metrics and writes results to stdout or a file in JSON format."""
-    aggregated = aggregate_results(results)
-    results_dict = [res.model_dump(mode="json") for res in aggregated]
-
-    if output_file:
-        with open(output_file, "w") as f:
-            json.dump(results_dict, f, indent=2)
-        click.echo(f"Results saved to {output_file}")
-    else:
-        click.echo("\n--- RESULTS ---")
-        click.echo(json.dumps(results_dict, indent=2))
-
-
-def mutually_exclusive(*options):
-    def _callback(ctx, param, value):
-        if value is not None:
-            for other in options:
-                if ctx.params.get(other) is not None:
-                    raise click.UsageError(
-                        f"Options --{param.name.replace('_', '-')} and --{other.replace('_', '-')} are mutually exclusive."
-                    )
-        return value
-
-    return _callback

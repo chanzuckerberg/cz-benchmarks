@@ -1,15 +1,16 @@
 import logging
-from typing import Dict, List, Literal, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
 import anndata as ad
 import numpy as np
 import pandas as pd
+from pydantic import Field, field_validator
 from scipy import sparse as sp_sparse
 
 from ...metrics import metrics_registry
 from ...metrics.types import MetricResult, MetricType
 from ...tasks.types import CellRepresentation
-from ..task import Task, TaskInput, TaskOutput
+from ..task import NoBaselineInput, Task, TaskInput, TaskOutput
 from ...constants import RANDOM_SEED
 
 logger = logging.getLogger(__name__)
@@ -24,10 +25,55 @@ class PerturbationExpressionPredictionTaskInput(TaskInput):
     is a subset of or re-ordered relative to the dataset adata.
     """
 
-    adata: ad.AnnData
-    pred_effect_operation: Literal["difference", "ratio"] = ("ratio",)
-    gene_index: Optional[pd.Index] = None
-    cell_index: Optional[pd.Index] = None
+    adata: Annotated[
+        ad.AnnData,
+        Field(
+            description="AnnData object from SingleCellPerturbationDataset containing perturbation data and metadata."
+        ),
+    ]
+    pred_effect_operation: Annotated[
+        Literal["difference", "ratio"],
+        Field(
+            description="Method to compute predicted effect: 'difference' (mean(treated) - mean(control)) or 'ratio' (log ratio of means)."
+        ),
+    ] = "ratio"
+    gene_index: Annotated[
+        Optional[pd.Index],
+        Field(
+            description="Optional gene index for predictions to align model predictions with dataset genes."
+        ),
+    ] = None
+    cell_index: Annotated[
+        Optional[pd.Index],
+        Field(
+            description="Optional cell index for predictions to align model predictions with dataset cells."
+        ),
+    ] = None
+
+    @field_validator("pred_effect_operation")
+    @classmethod
+    def _validate_pred_effect_operation(
+        cls, v: Literal["difference", "ratio"]
+    ) -> Literal["difference", "ratio"]:
+        if v not in ["difference", "ratio"]:
+            raise ValueError(
+                "pred_effect_operation must be either 'difference', or 'ratio'."
+            )
+        return v
+
+    @field_validator("gene_index")
+    @classmethod
+    def _validate_gene_index(cls, v: Optional[pd.Index]) -> Optional[pd.Index]:
+        if v is not None and not isinstance(v, pd.Index):
+            raise ValueError("gene_index must be a pandas Index.")
+        return v
+
+    @field_validator("cell_index")
+    @classmethod
+    def _validate_cell_index(cls, v: Optional[pd.Index]) -> Optional[pd.Index]:
+        if v is not None and not isinstance(v, pd.Index):
+            raise ValueError("cell_index must be a pandas Index.")
+        return v
 
 
 def build_task_input_from_predictions(
@@ -70,6 +116,7 @@ class PerturbationExpressionPredictionTask(Task):
     display_name = "Perturbation Expression Prediction"
     description = "Evaluate the quality of predicted changes in expression levels for genes that are differentially expressed under perturbation(s) using multiple classification and correlation metrics."
     input_model = PerturbationExpressionPredictionTaskInput
+    baseline_model = NoBaselineInput
 
     def __init__(
         self,
@@ -132,6 +179,9 @@ class PerturbationExpressionPredictionTask(Task):
         Returns:
             PerturbationExpressionPredictionOutput: Predicted and true mean fold changes
         """
+        logger.debug(
+            f"PerturbationExpressionPredictionTask._run_task: cell_representation shape={cell_representation.shape}, task_input.adata shape={task_input.adata.shape}"
+        )
         adata = task_input.adata
         pred_effect_operation = task_input.pred_effect_operation
         self.condition_key = adata.uns["config"].get("condition_key", "condition")
@@ -180,7 +230,7 @@ class PerturbationExpressionPredictionTask(Task):
             condition_de = de_results[de_results[self.condition_key] == condition]
             if (
                 condition in target_conditions_dict
-                and target_conditions_dict[condition]
+                and len(target_conditions_dict[condition]) > 0
             ):
                 candidate_genes = [
                     g
@@ -294,6 +344,12 @@ class PerturbationExpressionPredictionTask(Task):
             List[MetricResult]: A list of MetricResult objects containing Spearman rank
                 correlation for each condition.
         """
+        logger.debug(
+            "PerturbationExpressionPredictionTask._compute_metrics: Computing metrics"
+        )
+        logger.debug(
+            f"PerturbationExpressionPredictionTask._compute_metrics: task_output.pred_mean_change_dict shape={len(task_output.pred_mean_change_dict)}, task_output.true_mean_change_dict shape={len(task_output.true_mean_change_dict)}"
+        )
         spearman_correlation_metric = MetricType.SPEARMAN_CORRELATION_CALCULATION
 
         metric_results: List[MetricResult] = []
@@ -371,14 +427,14 @@ class PerturbationExpressionPredictionTask(Task):
                 "adata.uns['control_cells_map'] is required and must be a dict."
             )
 
-    def compute_baseline(self, **kwargs):
+    def compute_baseline(
+        self,
+        expression_data: CellRepresentation,
+        baseline_input: NoBaselineInput = None,
+    ):
         """Set a baseline embedding for perturbation expression prediction.
 
-        This method is not implemented for perturbation expression prediction
-        tasks.
-
-        Raises:
-            NotImplementedError: Always raised as baseline is not implemented
+        Not implemented as this task evaluates expression matrices, not embeddings.
         """
         raise NotImplementedError(
             "Baseline not implemented for perturbation expression prediction."
