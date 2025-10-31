@@ -32,9 +32,9 @@ jobs:
       - name: Run tests
         run: uv run make test
 
-      - name: Run linting
+      - name: Run ruff checks
         if: always()
-        run: uv run make lint
+        run: uv run make ruff-check
 
       - name: Generate coverage report
         if: always()
