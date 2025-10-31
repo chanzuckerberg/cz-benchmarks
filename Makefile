@@ -56,8 +56,8 @@ ruff-fmt-check:
 	uv run ruff format --check .
 
 # Fix formatting with ruff
-.PHONY: ruff-fmt
-ruff-fmt:
+.PHONY: ruff-fmt-fix
+ruff-fmt-fix:
 	uv run ruff format .
 
 # Run ruff to check the code

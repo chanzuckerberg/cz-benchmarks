@@ -4,4 +4,3 @@ def pytest_configure(config):
         "markers",
         "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
     )
-
