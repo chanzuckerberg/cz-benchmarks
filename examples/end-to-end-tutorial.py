@@ -20,7 +20,7 @@
 # You can uncomment the following lines to set up the environment if needed.
 # !python3 -m venv .venv_scvi
 # !.venv_scvi/bin/python -m pip install --upgrade pip
-# !.venv_scvi/bin/python -m pip install ipykernel numpy pandas matplotlib seaborn scvi-tools czbenchmarks tabulate
+# !.venv_scvi/bin/python -m pip install ipykernel numpy pandas matplotlib seaborn scvi-tools cz-benchmarks tabulate
 # !.venv_scvi/bin/python -m ipykernel install --user --name venv_scvi --display-name "Python (.venv_scvi)"
 # print("Virtual environment '.venv_scvi' created, dependencies installed, and kernel registered.")
 
