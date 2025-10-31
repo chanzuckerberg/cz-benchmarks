@@ -20,7 +20,7 @@ class EmbeddingTaskInput(TaskInput):
     input_labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for metric calculation (e.g. `obs.cell_type` from an AnnData object)."
         ),
     ]
 

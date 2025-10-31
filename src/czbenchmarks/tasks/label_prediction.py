@@ -37,7 +37,7 @@ class MetadataLabelPredictionTaskInput(TaskInput):
     labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for prediction (e.g. `obs.cell_type` from an AnnData object)"
         ),
     ]
     n_folds: Annotated[

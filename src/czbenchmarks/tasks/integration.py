@@ -18,13 +18,13 @@ class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
     batch_labels: Annotated[
-        ListLike, Field(description="Batch labels for each cell (e.g., '@obs:batch').")
+        ListLike, Field(description="Batch labels for each cell  (e.g. `obs.batch` from an AnnData object).")
     ]
 
     labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for metric calculation (e.g. `obs.cell_type` from an AnnData object)."
         ),
     ]
 

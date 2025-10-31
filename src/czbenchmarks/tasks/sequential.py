@@ -21,13 +21,13 @@ class SequentialOrganizationTaskInput(TaskInput):
     obs: Annotated[
         pd.DataFrame,
         Field(
-            description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs')."
+            description="Cell metadata DataFrame (e.g. the `obs` from an AnnData object)."
         ),
     ]
     input_labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for metric calculation (e.g. `obs.cell_type` from an AnnData object)."
         ),
     ]
     k: Annotated[
