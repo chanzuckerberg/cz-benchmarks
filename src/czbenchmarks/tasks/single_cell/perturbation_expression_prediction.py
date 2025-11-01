@@ -113,6 +113,35 @@ class PerturbationExpressionPredictionOutput(TaskOutput):
 
 
 class PerturbationExpressionPredictionTask(Task):
+    """
+    Task for evaluating perturbation-induced expression predictions against
+    their ground truth values. This is done by calculating metrics derived
+    from predicted and ground truth log fold change values for each condition.
+    Currently, Spearman rank correlation is supported.
+
+    The following arguments are required and must be supplied by the task input class
+    (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
+    are described below for documentation purposes:
+
+    - predictions_adata (ad.AnnData):
+        The anndata containing model predictions
+    - dataset_adata (ad.AnnData):
+        The anndata object from SingleCellPerturbationDataset.
+    - pred_effect_operation (Literal["difference", "ratio"]):
+        How to compute predicted effect between treated and control mean predictions
+        over genes.
+
+        * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.
+
+        * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).
+
+        Default is "ratio".
+    - gene_index (Optional[pd.Index]):
+        The index of the genes in the predictions AnnData.
+    - cell_index (Optional[pd.Index]):
+        The index of the cells in the predictions AnnData.
+    """
+
     display_name = "Perturbation Expression Prediction"
     description = "Evaluate the quality of predicted changes in expression levels for genes that are differentially expressed under perturbation(s) using multiple classification and correlation metrics."
     input_model = PerturbationExpressionPredictionTaskInput
@@ -123,44 +152,6 @@ class PerturbationExpressionPredictionTask(Task):
         *,
         random_seed: int = RANDOM_SEED,
     ):
-        """
-        **Perturbation Expression Prediction Task.**
-
-        This task evaluates perturbation-induced expression predictions against
-        their ground truth values. This is done by calculating metrics derived
-        from predicted and ground truth log fold change values for each condition.
-        Currently, Spearman rank correlation is supported.
-
-        The following arguments are required and must be supplied by the task input class
-        (PerturbationExpressionPredictionTaskInput) when running the task. These parameters
-        are described below for documentation purposes:
-
-        - predictions_adata (ad.AnnData):
-            The anndata containing model predictions
-        - dataset_adata (ad.AnnData):
-            The anndata object from SingleCellPerturbationDataset.
-        - pred_effect_operation (Literal["difference", "ratio"]):
-            How to compute predicted effect between treated and control mean predictions
-            over genes.
-
-            * "ratio" uses :math:`\\log\\left(\\frac{\\text{mean}(\\text{treated}) + \\varepsilon}{\\text{mean}(\\text{control}) + \\varepsilon}\\right)` when means are positive.
-
-            * "difference" uses :math:`\\text{mean}(\\text{treated}) - \\text{mean}(\\text{control})` and is generally safe across scales (probabilities, z-scores, raw expression).
-
-            Default is "ratio".
-        - gene_index (Optional[pd.Index]):
-            The index of the genes in the predictions AnnData.
-        - cell_index (Optional[pd.Index]):
-            The index of the cells in the predictions AnnData.
-
-        Args:
-            random_seed (int): Random seed for reproducibility.
-
-        Returns:
-            PerturbationExpressionPredictionTask: dictionary of mean predicted and
-            ground truth changes in gene expression values for each condition.
-        """
-
         super().__init__(random_seed=random_seed)
         self.condition_key = None
 

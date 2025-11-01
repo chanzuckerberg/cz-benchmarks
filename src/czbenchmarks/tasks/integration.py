@@ -18,13 +18,13 @@ class BatchIntegrationTaskInput(TaskInput):
     """Pydantic model for BatchIntegrationTask inputs."""
 
     batch_labels: Annotated[
-        ListLike, Field(description="Batch labels for each cell (e.g., '@obs:batch').")
+        ListLike, Field(description="Batch labels for each cell  (e.g. `obs.batch` from an AnnData object).")
     ]
 
     labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for metric calculation (e.g. `obs.cell_type` from an AnnData object)."
         ),
     ]
 
@@ -54,9 +54,6 @@ class BatchIntegrationTask(Task):
 
     This task computes metrics to assess how well different batches are integrated
     in the embedding space while preserving biological signals.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Batch Integration"

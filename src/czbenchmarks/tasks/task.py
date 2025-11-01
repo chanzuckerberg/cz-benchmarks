@@ -639,9 +639,6 @@ class Task(ABC):
 
     Tasks should store any intermediate results as instance variables
     to be used in metric computation.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     input_model: Type[TaskInput]

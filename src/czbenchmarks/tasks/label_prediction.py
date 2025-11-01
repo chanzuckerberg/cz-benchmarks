@@ -37,7 +37,7 @@ class MetadataLabelPredictionTaskInput(TaskInput):
     labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for prediction (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for prediction (e.g. `obs.cell_type` from an AnnData object)"
         ),
     ]
     n_folds: Annotated[
@@ -92,9 +92,6 @@ class MetadataLabelPredictionTask(Task):
 
     Evaluates multiple classifiers (Logistic Regression, KNN) using k-fold
     cross-validation. Reports standard classification metrics.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Label Prediction"
