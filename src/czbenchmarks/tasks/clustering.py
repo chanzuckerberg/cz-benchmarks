@@ -21,19 +21,19 @@ class ClusteringTaskInput(TaskInput):
     obs: Annotated[
         pd.DataFrame,
         Field(
-            description="Cell metadata DataFrame. Must be passed as an AnnData reference (e.g., '@obs')."
+            description="Cell metadata DataFrame (e.g. the `obs` from an AnnData object)."
         ),
     ]
     input_labels: Annotated[
         ListLike,
         Field(
-            description="Ground truth labels for metric calculation (e.g., 'cell_type' or '@obs:cell_type')."
+            description="Ground truth labels for metric calculation (e.g. `obs.cell_type` from an AnnData object)."
         ),
     ]
     use_rep: Annotated[
         str,
         Field(
-            description="Data representation to use for clustering (e.g., 'X' or an obsm key like 'X_pca')."
+            description="Data representation to use for clustering (e.g. the 'X' or obsm['X_pca'] from an AnnData object)."
         ),
     ] = "X"
     n_iterations: Annotated[
@@ -67,9 +67,6 @@ class ClusteringTask(Task):
 
     This task performs clustering on embeddings and evaluates the results
     using multiple clustering metrics (ARI and NMI).
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Clustering"

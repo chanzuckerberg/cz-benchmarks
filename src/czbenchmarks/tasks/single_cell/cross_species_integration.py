@@ -54,9 +54,6 @@ class CrossSpeciesIntegrationTask(Task):
     This task computes metrics to assess how well different species' data are integrated
     in the embedding space while preserving biological signals. It operates on multiple
     datasets from different species.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "Cross-species Integration"

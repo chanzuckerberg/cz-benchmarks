@@ -103,9 +103,6 @@ class CrossSpeciesLabelPredictionTask(Task):
 
     The task can optionally aggregate cell-level embeddings to sample/donor level
     before running classification.
-
-    Args:
-        random_seed (int): Random seed for reproducibility
     """
 
     display_name = "cross-species label prediction"
