@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.15.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.14.0...v0.15.0) (2025-11-03)
+
+
+### Features
+
+* add task input param annotations to support programmatic documentation ([#450](https://github.com/chanzuckerberg/cz-benchmarks/issues/450)) ([3391a5a](https://github.com/chanzuckerberg/cz-benchmarks/commit/3391a5a7eb48a8c5b0a04573a14fe3c3082a15bf))
+* Improve customized dataset loading ([#449](https://github.com/chanzuckerberg/cz-benchmarks/issues/449)) ([7f8508b](https://github.com/chanzuckerberg/cz-benchmarks/commit/7f8508b732e3aaa0cc26a6625a795adfaf352da7))
+
+
+### Bug Fixes
+
+* consistent pluralization for "Virtual Cells Platform" name ([#447](https://github.com/chanzuckerberg/cz-benchmarks/issues/447)) ([8dc5fa8](https://github.com/chanzuckerberg/cz-benchmarks/commit/8dc5fa872e125ad385bdd409007a5e04884acc28))
+* minor updates from the load_custom_dataset PR ([#455](https://github.com/chanzuckerberg/cz-benchmarks/issues/455)) ([d21d882](https://github.com/chanzuckerberg/cz-benchmarks/commit/d21d8824c294eb13892ae86a2bb4ba98e0838588))
+
+
+### Documentation
+
+* remove args from Task class docstrings ([#458](https://github.com/chanzuckerberg/cz-benchmarks/issues/458)) ([57b1015](https://github.com/chanzuckerberg/cz-benchmarks/commit/57b10159d03a2840a9dc575da0370546f646c25a))
+
 ## [0.14.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.13.0...v0.14.0) (2025-10-01)
 
 
