@@ -412,7 +412,7 @@ def test_cross_species_integration_task_regression(
 
     # Verify cross-species task doesn't have baseline
     try:
-        cross_species_task.compute_baseline()
+        cross_species_task.compute_baseline(expression_data=np.array([]))
         assert False, "Cross-species task should not support baseline computation"
     except NotImplementedError:
         pass  # Expected behavior
