@@ -85,3 +85,13 @@ ruff-fix: ruff-code-fix ruff-fmt-fix
 # alias
 .PHONY: ruff
 ruff: ruff-check
+
+.PHONY: docs
+docs:
+	(cd docs && uv run make html)
+
+.PHONY: docs-clean
+docs-clean:
+	rm -rf docs/source/autoapi
+	(cd docs && uv run make clean)
+	$(MAKE) docs
