@@ -1,73 +1,97 @@
 # Setup Guides
 
-## macOS Development Setup
+This guide will help you set up a development environment for **cz-benchmarks** on macOS, Linux, or Windows.
 
-For macOS users, follow these steps to set up your development environment:
+## Prerequisites
 
-### Prerequisites
+1. **Install Python and a Tool for Environment/Dependency Management**  
+   Make sure you have [Python 3.10+](https://www.python.org/downloads/) installed.  
+   There are several tools you can use for managing Python environments and dependencies:
+   - [pip and venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
+   - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution)
+   - [`uv`](https://docs.astral.sh/uv/getting-started/installation/) (described below)
 
-1. **Install Tool for Python Environment and Dependency Management**  
-    There are multiple tools for managing Python environments and dependencies. Popular ones include [pip and venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/), [Miniconda](https://docs.conda.io/en/latest/miniconda.html), and [Anaconda](https://www.anaconda.com/products/distribution). An alternative, [uv](https://docs.astral.sh/uv/getting-started/installation/), is described below.
-    
-Choose your favorite and make sure it is correctly installed.
+   Choose the tool you prefer and make sure it is installed.
 
-2. **Install Xcode Command Line Tools**  
-    Xcode provides essential compiler tools for macOS. Run the following command in your terminal to install it:
+2. **Install Build Tools and Python Headers**  
+   Some dependencies require C/C++ compilers and Python headers.
+   - **macOS:** Install Xcode Command Line Tools:
+     ```bash
+     xcode-select --install
+     ```
+   - **Linux (Debian/Ubuntu):** Install compilers and Python dev headers:
+     ```bash
+     sudo apt-get update
+     sudo apt-get install build-essential python3-dev
+     ```
+   - **Windows:** [Install Build Tools for Visual Studio](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (select "C++ build tools" during installation).
 
-    ```bash
-    xcode-select --install
-    ```
-
-### Setting Up the Environment
+## Setting Up the Environment
 
 1. **Create a Virtual Environment**  
-    It is highly recommended to create a virtual environment to isolate your project dependencies. The steps vary dependeing on the tool, one example is provided below for `pip` and `venv`:
+   Using a virtual environment is strongly recommended to isolate dependencies.  
+   Example using `venv`:
 
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On macOS/Linux
-    venv\Scripts\activate     # On Windows
-    ```
+   ```bash
+   python -m venv venv
+   ```
+
+   Activate the environment:
+
+   - macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+   - Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
 
 2. **Install Dependencies**  
-    Install the required Python packages:
+   Install the required Python packages in editable mode with development dependencies:
 
-Mac requires an additional dependency, `hnswlib`, which should be installed with the package manager.
+   ```bash
+   pip install -e ".[dev]"
+   ```
 
-    - Install the package in editable mode with development dependencies:
-
-      ```bash
-      pip install -e ".[dev]"
-      ```
+   > **Note:** On some systems (especially macOS and Linux), you may need to ensure system C/C++ build tools and Python header files are present before installing dependencies such as `hnswlib` (see above).
 
 ---
 
 ## Using `uv` for Dependency Management
 
-`uv` is a tool that simplifies Python dependency management. Follow these steps to set it up:
+[`uv`](https://docs.astral.sh/uv/) is an alternative tool that simplifies Python dependency management.
 
 1. **Install `uv`**  
-    Use `pip` to install `uv`:
+   You can use `pip` to install `uv`:
 
-    ```bash
-    pip install uv
-    ```
+   ```bash
+   pip install uv
+   ```
 
-2. **Install the Required Python Version**  
-    Ensure the correct Python version is installed for your project:
+2. **Install the Required Python Version (Optional)**  
+   If your Python version doesn't match the project requirements, `uv` can help install/manage it:
 
-    ```bash
-    uv python install
-    ```
+   ```bash
+   uv python install
+   ```
 
 3. **Sync Dependencies**  
-    Install all required dependencies, including extras, by running:
+   To install all project dependencies, including optional "extras":
 
-    ```bash
-    uv sync --all-extras
-    ```
-4. **`hnswlib` Package Installation Error**
-    
-    If the `hnswlib` package fails to install with an error like `fatal error: Python.h: No such file or directory`, ensure you have installed Python development headers files and static libraries. On Ubuntu, this can be done via `sudo apt-get install python3-dev`.
+   ```bash
+   uv sync --all-extras
+   ```
 
-> 💡 **Tip**: For more details, refer to the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+4. **Troubleshooting `hnswlib` Installations**
+
+   If you encounter an error involving `Python.h` (e.g., `fatal error: Python.h: No such file or directory`), make sure Python development headers and static libraries are installed:
+   - **Linux (Debian/Ubuntu):**
+     ```bash
+     sudo apt-get install python3-dev
+     ```
+   - **macOS:** Ensure Xcode Command Line Tools are installed (`xcode-select --install`).
+   - **Windows:** Ensure Visual Studio C++ Build Tools are present.
+
+> 💡 **Tip**: For more details, see the [official `uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
