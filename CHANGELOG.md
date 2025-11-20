@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.15.0...v0.15.1) (2025-11-20)
+
+
+### Documentation
+
+* VC-5032 Remove invalid hardware requirements from docs ([#461](https://github.com/chanzuckerberg/cz-benchmarks/issues/461)) ([6e64d20](https://github.com/chanzuckerberg/cz-benchmarks/commit/6e64d202f1c71384b48bd7a72be1a2c80872fab0))
+
 ## [0.15.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.14.0...v0.15.0) (2025-11-03)
 
 
