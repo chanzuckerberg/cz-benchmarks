@@ -32,7 +32,7 @@ cz-benchmarks currently supports single-cell RNA-seq data stored in the [`AnnDat
    - Validates gene name prefixes and that expression values are raw counts.
 
 - [SingleCellLabeledDataset](../autoapi/czbenchmarks/datasets/single_cell_labeled/index)  
-   Subclass of `SingleCellDataset` designed for perturbation benchmarks.
+   Subclass of `SingleCellDataset` for labeled single-cell data.
 
    Responsibilities:
 
