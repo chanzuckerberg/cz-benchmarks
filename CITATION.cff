@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: cz-benchmarks
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: "Chan Zuckerberg Initiative"
+    email: pypi@chanzuckerberg.com
+    identifiers:
+      - description: "The Research Organization Registry identifier (RoR) for CZI."
+        type: ror
+        value: "02qenvm24"
+identifiers:
+  - description: "Zenodo DOI for this software (all versions)"
+    type: doi
+    value: 10.5281/zenodo.17713334
+repository-code: "https://github.com/chanzuckerberg/cz-benchmarks"
+url: "https://chanzuckerberg.github.io/cz-benchmarks/"
+abstract: >-
+  cz-benchmarks is a package for standardized evaluation and comparison
+  of machine learning models for biological applications (first, in the
+  single-cell transcriptomics domain, with future plans to expand to
+  additional domains). The package provides a toolkit for running
+  containerized models, executing biologically-relevant tasks, and
+  computing performance metrics.
+keywords:
+  - Benchmarking
+  - Benchmarking/methods
+  - Single-Cell Analysis
+  - Machine Learning
+  - Cell Biology
+license: MIT
+version: 0.15.1
+date-released: 2025-11-03
