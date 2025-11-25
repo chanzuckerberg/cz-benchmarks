@@ -10,7 +10,12 @@ authors:
     identifiers:
       - description: "The Research Organization Registry identifier (RoR) for CZI."
         type: ror
-        value: "02qenvm24"
+        value: "https://ror.org/02qenvm24"
+  - name: "NVIDIA"
+    identifiers:
+      - description: "The Research Organization Registry identifier (RoR) for NVIDIA."
+        type: ror
+        value: https://ror.org/03djdj4y14"
 identifiers:
   - description: "Zenodo DOI for this software (all versions)"
     type: doi
