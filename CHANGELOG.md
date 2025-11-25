@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.15.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.15.0...v0.15.1) (2025-11-25)
+
+
+### Documentation
+
+* add citation.cff ([#464](https://github.com/chanzuckerberg/cz-benchmarks/issues/464)) ([2a4a406](https://github.com/chanzuckerberg/cz-benchmarks/commit/2a4a4064a59852a8cd0c9ec3c34a36a8c65f8e06))
+* VC-4220 reconcile how to and dev guides ([#463](https://github.com/chanzuckerberg/cz-benchmarks/issues/463)) ([1cbed69](https://github.com/chanzuckerberg/cz-benchmarks/commit/1cbed69509aaabd75f886323af1224a384a8b23b))
+* VC-5032 Remove invalid hardware requirements from docs ([#461](https://github.com/chanzuckerberg/cz-benchmarks/issues/461)) ([6e64d20](https://github.com/chanzuckerberg/cz-benchmarks/commit/6e64d202f1c71384b48bd7a72be1a2c80872fab0))
+
 ## [0.15.0](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.14.0...v0.15.0) (2025-11-03)
 
 
