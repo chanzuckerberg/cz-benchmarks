@@ -1,3 +1,10 @@
+html, body {
+    --sd-color-primary: #6E4FF9;
+    --sd-color-primary-highlight: #6E4FF9;
+    --sd-color-secondary: #EFEAFE;
+    --sd-color-secondary-dark: #331252;
+}
+
 body, .diagram-font {
     font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
       Helvetica Neue, Helvetica, Arial, sans-serif;
@@ -14,7 +21,7 @@ body, .diagram-font {
   }
   
   .wy-side-nav-search {
-    background-color: #6f67ff;
+    background-color: var(--sd-color-primary);
   }
   
   .wy-nav-side {
@@ -22,7 +29,7 @@ body, .diagram-font {
   }
   
   .wy-menu-vertical a {
-    color: #96a7b5;
+    color: #d9d9d9;
   }
   
   .wy-menu-vertical a:hover {
@@ -56,7 +63,7 @@ body, .diagram-font {
     padding: 12px;
     line-height: 24px;
     margin-bottom: 24px;
-    background: #e0f0ff;
+    background: var(--sd-color-secondary);
   }
   
   .rst-content .note,
@@ -72,7 +79,7 @@ body, .diagram-font {
   .rst-content .wy-alert-info.tip,
   .rst-content .wy-alert-info.warning,
   .wy-alert.wy-alert-info {
-    background: #e0f0ff;
+    background: var(--sd-color-secondary);
   }
   
   html.writer-html4 .rst-content dl:not(.docutils) > dt,
@@ -86,16 +93,16 @@ body, .diagram-font {
     margin: 6px 0;
     font-size: 90%;
     line-height: normal;
-    background: #e0f0ff;
-    color: #0073ff;
-    border-top: 3px solid #8cc3ff;
+    background: var(--sd-color-secondary);
+    color: var(--sd-color-primary);
+    border-top: 3px solid var(--sd-color-secondary-dark);
     padding: 6px;
     position: relative;
   }
   
   .rst-content .guilabel {
     border: 1px solid #7fbbe3;
-    background: #e0f0ff;
+    background: var(--sd-color-secondary);
     font-size: 80%;
     font-weight: 700;
     border-radius: 4px;
@@ -116,41 +123,50 @@ body, .diagram-font {
   .rst-content .wy-alert-neutral.tip a,
   .rst-content .wy-alert-neutral.warning a,
   .wy-alert.wy-alert-neutral a {
-    color: #0073ff;
+    color: var(--sd-color-primary);
   }
+
+  .rst-content a:visited {
+      color: var(--sd-color-primary);
+  }
+
+  .rst-content a:hover {
+      color: var(--sd-color-secondary-dark);
+  }
+
   .wy-tray-container li.wy-tray-item-info {
-    background: #0073ff;
+    background: var(--sd-color-primary);
   }
   .btn-info {
-    background-color: #0073ff !important;
+    background-color: var(--sd-color-primary) !important;
   }
   .btn-link {
     background-color: transparent !important;
-    color: #0073ff;
+    color: var(--sd-color-primary);
     box-shadow: none;
     border-color: transparent !important;
   }
   .wy-dropdown-menu > dd > a:hover {
-    background: #0073ff;
+    background: var(--sd-color-primary);
     color: #fff;
   }
   .wy-dropdown.wy-dropdown-bubble .wy-dropdown-menu a:hover {
-    background: #0073ff;
+    background: var(--sd-color-primary);
     color: #fff;
   }
   .wy-inline-validate.wy-inline-validate-info .wy-input-context {
-    color: #0073ff;
+    color: var(--sd-color-primary);
   }
   a {
-    color: #0073ff;
+    color: var(--sd-color-primary);
     text-decoration: none;
     cursor: pointer;
   }
   .wy-text-info {
-    color: #0073ff !important;
+    color: var(--sd-color-primary) !important;
   }
   .wy-menu-vertical a:active {
-    background-color: #0073ff;
+    background-color: var(--sd-color-primary);
     cursor: pointer;
     color: #fff;
   }
@@ -160,7 +176,7 @@ body, .diagram-font {
     padding: 0.809em;
     margin-bottom: 0.809em;
     z-index: 200;
-    background-color: #0073ff;
+    background-color: var(--sd-color-primary);
     text-align: center;
     color: #fcfcfc;
   }
@@ -169,20 +185,20 @@ body, .diagram-font {
     margin: auto auto 0.809em;
     height: 45px;
     width: 45px;
-    background-color: #0073ff;
+    background-color: var(--sd-color-primary);
     padding: 5px;
     border-radius: 100%;
   }
   .wy-nav .wy-menu-vertical header {
-    color: #0073ff;
+    color: var(--sd-color-primary);
   }
   .wy-nav .wy-menu-vertical a:hover {
-    background-color: #0073ff;
+    background-color: var(--sd-color-primary);
     color: #fff;
   }
   .wy-nav-top {
     display: none;
-    background: #0073ff;
+    background: var(--sd-color-primary);
     color: #fff;
     padding: 0.4045em 0.809em;
     position: relative;
@@ -195,17 +211,17 @@ body, .diagram-font {
     margin-right: 12px;
     height: 45px;
     width: 45px;
-    background-color: #0073ff;
+    background-color: var(--sd-color-primary);
     padding: 5px;
     border-radius: 100%;
   }
   .rst-versions a {
-    color: #0073ff;
+    color: var(--sd-color-primary);
     text-decoration: none;
   }
   .rst-content a code,
   .rst-content a tt {
-    color: #0073ff;
+    color: var(--sd-color-primary);
   }
   html.writer-html4 .rst-content dl:not(.docutils) > dt,
   html.writer-html5
@@ -219,8 +235,8 @@ body, .diagram-font {
     font-size: 90%;
     line-height: normal;
     background: #e7f2fa;
-    color: #0073ff;
-    border-top: 3px solid #8cc3ff;
+    color: var(--sd-color-primary);
+    border-top: 3px solid var(--sd-color-secondary-dark);
     padding: 6px;
     position: relative;
   }
@@ -230,7 +246,7 @@ body, .diagram-font {
     font-weight: 700;
     display: block;
     color: #fff;
-    background: #8cc3ff;
+    background: var(--sd-color-secondary-dark);
     padding: 6px 12px;
     margin: -12px -12px 12px;
   }
@@ -261,7 +277,7 @@ body, .diagram-font {
   .rst-content .wy-alert.wy-alert-info .admonition-title,
   .wy-alert.wy-alert-info .rst-content .admonition-title,
   .wy-alert.wy-alert-info .wy-alert-title {
-    background: #8cc3ff;
+    background: var(--sd-color-secondary-dark);
   }
   html.writer-html4 .rst-content dl:not(.docutils) > dt,
   html.writer-html5
@@ -275,8 +291,8 @@ body, .diagram-font {
     font-size: 90%;
     line-height: normal;
     background: #e7f2fa;
-    color: #0073ff;
-    border-top: 3px solid #8cc3ff;
+    color: var(--sd-color-primary);
+    border-top: 3px solid var(--sd-color-secondary-dark);
     padding: 6px;
     position: relative;
   }
@@ -287,7 +303,7 @@ body, .diagram-font {
       .citation
     ):not(.glossary):not(.simple)
     > dt:before {
-    color: #8cc3ff;
+    color: var(--sd-color-secondary-dark);
   }
   
   

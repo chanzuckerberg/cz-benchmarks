@@ -106,3 +106,4 @@ inheritance_node_attrs = dict(
 inheritance_edge_attrs = dict(color="gray", arrowsize=1.2, style="solid")
 
 html_css_files = ["custom.css"]
+html_favicon = "_static/favicon-biohub.ico"
