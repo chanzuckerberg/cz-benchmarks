@@ -40,18 +40,18 @@ Add your datasets to the existing configuration file (e.g., `src/czbenchmarks/co
 ```yaml
 datasets:
   my_labeled_dataset:
-  _target_: czbenchmarks.datasets.SingleCellLabeledDataset
-  path: /path/to/your/labeled_data.h5ad
-  organism: ${organism:HUMAN}
-  label_column_key: "cell_type" # Column in adata.obs with labels
+    _target_: czbenchmarks.datasets.SingleCellLabeledDataset
+    path: /path/to/your/labeled_data.h5ad
+    organism: ${organism:HUMAN}
+    label_column_key: "cell_type" # Column in adata.obs with labels
 
   my_perturbation_dataset:
-  _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
-  path: /path/to/your/perturb_data.h5ad
-  organism: ${organism:MOUSE}
-  condition_key: condition
-  control_name: ctrl
-  de_gene_col: gene_id
+    _target_: czbenchmarks.datasets.SingleCellPerturbationDataset
+    path: /path/to/your/perturb_data.h5ad
+    organism: ${organism:MOUSE}
+    condition_key: condition
+    control_name: ctrl
+    de_gene_col: gene_id
 ```
 
 **Explanation of keys:**
