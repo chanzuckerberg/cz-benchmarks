@@ -3,7 +3,6 @@ from typing import Annotated, List, Literal
 from pydantic import Field, field_validator
 
 import anndata as ad
-import pandas as pd
 
 from czbenchmarks.types import ListLike
 
