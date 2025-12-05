@@ -131,9 +131,7 @@ def test_clustering_task_regression(dataset):
 
     # Run clustering task with fixture embedding
     clustering_task_input = ClusteringTaskInput(
-        obs=dataset.adata.obs,
         input_labels=dataset.labels,
-        use_rep="X",
     )
     clustering_results = clustering_task.run(
         cell_representation=model_output,
