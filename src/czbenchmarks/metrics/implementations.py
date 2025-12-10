@@ -23,7 +23,9 @@ from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import (
     accuracy_score,
     adjusted_rand_score,
+    balanced_accuracy_score,
     f1_score,
+    matthews_corrcoef,
     mean_squared_error,
     normalized_mutual_info_score,
     precision_score,
@@ -62,6 +64,35 @@ def recall_score_zero_division(y_true, y_pred, **kwargs):
 def f1_score_zero_division(y_true, y_pred, **kwargs):
     """Wrapper for f1_score with zero_division=0 to suppress warnings."""
     return f1_score(y_true, y_pred, zero_division=0, **kwargs)
+
+
+def balanced_accuracy_score_wrapper(y_true, y_pred, **kwargs):
+    """Wrapper for balanced_accuracy_score."""
+    return balanced_accuracy_score(y_true, y_pred, **kwargs)
+
+
+def matthews_corrcoef_wrapper(y_true, y_pred):
+    """Wrapper for matthews_corrcoef to handle edge cases."""
+    try:
+        return matthews_corrcoef(y_true, y_pred)
+    except ValueError:
+        # Handle cases where MCC is undefined (e.g., all predictions same class)
+        return 0.0
+
+
+def specificity_score(y_true, y_pred):
+    """Compute specificity (true negative rate).
+
+    Specificity = TN / (TN + FP)
+    """
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    # For binary classification
+    tn = ((y_true == 0) & (y_pred == 0)).sum()
+    fp = ((y_true == 0) & (y_pred == 1)).sum()
+
+    return tn / (tn + fp) if (tn + fp) > 0 else 0.0
 
 
 # Create the global metric registry
@@ -270,4 +301,79 @@ metrics_registry.register(
     required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
     tags={"label_prediction", "perturbation"},
+)
+
+# Balanced accuracy metrics
+metrics_registry.register(
+    MetricType.BALANCED_ACCURACY,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "balanced_acc"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.BALANCED_ACCURACY_CALCULATION,
+    func=balanced_accuracy_score_wrapper,
+    required_args={"y_true", "y_pred"},
+    description="Balanced accuracy between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_BALANCED_ACCURACY,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "balanced_acc", "classifier": None},
+    tags={"label_prediction"},
+)
+
+# MCC metrics
+metrics_registry.register(
+    MetricType.MCC,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "mcc"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.MCC_CALCULATION,
+    func=matthews_corrcoef_wrapper,
+    required_args={"y_true", "y_pred"},
+    description="Matthews correlation coefficient between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_MCC,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "mcc", "classifier": None},
+    tags={"label_prediction"},
+)
+
+# Specificity metrics
+metrics_registry.register(
+    MetricType.SPECIFICITY,
+    func=single_metric,
+    required_args={"results_df", "metric"},
+    default_params={"metric": "specificity"},
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.SPECIFICITY_CALCULATION,
+    func=specificity_score,
+    required_args={"y_true", "y_pred"},
+    description="Specificity (true negative rate) between true and predicted values",
+    tags={"label_prediction"},
+)
+
+metrics_registry.register(
+    MetricType.MEAN_FOLD_SPECIFICITY,
+    func=mean_fold_metric,
+    required_args={"results_df"},
+    default_params={"metric": "specificity", "classifier": None},
+    tags={"label_prediction"},
 )

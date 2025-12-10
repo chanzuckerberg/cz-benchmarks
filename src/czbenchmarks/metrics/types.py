@@ -57,6 +57,18 @@ class MetricType(Enum):
 
     SPEARMAN_CORRELATION_CALCULATION = "spearman_correlation_calculation"
 
+    BALANCED_ACCURACY = "balanced_accuracy"
+    BALANCED_ACCURACY_CALCULATION = "balanced_accuracy_calculation"
+    MEAN_FOLD_BALANCED_ACCURACY = "mean_fold_balanced_accuracy"
+
+    MCC = "mcc"
+    MCC_CALCULATION = "mcc_calculation"
+    MEAN_FOLD_MCC = "mean_fold_mcc"
+
+    SPECIFICITY = "specificity"
+    SPECIFICITY_CALCULATION = "specificity_calculation"
+    MEAN_FOLD_SPECIFICITY = "mean_fold_specificity"
+
     # Sequential metrics
     SEQUENTIAL_ALIGNMENT = "sequential_alignment"
 

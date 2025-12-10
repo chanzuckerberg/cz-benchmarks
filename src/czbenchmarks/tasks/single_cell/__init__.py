@@ -8,6 +8,11 @@ from .cross_species_label_prediction import (
     CrossSpeciesLabelPredictionOutput,
     CrossSpeciesLabelPredictionTask,
 )
+from .kk_test import (
+    KkTestTaskInput,
+    KkTestTaskOutput,
+    KkTestTask,
+)
 from .perturbation_expression_prediction import (
     PerturbationExpressionPredictionOutput,
     PerturbationExpressionPredictionTask,
@@ -21,6 +26,9 @@ __all__ = [
     "CrossSpeciesLabelPredictionTaskInput",
     "CrossSpeciesLabelPredictionOutput",
     "CrossSpeciesLabelPredictionTask",
+    "KkTestTask",
+    "KkTestTaskInput",
+    "KkTestTaskOutput",
     "PerturbationExpressionPredictionTask",
     "PerturbationExpressionPredictionTaskInput",
     "PerturbationExpressionPredictionOutput",

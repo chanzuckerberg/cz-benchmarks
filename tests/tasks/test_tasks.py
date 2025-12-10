@@ -18,6 +18,8 @@ from czbenchmarks.tasks.label_prediction import (
 from czbenchmarks.tasks.single_cell import (
     CrossSpeciesIntegrationTask,
     CrossSpeciesIntegrationTaskInput,
+    KkTestTask,
+    KkTestTaskInput,
 )
 from czbenchmarks.datasets.types import Organism
 from czbenchmarks.metrics.types import MetricResult
@@ -196,3 +198,30 @@ def test_cross_species_task(embedding_matrix, obs):
 
     except Exception as e:
         pytest.fail(f"CrossSpeciesIntegrationTask failed unexpectedly: {e}")
+
+
+def test_kk_test_task(dummy_anndata):
+    """Test that KkTestTask executes without errors."""
+    task = KkTestTask()
+    adata = dummy_anndata["anndata"]
+
+    # Create task input
+    task_input = KkTestTaskInput(obs="cell_type")
+
+    try:
+        # Test regular task execution
+        results = task.run(
+            cell_representation=adata,
+            task_input=task_input,
+        )
+
+        # Verify results structure
+        assert isinstance(results, list)
+        assert all(isinstance(r, MetricResult) for r in results)
+
+        # Test that baseline raises NotImplementedError
+        with pytest.raises(NotImplementedError):
+            task.compute_baseline(adata)
+
+    except Exception as e:
+        pytest.fail(f"KkTestTask failed unexpectedly: {e}")
