@@ -143,7 +143,6 @@ print("\n--- Task 1: Evaluating Clustering Performance ---\n")
 # 1. Initialize the task and define inputs
 clustering_task = ClusteringTask()
 clustering_task_input = ClusteringTaskInput(
-    obs=dataset.adata.obs,
     input_labels=dataset.labels,
 )
 

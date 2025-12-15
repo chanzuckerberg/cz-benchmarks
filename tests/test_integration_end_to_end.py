@@ -63,9 +63,7 @@ def test_end_to_end_task_execution_predictive_tasks():
 
     # Run clustering task with both model output and baseline
     clustering_task_input = ClusteringTaskInput(
-        obs=dataset.adata.obs,
         input_labels=dataset.labels,
-        use_rep="X",
     )
     clustering_results = clustering_task.run(
         cell_representation=model_output,

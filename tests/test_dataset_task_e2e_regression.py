@@ -131,9 +131,7 @@ def test_clustering_task_regression(dataset):
 
     # Run clustering task with fixture embedding
     clustering_task_input = ClusteringTaskInput(
-        obs=dataset.adata.obs,
         input_labels=dataset.labels,
-        use_rep="X",
     )
     clustering_results = clustering_task.run(
         cell_representation=model_output,
@@ -169,6 +167,7 @@ def test_clustering_task_regression(dataset):
     # Regression test: Compare against expected results
     # Expected results (captured from CZI Virtual Cells Platform benchmarking results at s3://cz-benchmarks-results-dev/v0.10.0/results/20250529_004446-f1736d11.json)
     # If this test fails, update expected_metrics with new values from a successful run AFTER a computational biologist has validated the new results.
+    # The tolerance of 0.01 may fail the test transiently, due to non-determinism in the clustering operations. 
     expected_metrics = [
         {"metric_type": "adjusted_rand_index", "value": 0.39411565248721414},
         {"metric_type": "normalized_mutual_info", "value": 0.6947935391845789},
