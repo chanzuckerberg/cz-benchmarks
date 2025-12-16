@@ -22,21 +22,21 @@ class CrossSpeciesIntegrationTaskInput(TaskInput):
     labels: Annotated[
         List[ListLike],
         Field(
-            description="List of ground truth labels for each species dataset (e.g., cell types)."
+            description="Ground truth labels for each species dataset (e.g., cell types)."
         ),
     ]
-    organism_list: Annotated[
+    organisms: Annotated[
         List[Organism],
         Field(
-            description="List of organisms corresponding to each dataset for cross-species evaluation."
+            description="Organism for each species dataset."
         ),
     ]
 
-    @field_validator("organism_list")
+    @field_validator("organisms")
     @classmethod
-    def _validate_organism_list(cls, v: List[Organism]) -> List[Organism]:
+    def _validate_organisms(cls, v: List[Organism]) -> List[Organism]:
         if not isinstance(v, list):
-            raise ValueError("organism_list must be a list of organisms.")
+            raise ValueError("organisms must be a list of organisms.")
         return v
 
 
@@ -56,7 +56,7 @@ class CrossSpeciesIntegrationTask(Task):
     datasets from different species.
     """
 
-    display_name = "Cross-species Integration"
+    display_name = "Cross Species Integration"
     description = (
         "Evaluate cross-species integration quality using various integration metrics."
     )
@@ -93,10 +93,10 @@ class CrossSpeciesIntegrationTask(Task):
         cell_representation = np.vstack(cell_representation)
 
         # FIXME BYODATASET move this into validation
-        if len(set(task_input.organism_list)) < 2:
+        if len(set(task_input.organisms)) < 2:
             raise AssertionError(
                 "At least two organisms are required for cross-species integration "
-                f"but got {len(set(task_input.organism_list))} : {set(task_input.organism_list)}"
+                f"but got {len(set(task_input.organisms))} : {set(task_input.organisms)}"
             )
 
         species = np.concatenate(
@@ -105,7 +105,7 @@ class CrossSpeciesIntegrationTask(Task):
                     str(organism),
                 ]
                 * len(label)
-                for organism, label in zip(task_input.organism_list, task_input.labels)
+                for organism, label in zip(task_input.organisms, task_input.labels)
             ]
         )
         labels = np.concatenate(task_input.labels)

@@ -171,9 +171,9 @@ def test_cross_species_task(embedding_matrix, obs):
     embedding_list = [embedding_matrix, embedding_matrix]
     labels = obs["cell_type"]
     labels_list = [labels, labels]
-    organism_list = [Organism.HUMAN, Organism.MOUSE]
+    organisms = [Organism.HUMAN, Organism.MOUSE]
     task_input = CrossSpeciesIntegrationTaskInput(
-        labels=labels_list, organism_list=organism_list
+        labels=labels_list, organisms=organisms
     )
 
     try:
