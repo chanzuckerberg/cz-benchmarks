@@ -245,6 +245,7 @@ def sequential_alignment(
     k: int = 10,
     normalize: bool = True,
     adaptive_k: bool = False,
+    random_seed: int = RANDOM_SEED,
 ) -> float:
     """
     Measure how sequentially close neighbors are in embedding space.
@@ -264,6 +265,8 @@ def sequential_alignment(
         Whether to normalize score to [0,1] range
     adaptive_k : bool
         Use adaptive k based on local density
+    random_seed : int
+        Random seed for reproducibility
 
     Returns:
     --------
@@ -310,7 +313,7 @@ def sequential_alignment(
         return mean_sequential_distance
 
     # Compare against expected random sequential distance
-    baseline = _compute_random_baseline(labels, k)
+    baseline = _compute_random_baseline(labels, k, random_seed)
 
     # Normalize: 1 = perfect sequential consistency, 0 = random
     if baseline > 0:
@@ -356,8 +359,18 @@ def _compute_adaptive_k(X: np.ndarray, base_k: int) -> np.ndarray:
     return k_values
 
 
-def _compute_random_baseline(labels: np.ndarray, k: int) -> float:
-    """Compute expected sequential distance for random neighbors."""
+def _compute_random_baseline(labels: np.ndarray, k: int, random_seed: int = RANDOM_SEED) -> float:
+    """Compute expected sequential distance for random neighbors.
+
+    Args:
+        labels: Array of sequential labels
+        k: Number of neighbors to consider
+        random_seed: Random seed for reproducibility
+
+    Returns:
+        Expected sequential distance for random neighbors
+    """
+    rng = np.random.RandomState(random_seed)
     unique_labels = np.unique(labels)
 
     if len(unique_labels) == 1:
@@ -371,13 +384,13 @@ def _compute_random_baseline(labels: np.ndarray, k: int) -> float:
     random_diffs = []
     for _ in range(n_samples):
         # pick a random reference index
-        i = np.random.randint(0, n)
+        i = rng.randint(0, n)
         # sample k distinct neighbor indices excluding i
         if k == n - 1:
             neighbors = np.delete(np.arange(n), i)
         else:
             # sample from range [0, n-2] then map to [0, n-1] skipping i
-            choices = np.random.choice(n - 1, size=k, replace=False)
+            choices = rng.choice(n - 1, size=k, replace=False)
             neighbors = choices + (choices >= i).astype(int)
 
         # mean absolute difference between label[i] and its k random neighbors

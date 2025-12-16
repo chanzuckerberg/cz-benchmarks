@@ -547,3 +547,40 @@ def test_sequential_alignment_metric_registry():
     )
     assert isinstance(score, float)
     assert 0 <= score <= 1
+
+
+def test_sequential_alignment_propagates_random_seed():
+    """Test that random_seed is correctly passed from sequential_alignment to _compute_random_baseline."""
+    from unittest.mock import patch
+
+    # Create test data
+    n_samples = 50
+    X = np.random.randn(n_samples, 2)
+    labels = np.arange(n_samples)
+    k = 5
+    custom_seed = 12345
+
+    # Mock _compute_random_baseline to track how it's called
+    with patch('czbenchmarks.metrics.utils._compute_random_baseline', wraps=_compute_random_baseline) as mock_baseline:
+        # Call sequential_alignment with a custom random_seed
+        sequential_alignment(X, labels, k=k, normalize=True, random_seed=custom_seed)
+
+        # Verify _compute_random_baseline was called with the correct random_seed
+        mock_baseline.assert_called_once()
+        call_args = mock_baseline.call_args
+
+        # Check that the random_seed parameter matches what we passed in
+        assert call_args[0][1] == k, "k parameter should be passed correctly"
+        assert call_args[0][2] == custom_seed, f"random_seed should be {custom_seed}"
+
+    # Test with default RANDOM_SEED
+    with patch('czbenchmarks.metrics.utils._compute_random_baseline', wraps=_compute_random_baseline) as mock_baseline:
+        from czbenchmarks.constants import RANDOM_SEED
+
+        # Call without specifying random_seed (should use default)
+        sequential_alignment(X, labels, k=k, normalize=True)
+
+        # Verify default RANDOM_SEED is used
+        mock_baseline.assert_called_once()
+        call_args = mock_baseline.call_args
+        assert call_args[0][2] == RANDOM_SEED, f"Should use default RANDOM_SEED ({RANDOM_SEED})"

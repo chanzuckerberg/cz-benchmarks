@@ -146,6 +146,7 @@ class SequentialOrganizationTask(Task):
                     k=task_input.k,
                     normalize=task_input.normalize,
                     adaptive_k=task_input.adaptive_k,
+                    random_seed=self.random_seed,
                 ),
                 params={},
             )
