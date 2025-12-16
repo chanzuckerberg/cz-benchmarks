@@ -185,5 +185,8 @@ def load_custom_config(
             cfg[config_name][item_name], class_update_kwargs
         )
 
+    # Resolve any OmegaConf resolvers in the custom config (e.g., ${oc.env:HOME})
+    OmegaConf.resolve(cfg)
+
     custom_cfg = cfg[config_name][item_name]
     return custom_cfg
