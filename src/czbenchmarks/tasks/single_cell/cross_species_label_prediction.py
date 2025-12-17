@@ -38,13 +38,13 @@ class CrossSpeciesLabelPredictionTaskInput(TaskInput):
     labels: Annotated[
         List[ListLike],
         Field(
-            description="List of ground truth labels for each species dataset (e.g., cell types)."
+            description="Ground truth labels for each species dataset (e.g., cell types)."
         ),
     ]
     organisms: Annotated[
         List[Organism],
         Field(
-            description="List of organisms corresponding to each dataset for cross-species evaluation."
+            description="Organism for each species dataset."
         ),
     ]
     sample_ids: Annotated[
@@ -105,7 +105,7 @@ class CrossSpeciesLabelPredictionTask(Task):
     before running classification.
     """
 
-    display_name = "cross-species label prediction"
+    display_name = "Cross Species Label Prediction"
     description = "Evaluate cross-species label prediction performance using multiple classifiers."
 
     input_model = CrossSpeciesLabelPredictionTaskInput

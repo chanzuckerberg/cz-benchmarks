@@ -389,7 +389,7 @@ def test_cross_species_integration_task_regression(
     # Run cross-species integration task with fixture embeddings for all 3 species
     cross_species_task_input = CrossSpeciesIntegrationTaskInput(
         labels=[human_dataset.labels, mouse_dataset.labels, rhesus_dataset.labels],
-        organism_list=[
+        organisms=[
             human_dataset.organism,
             mouse_dataset.organism,
             rhesus_dataset.organism,
