@@ -123,6 +123,20 @@ def test_import_class_from_config(tmp_path):
                 }
             },
         ),
+        # YAML-only example for OmegaConf resolver
+        (
+            "yaml_resolved_dataset",
+            None,
+            {
+                "datasets": {
+                    "yaml_resolved_dataset": {
+                        "_target_": "czbenchmarks.datasets.dummy.DummyDataset",
+                        "path": r"""${oc.env:HOME}/yaml_resolved_dataset.h5ad""",
+                        "organism": Organism.HUMAN,
+                    }
+                }
+            },
+        ),
     ],
 )
 def test_load_custom_config(
@@ -133,6 +147,7 @@ def test_load_custom_config(
     # Prepare YAML file from parameterized content
     custom_yaml_path = None
     if custom_yaml_content:
+        # custom_yaml_content = OmegaConf.create(custom_yaml_content)
         custom_yaml_path = tmp_path / "custom_config.yaml"
         OmegaConf.save(config=custom_yaml_content, f=custom_yaml_path)
         custom_yaml_path = str(custom_yaml_path)
