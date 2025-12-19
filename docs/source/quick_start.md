@@ -119,6 +119,7 @@ print(results)
 Explore the following resources to deepen your understanding:
 - **How-to Guides**: [Practical guides](./how_to_guides/index.rst) for using and extending the library.
 - **Setup Guides**: [Setup Guides](./how_to_guides/setup_guides.md)
+- **Tutorial Examples**: [Example notebooks and scripts](./examples/README.md)
 - **Developer Docs**: [Internal structure and extension points](./developer_guides/index.rst).
 - **GitHub Repository**: [cz-benchmarks](https://github.com/chanzuckerberg/cz-benchmarks) for troubleshooting and support.
 
