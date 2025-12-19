@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.15.2](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.15.1...v0.15.2) (2025-12-19)
+
+
+### Bug Fixes
+
+* add random_seed parameter to sequential_alignment metric ([#472](https://github.com/chanzuckerberg/cz-benchmarks/issues/472)) ([7d88f1f](https://github.com/chanzuckerberg/cz-benchmarks/commit/7d88f1fae9c0822159691be9225bd2301040e2ff))
+* Resolve custom config with OmegaConf ([#473](https://github.com/chanzuckerberg/cz-benchmarks/issues/473)) ([62e691d](https://github.com/chanzuckerberg/cz-benchmarks/commit/62e691de88fff453af5f0f06b19abc5d7c282535))
+* yaml formatting in add custom dataset docs ([#468](https://github.com/chanzuckerberg/cz-benchmarks/issues/468)) ([79f7291](https://github.com/chanzuckerberg/cz-benchmarks/commit/79f7291188a156ec94f721d9f3b9e64961608fa5))
+
+
+### Documentation
+
+* add a bullet point and link to example notebooks in Next Steps section ([#474](https://github.com/chanzuckerberg/cz-benchmarks/issues/474)) ([45fb5d6](https://github.com/chanzuckerberg/cz-benchmarks/commit/45fb5d6e1b57d0afdc3437c173e303e41c506efe))
+
 ## [0.15.1](https://github.com/chanzuckerberg/cz-benchmarks/compare/v0.15.0...v0.15.1) (2025-11-25)
 
 
