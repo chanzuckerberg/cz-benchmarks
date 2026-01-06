@@ -1,7 +1,8 @@
 import logging
-from typing import Any, Dict, List, Annotated
+from typing import Any, Dict, List, Annotated, Literal
 from pydantic import Field, field_validator
 
+import numpy as np
 import pandas as pd
 import scipy.sparse
 from sklearn.ensemble import RandomForestClassifier
@@ -79,12 +80,32 @@ class MetadataLabelPredictionOutput(TaskOutput):
 
 
 class LabelPredictionBaselineInput(BaselineInput):
-    """
-    This baseline uses the raw gene expression matrix as features.
-    It has no configurable parameters.
+    """Baseline preprocessing options for label prediction task.
+
+    The default (preprocessing="lognorm") applies standard scRNA-seq preprocessing:
+    library size normalization to target_sum followed by log1p transformation.
+
+    The "raw" option returns counts as-is (relying on the classifier's built-in
+    StandardScaler). This is provided for comparison purposes but is not
+    recommended as a baseline.
     """
 
-    pass
+    preprocessing: Literal["lognorm", "raw"] = Field(
+        "lognorm",
+        description="Preprocessing mode: 'lognorm' (recommended) applies library size "
+        "normalization and log1p; 'raw' returns counts as-is.",
+    )
+    target_sum: float = Field(
+        1e4,
+        description="Target sum for library size normalization (only used when preprocessing='lognorm').",
+    )
+
+    @field_validator("target_sum")
+    @classmethod
+    def _validate_target_sum(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("target_sum must be positive.")
+        return v
 
 
 class MetadataLabelPredictionTask(Task):
@@ -346,13 +367,31 @@ class MetadataLabelPredictionTask(Task):
         expression_data: CellRepresentation,
         baseline_input: LabelPredictionBaselineInput = None,
     ) -> CellRepresentation:
-        """Set a baseline cell representation using raw gene expression.
+        """Compute baseline cell representation.
 
-        This baseline uses the raw gene expression matrix directly as features.
+        By default, applies standard scRNA-seq preprocessing: library size
+        normalization and log1p transformation.
+
+        Args:
+            expression_data: Raw count matrix (cells x genes)
+            baseline_input: LabelPredictionBaselineInput
+
+        Returns:
+            Preprocessed expression matrix suitable for classification
         """
         if baseline_input is None:
             baseline_input = LabelPredictionBaselineInput()
 
         if scipy.sparse.issparse(expression_data):
             expression_data = expression_data.toarray()
+
+        if baseline_input.preprocessing == "raw":
+            return expression_data
+
+        #lognorm preprocessing
+        row_sums = expression_data.sum(axis=1, keepdims=True)
+        row_sums = np.where(row_sums == 0, 1, row_sums)  # Avoid division by zero
+        expression_data = expression_data / row_sums * baseline_input.target_sum
+        expression_data = np.log1p(expression_data)
+
         return expression_data
