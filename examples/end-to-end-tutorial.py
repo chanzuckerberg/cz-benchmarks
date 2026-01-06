@@ -52,6 +52,8 @@ import seaborn as sns
 from tabulate import tabulate
 import os
 import boto3
+from botocore import UNSIGNED
+from botocore.config import Config
 
 # Set up basic logging to see the library's output
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -81,7 +83,7 @@ local_model_dir = "/tmp/czbenchmarks_scvi_model"
 
 if not os.path.exists(local_model_dir):
     os.makedirs(local_model_dir, exist_ok=True)
-    s3 = boto3.resource("s3")
+    s3 = boto3.resource("s3", config=Config(signature_version=UNSIGNED))
     bucket_name = "cz-benchmarks-data"
     prefix = "models/v1/scvi_2023_12_15/homo_sapiens/"
     bucket = s3.Bucket(bucket_name)
