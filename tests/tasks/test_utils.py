@@ -102,6 +102,27 @@ def test_aggregate_cells_to_samples_types():
     pd.testing.assert_series_equal(sample_ids_out, sample_ids_out2)
 
 
+def test_aggregate_cells_to_samples_null_labels():
+    """Test that null labels raise a ValueError."""
+    embeddings = np.random.randn(5, 3)
+    sample_ids = ["s1"] * 5
+
+    # None values in a list
+    labels_with_none = ["A", "B", None, "A", "B"]
+    with pytest.raises(ValueError, match="null value"):
+        aggregate_cells_to_samples(embeddings, labels_with_none, sample_ids)
+
+    # np.nan in a numpy array
+    labels_with_nan = np.array(["A", "B", np.nan, "A", "B"], dtype=object)
+    with pytest.raises(ValueError, match="null value"):
+        aggregate_cells_to_samples(embeddings, labels_with_nan, sample_ids)
+
+    # pd.Series with NaN
+    labels_series_nan = pd.Series(["A", None, "B", "A", "B"])
+    with pytest.raises(ValueError, match="null value"):
+        aggregate_cells_to_samples(embeddings, labels_series_nan, sample_ids)
+
+
 def test_aggregate_cells_to_samples_label_consistency():
     """Test that each sample gets a consistent label."""
     # Create data where each sample has mixed labels initially

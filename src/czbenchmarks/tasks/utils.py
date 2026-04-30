@@ -415,6 +415,13 @@ def aggregate_cells_to_samples(
             f"labels={len(labels)}, sample_ids={len(sample_ids)}"
         )
 
+    null_mask = labels.isna()
+    if null_mask.any():
+        null_count = null_mask.sum()
+        raise ValueError(
+            f"labels contain {null_count} null value(s); all labels must be non-null"
+        )
+
     # Create DataFrame with embeddings and metadata
     emb_df = pd.DataFrame(embeddings)
     emb_df["sample_id"] = sample_ids
