@@ -63,3 +63,15 @@ __all__ = [
     "CrossSpeciesLabelPredictionOutput",
     "CrossSpeciesLabelPredictionTask",
 ]
+
+from .single_cell.perturbation_identity_task import (
+    PerturbationIdentityTask,
+    PerturbationIdentityTaskInput,
+    PerturbationIdentityTaskOutput,
+)
+
+__all__ += [
+    "PerturbationIdentityTask",
+    "PerturbationIdentityTaskInput",
+    "PerturbationIdentityTaskOutput",
+]
