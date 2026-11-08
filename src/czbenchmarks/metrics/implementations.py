@@ -29,16 +29,15 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from .utils import (
-    compute_entropy_per_cell,
-    mean_fold_metric,
-    single_metric,
-    jaccard_score,
-)
 
+from .perturbation_identity import paired_mse_reduction
 from .types import MetricRegistry, MetricType
 from .utils import (
+    compute_entropy_per_cell,
+    jaccard_score,
+    mean_fold_metric,
     sequential_alignment,
+    single_metric,
 )
 
 
@@ -270,4 +269,13 @@ metrics_registry.register(
     required_args={"a", "b"},
     description="Spearman correlation between true and predicted values",
     tags={"label_prediction", "perturbation"},
+)
+
+
+metrics_registry.register(
+    MetricType.PAIRED_MSE_REDUCTION,
+    func=paired_mse_reduction,
+    required_args={"y_true", "y_pred", "y_reference"},
+    description="Paired reference-minus-model MSE, optionally balanced across groups",
+    tags={"perturbation", "regression", "paired_comparison"},
 )

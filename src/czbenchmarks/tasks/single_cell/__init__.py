@@ -25,3 +25,15 @@ __all__ = [
     "PerturbationExpressionPredictionTaskInput",
     "PerturbationExpressionPredictionOutput",
 ]
+
+from .perturbation_identity_task import (
+    PerturbationIdentityTask,
+    PerturbationIdentityTaskInput,
+    PerturbationIdentityTaskOutput,
+)
+
+__all__ += [
+    "PerturbationIdentityTask",
+    "PerturbationIdentityTaskInput",
+    "PerturbationIdentityTaskOutput",
+]

@@ -70,3 +70,13 @@ result = MetricResult(metric_type=MetricType.ADJUSTED_RAND_INDEX, value=value)
 - [Add New Metric Guide](../how_to_guides/add_new_metric)
 - [ClusteringTask](../autoapi/czbenchmarks/tasks/clustering/index)
 - [PerturbationExpressionPredictionTask](../autoapi/czbenchmarks/tasks/single_cell/perturbation_expression_prediction/index)
+
+## Paired reference comparison
+
+`MetricType.PAIRED_MSE_REDUCTION` computes reference MSE minus model MSE on
+aligned response matrices, with optional equal-group aggregation. Positive values
+favor the model. It requires `y_true`, `y_pred`, and `y_reference`; optional
+`group_ids` balance groups such as donors. It does not fit references, generate
+counterfactual inputs, or calculate uncertainty. See the
+[paired perturbation comparison guide](../how_to_guides/paired_perturbation_comparison.md)
+for definitions, examples, and limitations.

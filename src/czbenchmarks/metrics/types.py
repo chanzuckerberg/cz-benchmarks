@@ -31,6 +31,7 @@ class MetricType(Enum):
 
     # Regression metrics
     MEAN_SQUARED_ERROR = "mean_squared_error"
+    PAIRED_MSE_REDUCTION = "paired_mse_reduction"
     PEARSON_CORRELATION = "PEARSON_CORRELATION"
 
     # Classification metrics
